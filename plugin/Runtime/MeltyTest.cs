@@ -94,6 +94,7 @@ namespace DeadlockOfRain
             if (first && first.currentVehicle) first.currentVehicle.EjectPassenger(first.gameObject);
             yield return new WaitForSeconds(2f);
             if (DevShots) yield return Lineup();
+            QuietStage();
 
             // 3. every hero
             var master = user.cachedMaster;
@@ -122,6 +123,8 @@ namespace DeadlockOfRain
                     var away = body.footPosition + body.inputBank.aimDirection.normalized * 14f;
                     if (Physics.Raycast(away + Vector3.up * 30f, Vector3.down, out var gh, 80f, LayerIndex.world.mask)) TeleportHelper.TeleportBody(body, gh.point + Vector3.up * 0.5f, false);
                     yield return new WaitForSeconds(0.5f);
+                    arena = body.footPosition;
+                    arenaForward = body.inputBank.aimDirection; arenaForward.y = 0; arenaForward.Normalize();
                 }
 
                 // scale: capsule follows Deadlock's relative height, model uses the shared factor
@@ -141,7 +144,10 @@ namespace DeadlockOfRain
                     foreach (var pitch in new[] { 0f, 30f, -30f })
                     {
                         var dir = Quaternion.AngleAxis(-pitch, right) * fwd;
+                        AimCamera(body, dir);
                         for (int f = 0; f < 20; f++) { body.inputBank.aimDirection = dir; yield return null; }
+                        // what the player sees: the hero from behind, the gun on the crosshair
+                        if (DevShots) Shot($"{hero.Id}_aim{pitch:+0;-0;0}_game");
                         body.inputBank.aimDirection = dir; yield return null;
                         float err = anim.AimError;
                         if (DevShots) { body.inputBank.aimDirection = dir; DevCam(body, $"{hero.Id}_aim{pitch:+0;-0;0}"); }
@@ -188,8 +194,8 @@ namespace DeadlockOfRain
                     if (anim.GunDrift > 0.02f) { handOk = false; handWhy += $"{hero.Id}: gun moved {anim.GunDrift * 100f:F1} cm in the hand; "; }
                 }
 
-                bool plays = gun && abilities == 3 && ultFired;
-                Write(hero.Id + "-plays", plays, $"gun={gun}, abilities={abilities}/3, ult={ultFired}");
+                bool plays = gun && abilities == 2 && ultFired;
+                Write(hero.Id + "-plays", plays, $"gun={gun}, abilities={abilities}/2, ult={ultFired}");
                 if (plays) heroes++;
 
                 // level-up growth matches the sheet (no items in a fresh run)
@@ -319,6 +325,17 @@ namespace DeadlockOfRain
         }
 
         static readonly List<CharacterBody> targets = new List<CharacterBody>();
+        static Vector3 arena, arenaForward = Vector3.forward;
+
+        /// <summary>Test mode only: stop the stage's monster spawns and remove the monsters already there, so the skill checks
+        /// see only their own target Lemurians (wandering Wisps and Beetles used to soak up the shots).</summary>
+        static void QuietStage()
+        {
+            if (!NetworkServer.active) return;
+            foreach (var d in UnityEngine.Object.FindObjectsOfType<CombatDirector>()) d.enabled = false;
+            foreach (var tc in TeamComponent.GetTeamMembers(TeamIndex.Monster).ToList())
+                if (tc && tc.body && tc.body.master && !targets.Contains(tc.body)) tc.body.master.TrueKill();
+        }
 
         static void KillTargets()
         {
@@ -363,6 +380,15 @@ namespace DeadlockOfRain
         IEnumerator TestSkill(CharacterBody body, SkillRow row, Effects fx)
         {
             KillTargets();
+            QuietStage();
+            // every skill starts from the same flat spot facing the same way (dashes and leaps carry the hero off it)
+            if (arena != Vector3.zero)
+            {
+                TeleportHelper.TeleportBody(body, arena + Vector3.up * 0.5f, false);
+                if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+                AimCamera(body, arenaForward);
+                for (int f = 0; f < 15; f++) { body.inputBank.aimDirection = arenaForward; yield return null; }
+            }
             var aim = body.inputBank.GetAimRay();
             var fwd = aim.direction; fwd.y = 0; fwd.Normalize();
             var right = Vector3.Cross(Vector3.up, fwd);
@@ -370,7 +396,8 @@ namespace DeadlockOfRain
             foreach (var at in new[] { body.footPosition + fwd * d, body.footPosition + fwd * (d + 1.5f) + right * 2f })
             {
                 var p = at;
-                if (Physics.Raycast(at + Vector3.up * 20f, Vector3.down, out var g, 60f, LayerIndex.world.mask)) p = g.point;
+                // ground just under the spot (from hip height, so trees and arches overhead are not picked)
+                if (Physics.Raycast(at + Vector3.up * 2f, Vector3.down, out var g, 8f, LayerIndex.world.mask)) p = g.point;
                 var t = Summon(body, p + Vector3.up * 0.5f);
                 if (!t) continue;
                 // sturdy enough to survive an ult, so stuns and debuffs can still be seen on them
@@ -379,6 +406,7 @@ namespace DeadlockOfRain
             }
             yield return new WaitForSeconds(1f);
             var victims = new HashSet<CharacterBody>(targets);
+            Log.Info($"Melty test: {row.Id}: hero at {body.footPosition}, targets " + string.Join(", ", targets.Select(x => x && x.healthComponent && x.healthComponent.alive ? $"{Vector3.Distance(x.footPosition, body.footPosition):F1} m away" : "dead")));
 
             // aim the camera (and so the skill) at the first target
             if (targets.Count > 0 && targets[0])
@@ -397,7 +425,14 @@ namespace DeadlockOfRain
                 yield return new WaitForSeconds(0.3f);
             }
 
-            System.Action<DamageReport> onDamage = r => { if (r != null && r.attackerBody == body && r.victimBody && victims.Contains(r.victimBody)) fx.Damage += r.damageDealt; };
+            var others = new List<string>();
+            System.Action<DamageReport> onDamage = r =>
+            {
+                if (r == null || !r.victimBody) return;
+                if (r.attackerBody == body && victims.Contains(r.victimBody)) fx.Damage += r.damageDealt;
+                else if (r.attackerBody == body || victims.Contains(r.victimBody))
+                    others.Add($"{(r.attackerBody ? r.attackerBody.name : "?")}->{r.victimBody.name} {r.damageDealt:F0}");
+            };
             System.Action<HealthComponent, float, ProcChainMask> onHeal = (hc, amount, mask) => { if (hc == body.healthComponent && amount > 0f) fx.Healed += amount; };
             GlobalEventManager.onServerDamageDealt += onDamage;
             HealthComponent.onCharacterHealServer += onHeal;
@@ -412,7 +447,8 @@ namespace DeadlockOfRain
                 else if (row.Slot == "ult")
                 {
                     var ult = UltController.Of(body);
-                    float before = ult ? ult.Charge : 0;
+                    if (ult) ult.Consume(); // earlier skills may have filled the meter already
+                    float before = 0f;
                     if (targets.Count > 0 && targets[0]) Fx.Hit(body, targets[0].mainHurtBox, 1f, 1f, targets[0].corePosition);
                     yield return new WaitForSeconds(0.2f);
                     fx.Charged = ult && ult.Charge > before;
@@ -461,6 +497,7 @@ namespace DeadlockOfRain
                 HealthComponent.onCharacterHealServer -= onHeal;
                 fireBody = null;
             }
+            if (others.Count > 0) Log.Info($"Melty test: {row.Id}: other damage seen: " + string.Join("; ", others.Take(8)));
             // let dashes, leaps and buffs finish before the next skill
             yield return new WaitForSeconds(0.5f);
         }

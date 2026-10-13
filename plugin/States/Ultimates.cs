@@ -89,9 +89,18 @@ namespace DeadlockOfRain.States
         {
             base.OnEnter();
             Sound("cast");
+            // land on the enemy you aim at, or on the ground you aim at (own and allied hurtboxes are skipped)
             var aim = GetAimRay();
-            target = Physics.Raycast(aim, out var hit, row.Range, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)
-                ? hit.point : aim.origin + aim.direction * row.Range;
+            target = aim.origin + aim.direction * row.Range;
+            var hits = Physics.SphereCastAll(aim, 0.5f, row.Range, LayerIndex.world.mask | LayerIndex.entityPrecise.mask, QueryTriggerInteraction.Ignore);
+            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+            foreach (var h in hits)
+            {
+                var hb = h.collider.GetComponent<HurtBox>();
+                if (hb && (!hb.healthComponent || !hb.healthComponent.body || hb.healthComponent.body.teamComponent.teamIndex == teamComponent.teamIndex)) continue;
+                target = hb ? hb.healthComponent.body.footPosition : h.point;
+                break;
+            }
             if (Physics.Raycast(target + Vector3.up * 2f, Vector3.down, out var ground, 200f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) target = ground.point;
             characterBody.bodyFlags |= CharacterBody.BodyFlags.IgnoreFallDamage;
             if (anim) anim.Override("ult_start", row.Duration * 0.6f);
