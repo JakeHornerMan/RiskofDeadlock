@@ -1,0 +1,6 @@
+bin/
+obj/
+build/
+lab-backup/
+tools/dev/
+*.dlm

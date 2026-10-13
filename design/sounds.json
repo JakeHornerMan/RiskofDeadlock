@@ -1,0 +1,174 @@
+{
+  "sheet": "sounds",
+  "about": "Deadlock sound events (as referenced by the hero's abilities in scripts/abilities.vdata) played for each skill moment. The extractor resolves each event through the player's soundevents/*.vsndevts (following 'base' inheritance) to its vsnd files and decodes them to WAV in the local cache. 'none' = silent on purpose. RoR2 disables Unity audio, so the plugin plays these through its own small Windows audio mixer at the game's SFX volume.",
+  "columns": [
+    "skill",
+    "cast",
+    "loop",
+    "hit",
+    "end",
+    "reload"
+  ],
+  "rows": [
+    {
+      "skill": "haze_gun",
+      "cast": "Haze.Wpn.Fire.Main",
+      "loop": "none",
+      "hit": "none",
+      "end": "none",
+      "reload": "Haze.Wpn.Reload.Start"
+    },
+    {
+      "skill": "haze_sleep_dagger",
+      "cast": "Haze.Finesse.Dagger.Cast",
+      "loop": "none",
+      "hit": "Haze.Finesse.Dagger.Projectile.Hit",
+      "end": "none",
+      "reload": "none"
+    },
+    {
+      "skill": "haze_smoke_bomb",
+      "cast": "Haze.Smoke.Bomb.Cast",
+      "loop": "none",
+      "hit": "none",
+      "end": "Haze.Smoke.Bomb.End",
+      "reload": "none"
+    },
+    {
+      "skill": "haze_fixation",
+      "cast": "Haze.Smoke.Bomb.Invis",
+      "loop": "none",
+      "hit": "none",
+      "end": "none",
+      "reload": "none"
+    },
+    {
+      "skill": "haze_bullet_dance",
+      "cast": "Haze.BulletFlurry.Cast.Delay",
+      "loop": "Haze.BulletFlurry.Modifier.Lp",
+      "hit": "Haze.Wpn.Fire.Main",
+      "end": "Haze.BulletFlurry.Modifier.End",
+      "reload": "none"
+    },
+    {
+      "skill": "abrams_gun",
+      "cast": "Abrams.Wpn.Fire.Main",
+      "loop": "none",
+      "hit": "Abrams.Wpn.Impact",
+      "end": "none",
+      "reload": "none"
+    },
+    {
+      "skill": "abrams_siphon",
+      "cast": "Abrams.A1.SiphonLife.Cast",
+      "loop": "Abrams.A1.SiphonLife.Loop",
+      "hit": "none",
+      "end": "Abrams.A1.SiphonLife.End",
+      "reload": "none"
+    },
+    {
+      "skill": "abrams_charge",
+      "cast": "Abrams.Charge.Cast",
+      "loop": "none",
+      "hit": "Abrams.Charge.HitEnemy",
+      "end": "Abrams.Charge.Wall.Impact",
+      "reload": "none"
+    },
+    {
+      "skill": "abrams_resilience",
+      "cast": "Abrams.A1.SiphonLife.End",
+      "loop": "none",
+      "hit": "none",
+      "end": "none",
+      "reload": "none"
+    },
+    {
+      "skill": "abrams_seismic",
+      "cast": "Abrams.A4.Leap.Cast",
+      "loop": "Abrams.A4.Leap.Float.Lp",
+      "hit": "Abrams.A4.Leap.Descend",
+      "end": "Abrams.A4.Leap.Impact",
+      "reload": "none"
+    },
+    {
+      "skill": "seven_gun",
+      "cast": "Seven.Wpn.Fire",
+      "loop": "none",
+      "hit": "Seven.Wpn.Impact",
+      "end": "none",
+      "reload": "Seven.Wpn.Reload.Start"
+    },
+    {
+      "skill": "seven_lightning_ball",
+      "cast": "Gigawatt.LightningBall.Cast",
+      "loop": "Gigawatt.LightningBall.Proj.Lp",
+      "hit": "Gigawatt.LightningBall.Damage",
+      "end": "Gigawatt.LightningBall.Proj.Explo",
+      "reload": "none"
+    },
+    {
+      "skill": "seven_static_charge",
+      "cast": "Gigawatt.StaticCharge.Cast",
+      "loop": "Gigawatt.StaticCharge.Lp",
+      "hit": "Gigawatt.StaticCharge.Proc",
+      "end": "none",
+      "reload": "none"
+    },
+    {
+      "skill": "seven_power_surge",
+      "cast": "Gigawatt.PowerSurge.Cast",
+      "loop": "none",
+      "hit": "Gigawatt.PowerSurge.ChainMod.Proc",
+      "end": "Gigawatt.PowerSurge.End",
+      "reload": "none"
+    },
+    {
+      "skill": "seven_storm_cloud",
+      "cast": "Gigawatt.StormCloud.Cast",
+      "loop": "Gigawatt.StormCloud.Lp",
+      "hit": "Gigawatt.StormCloud.Bolt.Detonate",
+      "end": "Gigawatt.StormCloud.End",
+      "reload": "none"
+    },
+    {
+      "skill": "infernus_gun",
+      "cast": "Infernus.Wpn.Fire",
+      "loop": "none",
+      "hit": "Infernus.Wpn.Impact",
+      "end": "none",
+      "reload": "Infernus.Wpn.Reload.Start"
+    },
+    {
+      "skill": "infernus_catalyst",
+      "cast": "Inferno.Incend.Cast",
+      "loop": "none",
+      "hit": "Inferno.Incend.Hit",
+      "end": "none",
+      "reload": "none"
+    },
+    {
+      "skill": "infernus_flame_dash",
+      "cast": "Inferno.FlameDash.Modifier.Start",
+      "loop": "Inferno.FlameDash.Modifier.Lp",
+      "hit": "Infernus.FlameDash.Hit",
+      "end": "Inferno.FlameDash.Modifier.Stop",
+      "reload": "none"
+    },
+    {
+      "skill": "infernus_afterburn",
+      "cast": "Inferno.Afterburn.Modifier.Start",
+      "loop": "none",
+      "hit": "none",
+      "end": "none",
+      "reload": "none"
+    },
+    {
+      "skill": "infernus_combustion",
+      "cast": "Inferno.FireBomb.Cast",
+      "loop": "none",
+      "hit": "none",
+      "end": "Inferno.FireBomb.Explode",
+      "reload": "none"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+Deadlock of Rain bundles the following third-party software in extract/DeadlockExtract.exe. Each keeps its own license.
+
+ValveResourceFormat, ValvePak, ValveKeyValue - MIT License - Copyright (c) ValveResourceFormat contributors
+  https://github.com/ValveResourceFormat/ValveResourceFormat
+SharpGLTF - MIT License - Copyright (c) Vicente Penades
+  https://github.com/vpenades/SharpGLTF
+SkiaSharp - MIT License - Copyright (c) .NET Foundation and Contributors; native Skia - BSD-3-Clause - Copyright (c) Google Inc.
+  https://github.com/mono/SkiaSharp
+NLayer - MIT License - Copyright (c) Mark Heath, Andrew Ward and contributors
+  https://github.com/naudio/NLayer
+KeyValues2 - MIT License - Copyright (c) 2013 Tom Edwards
+K4os.Compression.LZ4 - MIT License - Copyright (c) Milosz Krajewski
+  https://github.com/MiloszKrajewski/K4os.Compression.LZ4
+ZstdSharp - MIT License - Copyright (c) Oleg Stepanischev
+  https://github.com/oleg-st/ZstdSharp
+TinyBCSharp - MIT License - Copyright (c) Jan De Kock
+  https://github.com/jandk/TinyBCSharp
+TinyEXR.NET - MIT License
+Vortice.SpirvCross - MIT License - Copyright (c) Amer Koleci and contributors; native SPIRV-Cross - Apache-2.0 - Copyright (c) Arm Limited and contributors
+  https://github.com/amerkoleci/Vortice.Vulkan
+.NET runtime and System.IO.Hashing - MIT License - Copyright (c) .NET Foundation and Contributors
+  https://github.com/dotnet/runtime
+
+MIT License text:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Apache-2.0 (SPIRV-Cross): http://www.apache.org/licenses/LICENSE-2.0
+BSD-3-Clause (Skia): https://github.com/google/skia/blob/main/LICENSE

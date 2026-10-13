@@ -1,0 +1,117 @@
+{
+  "sheet": "heroes",
+  "about": "One row per Deadlock hero playable as a Risk of Rain 2 survivor. Heights are the hero's body-mesh height in metres as exported from the player's own Deadlock install (VRF glTF, 1 Source unit = 0.0254 m), measured 2026-10-12 on Deadlock ClientVersion 6774. heightScale keeps Deadlock's relative sizes: every hero is scaled by one global factor (anchorHero's height -> Commando's model height), so heightScale = sourceHeight / anchor sourceHeight.",
+  "anchorHero": "haze",
+  "anchorRoR2Body": "CommandoBody",
+  "columns": [
+    "id",
+    "displayName",
+    "deadlockKey",
+    "vmdl",
+    "meshInclude",
+    "imageSmall",
+    "imageCard",
+    "soundevents",
+    "sourceHeight",
+    "heightScale",
+    "widthScale",
+    "primaryColor",
+    "sortPosition",
+    "roR2Analog",
+    "subtitle",
+    "lore"
+  ],
+  "rows": [
+    {
+      "id": "haze",
+      "displayName": "Haze",
+      "deadlockKey": "hero_haze",
+      "vmdl": "models/heroes_staging/haze/haze.vmdl",
+      "meshInclude": [
+        "body",
+        "haze_gun_l",
+        "haze_gun_r"
+      ],
+      "imageSmall": "panorama/images/heroes/haze_sm_psd.vtex",
+      "imageCard": "panorama/images/heroes/haze_card_psd.vtex",
+      "soundevents": "soundevents/hero/haze.vsndevts",
+      "sourceHeight": 2.413,
+      "heightScale": 1.0,
+      "widthScale": 1.0,
+      "primaryColor": "#8C6BD9",
+      "sortPosition": 100.1,
+      "roR2Analog": "CommandoBody",
+      "subtitle": "The Smoke-Shrouded Assassin",
+      "lore": "Deadlock's twin-SMG assassin. Every hit stacks Fixation on her target, Smoke Bomb hides her, Sleep Dagger drops a target and Bullet Dance shreds everything around her."
+    },
+    {
+      "id": "abrams",
+      "displayName": "Abrams",
+      "deadlockKey": "hero_atlas",
+      "vmdl": "models/heroes_wip/abrams/abrams.vmdl",
+      "meshInclude": [
+        "abrams_model",
+        "abrams_face_model",
+        "gun_model"
+      ],
+      "imageSmall": "panorama/images/heroes/bull_sm_psd.vtex",
+      "imageCard": "panorama/images/heroes/bull_card_psd.vtex",
+      "soundevents": "soundevents/hero/abrams.vsndevts",
+      "sourceHeight": 2.927,
+      "heightScale": 1.213,
+      "widthScale": 1.3,
+      "primaryColor": "#C2572B",
+      "sortPosition": 100.2,
+      "roR2Analog": "LoaderBody",
+      "subtitle": "The Unstoppable Detective",
+      "lore": "Deadlock's brawler detective. He drains life with Siphon Life, crashes through enemies with Shoulder Charge, shrugs off damage with Infernal Resilience and lands from the sky with Seismic Impact."
+    },
+    {
+      "id": "seven",
+      "displayName": "Seven",
+      "deadlockKey": "hero_gigawatt",
+      "vmdl": "models/heroes_staging/gigawatt_prisoner/gigawatt_prisoner.vmdl",
+      "meshInclude": [
+        "outer_costume",
+        "gun",
+        "shirt_backfaces",
+        "headgear"
+      ],
+      "imageSmall": "panorama/images/heroes/gigawatt_sm_psd.vtex",
+      "imageCard": "panorama/images/heroes/gigawatt_card_psd.vtex",
+      "soundevents": "soundevents/hero/gigawatt.vsndevts",
+      "sourceHeight": 2.43,
+      "heightScale": 1.007,
+      "widthScale": 1.0,
+      "primaryColor": "#3FA7E6",
+      "sortPosition": 100.3,
+      "roR2Analog": "MageBody",
+      "subtitle": "The Living Storm",
+      "lore": "Deadlock's lightning caster. He throws Lightning Balls, plants Static Charges that stun, chains Power Surge through crowds and rises into a Storm Cloud."
+    },
+    {
+      "id": "infernus",
+      "displayName": "Infernus",
+      "deadlockKey": "hero_inferno",
+      "vmdl": "models/heroes_wip/inferno/inferno.vmdl",
+      "meshInclude": [
+        "inferno",
+        "flame_hair",
+        "flask_on_hip",
+        "hat",
+        "inferno_flames"
+      ],
+      "imageSmall": "panorama/images/heroes/inferno_sm_psd.vtex",
+      "imageCard": "panorama/images/heroes/inferno_card_psd.vtex",
+      "soundevents": "soundevents/hero/inferno.vsndevts",
+      "sourceHeight": 2.505,
+      "heightScale": 1.038,
+      "widthScale": 1.05,
+      "primaryColor": "#F2762E",
+      "sortPosition": 100.4,
+      "roR2Analog": "EngiBody",
+      "subtitle": "The Burning Man",
+      "lore": "Deadlock's arsonist. His bullets build Afterburn, Catalyst makes victims burn hotter, Flame Dash leaves fire behind him and Concussive Combustion levels the room."
+    }
+  ]
+}

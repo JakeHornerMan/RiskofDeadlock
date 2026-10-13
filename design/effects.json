@@ -1,0 +1,27 @@
+{
+  "sheet": "effects",
+  "about": "Visual effect ids used by skills.effect. Deadlock's particle systems (.vpcf) have no Unity equivalent, so visuals reuse Risk of Rain 2's own effect prefabs (Addressables keys checked against the installed catalog.json), spawned at the given point. kind: tracer (bullet line muzzle->hit), impact (one-shot at a point, scaled by radius when scaleWithRadius), ghost (attached visual that follows a mod-simulated projectile), orb (RoR2 OrbManager lightning orb), trail (vanilla DamageTrail fire trail), none.",
+  "columns": ["id", "kind", "addressable", "scaleWithRadius", "notes"],
+  "rows": [
+    { "id": "none", "kind": "none", "addressable": "none", "scaleWithRadius": false, "notes": "no visual" },
+    { "id": "tracer_haze", "kind": "tracer", "addressable": "RoR2/Base/Commando/TracerCommandoDefault.prefab", "scaleWithRadius": false, "notes": "SMG tracer" },
+    { "id": "tracer_abrams", "kind": "tracer", "addressable": "RoR2/Base/Bandit2/TracerBandit2Shotgun.prefab", "scaleWithRadius": false, "notes": "shotgun pellets" },
+    { "id": "tracer_seven", "kind": "tracer", "addressable": "RoR2/Base/Huntress/TracerHuntressSnipe.prefab", "scaleWithRadius": false, "notes": "bright lightning-ish line" },
+    { "id": "tracer_infernus", "kind": "tracer", "addressable": "RoR2/Base/Toolbot/TracerToolbotNails.prefab", "scaleWithRadius": false, "notes": "fast orange tracer" },
+    { "id": "muzzle", "kind": "impact", "addressable": "RoR2/Base/Common/VFX/Muzzleflash1.prefab", "scaleWithRadius": false, "notes": "muzzle flash for every gun" },
+    { "id": "dagger", "kind": "ghost", "addressable": "RoR2/Base/Bandit2/mdlBanditKnife.prefab", "scaleWithRadius": false, "notes": "Sleep Dagger flying model" },
+    { "id": "smoke_puff", "kind": "impact", "addressable": "RoR2/Base/Bandit2/Bandit2SmokeBomb.prefab", "scaleWithRadius": false, "notes": "Smoke Bomb cast" },
+    { "id": "siphon_beam", "kind": "impact", "addressable": "RoR2/Base/SiphonOnLowHealth/SiphonOrbEffect.prefab", "scaleWithRadius": false, "notes": "spawned on each drained enemy per tick" },
+    { "id": "charge_impact", "kind": "impact", "addressable": "RoR2/Base/Toolbot/ImpactToolbotDashLarge.prefab", "scaleWithRadius": false, "notes": "Shoulder Charge hit" },
+    { "id": "heal_pulse", "kind": "impact", "addressable": "RoR2/Base/Medkit/MedkitHealEffect.prefab", "scaleWithRadius": false, "notes": "Infernal Resilience cast" },
+    { "id": "slam", "kind": "impact", "addressable": "RoR2/Base/Loader/LoaderGroundSlam.prefab", "scaleWithRadius": true, "notes": "Seismic Impact landing" },
+    { "id": "lightning_orb", "kind": "ghost", "addressable": "RoR2/Base/Mage/MageLightningBombGhost.prefab", "scaleWithRadius": false, "notes": "Lightning Ball" },
+    { "id": "static_blast", "kind": "impact", "addressable": "RoR2/Base/Lightning/LightningStrikeImpact.prefab", "scaleWithRadius": true, "notes": "Static Charge discharge" },
+    { "id": "chain_lightning", "kind": "orb", "addressable": "RoR2/Base/ChainLightning/ChainLightningOrbEffect.prefab", "scaleWithRadius": false, "notes": "Power Surge chains via RoR2.Orbs.LightningOrb (Ukulele type)" },
+    { "id": "storm_strike", "kind": "impact", "addressable": "RoR2/Base/Lightning/LightningStrikeImpact.prefab", "scaleWithRadius": false, "notes": "Storm Cloud strikes on enemies inside" },
+    { "id": "napalm", "kind": "impact", "addressable": "RoR2/Base/LemurianBruiser/OmniExplosionVFXLemurianBruiserFireballImpact.prefab", "scaleWithRadius": false, "notes": "Catalyst splash, spawned along the cone" },
+    { "id": "fire_trail", "kind": "trail", "addressable": "RoR2/Base/Common/FireTrail.prefab", "scaleWithRadius": false, "notes": "Flame Dash trail (vanilla DamageTrail)" },
+    { "id": "big_explosion", "kind": "impact", "addressable": "RoR2/Base/Scav/OmniExplosionVFXScavCannonImpactExplosion.prefab", "scaleWithRadius": true, "notes": "Concussive Combustion" },
+    { "id": "stun", "kind": "impact", "addressable": "RoR2/Base/StunChanceOnHit/ImpactStunGrenade.prefab", "scaleWithRadius": false, "notes": "sleep / stun applied" }
+  ]
+}

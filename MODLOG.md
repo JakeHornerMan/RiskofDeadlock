@@ -1,0 +1,33 @@
+# MODLOG: Deadlock of Rain
+
+## Versions
+- Risk of Rain 2 1.5.0#1210 (Unity 2021.3.45, Mono), BepInEx 5.4.23.5 (Melty installs it)
+- Deadlock ClientVersion 6774 (Oct 09 2026), Source 2
+- ValveResourceFormat 20.0.6980 (.NET 10), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
+
+## Route
+- RoR2 is the primary game: a BepInEx plugin built on RoR2's own ContentManager API (no R2API).
+- Deadlock is the companion game. DeadlockExtract (a VRF-based exe Melty runs as recipe.setup) converts the 4 heroes'
+  models, animation clips, icons and sounds from the player's VPKs into %LOCALAPPDATA%\DeadlockOfRain\cache.
+- Design sheets in design/ are the source of truth. tools/preflight.py checks every cell; tools/gen.py generates the code.
+
+## Lab
+- RoR2's BepInEx is switched off by the Melty app (winhttp.dll -> winhttp.dll.melty-off); tools/dev_run.sh re-enables
+  it for each dev launch.
+- Left4Rain (another Melty mashup) was moved to lab-backup/ during testing. RESTORE: move lab-backup/Left4Rain back to
+  BepInEx/plugins and delete our winhttp.dll copy (leave winhttp.dll.melty-off as Melty had it).
+- Test mode: %LOCALAPPDATA%\Melty\test\deadlock-of-rain.json (a local copy written by hand for dev; Melty writes its own
+  during test_release). Dev screenshots: create %LOCALAPPDATA%\DeadlockOfRain\devshots.
+
+## Gotchas found
+1. RoR2's CharacterModel keeps ONE material per renderer (it re-applies defaultMaterial), so a multi-material
+   SkinnedMeshRenderer only drew submesh 0. Fix: one SkinnedMeshRenderer per material, one RendererInfo each.
+2. Unity's Standard shader is stripped from RoR2; use the Hopoo deferred shader from matCommandoDualies.mat.
+3. Instantiate doesn't copy private fields: the animator re-initialises itself on every clone.
+4. Deadlock shoot/land clips are additive: export with ComposeAdditiveAnimations, or they crush the pose.
+5. Deadlock clips carry root motion (runs move 4-6 m per loop): pin the root bone's position.
+6. The loadout panel crashes on a body with zero skins (it indexes the empty skins row): add a Default entry.
+7. Heroes lose the Commando model's ModelSkinController, so body.portraitIcon/skins come from our own code.
+8. RoR2 disables Unity audio (Wwise only): Deadlock sounds go through our own waveOut mixer.
+9. glTF -> Unity: mirror X, swap winding, flip V; this gives correct facing (models face +Z).
+lab restored Tue Oct 13 01:42:10 GMTST 2026
