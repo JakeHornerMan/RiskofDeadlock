@@ -60,6 +60,24 @@ namespace DeadlockOfRain
             b.AddTimedBuff(d, duration);
         }
 
+        /// <summary>Infernus' Afterburn ignition: clears the build-up and burns the victim (vanilla Burn DoT, 3 s).</summary>
+        public static void Ignite(CharacterBody owner, CharacterBody victim)
+        {
+            if (!owner || !victim || !UnityEngine.Networking.NetworkServer.active) return;
+            Clear(victim, "afterburn_buildup");
+            var ab = Sheet.Skill("infernus_afterburn");
+            var dot = new InflictDotInfo
+            {
+                attackerObject = owner.gameObject,
+                victimObject = victim.gameObject,
+                dotIndex = DotController.DotIndex.Burn,
+                duration = 3f,
+                damageMultiplier = ab.DamagePct / 100f * 2f, // vanilla Burn ticks 50%/s per 1.0 multiplier
+            };
+            DotController.InflictDot(ref dot);
+            Fx.Sound("infernus_afterburn", "cast", victim.corePosition);
+        }
+
         public static void Clear(CharacterBody b, string id)
         {
             var d = Get(id);

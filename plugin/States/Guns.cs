@@ -75,7 +75,7 @@ namespace DeadlockOfRain.States
                 Fx.Sound("haze_smoke_bomb", "end", transform.position);
             }
             bool left = rt != null && rt.AltMuzzle && row.Hero == "haze";
-            if (anim) anim.Gesture(left ? "fire_alt" : "fire", 1f);
+            if (anim) anim.Recoil(row.Pellets > 1 ? 9f : 3f);
             Sound("cast");
             var aim = GetAimRay();
             var muzzle = Fx.Muzzle(characterBody, left);
@@ -138,29 +138,16 @@ namespace DeadlockOfRain.States
                 var bu = Sheet.Buff("afterburn_buildup");
                 bool overdrive = Buffs.Count(owner, "afterburn_overdrive") > 0;
                 Buffs.AddTimed(victim, "afterburn_buildup", bu.Duration, (int)bu.MaxStacks);
-                if (overdrive || Buffs.Count(victim, "afterburn_buildup") >= bu.MaxStacks)
-                {
-                    Buffs.Clear(victim, "afterburn_buildup");
-                    var ab = Sheet.Skill("infernus_afterburn");
-                    var dot = new InflictDotInfo
-                    {
-                        attackerObject = owner.gameObject,
-                        victimObject = victim.gameObject,
-                        dotIndex = DotController.DotIndex.Burn,
-                        duration = 3f,
-                        damageMultiplier = ab.DamagePct / 100f * 2f, // vanilla Burn ticks 50%/s per 1.0 multiplier
-                    };
-                    DotController.InflictDot(ref dot);
-                    Fx.Sound("infernus_afterburn", "cast", point);
-                }
+                if (overdrive || Buffs.Count(victim, "afterburn_buildup") >= bu.MaxStacks) Buffs.Ignite(owner, victim);
             }
-            // Seven: Power Surge chains lightning from every hit
+            // Seven: Power Surge lightning strikes the target that was shot, then chains to up to chainCount-1 more
             if (row.Hero == "seven" && Buffs.Count(owner, "power_surge") > 0)
             {
                 var ps = Sheet.Skill("seven_power_surge");
                 var orb = new LightningOrb
                 {
                     origin = point,
+                    target = hb,
                     damageValue = owner.damage * ps.DamagePct / 100f,
                     isCrit = owner.RollCrit(),
                     bouncesRemaining = (int)ps.ChainCount - 1,
@@ -170,10 +157,10 @@ namespace DeadlockOfRain.States
                     lightningType = LightningOrb.LightningType.Ukulele,
                     damageColorIndex = DamageColorIndex.Item,
                     range = ps.Radius,
-                    bouncedObjects = new System.Collections.Generic.List<HealthComponent> { hb.healthComponent },
+                    bouncedObjects = new System.Collections.Generic.List<HealthComponent>(),
                 };
-                var next = orb.PickNextTarget(point);
-                if (next) { orb.target = next; OrbManager.instance.AddOrb(orb); Fx.Sound("seven_power_surge", "hit", point); }
+                OrbManager.instance.AddOrb(orb);
+                Fx.Sound("seven_power_surge", "hit", point);
             }
         }
 

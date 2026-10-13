@@ -11,8 +11,9 @@ using UnityEngine.Networking;
 namespace DeadlockOfRain
 {
     /// <summary>Melty test mode (recipe test.checks). Only active while %LOCALAPPDATA%\Melty\test\deadlock-of-rain.json exists:
-    /// starts a run, plays every hero (gun, three abilities, ult charge from real damage, ult), levels up, checks stats and
-    /// scale, and appends "pass name" / "fail name: why" lines to the checks file Melty gives.</summary>
+    /// starts a run, plays every hero (gun, three abilities, ult charge from real damage, ult) against summoned Lemurians and
+    /// measures what each skill does (damage, stun, burn, buffs, heal, movement: the skills sheet's expect column), checks the
+    /// gun rig (gun in hand, aimed where the camera aims), levels up, checks stats and scale, and appends "pass name" / "fail name: why" lines to the checks file Melty gives.</summary>
     public sealed class MeltyTest : MonoBehaviour
     {
         const string Slug = "deadlock-of-rain";
@@ -100,6 +101,8 @@ namespace DeadlockOfRain
             var commandoCap = BodyCatalog.FindBodyPrefab("CommandoBody").GetComponent<CapsuleCollider>();
             bool scaleOk = true; string scaleWhy = "";
             bool levelOk = true; string levelWhy = "";
+            bool aimOk = true, handOk = true; string aimWhy = "", handWhy = "";
+            string gunsWhy = "", abilitiesWhy = "", ultsWhy = "";
             int heroes = 0;
             foreach (var hero in HeroRow.All)
             {
@@ -129,65 +132,54 @@ namespace DeadlockOfRain
                 if (Mathf.Abs(cap.height - want) > 0.05f || Mathf.Abs(mscale - ModelBuilder.GlobalScale) > 0.01f)
                 { scaleOk = false; scaleWhy += $"{hero.Id}: capsule {cap.height:F2} want {want:F2}, model {mscale:F3} want {ModelBuilder.GlobalScale:F3}; "; }
 
-                // a target in front
-                var aim = body.inputBank.GetAimRay();
-                var target = Summon(body, aim.origin + aim.direction * 10f);
-                if (DevShots) DevCommando(body);
-                yield return new WaitForSeconds(1f);
-                Shot(hero.Id + "_0_spawn");
-
-                // gun
-                fireBody = body; fireUntil = Time.time + 2f;
-                body.skillLocator.primary.ExecuteIfReady();
-                yield return new WaitForSeconds(0.8f);
-                Shot(hero.Id + "_1_gun");
-                if (DevShots) DevCam(body, hero.Id + "_1_guncam");
-                yield return new WaitForSeconds(1.7f);
-                fireBody = null;
-                bool gun = seen.Contains("gun-fires|" + token);
-
-                // three abilities
-                int abilities = 0;
-                foreach (var gs in new[] { body.skillLocator.secondary, body.skillLocator.utility, body.skillLocator.special })
+                // gun rig: the gun stays in the hand and points where the camera aims (straight, 30 deg up, 30 deg down)
+                var anim = DeadlockAnimator.Of(body);
+                if (anim)
                 {
-                    gs.Reset();
-                    var row = Survivors.RowFor(gs);
-                    gs.ExecuteIfReady();
-                    yield return new WaitForSeconds(0.4f);
-                    if (row != null) Shot(hero.Id + "_2_" + row.Slot);
-                    yield return new WaitForSeconds(Mathf.Clamp(row != null ? row.Duration + 0.8f : 2f, 1.5f, 5f));
-                    if (row != null && seen.Contains("skill:" + row.Id + "|" + token)) abilities++;
-                    body = master.GetBody();
+                    anim.ResetDrift();
+                    var fwd = body.characterDirection ? body.characterDirection.forward : body.transform.forward; fwd.y = 0; fwd.Normalize();
+                    var right = Vector3.Cross(Vector3.up, fwd);
+                    foreach (var pitch in new[] { 0f, 30f, -30f })
+                    {
+                        var dir = Quaternion.AngleAxis(-pitch, right) * fwd;
+                        for (int f = 0; f < 20; f++) { body.inputBank.aimDirection = dir; yield return null; }
+                        body.inputBank.aimDirection = dir; yield return null;
+                        float err = anim.AimError;
+                        if (DevShots) { body.inputBank.aimDirection = dir; DevCam(body, $"{hero.Id}_aim{pitch:+0;-0;0}"); }
+                        Log.Info($"Melty test: {hero.Id} aim {pitch:+0;-0;0} deg: gun is {err:F1} deg off the aim");
+                        if (err < 0f || err > 8f) { aimOk = false; aimWhy += $"{hero.Id} aim {pitch:+0;-0;0}: gun {err:F1} deg off; "; }
+                    }
                 }
+                else { aimOk = false; aimWhy += hero.Id + ": no animator; "; }
 
-                // ult: locked, then charged by real damage, then fired with the ult key path
-                var ult = UltController.Of(body);
-                bool lockedAtStart = ult && ult.Skill && ult.Skill.stock == 0;
-                if (!target || !target.healthComponent || !target.healthComponent.alive) target = Summon(body, body.corePosition + body.inputBank.aimDirection * 8f);
-                yield return new WaitForSeconds(0.5f);
-                float before = ult ? ult.Charge : 0;
-                if (target && target.mainHurtBox) Fx.Hit(body, target.mainHurtBox, 3f, 1f, target.corePosition);
-                yield return new WaitForSeconds(0.3f);
-                bool charged = ult && ult.Charge > before;
-                if (ult) ult.Add(ult.Required);
-                yield return new WaitForFixedUpdate(); yield return new WaitForFixedUpdate();
-                ultBody = body;
-                yield return new WaitForSeconds(0.5f);
-                ultBody = null;
-                var ultRow = Sheet.SkillOf(hero.Id, "ult");
-                yield return new WaitForSeconds(Mathf.Min(1.2f, ultRow.Duration * 0.5f));
-                Shot(hero.Id + "_3_ult");
-                if (DevShots) DevCam(master.GetBody(), hero.Id + "_4_ultcam");
-                yield return new WaitForSeconds(ultRow.Duration + 2.5f);
-                bool ultFired = seen.Contains("skill:" + ultRow.Id + "|" + token);
-                if (!lockedAtStart) Write("ult-charges", false, hero.Id + ": ult was not locked at spawn");
-                if (!charged) Write("ult-charges", false, hero.Id + ": damage did not charge the ult");
-                if (!ultFired) Write("ult-fires", false, hero.Id + ": ult did not fire");
+                // every skill must measurably do what its sheet row's expect column says
+                bool gun = false; int abilities = 0; bool ultFired = false;
+                foreach (var slot in new[] { "primary", "secondary", "utility", "special", "ult" })
+                {
+                    body = master.GetBody();
+                    var row = Sheet.SkillOf(hero.Id, slot);
+                    var result = new Effects();
+                    yield return TestSkill(body, row, result);
+                    var missing = result.Missing(row);
+                    Log.Info($"Melty test: {row.Id}: {result} -> {(missing.Count == 0 ? "ok" : "MISSING " + string.Join(", ", missing))}");
+                    bool ok = missing.Count == 0;
+                    if (slot == "primary") { gun = ok; if (!ok) gunsWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
+                    else if (slot == "ult") { ultFired = ok; if (!ok) ultsWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
+                    else { if (ok) abilities++; else abilitiesWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
+                    if (slot == "ult")
+                    {
+                        if (!result.LockedAtStart) Write("ult-charges", false, hero.Id + ": ult was not locked at spawn");
+                        if (!result.Charged) Write("ult-charges", false, hero.Id + ": damage did not charge the ult");
+                    }
+                }
+                if (anim)
+                {
+                    Log.Info($"Melty test: {hero.Id} gun drift from the hand over all skills: {anim.GunDrift * 100f:F1} cm");
+                    if (anim.GunDrift > 0.02f) { handOk = false; handWhy += $"{hero.Id}: gun moved {anim.GunDrift * 100f:F1} cm in the hand; "; }
+                }
 
                 bool plays = gun && abilities == 3 && ultFired;
                 Write(hero.Id + "-plays", plays, $"gun={gun}, abilities={abilities}/3, ult={ultFired}");
-                if (!gun) Write("guns-fire", false, hero.Id + ": gun did not fire");
-                if (abilities < 3) Write("abilities-fire", false, $"{hero.Id}: {abilities}/3 abilities ran");
                 if (plays) heroes++;
 
                 // level-up growth matches the sheet (no items in a fresh run)
@@ -198,19 +190,23 @@ namespace DeadlockOfRain
                 if (Mathf.Abs(body.maxHealth - wantHp) > 1.5f || Mathf.Abs(body.damage - wantDmg) > 0.3f)
                 { levelOk = false; levelWhy += $"{hero.Id} lvl {lvl}: hp {body.maxHealth:F0} want {wantHp:F0}, dmg {body.damage:F1} want {wantDmg:F1}; "; }
 
-                if (target) { var tm = target.master; if (tm) tm.TrueKill(); }
+                KillTargets();
                 // grow a level before the next hero so later heroes are checked at higher levels
                 TeamManager.instance.GiveTeamExperience(TeamIndex.Player, (ulong)Mathf.Max(100f, TeamManager.instance.GetTeamNextLevelExperience(TeamIndex.Player) - TeamManager.instance.GetTeamExperience(TeamIndex.Player) + 1f));
                 yield return new WaitForSeconds(1f);
             }
             var lb = master.GetBody();
-            Write("guns-fire", true);
-            Write("abilities-fire", true);
+            Write("guns-fire", gunsWhy == "", gunsWhy);
+            Write("abilities-fire", abilitiesWhy == "", abilitiesWhy);
+            Write("abilities-work", abilitiesWhy == "", abilitiesWhy);
             Write("ult-charges", true);
-            Write("ult-fires", true);
+            Write("ult-fires", ultsWhy == "", ultsWhy);
+            Write("ults-work", ultsWhy == "", ultsWhy);
+            Write("gun-aims", aimOk, aimWhy);
+            Write("gun-in-hand", handOk, handWhy);
             Write("level-stats", levelOk && lb && lb.level > 1, levelWhy == "" ? "level did not rise" : levelWhy);
             Write("hero-scale", scaleOk, scaleWhy);
-            Log.Info($"Melty test finished: {heroes}/4 heroes played every skill; Deadlock sounds played: {DeadlockAudio.Played}");
+            Log.Info($"Melty test finished: {heroes}/4 heroes: every skill did what its sheet expects; Deadlock sounds played: {DeadlockAudio.Played}");
             if (lb) lb.healthComponent.godMode = false;
         }
 
@@ -309,6 +305,168 @@ namespace DeadlockOfRain
             var dir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DeadlockOfRain", "devshots");
             File.WriteAllBytes(System.IO.Path.Combine(dir, name + ".png"), tex.EncodeToPNG());
             c.targetTexture = null; UnityEngine.Object.Destroy(rt); UnityEngine.Object.Destroy(go); UnityEngine.Object.Destroy(tex);
+        }
+
+        static readonly List<CharacterBody> targets = new List<CharacterBody>();
+
+        static void KillTargets()
+        {
+            foreach (var t in targets) if (t && t.master) t.master.TrueKill();
+            targets.Clear();
+        }
+
+        /// <summary>What one skill measurably did while it ran (polled every frame plus damage and heal events).</summary>
+        sealed class Effects
+        {
+            public float Damage, Healed, Moved;
+            public bool Stun, Burn, Cloak, LockedAtStart, Charged;
+            public readonly HashSet<string> EnemyBuffs = new HashSet<string>(), SelfBuffs = new HashSet<string>();
+
+            public List<string> Missing(SkillRow row)
+            {
+                var miss = new List<string>();
+                foreach (var e in row.Expect)
+                {
+                    var kind = e.Split(':')[0];
+                    var arg = e.Contains(":") ? e.Substring(e.IndexOf(':') + 1) : "";
+                    bool ok =
+                        kind == "enemy_damage" ? Damage > 0f :
+                        kind == "enemy_stun" ? Stun :
+                        kind == "enemy_burn" ? Burn :
+                        kind == "enemy_debuff" ? EnemyBuffs.Contains(arg) :
+                        kind == "self_buff" ? SelfBuffs.Contains(arg) :
+                        kind == "self_heal" ? Healed > 0f :
+                        kind == "self_move" ? Moved > 3f :
+                        kind == "self_cloak" ? Cloak : false;
+                    if (!ok) miss.Add(e);
+                }
+                return miss;
+            }
+
+            public override string ToString() =>
+                $"damage {Damage:F0}, stun {Stun}, burn {Burn}, enemy buffs [{string.Join(",", EnemyBuffs)}], self buffs [{string.Join(",", SelfBuffs)}], healed {Healed:F0}, moved {Moved:F1} m, cloak {Cloak}";
+        }
+
+        /// <summary>Puts two sturdy Lemurians in front of the hero, aims the camera at the first, fires the skill through its
+        /// real skill slot (the ult through its charge meter) and records everything it does to them and to the hero.</summary>
+        IEnumerator TestSkill(CharacterBody body, SkillRow row, Effects fx)
+        {
+            KillTargets();
+            var aim = body.inputBank.GetAimRay();
+            var fwd = aim.direction; fwd.y = 0; fwd.Normalize();
+            var right = Vector3.Cross(Vector3.up, fwd);
+            float d = row.Slot == "primary" || row.Kind == "ult_leap" ? 10f : 6f;
+            foreach (var at in new[] { body.footPosition + fwd * d, body.footPosition + fwd * (d + 1.5f) + right * 2f })
+            {
+                var p = at;
+                if (Physics.Raycast(at + Vector3.up * 20f, Vector3.down, out var g, 60f, LayerIndex.world.mask)) p = g.point;
+                var t = Summon(body, p + Vector3.up * 0.5f);
+                if (!t) continue;
+                // sturdy enough to survive an ult, so stuns and debuffs can still be seen on them
+                t.inventory.GiveItem(RoR2Content.Items.BoostHp, 60);
+                targets.Add(t);
+            }
+            yield return new WaitForSeconds(1f);
+            var victims = new HashSet<CharacterBody>(targets);
+
+            // aim the camera (and so the skill) at the first target
+            if (targets.Count > 0 && targets[0])
+            {
+                var look = (targets[0].corePosition - body.inputBank.aimOrigin).normalized;
+                AimCamera(body, look);
+                for (int f = 0; f < 10; f++) { body.inputBank.aimDirection = look; yield return null; }
+            }
+
+            if (row.Expect.Contains("self_heal"))
+            {
+                // hurt the hero first so a heal can show (Abrams' Resilience also reads the damage taken)
+                body.healthComponent.godMode = false;
+                body.healthComponent.TakeDamage(new DamageInfo { damage = body.healthComponent.fullHealth * 0.4f, position = body.corePosition, damageType = DamageType.NonLethal | DamageType.BypassArmor, procCoefficient = 0f });
+                body.healthComponent.godMode = true;
+                yield return new WaitForSeconds(0.3f);
+            }
+
+            System.Action<DamageReport> onDamage = r => { if (r != null && r.attackerBody == body && r.victimBody && victims.Contains(r.victimBody)) fx.Damage += r.damageDealt; };
+            System.Action<HealthComponent, float, ProcChainMask> onHeal = (hc, amount, mask) => { if (hc == body.healthComponent && amount > 0f) fx.Healed += amount; };
+            GlobalEventManager.onServerDamageDealt += onDamage;
+            HealthComponent.onCharacterHealServer += onHeal;
+            var start = body.corePosition;
+            try
+            {
+                if (row.Slot == "primary")
+                {
+                    fireBody = body; fireUntil = Time.time + 2.5f;
+                    body.skillLocator.primary.ExecuteIfReady();
+                }
+                else if (row.Slot == "ult")
+                {
+                    var ult = UltController.Of(body);
+                    fx.LockedAtStart = ult && ult.Skill && ult.Skill.stock == 0;
+                    float before = ult ? ult.Charge : 0;
+                    if (targets.Count > 0 && targets[0]) Fx.Hit(body, targets[0].mainHurtBox, 1f, 1f, targets[0].corePosition);
+                    yield return new WaitForSeconds(0.2f);
+                    fx.Charged = ult && ult.Charge > before;
+                    fx.Damage = 0f; // that charging hit is not the ult's
+                    if (ult) ult.Add(ult.Required);
+                    yield return new WaitForFixedUpdate(); yield return new WaitForFixedUpdate();
+                    ultBody = body;
+                }
+                else
+                {
+                    var gs = body.skillLocator.GetSkill(row.Slot == "secondary" ? SkillSlot.Secondary : row.Slot == "utility" ? SkillSlot.Utility : SkillSlot.Special);
+                    gs.Reset();
+                    gs.ExecuteIfReady();
+                }
+
+                float window = row.Slot == "primary" ? 2.5f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
+                float t0 = Time.time;
+                bool shot = false;
+                while (Time.time - t0 < window)
+                {
+                    if (Time.time - t0 > 0.5f) ultBody = null;
+                    var b = body;
+                    if (!b) break;
+                    fx.Moved = Mathf.Max(fx.Moved, Vector3.Distance(start, b.corePosition));
+                    if (b.hasCloakBuff) fx.Cloak = true;
+                    foreach (var kv in Buffs.Defs) if (b.HasBuff(kv.Value)) fx.SelfBuffs.Add(kv.Key);
+                    foreach (var t in targets)
+                    {
+                        if (!t || !t.healthComponent || !t.healthComponent.alive) continue;
+                        foreach (var kv in Buffs.Defs) if (t.HasBuff(kv.Value)) fx.EnemyBuffs.Add(kv.Key);
+                        var esm = EntityStateMachine.FindByCustomName(t.gameObject, "Body");
+                        if (esm && esm.state is EntityStates.StunState) fx.Stun = true;
+                        var dc = DotController.FindDotController(t.gameObject);
+                        if (dc && dc.HasDotActive(DotController.DotIndex.Burn)) fx.Burn = true;
+                    }
+                    if (!shot && Time.time - t0 > 0.5f) { shot = true; Shot(row.Id); }
+                    yield return null;
+                }
+            }
+            finally
+            {
+                GlobalEventManager.onServerDamageDealt -= onDamage;
+                HealthComponent.onCharacterHealServer -= onHeal;
+                fireBody = null; ultBody = null;
+            }
+            // let dashes, leaps and buffs finish before the next skill
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        /// <summary>Turns the player's camera (and with it the aim) to look along a direction: the camera mode keeps its
+        /// pitch/yaw in per-rig instance data, which has SetPitchYawFromLookVector.</summary>
+        static void AimCamera(CharacterBody body, Vector3 look)
+        {
+            foreach (var rig in CameraRigController.readOnlyInstancesList)
+            {
+                if (rig.targetBody != body || rig.cameraMode == null) continue;
+                var dict = HarmonyLib.AccessTools.Field(typeof(RoR2.CameraModes.CameraModeBase), "camToRawInstanceData").GetValue(rig.cameraMode) as System.Collections.IDictionary;
+                if (dict == null) continue;
+                foreach (var data in dict.Values)
+                {
+                    var m = data?.GetType().GetMethod("SetPitchYawFromLookVector");
+                    if (m != null) m.Invoke(data, new object[] { look });
+                }
+            }
         }
 
         static CharacterBody Summon(CharacterBody owner, Vector3 at)
