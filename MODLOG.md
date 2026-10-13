@@ -14,7 +14,8 @@
 ## Lab
 - RoR2's BepInEx is switched off by the Melty app (winhttp.dll -> winhttp.dll.melty-off); tools/dev_run.sh re-enables
   it for each dev launch.
-- Left4Rain (another Melty mashup) was moved to lab-backup/ during testing. RESTORE: move lab-backup/Left4Rain back to
+- Left4Rain (another Melty mashup) was moved to lab-backup/ during early testing and has since been put back (it loads
+  fine next to ours). If it is ever moved again, RESTORE: move lab-backup/Left4Rain back to
   BepInEx/plugins and delete our winhttp.dll copy (leave winhttp.dll.melty-off as Melty had it).
 - Test mode: %LOCALAPPDATA%\Melty\test\deadlock-of-rain.json (a local copy written by hand for dev; Melty writes its own
   during test_release). Dev screenshots: create %LOCALAPPDATA%\DeadlockOfRain\devshots.

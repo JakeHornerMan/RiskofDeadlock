@@ -161,12 +161,16 @@ for r in sheets['animations']['rows']:
 an = dev('anim_names.json')
 if an:
     a = json.load(open(an, encoding='utf-8'))
+    for h in heroes:
+        if h not in a: bad(f'dev listing tools/dev/anim_names.json has no "{h}": re-export every hero glb and regenerate it (docs/01 §8)')
     for r in sheets['animations']['rows']:
+        if r['hero'] not in a: continue
         names = set(a[r['hero']]['anims'])
         for c in sheets['animations']['columns']:
             if c in ANIM_RIG_COLUMNS: continue
             if r[c] != 'none' and r[c] not in names: bad(f'animations[{r["hero"]}].{c}: clip "{r[c]}" not in hero model')
     for h in heroes.values():
+        if h['id'] not in a: continue
         for m in h['meshInclude']:
             if m not in a[h['id']]['meshes']: bad(f'heroes[{h["id"]}].meshInclude: mesh "{m}" not in model')
 else:
