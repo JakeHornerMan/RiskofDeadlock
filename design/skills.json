@@ -823,7 +823,7 @@
       "slot": "ult",
       "deadlockAbility": "ability_fire_bomb",
       "name": "Concussive Combustion",
-      "description": "<style=cIsUtility>Charges from damage and kills.</style> Become a bomb: after 2.5s you explode for <style=cIsDamage>2500% damage</style> to everything within 18m, <style=cIsUtility>stunning</style> survivors for 1.25s. You can move while it builds.",
+      "description": "<style=cIsUtility>Charges from damage and kills.</style> Become a bomb: after 2.5s you explode for <style=cIsDamage>2500% damage</style> to everything within 18m, <style=cIsUtility>stunning</style> enemies for 1.25s. You can move while it builds.",
       "kind": "ult_selfbomb",
       "icon": "panorama/images/hud/abilities/inferno_bomb_psd.vtex",
       "damagePct": 2500,

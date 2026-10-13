@@ -29,9 +29,9 @@ namespace DeadlockOfRain
         readonly Dictionary<string, string> logical = new Dictionary<string, string>();
 
         // gun rig: arms held rigid in the sheet's aimPose, gun welded to its hand, chest turned so the gun points at the aim
-        Transform[] rigBones;
-        Vector3[] rigPos;
-        Quaternion[] rigRot;
+        Transform[] rigBones, gunParts;
+        Vector3[] rigPos, gunPartPos;
+        Quaternion[] rigRot, gunPartRot;
         Transform gunHand, gunBone, mainHand;
         Vector3 gunOffPos, gunFwdLocal;
         Quaternion gunOffRot;
@@ -39,11 +39,11 @@ namespace DeadlockOfRain
         float recoil, recoilTime;
         /// <summary>Degrees between where the gun points and the aim direction after the last frame (-1 when not aiming; test mode).</summary>
         public float AimError { get; private set; } = -1f;
-        /// <summary>Largest change (metres) of the hand-to-muzzle distance since the pose was captured: 0 while the gun stays
-        /// in the hand (test mode; reset with ResetDrift).</summary>
+        /// <summary>Largest distance (metres) the gun moved inside its hand since the pose was captured: 0 while the gun
+        /// stays in the hand (test mode; reset with ResetDrift).</summary>
         public float GunDrift { get; private set; }
-        Transform muzzle;
-        float muzzleDist;
+        Transform gunRoot;
+        Vector3 gunRootInHand;
         public void ResetDrift() => GunDrift = 0f;
 
         public void Setup(string heroId, HeroAsset asset, Transform[] bones, Transform armature)
@@ -93,29 +93,40 @@ namespace DeadlockOfRain
             Transform Bone(string n) { foreach (var t in all) if (t.name == n) return t; return null; }
             if (rows.AimPose == "none" || !clips.TryGetValue(rows.AimPose, out var pose)) return;
             pose.SampleAnimation(gameObject, 0f);
-            var list = new List<Transform>();
-            foreach (var side in rows.GunArms == "LR" ? new[] { "R", "L" } : new[] { "R" })
-            {
-                var clav = Bone("clavicle_" + side);
-                if (clav) list.AddRange(clav.GetComponentsInChildren<Transform>(true));
-            }
             gunHand = Bone(rows.GunHand);
             mainHand = gunHand ? gunHand : Bone("hand_R");
             gunBone = rows.GunBone != "none" ? Bone(rows.GunBone) : null;
+            // the gun's own bones (weapon_hand_* subtrees, everything under a welded gun bone) never animate: ability and
+            // reload clips would otherwise slide the gun around inside the hand
+            var gun = new List<Transform>();
+            foreach (var w in new[] { Bone("weapon_hand_R"), Bone("weapon_hand_L") }) if (w) gun.AddRange(w.GetComponentsInChildren<Transform>(true));
             if (gunBone && gunHand)
             {
-                foreach (var t in gunBone.GetComponentsInChildren<Transform>(true)) if (t != gunBone) list.Add(t);
+                foreach (var t in gunBone.GetComponentsInChildren<Transform>(true)) if (t != gunBone) gun.Add(t);
                 gunOffPos = gunHand.InverseTransformPoint(gunBone.position);
                 gunOffRot = Quaternion.Inverse(gunHand.rotation) * gunBone.rotation;
             }
-            rigBones = list.ToArray();
-            rigPos = new Vector3[rigBones.Length]; rigRot = new Quaternion[rigBones.Length];
-            for (int i = 0; i < rigBones.Length; i++) { rigPos[i] = rigBones[i].localPosition; rigRot[i] = rigBones[i].localRotation; }
-            muzzle = Bone("muzzle_fx");
-            if (muzzle && mainHand) muzzleDist = Vector3.Distance(mainHand.InverseTransformPoint(muzzle.position), Vector3.zero);
+            // the gun arms hold the pose while the hero shoots, moves and jumps (abilities and reloads may move them)
+            var arms = new List<Transform>();
+            foreach (var side in rows.GunArms == "LR" ? new[] { "R", "L" } : new[] { "R" })
+            {
+                var clav = Bone("clavicle_" + side);
+                if (clav) foreach (var t in clav.GetComponentsInChildren<Transform>(true)) if (!gun.Contains(t)) arms.Add(t);
+            }
+            Snapshot(arms, out rigBones, out rigPos, out rigRot);
+            Snapshot(gun, out gunParts, out gunPartPos, out gunPartRot);
+            gunRoot = gunBone ? gunBone : Bone("weapon_hand_R");
+            if (gunRoot && mainHand) gunRootInHand = mainHand.InverseTransformPoint(gunRoot.position);
+            var muzzle = Bone("muzzle_fx");
             var dir = muzzle && mainHand ? muzzle.position - mainHand.position : transform.forward;
             if (dir.sqrMagnitude < 1e-6f) dir = transform.forward;
             gunFwdLocal = mainHand ? Quaternion.Inverse(mainHand.rotation) * dir.normalized : Vector3.forward;
+        }
+
+        static void Snapshot(List<Transform> bones, out Transform[] t, out Vector3[] pos, out Quaternion[] rot)
+        {
+            t = bones.ToArray(); pos = new Vector3[t.Length]; rot = new Quaternion[t.Length];
+            for (int i = 0; i < t.Length; i++) { pos[i] = t[i].localPosition; rot[i] = t[i].localRotation; }
         }
 
         void Awake() => Init();
@@ -334,17 +345,30 @@ namespace DeadlockOfRain
                     t.localRotation = Quaternion.Slerp(t.localRotation, rigRot[i], armWeight);
                 }
 
+            for (int i = 0; i < gunParts.Length; i++)
+                if (gunParts[i]) { gunParts[i].localPosition = gunPartPos[i]; gunParts[i].localRotation = gunPartRot[i]; }
+
             // 2. turn the chest so the gun points where the camera aims; everything above spine_3 turns rigidly,
             //    so two-handed grips stay together
             if (inputs && mainHand && armWeight > 0f)
             {
+                // yaw about the up axis, then pitch about the gun's own horizontal right axis: no roll, so the torso
+                // leans and turns instead of twisting sideways
                 var want = ClampAim(inputs.aimDirection);
+                float wantYaw = Mathf.Atan2(want.x, want.z) * Mathf.Rad2Deg, wantPitch = Mathf.Asin(Mathf.Clamp(want.y, -1f, 1f)) * Mathf.Rad2Deg;
                 float[] share = { 1f / 3f, 0.5f, 1f };
                 for (int k = 0; k < spine.Length; k++)
                 {
                     if (!spine[k]) continue;
-                    var d = Quaternion.FromToRotation(mainHand.rotation * gunFwdLocal, want);
-                    spine[k].rotation = Quaternion.Slerp(Quaternion.identity, d, share[k] * armWeight) * spine[k].rotation;
+                    var cur = mainHand.rotation * gunFwdLocal;
+                    float yaw = Mathf.DeltaAngle(Mathf.Atan2(cur.x, cur.z) * Mathf.Rad2Deg, wantYaw);
+                    var turn = Quaternion.AngleAxis(yaw * share[k] * armWeight, Vector3.up);
+                    cur = turn * cur;
+                    float pitch = wantPitch - Mathf.Asin(Mathf.Clamp(cur.y, -1f, 1f)) * Mathf.Rad2Deg;
+                    var flat = new Vector3(cur.x, 0f, cur.z);
+                    var axis = flat.sqrMagnitude > 1e-6f ? Vector3.Cross(flat.normalized, Vector3.up) : transform.right;
+                    var tilt = Quaternion.AngleAxis(pitch * share[k] * armWeight, axis);
+                    spine[k].rotation = tilt * turn * spine[k].rotation;
                 }
                 AimError = Vector3.Angle(mainHand.rotation * gunFwdLocal, inputs.aimDirection);
             }
@@ -364,8 +388,8 @@ namespace DeadlockOfRain
                 gunBone.position = gunHand.TransformPoint(gunOffPos);
                 gunBone.rotation = gunHand.rotation * gunOffRot;
             }
-            if (muzzle && mainHand)
-                GunDrift = Mathf.Max(GunDrift, Mathf.Abs(mainHand.InverseTransformPoint(muzzle.position).magnitude - muzzleDist) * transform.lossyScale.x);
+            if (gunRoot && mainHand)
+                GunDrift = Mathf.Max(GunDrift, Vector3.Distance(mainHand.InverseTransformPoint(gunRoot.position), gunRootInHand) * transform.lossyScale.x);
         }
 
         /// <summary>Limits how far the chest twists: pitch within 80 degrees and yaw within 70 degrees of where the body faces.</summary>

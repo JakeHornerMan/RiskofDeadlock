@@ -152,6 +152,10 @@ namespace DeadlockOfRain
                 }
                 else { aimOk = false; aimWhy += hero.Id + ": no animator; "; }
 
+                // the ult starts every life locked
+                var ultCtl = UltController.Of(body);
+                bool lockedAtStart = ultCtl && ultCtl.Skill && ultCtl.Skill.stock == 0;
+
                 // every skill must measurably do what its sheet row's expect column says
                 bool gun = false; int abilities = 0; bool ultFired = false;
                 foreach (var slot in new[] { "primary", "secondary", "utility", "special", "ult" })
@@ -168,7 +172,7 @@ namespace DeadlockOfRain
                     else { if (ok) abilities++; else abilitiesWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
                     if (slot == "ult")
                     {
-                        if (!result.LockedAtStart) Write("ult-charges", false, hero.Id + ": ult was not locked at spawn");
+                        if (!lockedAtStart) Write("ult-charges", false, hero.Id + ": ult was not locked at spawn");
                         if (!result.Charged) Write("ult-charges", false, hero.Id + ": damage did not charge the ult");
                     }
                 }
@@ -319,7 +323,7 @@ namespace DeadlockOfRain
         sealed class Effects
         {
             public float Damage, Healed, Moved;
-            public bool Stun, Burn, Cloak, LockedAtStart, Charged;
+            public bool Stun, Burn, Cloak, Charged;
             public readonly HashSet<string> EnemyBuffs = new HashSet<string>(), SelfBuffs = new HashSet<string>();
 
             public List<string> Missing(SkillRow row)
@@ -363,7 +367,7 @@ namespace DeadlockOfRain
                 var t = Summon(body, p + Vector3.up * 0.5f);
                 if (!t) continue;
                 // sturdy enough to survive an ult, so stuns and debuffs can still be seen on them
-                t.inventory.GiveItem(RoR2Content.Items.BoostHp, 60);
+                if (t.master && t.master.inventory) t.master.inventory.GiveItem(RoR2Content.Items.BoostHp, 200);
                 targets.Add(t);
             }
             yield return new WaitForSeconds(1f);
@@ -401,7 +405,6 @@ namespace DeadlockOfRain
                 else if (row.Slot == "ult")
                 {
                     var ult = UltController.Of(body);
-                    fx.LockedAtStart = ult && ult.Skill && ult.Skill.stock == 0;
                     float before = ult ? ult.Charge : 0;
                     if (targets.Count > 0 && targets[0]) Fx.Hit(body, targets[0].mainHurtBox, 1f, 1f, targets[0].corePosition);
                     yield return new WaitForSeconds(0.2f);
@@ -423,6 +426,9 @@ namespace DeadlockOfRain
                 bool shot = false;
                 while (Time.time - t0 < window)
                 {
+                    // the player controller re-aims at the crosshair every Update; keep the aim on a live target
+                    var aimAt = targets.FirstOrDefault(x => x && x.healthComponent && x.healthComponent.alive);
+                    if (aimAt && body) body.inputBank.aimDirection = (aimAt.corePosition - body.inputBank.aimOrigin).normalized;
                     if (Time.time - t0 > 0.5f) ultBody = null;
                     var b = body;
                     if (!b) break;
