@@ -1,6 +1,6 @@
 {
   "sheet": "skills",
-  "about": "One row per skill (5 per hero). slot: primary=M1 gun, secondary=M2 (Deadlock ability 1), utility=Shift (ability 2), special=R (ability 3), ult=F (Deadlock ultimate, locked until its charge meter fills). Numbers are RoR2-scale: damagePct is % of the body's damage stat (RoR2 convention), cooldowns are RoR2 seconds. deadlock* columns hold the source values read from the player's Deadlock scripts/abilities.vdata (ClientVersion 6774) so every conversion is traceable. kind picks the generic EntityState that implements the row. Unused numeric params are 0, unused refs are \"none\" (filled on purpose, not missing). Balance targets: sustained primary DPS 300-450 %/s (Commando Double Tap ~ 400 %/s incl. downtime); secondaries 2-8 s; utilities 4-10 s; specials 8-14 s; ultimates 1500-3000 % total, gated by ultCharge.",
+  "about": "One row per skill (5 per hero). slot: primary=M1 gun, secondary=M2 (Deadlock ability 1), utility=Shift (ability 2), special=R (ability 3), ult=F (Deadlock ultimate, locked until its charge meter fills). Numbers are RoR2-scale: damagePct is % of the body's damage stat (RoR2 convention), cooldowns are RoR2 seconds. deadlock* columns hold the source values read from the player's Deadlock scripts/abilities.vdata (ClientVersion 6774) so every conversion is traceable. kind picks the generic EntityState that implements the row. Unused numeric params are 0, unused refs are \"none\" (filled on purpose, not missing). Balance targets: sustained primary DPS 300-450 %/s (Commando Double Tap ~ 400 %/s incl. downtime); secondaries 2-8 s; utilities 4-10 s; specials 8-14 s; ultimates 1500-3000 % total, gated by ultCharge. castAmount: what a buff ability also does the moment it is cast (haze_fixation: Fixation stacks put on enemies in the crosshair cone within range/spreadDeg; abrams_resilience: fraction of max health healed over the duration; seven_power_surge: % damage of the zap that hits every enemy within radius on cast; 0 = nothing extra). expect: what the skill must measurably do, checked in test mode (enemy_damage, enemy_stun, enemy_burn, enemy_debuff:<buff>, self_buff:<buff>, self_heal, self_move, self_cloak).",
   "columns": [
     "id",
     "hero",
@@ -28,6 +28,7 @@
     "healFraction",
     "moveSpeedMult",
     "chainCount",
+    "castAmount",
     "buff",
     "dot",
     "effect",
@@ -35,7 +36,8 @@
     "killCharge",
     "deadlockCooldown",
     "deadlockDamage",
-    "targetDps"
+    "targetDps",
+    "expect"
   ],
   "rows": [
     {
@@ -65,6 +67,7 @@
       "healFraction": 0,
       "moveSpeedMult": 0.75,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "fixation",
       "dot": "none",
       "effect": "tracer_haze",
@@ -72,7 +75,11 @@
       "killCharge": 0,
       "deadlockCooldown": 0,
       "deadlockDamage": 5.26,
-      "targetDps": 280
+      "targetDps": 280,
+      "expect": [
+        "enemy_damage",
+        "enemy_debuff:fixation"
+      ]
     },
     {
       "id": "haze_sleep_dagger",
@@ -101,6 +108,7 @@
       "healFraction": 0,
       "moveSpeedMult": 1.3,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "none",
       "dot": "none",
       "effect": "dagger",
@@ -108,7 +116,11 @@
       "killCharge": 0,
       "deadlockCooldown": 30,
       "deadlockDamage": 65,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "enemy_stun"
+      ]
     },
     {
       "id": "haze_smoke_bomb",
@@ -137,6 +149,7 @@
       "healFraction": 0,
       "moveSpeedMult": 1.4,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "smoke",
       "dot": "none",
       "effect": "smoke_puff",
@@ -144,7 +157,11 @@
       "killCharge": 0,
       "deadlockCooldown": 33,
       "deadlockDamage": 0,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "self_cloak",
+        "self_buff:smoke"
+      ]
     },
     {
       "id": "haze_fixation",
@@ -152,7 +169,7 @@
       "slot": "special",
       "deadlockAbility": "ability_stacking_damage",
       "name": "Fixation",
-      "description": "For 6s, every SMG hit adds <style=cIsDamage>3 Fixation stacks</style> instead of 1 and your fire rate rises by <style=cIsDamage>20%</style>. Each Fixation stack makes that target take <style=cIsDamage>+2.5% damage</style> from Haze (up to 40 stacks).",
+      "description": "Fixate on your target: enemies in your crosshair within 40m instantly gain <style=cIsDamage>10 Fixation stacks</style>. For 6s every SMG hit adds <style=cIsDamage>3 stacks</style> instead of 1 and your fire rate rises by <style=cIsDamage>20%</style>. Each stack makes that target take <style=cIsDamage>+2.5% damage</style> from Haze (up to 40 stacks).",
       "kind": "self_buff",
       "icon": "panorama/images/hud/abilities/haze/haze_fixation_psd.vtex",
       "damagePct": 0,
@@ -162,17 +179,18 @@
       "duration": 6,
       "interval": 0,
       "radius": 0,
-      "range": 0,
+      "range": 40,
       "speed": 0,
       "clipSize": 0,
       "reloadTime": 0,
       "pellets": 0,
-      "spreadDeg": 0,
+      "spreadDeg": 12,
       "burst": 3,
       "stunDuration": 0,
       "healFraction": 0,
       "moveSpeedMult": 1.0,
       "chainCount": 40,
+      "castAmount": 10,
       "buff": "fixation_focus",
       "dot": "none",
       "effect": "none",
@@ -180,7 +198,11 @@
       "killCharge": 0,
       "deadlockCooldown": 0,
       "deadlockDamage": 0.2,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "enemy_debuff:fixation",
+        "self_buff:fixation_focus"
+      ]
     },
     {
       "id": "haze_bullet_dance",
@@ -209,6 +231,7 @@
       "healFraction": 0,
       "moveSpeedMult": 0.6,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "bullet_dance",
       "dot": "none",
       "effect": "tracer_haze",
@@ -216,7 +239,11 @@
       "killCharge": 150,
       "deadlockCooldown": 165,
       "deadlockDamage": 7,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "self_buff:bullet_dance"
+      ]
     },
     {
       "id": "abrams_gun",
@@ -245,6 +272,7 @@
       "healFraction": 0,
       "moveSpeedMult": 0.75,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "none",
       "dot": "none",
       "effect": "tracer_abrams",
@@ -252,7 +280,10 @@
       "killCharge": 0,
       "deadlockCooldown": 0,
       "deadlockDamage": 3.6,
-      "targetDps": 508
+      "targetDps": 508,
+      "expect": [
+        "enemy_damage"
+      ]
     },
     {
       "id": "abrams_siphon",
@@ -281,6 +312,7 @@
       "healFraction": 0.7,
       "moveSpeedMult": 1.0,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "siphon",
       "dot": "none",
       "effect": "siphon_beam",
@@ -288,7 +320,11 @@
       "killCharge": 0,
       "deadlockCooldown": 42,
       "deadlockDamage": 22,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "self_heal"
+      ]
     },
     {
       "id": "abrams_charge",
@@ -317,6 +353,7 @@
       "healFraction": 0,
       "moveSpeedMult": 1.0,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "none",
       "dot": "none",
       "effect": "charge_impact",
@@ -324,7 +361,11 @@
       "killCharge": 0,
       "deadlockCooldown": 33,
       "deadlockDamage": 30,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "self_move",
+        "enemy_damage"
+      ]
     },
     {
       "id": "abrams_resilience",
@@ -332,7 +373,7 @@
       "slot": "special",
       "deadlockAbility": "citadel_ability_passive_beefy",
       "name": "Infernal Resilience",
-      "description": "<style=cIsHealing>Regenerate 40%</style> of the damage you took in the last 10s over 4s, and gain <style=cIsHealing>+4 health regen</style> while it lasts.",
+      "description": "<style=cIsHealing>Heal 10% of your max health</style> plus <style=cIsHealing>40%</style> of the damage you took in the last 10s over 4s, and gain <style=cIsHealing>+4 health regen</style> while it lasts.",
       "kind": "self_heal",
       "icon": "panorama/images/hud/abilities/bull_beef_psd.vtex",
       "damagePct": 0,
@@ -353,6 +394,7 @@
       "healFraction": 0.4,
       "moveSpeedMult": 1.0,
       "chainCount": 0,
+      "castAmount": 0.1,
       "buff": "resilience",
       "dot": "none",
       "effect": "heal_pulse",
@@ -360,7 +402,11 @@
       "killCharge": 0,
       "deadlockCooldown": 0,
       "deadlockDamage": 13,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "self_heal",
+        "self_buff:resilience"
+      ]
     },
     {
       "id": "abrams_seismic",
@@ -389,6 +435,7 @@
       "healFraction": 0,
       "moveSpeedMult": 1.0,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "none",
       "dot": "none",
       "effect": "slam",
@@ -396,7 +443,12 @@
       "killCharge": 150,
       "deadlockCooldown": 215,
       "deadlockDamage": 100,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "self_move",
+        "enemy_damage",
+        "enemy_stun"
+      ]
     },
     {
       "id": "seven_gun",
@@ -425,6 +477,7 @@
       "healFraction": 0,
       "moveSpeedMult": 0.75,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "none",
       "dot": "none",
       "effect": "tracer_seven",
@@ -432,7 +485,10 @@
       "killCharge": 0,
       "deadlockCooldown": 0,
       "deadlockDamage": 10.8,
-      "targetDps": 313
+      "targetDps": 313,
+      "expect": [
+        "enemy_damage"
+      ]
     },
     {
       "id": "seven_lightning_ball",
@@ -461,6 +517,7 @@
       "healFraction": 0,
       "moveSpeedMult": 1.3,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "none",
       "dot": "none",
       "effect": "lightning_orb",
@@ -468,7 +525,10 @@
       "killCharge": 0,
       "deadlockCooldown": 26,
       "deadlockDamage": 75,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage"
+      ]
     },
     {
       "id": "seven_static_charge",
@@ -497,6 +557,7 @@
       "healFraction": 0,
       "moveSpeedMult": 1.0,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "none",
       "dot": "none",
       "effect": "static_blast",
@@ -504,7 +565,11 @@
       "killCharge": 0,
       "deadlockCooldown": 42,
       "deadlockDamage": 35,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "enemy_stun"
+      ]
     },
     {
       "id": "seven_power_surge",
@@ -512,7 +577,7 @@
       "slot": "special",
       "deadlockAbility": "ability_power_surge",
       "name": "Power Surge",
-      "description": "For 10s, every bullet that hits <style=cIsDamage>chains lightning</style> to up to 4 nearby enemies for <style=cIsDamage>30% damage</style> each.",
+      "description": "Release a surge that zaps every enemy within 15m for <style=cIsDamage>150% damage</style>. For 10s, every bullet that hits <style=cIsDamage>chains lightning</style> through the target and up to 3 nearby enemies for <style=cIsDamage>30% damage</style> each.",
       "kind": "self_buff",
       "icon": "panorama/images/hud/abilities/giga_chain_psd.vtex",
       "damagePct": 30,
@@ -533,6 +598,7 @@
       "healFraction": 0,
       "moveSpeedMult": 1.0,
       "chainCount": 4,
+      "castAmount": 150,
       "buff": "power_surge",
       "dot": "none",
       "effect": "chain_lightning",
@@ -540,7 +606,11 @@
       "killCharge": 0,
       "deadlockCooldown": 50,
       "deadlockDamage": 10,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "self_buff:power_surge"
+      ]
     },
     {
       "id": "seven_storm_cloud",
@@ -569,6 +639,7 @@
       "healFraction": 0,
       "moveSpeedMult": 0.5,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "storm_cloud",
       "dot": "none",
       "effect": "storm_strike",
@@ -576,7 +647,11 @@
       "killCharge": 150,
       "deadlockCooldown": 205,
       "deadlockDamage": 95,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "self_buff:storm_cloud"
+      ]
     },
     {
       "id": "infernus_gun",
@@ -605,6 +680,7 @@
       "healFraction": 0,
       "moveSpeedMult": 0.75,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "afterburn_buildup",
       "dot": "burn",
       "effect": "tracer_infernus",
@@ -612,7 +688,11 @@
       "killCharge": 0,
       "deadlockCooldown": 0,
       "deadlockDamage": 5.5,
-      "targetDps": 255
+      "targetDps": 255,
+      "expect": [
+        "enemy_damage",
+        "enemy_debuff:afterburn_buildup"
+      ]
     },
     {
       "id": "infernus_catalyst",
@@ -641,6 +721,7 @@
       "healFraction": 0,
       "moveSpeedMult": 0.72,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "catalyst",
       "dot": "none",
       "effect": "napalm",
@@ -648,7 +729,11 @@
       "killCharge": 0,
       "deadlockCooldown": 25,
       "deadlockDamage": 40,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "enemy_debuff:catalyst"
+      ]
     },
     {
       "id": "infernus_flame_dash",
@@ -677,6 +762,7 @@
       "healFraction": 0,
       "moveSpeedMult": 2.2,
       "chainCount": 4,
+      "castAmount": 0,
       "buff": "none",
       "dot": "none",
       "effect": "fire_trail",
@@ -684,7 +770,11 @@
       "killCharge": 0,
       "deadlockCooldown": 38,
       "deadlockDamage": 30,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "self_move",
+        "enemy_damage"
+      ]
     },
     {
       "id": "infernus_afterburn",
@@ -692,7 +782,7 @@
       "slot": "special",
       "deadlockAbility": "ability_afterburn",
       "name": "Afterburn",
-      "description": "For 6s every bullet <style=cIsDamage>ignites</style> its target outright, burning it for <style=cIsDamage>100% damage per second</style> for 3s.",
+      "description": "<style=cIsDamage>Ignite</style> every enemy within 12m. For 6s every bullet ignites its target outright, burning it for <style=cIsDamage>100% damage per second</style> for 3s.",
       "kind": "self_buff",
       "icon": "panorama/images/hud/abilities/inferno_deflect_psd.vtex",
       "damagePct": 100,
@@ -701,7 +791,7 @@
       "stocks": 1,
       "duration": 6,
       "interval": 0.5,
-      "radius": 0,
+      "radius": 12,
       "range": 0,
       "speed": 0,
       "clipSize": 0,
@@ -713,6 +803,7 @@
       "healFraction": 0,
       "moveSpeedMult": 1.0,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "afterburn_overdrive",
       "dot": "burn",
       "effect": "none",
@@ -720,7 +811,11 @@
       "killCharge": 0,
       "deadlockCooldown": 0,
       "deadlockDamage": 14,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "enemy_burn",
+        "self_buff:afterburn_overdrive"
+      ]
     },
     {
       "id": "infernus_combustion",
@@ -749,6 +844,7 @@
       "healFraction": 0,
       "moveSpeedMult": 0.8,
       "chainCount": 0,
+      "castAmount": 0,
       "buff": "none",
       "dot": "none",
       "effect": "big_explosion",
@@ -756,7 +852,11 @@
       "killCharge": 150,
       "deadlockCooldown": 190,
       "deadlockDamage": 125,
-      "targetDps": 0
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "enemy_stun"
+      ]
     }
   ]
 }

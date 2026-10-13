@@ -60,6 +60,13 @@ for r in sheets['skills']['rows']:
     ref('skills', r['id'], 'buff', r['buff'], buffs)
     ref('skills', r['id'], 'effect', r['effect'], effects, False)
     ref('skills', r['id'], 'dot', r['dot'], {'burn'})
+    # every skill must measurably do something to an enemy or to the player (checked in test mode)
+    if not r['expect']: bad(f'skills[{r["id"]}].expect: empty; every skill must affect an enemy or the player')
+    for e in r['expect']:
+        kind, _, arg = e.partition(':')
+        if kind in ('enemy_debuff', 'self_buff'): ref('skills', r['id'], 'expect', arg, buffs, False)
+        elif kind not in ('enemy_damage', 'enemy_stun', 'enemy_burn', 'self_heal', 'self_move', 'self_cloak') or arg:
+            bad(f'skills[{r["id"]}].expect: "{e}" is not a known effect')
 for h in heroes:
     for sheet, key in [('stats', 'hero'), ('animations', 'hero')]:
         if sum(1 for r in sheets[sheet]['rows'] if r[key] == h) != 1:
@@ -143,12 +150,17 @@ if ev:
             if r[c] != 'none' and r[c] not in events: bad(f'sounds[{r["skill"]}].{c}: event "{r[c]}" not in Deadlock soundevents')
 else:
     bad('dev listing tools/dev/sound_events.txt missing: sound events unverified')
+ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand'}  # animations columns that are not clip names
+for r in sheets['animations']['rows']:
+    if r['gunArms'] not in ('R', 'LR'): bad(f'animations[{r["hero"]}].gunArms: "{r["gunArms"]}" must be R or LR')
+    if r['aimPose'] == 'none': bad(f'animations[{r["hero"]}].aimPose: the gun rig needs a holding pose clip')
 an = dev('anim_names.json')
 if an:
     a = json.load(open(an, encoding='utf-8'))
     for r in sheets['animations']['rows']:
         names = set(a[r['hero']]['anims'])
-        for c in sheets['animations']['columns'][2:]:
+        for c in sheets['animations']['columns']:
+            if c in ANIM_RIG_COLUMNS: continue
             if r[c] != 'none' and r[c] not in names: bad(f'animations[{r["hero"]}].{c}: clip "{r[c]}" not in hero model')
     for h in heroes.values():
         for m in h['meshInclude']:

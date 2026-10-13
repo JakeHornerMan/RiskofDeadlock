@@ -77,6 +77,7 @@ os.makedirs(os.path.join(ROOT, 'plugin', 'Generated'), exist_ok=True)
 open(os.path.join(ROOT, 'plugin', 'Generated', 'Sheets.g.cs'), 'w', encoding='utf-8').write('\n'.join(parts) + '\n')
 
 # extractor manifest
+ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand'}  # animations columns that are not clip names
 anims = {r['hero']: r for r in load('animations')['rows']}
 skills = load('skills')['rows']
 buffs = load('buffs')['rows']
@@ -84,7 +85,7 @@ sounds = load('sounds')['rows']
 manifest = {'heroes': [], 'images': [], 'soundEvents': []}
 for hero in h['rows']:
     a = anims[hero['id']]
-    clips = sorted({a[c] for c in load('animations')['columns'][2:] if a[c] != 'none'})
+    clips = sorted({a[c] for c in load('animations')['columns'] if c not in ANIM_RIG_COLUMNS and a[c] != 'none'})
     manifest['heroes'].append({'id': hero['id'], 'vmdl': hero['vmdl'], 'meshes': hero['meshInclude'], 'clips': clips})
     manifest['images'] += [hero['imageSmall'], hero['imageCard']]
 manifest['images'] += [s['icon'] for s in skills] + [b['icon'] for b in buffs if b['icon'] != 'none']
