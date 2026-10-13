@@ -4,7 +4,7 @@ Checks (each row x column crossing is a checkbox):
   - every row has every declared column, and no cell is null / empty
   - every cross-sheet reference resolves (hero ids, buffs, effects, skills, kinds)
   - every skill kind has an implementing state in plugin/States (a class carrying [Kind("...")])
-  - slot layout: each hero has exactly primary/secondary/utility/special/ult
+  - slot layout: each hero has exactly primary/secondary/utility/ult (RoR2's 4 skills; the ult sits in the special slot, R)
   - balance: gun DPS computed from the row matches targetDps (+-10%) and sits in the RoR2 band
   - Deadlock assets named by the sheets exist in the player's install listing (dev files, if present):
     vmdl/vtex paths, sound events, animation clip names, mesh names
@@ -67,6 +67,9 @@ for r in sheets['skills']['rows']:
         if kind in ('enemy_debuff', 'self_buff'): ref('skills', r['id'], 'expect', arg, buffs, False)
         elif kind not in ('enemy_damage', 'enemy_stun', 'enemy_burn', 'self_heal', 'self_move', 'self_cloak') or arg:
             bad(f'skills[{r["id"]}].expect: "{e}" is not a known effect')
+for h in heroes.values():
+    passive = [h['passiveName'], h['passiveDescription'], h['passiveIcon']]
+    if 'none' in passive and passive != ['none'] * 3: bad(f'heroes[{h["id"]}].passive*: all three passive columns are set or all are none')
 for h in heroes:
     for sheet, key in [('stats', 'hero'), ('animations', 'hero')]:
         if sum(1 for r in sheets[sheet]['rows'] if r[key] == h) != 1:
@@ -76,7 +79,7 @@ for sid in skills:
         bad(f'sounds: skill {sid} needs exactly one row')
 
 # 3. slots
-SLOTS = ['primary', 'secondary', 'utility', 'special', 'ult']
+SLOTS = ['primary', 'secondary', 'utility', 'ult']
 for h in heroes:
     got = sorted(r['slot'] for r in skills.values() if r['hero'] == h)
     if got != sorted(SLOTS):
@@ -88,7 +91,7 @@ for r in skills.values():
         if r['cooldown'] != 0: bad(f'skills[{r["id"]}]: ult is gated by charge, cooldown must be 0')
     else:
         if r['ultCharge'] != 0 or r['killCharge'] != 0: bad(f'skills[{r["id"]}]: only ults charge')
-    if r['slot'] in ('secondary', 'utility', 'special') and r['cooldown'] <= 0:
+    if r['slot'] in ('secondary', 'utility') and r['cooldown'] <= 0:
         bad(f'skills[{r["id"]}]: ability needs a cooldown')
 
 # 4. kinds implemented
@@ -137,6 +140,7 @@ if vpk:
         if path + '_c' not in files: bad(f'{col}: "{path}" not in Deadlock install')
     for h in heroes.values():
         for c in ['vmdl', 'imageSmall', 'imageCard', 'soundevents']: has(h[c], f'heroes[{h["id"]}].{c}')
+        if h['passiveIcon'] != 'none': has(h['passiveIcon'], f'heroes[{h["id"]}].passiveIcon')
     for r in skills.values(): has(r['icon'].replace('.vtex', '.vtex'), f'skills[{r["id"]}].icon')
     for b in buffs.values():
         if b['icon'] != 'none': has(b['icon'], f'buffs[{b["id"]}].icon')

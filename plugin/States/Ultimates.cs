@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace DeadlockOfRain.States
 {
-    /// <summary>Ult damage never charges the ult meter.</summary>
+    /// <summary>Base of the ultimates (R): entering empties the charge meter, and ult damage never charges it.</summary>
     public abstract class UltState : DlrState
     {
         protected UltController ult;
@@ -13,7 +13,8 @@ namespace DeadlockOfRain.States
         {
             base.OnEnter();
             ult = UltController.Of(characterBody);
-            if (ult) ult.UltDamageInFlight = true;
+            // pressing R spent the one stock the full meter gave; the meter starts over
+            if (ult) { ult.Consume(); ult.UltDamageInFlight = true; }
             MeltyTest.Report("ult-fires", true, characterBody.baseNameToken);
         }
         public override void OnExit()

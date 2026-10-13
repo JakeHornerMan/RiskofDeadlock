@@ -33,7 +33,7 @@ namespace DeadlockOfRain.States
         }
     }
 
-    // ---------------- buffs on self: Smoke Bomb, Fixation, Power Surge, Afterburn ----------------
+    // ---------------- buff on self: Smoke Bomb ----------------
     [Kind("self_buff")]
     public sealed class SelfBuff : DlrState
     {
@@ -41,59 +41,15 @@ namespace DeadlockOfRain.States
         {
             base.OnEnter();
             Sound("cast");
-            if (row.Hero == "seven") { if (anim) anim.Gesture("special"); }
-            else if (row.Slot == "utility") { if (anim) anim.Gesture("utility"); }
-            else if (anim) anim.Gesture("special");
+            if (anim) anim.Gesture("utility");
             if (Server)
             {
                 Buffs.Clear(characterBody, row.Buff);
                 Buffs.AddTimed(characterBody, row.Buff, row.Duration);
                 if (row.Buff == "smoke") characterBody.AddTimedBuff(RoR2Content.Buffs.Cloak, row.Duration);
-                OnCast();
             }
             if (row.Effect != "none") Fx.Impact(row.Effect, transform.position);
             if (row.Buff == "smoke" && rt != null) rt.SmokeUntil = Time.time + row.Duration;
-        }
-        /// <summary>What the buff ability does the moment it is cast (server), besides the buff itself.</summary>
-        void OnCast()
-        {
-            switch (row.Buff)
-            {
-                case "fixation_focus":
-                {
-                    // Fixation: every enemy in the crosshair cone gets castAmount stacks
-                    var aim = GetAimRay();
-                    var fix = Sheet.Buff("fixation");
-                    foreach (var hb in Fx.Enemies(characterBody, aim.origin, row.Range))
-                    {
-                        var to = hb.transform.position - aim.origin;
-                        if (Vector3.Angle(aim.direction, to) > row.SpreadDeg + Mathf.Rad2Deg * Mathf.Atan2(1.5f, Mathf.Max(1f, to.magnitude))) continue;
-                        var v = hb.healthComponent.body;
-                        if (!v) continue;
-                        for (int i = 0; i < (int)row.CastAmount; i++) Buffs.AddTimed(v, "fixation", fix.Duration, (int)fix.MaxStacks);
-                        Buffs.FixationOwner[v] = characterBody;
-                        Fx.Impact("stun", hb.transform.position);
-                    }
-                    break;
-                }
-                case "power_surge":
-                    // Power Surge: a zap hits every enemy within radius at once
-                    foreach (var hb in Fx.Enemies(characterBody, transform.position, row.Radius))
-                    {
-                        Fx.Hit(characterBody, hb, row.CastAmount / 100f, row.ProcCoefficient, hb.transform.position, default, DamageColorIndex.Item);
-                        Fx.Impact("static_blast", hb.transform.position);
-                    }
-                    break;
-                case "afterburn_overdrive":
-                    // Afterburn: everything within radius ignites
-                    foreach (var hb in Fx.Enemies(characterBody, transform.position, row.Radius))
-                    {
-                        var v = hb.healthComponent.body;
-                        if (v) Buffs.Ignite(characterBody, v);
-                        Fx.Impact("napalm", hb.transform.position);
-                    }
-                    break;
-            }
         }
         public override void FixedUpdate()
         {
@@ -207,33 +163,6 @@ namespace DeadlockOfRain.States
             base.OnExit();
         }
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Frozen;
-    }
-
-    // ---------------- Abrams: Infernal Resilience ----------------
-    [Kind("self_heal")]
-    public sealed class SelfHeal : DlrState
-    {
-        public override void OnEnter()
-        {
-            base.OnEnter();
-            Sound("cast");
-            Fx.Impact(row.Effect, transform.position);
-            if (Server)
-            {
-                float taken = 0;
-                if (Buffs.DamageTaken.TryGetValue(characterBody, out var list))
-                    foreach (var kv in list) if (Time.time - kv.Key <= row.Interval) taken += kv.Value;
-                Buffs.AddTimed(characterBody, row.Buff, row.Duration);
-                // castAmount of max health, plus healFraction of the damage taken in the last `interval` seconds
-                if (rt != null) rt.QueueHeal(healthComponent.fullHealth * row.CastAmount + taken * row.HealFraction, row.Duration);
-            }
-        }
-        public override void FixedUpdate()
-        {
-            base.FixedUpdate();
-            if (fixedAge >= 0.15f && isAuthority) outer.SetNextStateToMain();
-        }
-        public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Any;
     }
 
     // ---------------- Seven: Lightning Ball ----------------

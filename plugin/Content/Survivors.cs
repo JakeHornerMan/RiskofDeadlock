@@ -185,7 +185,7 @@ namespace DeadlockOfRain
                 ctp.cameraParams = cp;
             }
 
-            // skills: Commando's four slots get the hero's families, plus a 5th slot for the Deadlock ultimate
+            // skills: Commando's four slots get the hero's four families; the Deadlock ultimate is the special (R)
             var sl = body.GetComponent<SkillLocator>();
             var familyField = AccessTools.Field(typeof(GenericSkill), "_skillFamily");
             foreach (var row in Sheet.SkillsOf(hero.Id))
@@ -201,16 +201,24 @@ namespace DeadlockOfRain
                     case "primary": gs = sl.primary; break;
                     case "secondary": gs = sl.secondary; break;
                     case "utility": gs = sl.utility; break;
-                    case "special": gs = sl.special; break;
-                    default:
-                        gs = body.AddComponent<GenericSkill>();
-                        gs.skillName = "DLR_Ult";
-                        gs.hideInCharacterSelect = false;
-                        break;
+                    case "ult": gs = sl.special; break;
+                    default: Log.Error($"skill {row.Id}: unknown slot {row.Slot}"); continue;
                 }
                 familyField.SetValue(gs, fam);
             }
-            if (sl.passiveSkill.enabled) sl.passiveSkill.enabled = false;
+            // passive (what the gun already does on hit), shown on the character select screen
+            var passive = sl.passiveSkill;
+            passive.enabled = hero.PassiveName != "none";
+            if (passive.enabled)
+            {
+                passive.skillNameToken = Sheet.Token("passive", hero.Id);
+                passive.skillDescriptionToken = Sheet.Token("passivedesc", hero.Id);
+                passive.icon = DeadlockCache.Sprite(hero.PassiveIcon);
+                passive.keywordToken = null;
+                Tokens[passive.skillNameToken] = hero.PassiveName;
+                Tokens[passive.skillDescriptionToken] = hero.PassiveDescription;
+            }
+            sl.passiveSkill = passive;
 
             var tag = body.AddComponent<DeadlockHero>();
             tag.HeroId = hero.Id;
@@ -238,7 +246,7 @@ namespace DeadlockOfRain
             def.requiredStock = 1;
             def.stockToConsume = primary ? 0 : 1;
             def.fullRestockOnAssign = !ult;
-            def.isCombatSkill = row.Kind != "self_heal";
+            def.isCombatSkill = true;
             def.mustKeyPress = !primary;
             bool movement = row.Kind.StartsWith("dash") || row.Kind == "self_buff" && row.Buff == "smoke";
             def.cancelSprintingOnActivation = !movement;
@@ -263,10 +271,10 @@ namespace DeadlockOfRain
             sb.Append(hero.Lore).Append("\n\n");
             foreach (var s in Sheet.SkillsOf(hero.Id))
             {
-                string key = s.Slot == "primary" ? "M1" : s.Slot == "secondary" ? "M2" : s.Slot == "utility" ? "Shift" : s.Slot == "special" ? "R" : "F (Ultimate)";
+                string key = s.Slot == "primary" ? "M1" : s.Slot == "secondary" ? "M2" : s.Slot == "utility" ? "Shift" : "R (Ultimate)";
                 sb.Append("< ! > <style=cIsUtility>").Append(key).Append(" - ").Append(s.Name).Append("</style>\n");
             }
-            sb.Append("\n<style=cIsUtility>Your Deadlock ultimate starts locked: deal damage and get kills to charge it, then press F.</style>");
+            sb.Append("\n<style=cIsUtility>Your Deadlock ultimate starts locked: deal damage and get kills to charge it, then press R.</style>");
             Tokens[Sheet.Token("desc", hero.Id)] = sb.ToString();
             foreach (var b in BuffRow.All) Tokens[Sheet.Token("buff", b.Id)] = b.Name;
         }
@@ -283,7 +291,6 @@ namespace DeadlockOfRain
         public float SmokeUntil;
         float reloadEnd;
         int clip;
-        float healLeft, healRate;
         CharacterBody body;
 
         void Awake() => body = GetComponent<CharacterBody>();
@@ -297,13 +304,6 @@ namespace DeadlockOfRain
             Fx.Sound(gun.Id, "reload", transform.position);
         }
 
-        public void QueueHeal(float amount, float duration)
-        {
-            if (amount <= 0) return;
-            healLeft += amount;
-            healRate = healLeft / Mathf.Max(0.25f, duration);
-        }
-
         void Update()
         {
             if (Reloading && Time.time >= reloadEnd)
@@ -311,16 +311,6 @@ namespace DeadlockOfRain
                 Reloading = false;
                 Ammo = clip;
                 MeltyTest.Report("gun-reloads", true, body ? body.baseNameToken : "");
-            }
-        }
-
-        void FixedUpdate()
-        {
-            if (healLeft > 0 && body && body.healthComponent && UnityEngine.Networking.NetworkServer.active)
-            {
-                float h = Mathf.Min(healLeft, healRate * Time.fixedDeltaTime);
-                healLeft -= h;
-                body.healthComponent.Heal(h, default);
             }
         }
     }

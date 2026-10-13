@@ -1,14 +1,13 @@
 using DeadlockOfRain.Sheets;
 using EntityStates;
 using RoR2;
-using RoR2.Orbs;
 using UnityEngine;
 using UnityEngine.Networking;
 
 namespace DeadlockOfRain.States
 {
     /// <summary>Deadlock gun on M1: holds while the button is held, fires at the sheet's cycle time (scaled by attack speed),
-    /// uses the hero's magazine and reload, and applies the hero's on-hit rules (Fixation, Afterburn, Power Surge, Smoke break).</summary>
+    /// uses the hero's magazine and reload, and applies the hero's on-hit passives (Fixation, Afterburn) and breaks Smoke Bomb.</summary>
     public abstract class GunState : DlrState
     {
         float nextShot;
@@ -39,8 +38,7 @@ namespace DeadlockOfRain.States
                 if (!(inputBank && inputBank.skill1.down) && !MeltyTest.WantsFire(characterBody)) { outer.SetNextStateToMain(); return; }
                 if (rt != null && rt.Reloading) return;
                 if (rt != null && rt.Ammo <= 0) { StartReload(); return; }
-                float rate = attackSpeedStat * (Buffs.Count(characterBody, "fixation_focus") > 0 ? 1f + Sheet.Buff("fixation_focus").AttackSpeedAdd : 1f);
-                nextShot = t + row.Interval / rate;
+                nextShot = t + row.Interval / attackSpeedStat;
                 int burst = (int)Mathf.Max(1, row.Burst);
                 if (row.Kind == "gun_burst" && burst > 1)
                 {
@@ -124,43 +122,19 @@ namespace DeadlockOfRain.States
         protected virtual void OnBulletHit(CharacterBody victim, HurtBox hb, Vector3 point)
         {
             var owner = characterBody;
-            // Haze: every hit stacks Fixation (3 per hit during Fixation focus)
+            // Haze's passive: every hit stacks Fixation
             if (row.Buff == "fixation")
             {
                 var fix = Sheet.Buff("fixation");
-                int add = Buffs.Count(owner, "fixation_focus") > 0 ? (int)Sheet.Skill("haze_fixation").Burst : 1;
-                for (int i = 0; i < add; i++) Buffs.AddTimed(victim, "fixation", fix.Duration, (int)fix.MaxStacks);
+                Buffs.AddTimed(victim, "fixation", fix.Duration, (int)fix.MaxStacks);
                 Buffs.FixationOwner[victim] = owner;
             }
-            // Infernus: hits build Afterburn; at full build-up (or always during Afterburn) the target burns
+            // Infernus' passive: hits build Afterburn; at full build-up the target burns
             if (row.Buff == "afterburn_buildup")
             {
                 var bu = Sheet.Buff("afterburn_buildup");
-                bool overdrive = Buffs.Count(owner, "afterburn_overdrive") > 0;
                 Buffs.AddTimed(victim, "afterburn_buildup", bu.Duration, (int)bu.MaxStacks);
-                if (overdrive || Buffs.Count(victim, "afterburn_buildup") >= bu.MaxStacks) Buffs.Ignite(owner, victim);
-            }
-            // Seven: Power Surge lightning strikes the target that was shot, then chains to up to chainCount-1 more
-            if (row.Hero == "seven" && Buffs.Count(owner, "power_surge") > 0)
-            {
-                var ps = Sheet.Skill("seven_power_surge");
-                var orb = new LightningOrb
-                {
-                    origin = point,
-                    target = hb,
-                    damageValue = owner.damage * ps.DamagePct / 100f,
-                    isCrit = owner.RollCrit(),
-                    bouncesRemaining = (int)ps.ChainCount - 1,
-                    teamIndex = owner.teamComponent.teamIndex,
-                    attacker = owner.gameObject,
-                    procCoefficient = ps.ProcCoefficient,
-                    lightningType = LightningOrb.LightningType.Ukulele,
-                    damageColorIndex = DamageColorIndex.Item,
-                    range = ps.Radius,
-                    bouncedObjects = new System.Collections.Generic.List<HealthComponent>(),
-                };
-                OrbManager.instance.AddOrb(orb);
-                Fx.Sound("seven_power_surge", "hit", point);
+                if (Buffs.Count(victim, "afterburn_buildup") >= bu.MaxStacks) Buffs.Ignite(owner, victim);
             }
         }
 

@@ -14,7 +14,6 @@ namespace DeadlockOfRain
         public const string Guid = "melty.deadlockofrain";
         public const string Version = "0.1.0";
         public static Plugin Instance;
-        public static ConfigEntry<KeyCode> UltKey;
         public static ConfigEntry<float> Volume;
         public static string PluginDir;
 
@@ -23,7 +22,6 @@ namespace DeadlockOfRain
             Instance = this;
             Log.Source = Logger;
             PluginDir = Path.GetDirectoryName(Info.Location);
-            UltKey = Config.Bind("Controls", "Ultimate key", KeyCode.F, "Key that fires your Deadlock ultimate once its meter is full.");
             Volume = Config.Bind("Audio", "Deadlock sound volume", 1f, "Volume of the Deadlock sounds (0-1), on top of the game's master and SFX volume.");
 
             DeadlockCache.Open(DeadlockCache.DefaultDir());

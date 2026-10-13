@@ -21,7 +21,7 @@ namespace DeadlockOfRain
         static MeltyTest instance;
         static readonly HashSet<string> seen = new HashSet<string>();
         static readonly HashSet<string> written = new HashSet<string>();
-        static CharacterBody fireBody, ultBody;
+        static CharacterBody fireBody;
         static float fireUntil;
 
         public static bool Active => checksFile != null;
@@ -54,7 +54,6 @@ namespace DeadlockOfRain
         }
 
         public static bool WantsFire(CharacterBody b) => Active && b && b == fireBody && Time.time < fireUntil;
-        public static bool WantsUlt(CharacterBody b) => Active && b && b == ultBody;
 
         static void Write(string name, bool pass, string why = null)
         {
@@ -101,7 +100,7 @@ namespace DeadlockOfRain
             var commandoCap = BodyCatalog.FindBodyPrefab("CommandoBody").GetComponent<CapsuleCollider>();
             bool scaleOk = true; string scaleWhy = "";
             bool levelOk = true; string levelWhy = "";
-            bool aimOk = true, handOk = true; string aimWhy = "", handWhy = "";
+            bool aimOk = true, handOk = true, slotsOk = true; string aimWhy = "", handWhy = "", slotsWhy = "";
             string gunsWhy = "", abilitiesWhy = "", ultsWhy = "";
             int heroes = 0;
             foreach (var hero in HeroRow.All)
@@ -156,9 +155,16 @@ namespace DeadlockOfRain
                 var ultCtl = UltController.Of(body);
                 bool lockedAtStart = ultCtl && ultCtl.Skill && ultCtl.Skill.stock == 0;
 
+                // RoR2's four skills: gun, two abilities, and the ultimate on R (no extra slot)
+                var sl = body.skillLocator;
+                int skills = body.GetComponents<GenericSkill>().Count(g => g.skillDef);
+                var rRow = Survivors.RowFor(sl.special);
+                if (skills != 4 || rRow == null || rRow.Slot != "ult" || !ultCtl || ultCtl.Skill != sl.special)
+                { slotsOk = false; slotsWhy += $"{hero.Id}: {skills} skills, R holds {(rRow != null ? rRow.Id : "nothing")}; "; }
+
                 // every skill must measurably do what its sheet row's expect column says
                 bool gun = false; int abilities = 0; bool ultFired = false;
-                foreach (var slot in new[] { "primary", "secondary", "utility", "special", "ult" })
+                foreach (var slot in new[] { "primary", "secondary", "utility", "ult" })
                 {
                     body = master.GetBody();
                     var row = Sheet.SkillOf(hero.Id, slot);
@@ -208,6 +214,7 @@ namespace DeadlockOfRain
             Write("ults-work", ultsWhy == "", ultsWhy);
             Write("gun-aims", aimOk, aimWhy);
             Write("gun-in-hand", handOk, handWhy);
+            Write("four-slots", slotsOk, slotsWhy);
             Write("level-stats", levelOk && lb && lb.level > 1, levelWhy == "" ? "level did not rise" : levelWhy);
             Write("hero-scale", scaleOk, scaleWhy);
             Log.Info($"Melty test finished: {heroes}/4 heroes: every skill did what its sheet expects; Deadlock sounds played: {DeadlockAudio.Played}");
@@ -412,11 +419,12 @@ namespace DeadlockOfRain
                     fx.Damage = 0f; // that charging hit is not the ult's
                     if (ult) ult.Add(ult.Required);
                     yield return new WaitForFixedUpdate(); yield return new WaitForFixedUpdate();
-                    ultBody = body;
+                    // R, through the real skill slot, like a player pressing it
+                    body.skillLocator.special.ExecuteIfReady();
                 }
                 else
                 {
-                    var gs = body.skillLocator.GetSkill(row.Slot == "secondary" ? SkillSlot.Secondary : row.Slot == "utility" ? SkillSlot.Utility : SkillSlot.Special);
+                    var gs = row.Slot == "secondary" ? body.skillLocator.secondary : body.skillLocator.utility;
                     gs.Reset();
                     gs.ExecuteIfReady();
                 }
@@ -429,7 +437,6 @@ namespace DeadlockOfRain
                     // the player controller re-aims at the crosshair every Update; keep the aim on a live target
                     var aimAt = targets.FirstOrDefault(x => x && x.healthComponent && x.healthComponent.alive);
                     if (aimAt && body) body.inputBank.aimDirection = (aimAt.corePosition - body.inputBank.aimOrigin).normalized;
-                    if (Time.time - t0 > 0.5f) ultBody = null;
                     var b = body;
                     if (!b) break;
                     fx.Moved = Mathf.Max(fx.Moved, Vector3.Distance(start, b.corePosition));
@@ -452,7 +459,7 @@ namespace DeadlockOfRain
             {
                 GlobalEventManager.onServerDamageDealt -= onDamage;
                 HealthComponent.onCharacterHealServer -= onHeal;
-                fireBody = null; ultBody = null;
+                fireBody = null;
             }
             // let dashes, leaps and buffs finish before the next skill
             yield return new WaitForSeconds(0.5f);

@@ -5,14 +5,15 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven or Infernus** from Deadlock, using 
 ## Features
 - Four new survivors on the character select screen: Haze, Abrams, Seven and Infernus.
 - Their models, animations, ability icons, portraits and sounds come from **your own Deadlock install**. Nothing from Deadlock is in this download.
-- Each hero has their Deadlock gun on Left Click (with its magazine and reload) and three Deadlock abilities on Right Click / Shift / R:
-  - **Haze**: Twin SMGs (every hit stacks Fixation), Sleep Dagger, Smoke Bomb, Fixation.
-  - **Abrams**: Shotgun, Siphon Life, Shoulder Charge, Infernal Resilience.
-  - **Seven**: Shock Rifle, Lightning Ball, Static Charge, Power Surge.
-  - **Infernus**: Flame Gun (builds Afterburn), Catalyst, Flame Dash, Afterburn.
-- Their Deadlock ultimate is on **F**: Bullet Dance, Seismic Impact, Storm Cloud, Concussive Combustion.
-  - It starts **locked** every run and charges as you deal damage and get kills.
-  - A 5th skill icon on the HUD shows the charge. The key can be changed in the config.
+- Each hero has Risk of Rain 2's four skills, made from their Deadlock kit:
+  - **Left Click:** their Deadlock gun, with its magazine and reload.
+  - **Right Click and Shift:** two Deadlock abilities.
+  - **R:** their Deadlock ultimate. It starts **locked** every run and charges as you deal damage and get kills; the R icon shows the charge %.
+  - **Haze:** Twin SMGs, Sleep Dagger, Smoke Bomb, Bullet Dance. Passive: every hit stacks Fixation.
+  - **Abrams:** Shotgun, Siphon Life, Shoulder Charge, Seismic Impact.
+  - **Seven:** Shock Rifle, Lightning Ball, Static Charge, Storm Cloud.
+  - **Infernus:** Flame Gun, Catalyst, Flame Dash, Concussive Combustion. Passive: hits build Afterburn and set enemies on fire.
+- Guns stay in the hero's hands and point where you aim.
 - Balanced against Risk of Rain 2's survivors: Haze ~ Commando, Abrams ~ Loader, Seven ~ Artificer, Infernus ~ Engineer.
   - Health, regen and damage grow on every level-up, just like vanilla survivors.
 - Scaled to Risk of Rain 2 with one shared factor (Haze is Commando's height), so Deadlock's size differences are kept. Abrams is the biggest.
@@ -31,7 +32,7 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven or Infernus** from Deadlock, using 
 - `plugin/`: the BepInEx 5 plugin.
   - It registers the survivors through RoR2's own content-pack API (no R2API).
   - It builds the models from the cache and plays the Deadlock animation clips.
-  - It runs the 20 skills, the ult charge meter and the HUD icon.
+  - It runs the 16 skills, the gun rig (guns held in the hands and aimed at the crosshair), the ult charge meter and its R-icon label.
   - It plays Deadlock sounds through a small Windows audio mixer, because RoR2 turns Unity audio off.
 
 ## Credits

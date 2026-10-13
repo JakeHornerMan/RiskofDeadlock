@@ -35,14 +35,6 @@
       "reload": "none"
     },
     {
-      "skill": "haze_fixation",
-      "cast": "Haze.Smoke.Bomb.Invis",
-      "loop": "none",
-      "hit": "none",
-      "end": "none",
-      "reload": "none"
-    },
-    {
       "skill": "haze_bullet_dance",
       "cast": "Haze.BulletFlurry.Cast.Delay",
       "loop": "Haze.BulletFlurry.Modifier.Lp",
@@ -72,14 +64,6 @@
       "loop": "none",
       "hit": "Abrams.Charge.HitEnemy",
       "end": "Abrams.Charge.Wall.Impact",
-      "reload": "none"
-    },
-    {
-      "skill": "abrams_resilience",
-      "cast": "Abrams.A1.SiphonLife.End",
-      "loop": "none",
-      "hit": "none",
-      "end": "none",
       "reload": "none"
     },
     {
@@ -115,14 +99,6 @@
       "reload": "none"
     },
     {
-      "skill": "seven_power_surge",
-      "cast": "Gigawatt.PowerSurge.Cast",
-      "loop": "none",
-      "hit": "Gigawatt.PowerSurge.ChainMod.Proc",
-      "end": "Gigawatt.PowerSurge.End",
-      "reload": "none"
-    },
-    {
       "skill": "seven_storm_cloud",
       "cast": "Gigawatt.StormCloud.Cast",
       "loop": "Gigawatt.StormCloud.Lp",
@@ -152,14 +128,6 @@
       "loop": "Inferno.FlameDash.Modifier.Lp",
       "hit": "Infernus.FlameDash.Hit",
       "end": "Inferno.FlameDash.Modifier.Stop",
-      "reload": "none"
-    },
-    {
-      "skill": "infernus_afterburn",
-      "cast": "Inferno.Afterburn.Modifier.Start",
-      "loop": "none",
-      "hit": "none",
-      "end": "none",
       "reload": "none"
     },
     {

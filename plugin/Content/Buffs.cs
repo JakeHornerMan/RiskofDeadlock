@@ -13,8 +13,6 @@ namespace DeadlockOfRain
         // who applied owner-specific debuffs (Fixation, Catalyst) to which victim
         public static readonly Dictionary<CharacterBody, CharacterBody> FixationOwner = new Dictionary<CharacterBody, CharacterBody>();
         public static readonly Dictionary<CharacterBody, CharacterBody> CatalystOwner = new Dictionary<CharacterBody, CharacterBody>();
-        // damage taken log for Infernal Resilience: body -> (time, amount)
-        public static readonly Dictionary<CharacterBody, List<KeyValuePair<float, float>>> DamageTaken = new Dictionary<CharacterBody, List<KeyValuePair<float, float>>>();
 
         public static BuffDef Get(string id) => id != null && Defs.TryGetValue(id, out var b) ? b : null;
 
@@ -65,17 +63,17 @@ namespace DeadlockOfRain
         {
             if (!owner || !victim || !UnityEngine.Networking.NetworkServer.active) return;
             Clear(victim, "afterburn_buildup");
-            var ab = Sheet.Skill("infernus_afterburn");
+            var bu = Sheet.Buff("afterburn_buildup");
             var dot = new InflictDotInfo
             {
                 attackerObject = owner.gameObject,
                 victimObject = victim.gameObject,
                 dotIndex = DotController.DotIndex.Burn,
                 duration = 3f,
-                damageMultiplier = ab.DamagePct / 100f * 2f, // vanilla Burn ticks 50%/s per 1.0 multiplier
+                damageMultiplier = bu.DotDamagePct / 100f * 2f, // vanilla Burn ticks 50%/s per 1.0 multiplier
             };
             DotController.InflictDot(ref dot);
-            Fx.Sound("infernus_afterburn", "cast", victim.corePosition);
+            Fx.Sound("infernus_gun", "hit", victim.corePosition);
         }
 
         public static void Clear(CharacterBody b, string id)
@@ -153,16 +151,6 @@ namespace DeadlockOfRain
                 if (Buffs.Count(victim, "catalyst") > 0 && Buffs.CatalystOwner.TryGetValue(victim, out var co) && co == attacker)
                     damageInfo.damage *= 1f + cat.DamageTakenFromOwnerPerStack;
             }
-        }
-
-        static void Postfix(HealthComponent __instance, DamageInfo damageInfo)
-        {
-            if (damageInfo == null || damageInfo.rejected || !__instance || !__instance.body) return;
-            var b = __instance.body;
-            if (!Survivors.IsHero(b, "abrams")) return;
-            if (!Buffs.DamageTaken.TryGetValue(b, out var list)) Buffs.DamageTaken[b] = list = new List<KeyValuePair<float, float>>();
-            list.Add(new KeyValuePair<float, float>(Time.time, damageInfo.damage));
-            if (list.Count > 200) list.RemoveRange(0, 100);
         }
     }
 }
