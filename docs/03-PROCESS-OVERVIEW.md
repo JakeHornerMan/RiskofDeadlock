@@ -67,6 +67,7 @@ MODLOG.md                 short journal: versions, lab notes, gotchas
 docs/01-DEADLOCK-ASSETS.md            Deadlock side in depth
 docs/02-RISK-OF-RAIN-2-INTEGRATION.md RoR2 side in depth
 docs/03-PROCESS-OVERVIEW.md           this file
+docs/04-ABILITY-REDESIGN-PROPOSALS.md planning: current kit + 2 alternatives (abilities and passive) per hero, from the Deadlock and RoR2 wikis
 design/                   THE SOURCE OF TRUTH – JSON sheets (heroes, stats, skills, buffs, animations, sounds, effects, hooks)
 tools/preflight.py        checks every sheet cell and cross-reference (and Deadlock/RoR2 names against tools/dev listings)
 tools/gen.py              runs preflight, then generates plugin/Generated/Sheets.g.cs + extractor/manifest.json
