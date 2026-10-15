@@ -13,7 +13,8 @@ namespace DeadlockOfRain
         static Dictionary<string, EffectRow> effects;
         static Dictionary<string, SoundRow> sounds;
 
-        public static HeroRow Hero(string id) => HeroRow.All.First(h => h.Id == id);
+        /// <summary>The hero's row, or null for a body that is not one of ours.</summary>
+        public static HeroRow Hero(string id) => id == null ? null : HeroRow.All.FirstOrDefault(h => h.Id == id);
         public static StatRow Stats(string hero) => StatRow.All.First(s => s.Hero == hero);
         public static AnimRow Anims(string hero) => AnimRow.All.First(a => a.Hero == hero);
         public static IEnumerable<SkillRow> SkillsOf(string hero) => SkillRow.All.Where(s => s.Hero == hero);

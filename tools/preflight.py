@@ -59,6 +59,11 @@ for r in sheets['skills']['rows']:
     ref('skills', r['id'], 'hero', r['hero'], heroes, False)
     ref('skills', r['id'], 'buff', r['buff'], buffs)
     ref('skills', r['id'], 'effect', r['effect'], effects, False)
+    ref('skills', r['id'], 'vfx', r['vfx'], effects)
+    ref('skills', r['id'], 'extra', r['extra'], effects)
+    if r['vfx'] != 'none' and r['vfx'] in effects and effects[r['vfx']]['kind'] != 'custom':
+        bad(f'skills[{r["id"]}].vfx: "{r["vfx"]}" must be an effects row of kind custom')
+    if r['minDuration'] > r['duration']: bad(f'skills[{r["id"]}].minDuration: longer than duration')
     ref('skills', r['id'], 'dot', r['dot'], {'burn'})
     # every skill must measurably do something to an enemy or to the player (checked in test mode)
     if not r['expect']: bad(f'skills[{r["id"]}].expect: empty; every skill must affect an enemy or the player')
@@ -67,6 +72,15 @@ for r in sheets['skills']['rows']:
         if kind in ('enemy_debuff', 'self_buff'): ref('skills', r['id'], 'expect', arg, buffs, False)
         elif kind not in ('enemy_damage', 'enemy_stun', 'enemy_burn', 'self_heal', 'self_move', 'self_cloak') or arg:
             bad(f'skills[{r["id"]}].expect: "{e}" is not a known effect')
+for b in buffs.values():
+    ref('buffs', b['id'], 'triggerBuff', b['triggerBuff'], buffs)
+    ref('buffs', b['id'], 'withBuff', b['withBuff'], buffs)
+    if b['triggerStacks'] and not b['canStack']: bad(f'buffs[{b["id"]}].triggerStacks: needs a stacking buff')
+    if b['triggerStacks'] > b['maxStacks']: bad(f'buffs[{b["id"]}].triggerStacks: above maxStacks, it can never fire')
+EFFECT_KINDS = {'none', 'tracer', 'impact', 'ghost', 'orb', 'trail', 'attachment', 'ward', 'material', 'custom'}
+for e in effects.values():
+    if e['kind'] not in EFFECT_KINDS: bad(f'effects[{e["id"]}].kind: "{e["kind"]}" unknown')
+    if (e['kind'] in ('custom', 'none')) != (e['addressable'] == 'none'): bad(f'effects[{e["id"]}].addressable: custom/none rows have none, every other kind a key')
 for h in heroes.values():
     passive = [h['passiveName'], h['passiveDescription'], h['passiveIcon']]
     if 'none' in passive and passive != ['none'] * 3: bad(f'heroes[{h["id"]}].passive*: all three passive columns are set or all are none')
@@ -124,7 +138,7 @@ for r in skills.values():
             bad(f'skills[{r["id"]}]: sustained DPS {dps:.0f} %/s outside RoR2 primary band 240-600')
     if r['slot'] == 'ult':
         if r['kind'] == 'ult_dance': total = r['duration'] / r['interval'] * r['damagePct']
-        elif r['kind'] == 'ult_storm': total = r['duration'] / r['interval'] * r['damagePct']
+        elif r['kind'] == 'ult_zone': total = r['duration'] / r['interval'] * r['damagePct']  # per target: every tick strikes up to chainCount enemies
         else: total = r['damagePct']
         if not (1500 <= total <= 3000):
             bad(f'skills[{r["id"]}]: ult total {total:.0f}% outside 1500-3000')

@@ -279,20 +279,25 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 | `expect` column + effect-measuring test | Playtest: "a lot of the abilities are not working". The 0.1.0 test only checked that states started. |
 | QuietStage + arena reset in the test | Wandering monsters and slopes made the test flaky across stages |
 | Solo only | Interview choice; networking (UNet) of custom bodies and the waveOut audio is untested |
+| Ability redesign (v0.3.0) | The creator went through doc 04 slot by slot. Picks: Haze Fixation+ passive, Sleep Dagger stun 4 s / 10 s, Smoke Bomb 5 s +50 % / 12 s, Bullet Dance unchanged with new effects; Abrams Infernal Resilience (10 % over 10 s), Siphon Life as a Mired Urn (3 targets, 25 m, 8 s, 15 s), Shoulder Charge 3 s stunning everything hit / 8 s, Seismic Impact with a hover and a reticle you aim (he can be hit); Seven Capacitor passive, Lightning Ball builds Static, Static Charge with a thunderbolt, Thunderhead zone at his feet with a Warbanner; Infernus Afterburn with visible embers, Napalm (lobbed, 2 charges), Flame Dash held up to 3 s with an 8 s trail, Combustion 3 s fuse / 2 s stun / heal per kill. Details in doc 04 §6 |
+| Reuse RoR2 items for skills | The creator's idea: Siphon Life *is* RoR2's Mired Urn attachment and Thunderhead's attack speed *is* RoR2's Warbanner ward, so they look and work like the items players know, with no new buff code |
+| Effects built in Unity, not ripped | The creator: "make it similar to the Deadlock game, not a rip from the Deadlock engine files". `Runtime/Vfx.cs` builds them at runtime from Unity components and RoR2 materials (doc 02 §8.1) |
 
 ---
 
 ## 10. Known open items and ideas
 
 - **Haze leans forward a lot** when aiming steeply down: the whole aim is taken by the spine. Possible fix: give part of the pitch to the clavicles or arms.
-- Seven's Storm Cloud loop pose looks tilted. It is his own Deadlock clip; not confirmed against Deadlock.
+- Seven's Thunderhead cast uses his Storm Cloud `ult_start` clip (0.6 s); its loop pose (tilted) is no longer used.
 - **No normal maps** (VRF does not export them for Deadlock's hero shader). Only the albedo is used.
 - **Reload clips still animate the arms** (gun parts stay frozen), by design.
-- **Listing screenshots** are from 0.1.0 and should be replaced with 0.2.0 shots (4 skills, R meter).
+- **Listing screenshots** are from 0.1.0 and should be replaced with 0.3.0 shots (4 skills, R meter, the new effects).
+- **0.3.0 adds two Deadlock images** (the new passive icons). A player's cache from 0.2.0 has `ready.json`, so Melty skips setup and those two icons stay blank until the cache is rebuilt. The release must force a re-extract (doc 01 §5) or accept blank passive icons for updating players.
+- **New effects are only checked by eye** (devshots); the test measures what skills do, not how they look.
 - **Multiplayer** would need: network-safe states, the ult meter synced, audio per client, `recipe.multiplayer`.
 - **More heroes:** follow §8. Abrams-style off-hand weapon pivots need `gunBone`.
-- **Seven's gun is stronger than the sheet says:** about 440 %/s sustained, against a `targetDps` of 313. Preflight's burst formula doesn't match `GunState`'s re-arm timing (doc 02 §7.6).
-- **Catalyst slows by about 22 %**, not the 28 % in its description, because negative move-speed adds divide (doc 02 §7.4).
+- **Seven's gun is stronger than the sheet says:** about 350 %/s sustained (before Capacitor), against a `targetDps` of 250. Preflight's burst formula doesn't match `GunState`'s re-arm timing (doc 02 §7.6).
+- **Negative move-speed adds divide** (doc 02 §7.4). The 0.3.0 slows (Napalm Slow, Fixation Slow) are written so they really are 28 % and 12 %.
 - The `about` text of `skills.json` still mentions "specials" and a 300–450 %/s band.
 - **Pelvis bob is lost** for Haze, Seven and Infernus: their `pelvis` is a separate root in the DLM, and the animator skips position curves on every root bone (doc 01 §7). A fix would skip only `root_motion`, plus the pelvis' *horizontal* drift.
 - **The local cache is from the 0.1.0 manifest**, a superset of 0.2.0's. A clean re-extract with `--manifest extractor/manifest.json --force` has not been run for 0.2.0. Melty's 0.2.0 test skipped setup because `ready.json` existed.

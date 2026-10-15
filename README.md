@@ -9,10 +9,11 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven or Infernus** from Deadlock, using 
   - **Left Click:** their Deadlock gun, with its magazine and reload.
   - **Right Click and Shift:** two Deadlock abilities.
   - **R:** their Deadlock ultimate. It starts **locked** every run and charges as you deal damage and get kills; the R icon shows the charge %.
-  - **Haze:** Twin SMGs, Sleep Dagger, Smoke Bomb, Bullet Dance. Passive: every hit stacks Fixation.
-  - **Abrams:** Shotgun, Siphon Life, Shoulder Charge, Seismic Impact.
-  - **Seven:** Shock Rifle, Lightning Ball, Static Charge, Storm Cloud.
-  - **Infernus:** Flame Gun, Catalyst, Flame Dash, Concussive Combustion. Passive: hits build Afterburn and set enemies on fire.
+  - **Haze:** Twin SMGs, Sleep Dagger, Smoke Bomb, Bullet Dance. Passive: Fixation (every hit stacks it, crits stack 3, every 20 stacks bursts).
+  - **Abrams:** Shotgun, Siphon Life (works like a Mired Urn), Shoulder Charge, Seismic Impact (hover, aim the slam, crash down). Passive: Infernal Resilience.
+  - **Seven:** Shock Rifle, Lightning Ball, Static Charge, Thunderhead (a storm with a Warbanner). Passive: Capacitor (hits build Static that discharges).
+  - **Infernus:** Flame Gun, Napalm, Flame Dash (hold to keep going), Concussive Combustion. Passive: hits build Afterburn and set enemies on fire.
+- New ability effects made for this mod in Unity, in the style of Deadlock's.
 - Guns stay in the hero's hands and point where you aim.
 - Balanced against Risk of Rain 2's survivors: Haze ~ Commando, Abrams ~ Loader, Seven ~ Artificer, Infernus ~ Engineer.
   - Health, regen and damage grow on every level-up, just like vanilla survivors.

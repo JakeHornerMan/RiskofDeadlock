@@ -1,6 +1,6 @@
 {
   "sheet": "effects",
-  "about": "Visual effect ids used by skills.effect. Deadlock's particle systems (.vpcf) have no Unity equivalent, so visuals reuse Risk of Rain 2's own effect prefabs (Addressables keys checked against the installed catalog.json), spawned at the given point. kind: tracer (bullet line muzzle->hit), impact (one-shot at a point, scaled by radius when scaleWithRadius), ghost (attached visual that follows a mod-simulated projectile), orb (RoR2 OrbManager lightning orb), trail (vanilla DamageTrail fire trail), none.",
+  "about": "Visual effect ids used by skills.effect/vfx/extra. Deadlock's particle systems (.vpcf) are never read or copied: visuals reuse Risk of Rain 2's own effect prefabs and materials (Addressables keys checked against the installed catalog.json) or are built by our own code in Unity (kind custom: plugin/Runtime/Vfx.cs, made to look like Deadlock). kind: tracer (bullet line muzzle->hit), impact (one-shot at a point, scaled by radius when scaleWithRadius), ghost (attached visual that follows a mod-simulated projectile), orb (RoR2 OrbManager lightning orb), trail (vanilla DamageTrail fire trail), attachment (a RoR2 NetworkedBodyAttachment put on the hero), ward (a RoR2 BuffWard placed on the ground), material (a RoR2 material our custom visuals are drawn with), custom (built by Vfx.cs; addressable none), none.",
   "columns": ["id", "kind", "addressable", "scaleWithRadius", "notes"],
   "rows": [
     { "id": "none", "kind": "none", "addressable": "none", "scaleWithRadius": false, "notes": "no visual" },
@@ -22,6 +22,23 @@
     { "id": "napalm", "kind": "impact", "addressable": "RoR2/Base/LemurianBruiser/OmniExplosionVFXLemurianBruiserFireballImpact.prefab", "scaleWithRadius": false, "notes": "Catalyst splash, spawned along the cone" },
     { "id": "fire_trail", "kind": "trail", "addressable": "RoR2/Base/Common/FireTrail.prefab", "scaleWithRadius": false, "notes": "Flame Dash trail (vanilla DamageTrail)" },
     { "id": "big_explosion", "kind": "impact", "addressable": "RoR2/Base/Scav/OmniExplosionVFXScavCannonImpactExplosion.prefab", "scaleWithRadius": true, "notes": "Concussive Combustion" },
-    { "id": "stun", "kind": "impact", "addressable": "RoR2/Base/StunChanceOnHit/ImpactStunGrenade.prefab", "scaleWithRadius": false, "notes": "sleep / stun applied" }
+    { "id": "stun", "kind": "impact", "addressable": "RoR2/Base/StunChanceOnHit/ImpactStunGrenade.prefab", "scaleWithRadius": false, "notes": "sleep / stun applied" },
+    { "id": "siphon_urn", "kind": "attachment", "addressable": "RoR2/Base/SiphonOnLowHealth/SiphonNearbyBodyAttachment.prefab", "scaleWithRadius": false, "notes": "Mired Urn's tar tethers (SiphonNearbyController) for Siphon Life" },
+    { "id": "warbanner_ward", "kind": "ward", "addressable": "RoR2/Base/WardOnLevel/WarbannerWard.prefab", "scaleWithRadius": true, "notes": "Warbanner's ward and ground ring for Thunderhead (+30% attack and move speed to allies inside)" },
+    { "id": "mat_glow", "kind": "material", "addressable": "RoR2/Base/Common/VFX/matGlow1Soft.mat", "scaleWithRadius": false, "notes": "soft additive glow (cores, flashes)" },
+    { "id": "mat_tracer", "kind": "material", "addressable": "RoR2/Base/Common/VFX/matTracerBright.mat", "scaleWithRadius": false, "notes": "bright line (arcs, tracers, bolts)" },
+    { "id": "mat_lightning", "kind": "material", "addressable": "RoR2/Base/Common/VFX/matLightningLongBlue.mat", "scaleWithRadius": false, "notes": "lightning strip (bolts, arcs)" },
+    { "id": "mat_ring", "kind": "material", "addressable": "RoR2/Base/Common/VFX/matOmniRing1Generic.mat", "scaleWithRadius": false, "notes": "expanding ring billboard (shockwaves)" },
+    { "id": "mat_fire", "kind": "material", "addressable": "RoR2/Base/Common/VFX/matFireStatic.mat", "scaleWithRadius": false, "notes": "flame particles" },
+    { "id": "mat_smoke", "kind": "material", "addressable": "RoR2/Base/Common/VFX/matGenericSmoke.mat", "scaleWithRadius": false, "notes": "smoke and cloud particles" },
+    { "id": "mat_spark", "kind": "material", "addressable": "RoR2/Base/Common/VFX/matSpark1.mat", "scaleWithRadius": false, "notes": "spark particles" },
+    { "id": "mat_area", "kind": "material", "addressable": "RoR2/Base/Common/VFX/matAreaIndicatorRim.mat", "scaleWithRadius": false, "notes": "ground area indicator (the slam reticle)" },
+    { "id": "haze_dance", "kind": "custom", "addressable": "none", "scaleWithRadius": false, "notes": "Bullet Dance: spinning violet blade ring, afterimage trails, pink muzzle bursts and hit sparks" },
+    { "id": "abrams_slam", "kind": "custom", "addressable": "none", "scaleWithRadius": true, "notes": "Seismic Impact: ground reticle while hovering, dive streaks, shockwave ring, dust and debris on impact" },
+    { "id": "seven_ball", "kind": "custom", "addressable": "none", "scaleWithRadius": false, "notes": "Lightning Ball: glowing core with crackling arcs, and a bolt to every enemy it shocks" },
+    { "id": "seven_static", "kind": "custom", "addressable": "none", "scaleWithRadius": true, "notes": "Static Charge: pulsing charge ring on the target, then a thunderbolt from the sky" },
+    { "id": "seven_storm", "kind": "custom", "addressable": "none", "scaleWithRadius": true, "notes": "Thunderhead: dark churning cloud over the zone with flashes, and a bolt from the cloud per strike" },
+    { "id": "infernus_afterburn", "kind": "custom", "addressable": "none", "scaleWithRadius": false, "notes": "Afterburn: embers on enemies that grow with build-up, a flare when they ignite, flames while burning" },
+    { "id": "infernus_napalm", "kind": "custom", "addressable": "none", "scaleWithRadius": true, "notes": "Napalm: glowing flask with a fire trail, then a burning splash ring" }
   ]
 }

@@ -99,7 +99,7 @@
       "reload": "none"
     },
     {
-      "skill": "seven_storm_cloud",
+      "skill": "seven_thunderhead",
       "cast": "Gigawatt.StormCloud.Cast",
       "loop": "Gigawatt.StormCloud.Lp",
       "hit": "Gigawatt.StormCloud.Bolt.Detonate",
@@ -115,7 +115,7 @@
       "reload": "Infernus.Wpn.Reload.Start"
     },
     {
-      "skill": "infernus_catalyst",
+      "skill": "infernus_napalm",
       "cast": "Inferno.Incend.Cast",
       "loop": "none",
       "hit": "Inferno.Incend.Hit",

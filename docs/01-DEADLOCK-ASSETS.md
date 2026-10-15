@@ -23,6 +23,8 @@ Related documents:
    the gitignored `tools/dev/` (listings only, never assets) and to `%LOCALAPPDATA%\DeadlockOfRain\cache` (gitignored, outside the repo).
 
 ---
+- **Visual effects are never taken from Deadlock.** Deadlock's particle systems (`.vpcf`) are not read or exported.
+  The abilities' looks are rebuilt by our own code in Unity with Risk of Rain 2's materials (doc 02 §8.1).
 
 ## 2. Versions this was built and verified against
 
@@ -131,7 +133,9 @@ Where every entry comes from:
 | `soundEvents` | `sounds.json` columns `cast`, `loop`, `hit`, `end`, `reload` (unless `none`) | sorted, unique |
 | `soundEventFiles` | `heroes.soundevents` | **informational only.** The extractor indexes *every* `soundevents/*.vsndevts_c` in the VPK, so cross-file `base` inheritance resolves. |
 
-Counts at v0.2.0: 4 heroes, 26 images, 46 sound events.
+Counts at v0.3.0: 4 heroes, 28 images, 46 sound events. (0.3.0 **added** two images, the passive icons
+`bull_beef_psd` for Abrams' Infernal Resilience and `giga_chain_psd` for Seven's Capacitor and Static, so a 0.2.0 cache
+needs a rebuild: see below.)
 
 Changing the manifest changes the cache stamp (section 6.6), so the next first start re-extracts. On a PC that
 already has `ready.json`, though, Melty's `setup.done` check is satisfied and **setup is skipped**. So an *older*

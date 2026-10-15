@@ -6,7 +6,8 @@ using UnityEngine.AddressableAssets;
 
 namespace DeadlockOfRain
 {
-    /// <summary>Effects from design/effects.json (RoR2's own effect prefabs, by Addressables key) and combat helpers.</summary>
+    /// <summary>Effects from design/effects.json (RoR2's own effect prefabs, by Addressables key; our own built visuals are in
+    /// Vfx) and combat helpers.</summary>
     public static class Fx
     {
         static readonly Dictionary<string, GameObject> prefabs = new Dictionary<string, GameObject>();
@@ -14,7 +15,8 @@ namespace DeadlockOfRain
         public static GameObject Prefab(string effectId)
         {
             var row = Sheet.Effect(effectId);
-            if (row == null || row.Addressable == "none") return null;
+            // materials are loaded by Vfx.Mat, custom visuals are built by Vfx
+            if (row == null || row.Addressable == "none" || row.Kind == "material") return null;
             if (prefabs.TryGetValue(row.Addressable, out var p)) return p;
             try { p = Addressables.LoadAssetAsync<GameObject>(row.Addressable).WaitForCompletion(); }
             catch (System.Exception e) { Log.Warn($"effect {effectId}: {e.Message}"); }
@@ -25,6 +27,7 @@ namespace DeadlockOfRain
         public static void Preload()
         {
             foreach (var e in Sheets.EffectRow.All) Prefab(e.Id);
+            Vfx.Preload();
         }
 
         public static void Impact(string effectId, Vector3 at, float radius = 1f, Vector3? normal = null)

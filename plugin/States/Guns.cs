@@ -7,7 +7,7 @@ using UnityEngine.Networking;
 namespace DeadlockOfRain.States
 {
     /// <summary>Deadlock gun on M1: holds while the button is held, fires at the sheet's cycle time (scaled by attack speed),
-    /// uses the hero's magazine and reload, and applies the hero's on-hit passives (Fixation, Afterburn) and breaks Smoke Bomb.</summary>
+    /// uses the hero's magazine and reload, and applies the hero's on-hit passive (Fixation, Static, Afterburn) and breaks Smoke Bomb.</summary>
     public abstract class GunState : DlrState
     {
         float nextShot;
@@ -115,27 +115,16 @@ namespace DeadlockOfRain.States
             if (!hb || !hb.healthComponent || !NetworkServer.active) return r;
             var victim = hb.healthComponent.body;
             if (!victim || victim.teamComponent.teamIndex == characterBody.teamComponent.teamIndex) return r;
-            OnBulletHit(victim, hb, hit.point);
+            OnBulletHit(victim, hb, hit.point, attack.isCrit);
             return r;
         }
 
-        protected virtual void OnBulletHit(CharacterBody victim, HurtBox hb, Vector3 point)
+        protected virtual void OnBulletHit(CharacterBody victim, HurtBox hb, Vector3 point, bool crit)
         {
-            var owner = characterBody;
-            // Haze's passive: every hit stacks Fixation
-            if (row.Buff == "fixation")
-            {
-                var fix = Sheet.Buff("fixation");
-                Buffs.AddTimed(victim, "fixation", fix.Duration, (int)fix.MaxStacks);
-                Buffs.FixationOwner[victim] = owner;
-            }
-            // Infernus' passive: hits build Afterburn; at full build-up the target burns
-            if (row.Buff == "afterburn_buildup")
-            {
-                var bu = Sheet.Buff("afterburn_buildup");
-                Buffs.AddTimed(victim, "afterburn_buildup", bu.Duration, (int)bu.MaxStacks);
-                if (Buffs.Count(victim, "afterburn_buildup") >= bu.MaxStacks) Buffs.Ignite(owner, victim);
-            }
+            // the hero's passive: every hit stacks the gun's buff (Fixation, Static, Afterburn build-up); its trigger fires at full stacks
+            if (row.Buff == "none") return;
+            bool fired = Buffs.Stack(characterBody, victim, row.Buff, crit);
+            Vfx.Play(row.Vfx, fired ? "trigger" : "hit", point, 1f, victim.transform);
         }
 
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Skill;

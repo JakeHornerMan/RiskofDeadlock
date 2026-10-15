@@ -44,16 +44,17 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
 | `Runtime/DeadlockAnimator.cs` | Legacy `Animation` player for the Deadlock clips: locomotion, upper-body gestures, full-body overrides, death, and the **gun rig** (rigid gun arms, welded gun, aim, recoil). |
 | `Runtime/DeadlockAudio.cs` | waveOut software mixer (RoR2 turns Unity audio off). Plays the decoded Deadlock sound events. |
 | `Runtime/Fx.cs` | Effect prefabs by Addressables key (`effects.json`) and combat helpers: `Enemies`, `Hit`, `Blast`, `Stun`, `Sound`, `Loop`, `Muzzle`, `Impact`, `Ghost`, `Prefab`. |
-| `Runtime/Projectiles.cs` | `DlrProjectile` (Sleep Dagger, Lightning Ball) and `DlrDelayed` (Static Charge): simulated server-side projectiles. |
+| `Runtime/Vfx.cs` | Our own visual effects (effects of kind `custom`, §8.1), built at runtime with RoR2 materials; `Play(id, moment, ...)`, `Stop`, `Bolt`, `Ring`, `Burst`, `Flash`, `EmberFx`. |
+| `Runtime/Projectiles.cs` | Simulated server-side objects: `DlrProjectile` (Sleep Dagger, Lightning Ball), `DlrDelayed` (Static Charge), `DlrLob` (Napalm), `DlrZone` (Thunderhead). |
 | `Runtime/MeltyTest.cs` | Test mode for Melty's `test_release`, plus dev-only screenshot tools. |
 | `Content/Survivors.cs` | Builds bodies, SurvivorDefs, SkillDefs and families. `HeroRuntime` (ammo/reload). `DeadlockContentProvider`. `LanguagePatch`. `DeadlockHero` tag. `[Kind]` attribute. |
-| `Content/Buffs.cs` | BuffDefs from `buffs.json`, `Ignite` (Afterburn burn), `StatsPatch` (RecalculateStats postfix), `DamagePatch` (TakeDamage prefix). |
+| `Content/Buffs.cs` | BuffDefs from `buffs.json`, `Stack` (stacking passives and their triggers), `Apply`, `Burn` (Afterburn), `HealBack` (Infernal Resilience), `StatsPatch` (RecalculateStats postfix, slow resist), `DebuffResistPatch`, `DamagePatch` (TakeDamage prefix). |
 | `Content/Ult.cs` | `UltController` (charge meter, R lock), damage/kill charge events, `UltHudPatch` (charge % on the R icon). |
 | `Content/LoadoutFix.cs` | Gives the empty skins row of the loadout panel a "Default" entry, so it doesn't crash. |
 | `States/DlrState.cs` | Base EntityState for every hero skill: finds its sheet row, the runtime, the animator; helpers. |
 | `States/Guns.cs` | `GunState` (magazine, reload, burst, recoil, on-hit passives) → `GunAuto`, `GunBurst`, `GunShotgun`. |
-| `States/Abilities.cs` | `ThrowProjectile`, `SelfBuff`, `AuraDrain`, `DashCharge`, `ThrowOrb`, `DelayedBlast`, `Cone`, `DashTrail`. |
-| `States/Ultimates.cs` | `UltState` base plus `UltDance`, `UltLeap`, `UltStorm`, `UltSelfBomb`. |
+| `States/Abilities.cs` | `ThrowProjectile`, `SelfBuff`, `MiredUrn`, `DashCharge`, `ThrowOrb`, `DelayedBlast`, `ThrowLob`, `DashTrail`. |
+| `States/Ultimates.cs` | `UltState` base plus `UltDance`, `UltLeap`, `UltZone`, `UltSelfBomb`. |
 
 ---
 
@@ -242,7 +243,7 @@ RoR2's four, so ability 3 was dropped: Fixation, Infernal Resilience, Power Surg
 ### 7.2 SkillDef settings (`MakeSkillDef`)
 | Field | primary | secondary/utility | ult (R) |
 |---|---|---|---|
-| `activationStateMachineName` | `Weapon` | `Weapon`, or `Body` for `dash_*` | `Weapon`, or `Body` for `ult_leap`/`ult_storm` |
+| `activationStateMachineName` | `Weapon` | `Weapon`, or `Body` for `dash_*` | `Weapon`, or `Body` for `ult_leap` |
 | `interruptPriority` | Any | Skill | PrioritySkill |
 | `baseRechargeInterval` | 0 | sheet `cooldown` | 1 (irrelevant: no recharge) |
 | `rechargeStock` | 1 | 1 | **0** |
@@ -264,25 +265,25 @@ our states implement `ISkillState`, so RoR2 sets `activatorSkillSlot`. Without a
 
 | Kind | Class | Used by | What it does |
 |---|---|---|---|
-| `gun_auto` / `gun_burst` / `gun_shotgun` | `GunAuto/GunBurst/GunShotgun : GunState` | all 4 guns | Hold to fire every `interval/attackSpeed` s. `clipSize` magazine (`HeroRuntime.Ammo`), `reloadTime` reload (+ `reload` gesture and sound). `burst` shots `duration` apart. `pellets`, `spreadDeg`, `range`. RoR2 `BulletAttack` (Buckshot falloff for pellets, `DamageSource.Primary`). Muzzle flash, tracer from `effect`, recoil. Firing removes Smoke Bomb. On-hit passives (§7.4). |
-| `projectile` | `ThrowProjectile` | Sleep Dagger | Thrown at 40 % of `duration`. `DlrProjectile` sphere-casts at `speed` (radius `max(0.3, radius×0.5)`), passes through its own team, and dies on a wall or after `range`. First enemy → `Fx.Hit` + `Fx.Stun(stunDuration)` + stun effect. |
-| `self_buff` | `SelfBuff` | Smoke Bomb | Buff for `duration`, plus vanilla **Cloak** for smoke. The buff gives `moveSpeedAdd`. |
-| `aura_drain` | `AuraDrain` | Siphon Life | Gives itself the `siphon` buff (a marker). Every `interval` for `duration`: `Fx.Hit` every enemy within `radius`, then heal `damageStat × damagePct × healFraction` **per enemy hit** (nominal damage, not damage after armor). Looping sound. |
-| `dash_charge` | `DashCharge` | Shoulder Charge | Body machine. Root motion at `speed` along aim (steerable). Picks up enemies it touches (`Fx.Hit` once each, carried along). Wall slam (stopped while pushing) stuns the carried enemies and ends it. |
-| `projectile_orb` | `ThrowOrb` | Lightning Ball | Slow `DlrProjectile` (sphere radius 1 m). It stops on the first wall or enemy, or once an enemy is within 1.5 m, and shocks everything within `radius` every `interval` **both in flight and stopped**. It is destroyed at `duration` or after `range`. |
-| `delayed_blast` | `DelayedBlast` | Static Charge | `SphereCastAll` along the aim, **skipping own and allied hurtboxes** (it used to hit Seven's own hurtbox and plant on him). Plants `DlrDelayed` on the enemy (follows it) or the spot. After `duration`: `Fx.Blast` in `radius` + stun. |
-| `cone` | `Cone` | Catalyst | Enemies within `range` and inside `spreadDeg` of the aim (plus a size allowance) take `damagePct` and get the `catalyst` debuff (slow, +16 % damage from Infernus). |
-| `dash_trail` | `DashTrail` | Flame Dash | Body machine. Speed ×`moveSpeedMult` for `duration`. Spawns vanilla `FireTrail` `DamageTrail` (owner = Infernus, `damagePerSecond = damage × damagePct / interval`, trail radius `radius × 0.5`, points live `chainCount` s, so `chainCount` is reused as a lifetime here). |
-| `ult_dance` | `UltDance` | Bullet Dance | After a 0.4 s intro, every `interval / attackSpeed` a bullet from a random gun at a random enemy within `radius`, for `duration`. `bullet_dance` buff = 30 % evasion (DamagePatch). Slowed by `moveSpeedMult`. |
-| `ult_leap` | `UltLeap` | Seismic Impact | Body machine. Target = the first **enemy** or ground along the aim (own and allied hurtboxes skipped; fixed in 0.2.0: it used to fly past enemies). Rise, hover, slam: `Fx.Blast(radius, damagePct)` + stun. Fall damage ignored. |
-| `ult_storm` | `UltStorm` | Storm Cloud | Body machine. Rise 6 m and hover (steerable at `moveSpeedMult`). Every `interval`, hit every enemy within a radius growing from `range` to `radius` over `speed` seconds (`range` and `speed` are reused this way), centred 6 m below the hero. `storm_cloud` buff (+30 armor). |
-| `ult_selfbomb` | `UltSelfBomb` | Concussive Combustion | `duration` fuse, slowed. Then `Fx.Blast(radius, damagePct)` and stun. |
+| `gun_auto` / `gun_burst` / `gun_shotgun` | `GunAuto/GunBurst/GunShotgun : GunState` | all 4 guns | Hold to fire every `interval/attackSpeed` s. `clipSize` magazine (`HeroRuntime.Ammo`), `reloadTime` reload (+ `reload` gesture and sound). `burst` shots `duration` apart. `pellets`, `spreadDeg`, `range`. RoR2 `BulletAttack` (Buckshot falloff for pellets, `DamageSource.Primary`). Muzzle flash, tracer from `effect`, recoil. Firing removes Smoke Bomb. On hit: `Buffs.Stack(row.buff, crit)` (the passive, §7.4) and the row's `vfx` (`hit`, or `trigger` when the stack trigger fired). |
+| `projectile` | `ThrowProjectile` | Sleep Dagger | Thrown at 40 % of `duration`. `DlrProjectile` sphere-casts at `speed` (radius `max(0.3, radius×0.5)`), passes through its own team, and dies on a wall or after `range`. First enemy → `Fx.Hit` + `Fx.Stun(stunDuration)` (4 s) + stun effect. |
+| `self_buff` | `SelfBuff` | Smoke Bomb | Buff for `duration`, plus vanilla **Cloak** for smoke. The buff gives `moveSpeedAdd` (+50 %). |
+| `mired_urn` | `MiredUrn` | Siphon Life | Gives itself the `siphon` marker buff and spawns RoR2's own **Mired Urn** attachment (`effect` = `siphon_urn`, `SiphonNearbyBodyAttachment`) on Abrams for `duration`: `SiphonNearbyController` with `radius`, `maxTargets = chainCount`, `damagePerSecondCoefficient = damagePct/100`, `tickRate = 1/interval`, `allowSiphonOutOfCombat`. It draws the tar tethers, drains (proc 0, item damage color) and heals Abrams for **all** the health it took. The state itself ends after 0.3 s, so Abrams can shoot while it drains. The loop sound stops when the attachment goes (`StopSoundOnDestroy`). |
+| `dash_charge` | `DashCharge` | Shoulder Charge | Body machine. Root motion at `speed` along aim (steerable) for up to `duration` (3 s). Every enemy it touches is hit once (`Fx.Hit`), **stunned for `stunDuration`** and carried along. Hitting a wall (stopped while pushing) ends it and stuns the carried enemies again. |
+| `projectile_orb` | `ThrowOrb` | Lightning Ball | Slow `DlrProjectile` (sphere radius 1 m). It stops on the first wall or enemy, or once an enemy is within 1.5 m, and shocks everything within `radius` every `interval` **both in flight and stopped**. Each shock also `Buffs.Stack`s the row's `buff` (Static) and draws a bolt (`vfx` hit). It is destroyed at `duration` or after `range`. |
+| `delayed_blast` | `DelayedBlast` | Static Charge | `SphereCastAll` along the aim, **skipping own and allied hurtboxes** (it used to hit Seven's own hurtbox and plant on him). Plants `DlrDelayed` on the enemy (follows it) or the spot, with the `vfx` charge ring. After `duration`: thunderbolt `vfx`, `Fx.Blast` in `radius` + stun. |
+| `lob` | `ThrowLob` | Napalm | At 30 % of `duration` throws `DlrLob`: a flask along the aim at `speed`, falling under `Physics.gravity`, passing through its own team. On the first enemy or surface (or after `range`): `effect` + `vfx` splash, then every enemy within `radius` takes `damagePct` and gets `Buffs.Apply(buff)` (`napalm`, which brings `napalm_slow` with it). `stocks` 2. |
+| `dash_trail` | `DashTrail` | Flame Dash | Body machine. Speed ×`moveSpeedMult`. A tap lasts `minDuration` (0.8 s); **holding Shift keeps it going up to `duration`** (3 s). The `flame_dash` buff (50 % slow resistance) is on for the dash. Spawns vanilla `FireTrail` `DamageTrail` (owner = Infernus, `damagePerSecond = damage × damagePct / interval`, trail radius `radius × 0.5`, points live `chainCount` s = 8 s, so `chainCount` is reused as a lifetime here). |
+| `ult_dance` | `UltDance` | Bullet Dance | After a 0.4 s intro, every `interval / attackSpeed` a bullet from a random gun at a random enemy within `radius`, for `duration`. `bullet_dance` buff = 30 % evasion (DamagePatch). Slowed by `moveSpeedMult`. `vfx` `haze_dance`: blade ring and ribbons while it runs, a burst at the muzzle and the hit per shot. |
+| `ult_leap` | `UltLeap` | Seismic Impact | Body machine, 4 phases. **Rise** for `interval` s (`ult_start` clip). **Hover** (`ult_loop`): Abrams hangs in the air (he can be hit) while the `vfx` **reticle** sits on the ground where he aims: the first enemy or ground along the aim (own/allied hurtboxes skipped), at most `range` m away on the flat, dropped to the ground. After `minDuration`, **R or Left Click** (`justPressed`) starts the dive; at `duration` it starts by itself (in test mode 0.5 s after `minDuration`). **Dive** (`ult_end`) at `speed` onto the reticle with a burning trail. **Slam** on landing: `effect` + `vfx` shockwave, `Fx.Blast(radius, damagePct)` + stun. Fall damage ignored. |
+| `ult_zone` | `UltZone` | Thunderhead | Weapon machine, 0.6 s. Plants `DlrZone` at Seven's feet for `duration` and gives Seven the `thunderhead` marker buff. Every `interval` the zone strikes up to `chainCount` random enemies within `radius` (`Fx.Hit damagePct`, `effect` impact, `vfx` bolt from the cloud), with the ult meter's `UltDamageInFlight` set so its damage never charges R. The `extra` object, RoR2's **Warbanner ward** (`WarbannerWard.prefab`: `BuffWard` with vanilla `bdWarbanner`, +30 % attack and move speed), is spawned on Seven's team with `radius` and `expireDuration = duration`. `vfx` `seven_storm`: the cloud deck and its flashes. |
+| `ult_selfbomb` | `UltSelfBomb` | Concussive Combustion | `duration` fuse (3 s), slowed. Then `Fx.Blast(radius, damagePct)` and stun (2 s). Kills by the blast (counted with `onCharacterDeathGlobal` while it lands) heal `healFraction` (10 %) of max health each. |
 
 **Interrupt priorities** (what can cut a running state off):
 
 | State | Priority |
 |---|---|
-| `DlrState` default (guns, ThrowProjectile, AuraDrain, ThrowOrb, DelayedBlast, Cone) | Skill |
+| `DlrState` default (guns, ThrowProjectile, MiredUrn, ThrowOrb, DelayedBlast, ThrowLob) | Skill |
 | `SelfBuff` | Any |
 | `DashCharge` and every `UltState` | Frozen |
 | `DashTrail` | PrioritySkill |
@@ -291,27 +292,36 @@ our states implement `ISkillState`, so RoR2 sets `activatorSkillSlot`. Without a
 - Damage, buffs and projectiles run when `NetworkServer.active`. Movement and BulletAttack run on authority.
 - The mod is **single player** (no `recipe.multiplayer`), so both are the local game.
 
-### 7.4 Passives and buffs (`buffs.json`, `Content/Buffs.cs`)
+### 7.4 Passives and buffs (`buffs.json`, `heroes.json`, `Content/Buffs.cs`)
 - **BuffDefs** are created from the sheet: `name`, `buffColor`, `canStack`, `isDebuff`, `isHidden`, icon from the cache. They are registered in the content pack.
+- **Stacking passives go through `Buffs.Stack(owner, victim, buff, crit)`** (from the gun's on-hit and Lightning Ball's shocks):
+  - a hit adds 1 stack, a **crit adds `critStacks`** (Fixation: 3, standing in for Deadlock headshots), refreshing at `maxStacks`
+  - records who applied it (for `damageTakenFromOwnerPerStack`) and applies `withBuff` too
+  - **the trigger** fires when the stacks reach `triggerStacks`: with `triggerClears` the stacks are emptied first (Static, Afterburn), without it it fires again every `triggerStacks` stacks (Fixation at 20 and 40)
+  - the trigger: `triggerDamagePct` to the victim plus up to `triggerTargets` enemies within `triggerRadius` (proc 0.5, `WeakPoint` color), `triggerStun`, `triggerBuff` on each, and the vanilla Burn when `dotDamagePct` > 0; a flash and arcs in the buff's color
+- **`Buffs.Apply(owner, victim, buff)`**: a one-stack debuff, refreshed, owner recorded, `withBuff` applied (Napalm → Napalm Slow).
+- **The four passives:**
+
+| Hero | Passive | How |
+|---|---|---|
+| Haze | **Fixation** | gun `buff` = `fixation`: +2.5 % damage from Haze per stack (max 40, 6 s), crits add 3, every 20 stacks 200 % + `fixation_slow` (12 % for 2 s) |
+| Abrams | **Infernal Resilience** | `heroes.damageHealBack` 0.1 / `damageHealBackTime` 10: `HealBack` (event on `onServerDamageDealt`) heals back 10 % of every hit he takes over 10 s, in 0.25 s pulses. `heroes.debuffResist` 0.2: `DebuffResistPatch` (prefix on the private `CharacterBody.AddTimedBuffInternal`) shortens timed debuffs on him by 20 % |
+| Seven | **Capacitor** | gun and Lightning Ball `buff` = `static` (max 10, 5 s): at 10 the stacks clear, 300 % to the target and 2 enemies within 12 m, all stunned 1 s |
+| Infernus | **Afterburn** | gun `buff` = `afterburn_buildup` (max 12, 4 s): at 12 the stacks clear and the vanilla **Burn** DoT starts (`Buffs.Burn`: 3 s, `damageMultiplier = dotDamagePct/100 × 2`, since vanilla Burn ticks 50 %/s per 1.0). The gun's `vfx` (`EmberFx`) shows embers growing with the build-up and flames while the enemy burns |
+
 - **`StatsPatch`** (Harmony postfix on `CharacterBody.RecalculateStats`) sums each active buff's columns (× stacks when
   `canStack`), then:
-  - multiplies move speed by `1 + moveSpeedAdd` when positive, and **divides** by `1 − moveSpeedAdd` when negative (like vanilla slows)
+  - multiplies move speed by `1 + moveSpeedAdd` when positive, and **divides** by `1 − moveSpeedAdd` when negative (like vanilla slows). So a true *x* % slow needs `moveSpeedAdd = −(1/(1 − x) − 1)`: Napalm Slow is −0.389 (28 %), Fixation Slow −0.136 (12 %).
+  - `slowResist` (Flame Dash 0.5): when slows have pulled the speed under the unslowed base speed (× sprint), that fraction of the gap is given back
   - multiplies attack speed by `1 + attackSpeedAdd`
   - adds armor
   - adds `regenAdd × (1 + 0.2·(level − 1))`
 
   The private property setters are invoked through `AccessTools.PropertySetter`.
-  - **Consequence:** Catalyst's `moveSpeedAdd −0.28` slows by 1 − 1/1.28 ≈ **22 %**, not the 28 % its description says.
-  - **Hard-coded vs generic:** only these four columns are generic. The `cloak` column is unused (Smoke Bomb adds vanilla Cloak because its buff id is `smoke`). The damage effects are coded per buff id (`bullet_dance`, `fixation`, `catalyst`). On-hit passives are coded per buff id (`fixation`, `afterburn_buildup`) in `GunState.OnBulletHit`.
+  - **Hard-coded vs generic:** the stat columns, `damageTakenFromOwnerPerStack`, `critStacks`, `trigger*`, `withBuff` and `slowResist` are generic. The `cloak` column is unused (Smoke Bomb adds vanilla Cloak because its buff id is `smoke`); Bullet Dance evasion reads `evasionChance` of the `bullet_dance` row.
 - **`DamagePatch`** (Harmony prefix on `HealthComponent.TakeDamage`):
   - Bullet Dance evasion (`evasionChance`, rejects the hit).
-  - **Fixation:** +`damageTakenFromOwnerPerStack` × stacks when the attacker is the owner who applied them (`Buffs.FixationOwner`).
-  - **Catalyst:** + its amount from its owner (`Buffs.CatalystOwner`).
-- **Haze passive (Fixation):** every SMG hit adds 1 `fixation` stack (max 40, 6 s).
-- **Infernus passive (Afterburn):**
-  - Every hit adds 1 `afterburn_buildup` (max 12, 4 s).
-  - At 12, `Buffs.Ignite` clears them and applies vanilla **Burn** DoT (`DotController.InflictDot`, 3 s, `damageMultiplier = dotDamagePct/100 × 2`, since vanilla Burn ticks 50 %/s per 1.0).
-  - Sound: `infernus_gun` hit.
+  - Every buff with `damageTakenFromOwnerPerStack` (Fixation per stack, Napalm once): + that much damage when the attacker is the one who applied it (`Buffs.OwnerOf`).
 
 ### 7.5 The ultimate (`Content/Ult.cs`)
 - **`UltController`** sits on every hero body:
@@ -320,21 +330,21 @@ our states implement `ISkillState`, so RoR2 sets `activatorSkillSlot`. Without a
 - **Charging:**
   - `onServerDamageDealt` adds `damageDealt / attacker.damage × 100`, i.e. the damage coefficient in %. 5000 ≈ "fifty 100 % hits".
   - `onCharacterDeathGlobal` adds `KillCharge`.
-  - The ult's own damage never charges (`UltDamageInFlight`).
+  - The ult's own damage never charges (`UltDamageInFlight`). Thunderhead's storm outlives its state, so `DlrZone` sets the flag around each strike itself.
 - **The lock:** `FixedUpdate` forces `Skill.stock = IsReady ? 1 : 0`. Nothing (Bandolier, cooldown resets) can unlock it.
 - **Firing:** RoR2's own R input does it. `body.onSkillActivatedAuthority` (when the skill is the special) and `UltState.OnEnter` both call `Consume()`, so the meter empties before the stock mirror could refill it.
 - **`UltHudPatch`** (postfix on `HUD.Update`) adds a TextMeshPro label over `hud.skillIcons[3]` (the R icon) showing `NN%` or a yellow `READY`.
 
 ### 7.6 Balance targets (from `skills.json` about + preflight)
 - **Sustained primary DPS** (magazine and reload included, computed by preflight from the row) must match `targetDps` ±10 % and sit in **240–600 %/s**. Commando's Double Tap is about 400.
-  - Haze 280, Abrams 508, Seven 313, Infernus 255.
+  - Haze 280, Abrams 508, Seven 250 (48 % per bullet since v0.3.0, because Capacitor adds about 30 % per hit on top), Infernus 255.
 - **Known mismatch, Seven:**
   - Preflight times a burst cycle as `interval + (burst−1)·duration`.
   - `GunState` re-arms the next burst `interval` after the burst *starts*, so the real cycle is just `interval` (0.2625 s).
-  - Seven's real sustained DPS is therefore about **440 %/s**, not 313. It is still inside the band, but stronger than the sheet says.
+  - Seven's real sustained gun DPS is therefore about **350 %/s** (before Capacitor), not 250. It is still inside the band, but stronger than the sheet says.
   - Fix either the preflight formula or the gun's re-arm timing (doc 03 §10).
 - **Cooldowns:** the targets are secondaries 2–8 s and utilities 4–10 s. **Preflight only checks that they are > 0.** The `about` of skills.json still mentions "specials" and a 300–450 %/s band from before v0.2.0.
-- **Ult total damage** must be 1500–3000 % (dance and storm: duration/interval × damagePct).
+- **Ult total damage** must be 1500–3000 % (dance and zone: duration/interval × damagePct per target; Thunderhead 10/0.4 × 110 = 2750 %).
 - **Stats** are anchored to RoR2 analogs (see `stats.json`): Abrams is Loader-like (160 HP +48/lvl, 20 armor, 2.5 regen), Haze and Seven 110 HP +33, Infernus 130 HP +39. Damage is 12 +2.4 for everyone.
 
 ---
@@ -355,7 +365,28 @@ our states implement `ISkillState`, so RoR2 sets `activatorSkillSlot`. Without a
   - **Master volume** = `volume_master/100 × volume_sfx/100` (RoR2 convars, re-read once per second), × config `Audio/Deadlock sound volume`, × 0.55, and 0 when the window is unfocused.
   - Guns play their `cast` sound per shot, but never their `hit` sound; the Afterburn ignite uses `infernus_gun.hit`.
   - `Play(event, pos, loop)` returns an id for `Stop(id)`. The `Played` counter is logged by the test.
-- **Effects** (`effects.json`) are RoR2's own prefabs by Addressables key, e.g. `RoR2/Base/Commando/TracerCommandoDefault.prefab`. Prefabs with an `EffectComponent` go through `EffectManager.SpawnEffect` (scale = radius when `scaleWithRadius`). Others are instantiated and destroyed after 3 s. Ghost prefabs (dagger, lightning orb) have their `ProjectileGhostController` and colliders stripped. Check any new key against `tools/dev/addressable_keys.txt` (preflight does).
+- **Effects** (`effects.json`) are RoR2's own prefabs by Addressables key, e.g. `RoR2/Base/Commando/TracerCommandoDefault.prefab`. Prefabs with an `EffectComponent` go through `EffectManager.SpawnEffect` (scale = radius when `scaleWithRadius`). Others are instantiated and destroyed after 3 s. Ghost prefabs (dagger, lightning orb) have their `ProjectileGhostController` and colliders stripped. Kinds `attachment` (Mired Urn) and `ward` (Warbanner) are RoR2 objects the skill kinds spawn themselves. Check any new key against `tools/dev/addressable_keys.txt` (preflight does).
+
+### 8.1 Our own visual effects (`Runtime/Vfx.cs`, effects of kind `custom`)
+The creator asked for effects that look like Deadlock's but are **built by us in Unity**, not ripped from Deadlock's
+particle files. A skill's `vfx` column names a `custom` effects row; `Vfx.Play(id, moment, at, radius, follow, to)`
+builds it at runtime from `ParticleSystem`, `LineRenderer`, `TrailRenderer` and `Light` objects, drawn with RoR2's own
+materials (effects rows of kind `material`: `mat_glow`, `mat_tracer`, `mat_lightning`, `mat_ring`, `mat_fire`,
+`mat_smoke`, `mat_spark`, `mat_area`), copied and tinted (`_TintColor`/`_Color`). No AssetBundle is needed.
+
+| vfx | Moments | What you see |
+|---|---|---|
+| `haze_dance` | loop, cast, hit, end | blade ring spinning at the waist with three pink/violet ribbons, sparks, a violet light and a faint ring at the dance's reach; a burst at the muzzle and sparks at the hit for every shot; a ring when it ends |
+| `abrams_slam` | cast, aim, loop, hit | dust ring at take-off; the **reticle** (RoR2's area-indicator dome where it meets the ground, a spinning dashed ring, a pulsing inner ring, a light beam); a burning trail on the dive; two shockwave rings, dust, sparks with gravity, a big flash and a camera shake on impact |
+| `seven_ball` | loop, hit, end | white-hot core, blue halo, sparks and crackling arcs around the ball, a flickering light; a bolt to every enemy it shocks; a burst and ring when it ends |
+| `seven_static` | cast, hit | a dashed ring closing in on the target while it counts down, arcs and sparks; a thunderbolt from 40 m up with a flash, shock ring and camera shake (RoR2's own `LightningStrikeImpact` plays too) |
+| `seven_storm` | loop, hit | a dark churning cloud deck 14 m over the zone with lightning flashing inside, falling rain streaks and a dashed edge ring; a bolt from the cloud to each struck enemy |
+| `infernus_afterburn` | hit, trigger | `EmberFx` on the enemy: embers growing with the build-up stacks, flames and a glow while it burns; a flare up the body when it ignites |
+| `infernus_napalm` | loop, hit | a hot glowing flask with a fire trail; a burning splash ring, fire, smoke and a flash |
+
+`Buffs.Stack` triggers draw a flash and arcs in the buff's `color`. `Vfx.Stop(go)` ends a looping effect: particles
+stop emitting, lights fade, and the object goes once they have faded. Roots that follow a destroyed object stop by
+themselves. Effects run where the skill code runs (the host in single player).
 
 ---
 
@@ -365,8 +396,14 @@ our states implement `ISkillState`, so RoR2 sets `activatorSkillSlot`. Without a
 |---|---|---|---|
 | content | event | `ContentManager.collectContentPackProviders` | register bodies, survivors, skills, families, states, buffs |
 | language | Harmony prefix | `Language.GetLocalizedStringByToken(string)` | `DLR_*` tokens |
-| stats | Harmony postfix | `CharacterBody.RecalculateStats()` | buff stat adds |
-| damage_mods | Harmony prefix | `HealthComponent.TakeDamage(DamageInfo)` | Fixation/Catalyst amp, Bullet Dance evasion |
+| stats | Harmony postfix | `CharacterBody.RecalculateStats()` | buff stat adds, slow resistance |
+| damage_mods | Harmony prefix | `HealthComponent.TakeDamage(DamageInfo)` | Fixation/Napalm amp from their owner, Bullet Dance evasion |
+| debuff_resist | Harmony prefix | `CharacterBody.AddTimedBuffInternal` (private) | Infernal Resilience: shorter debuffs on Abrams |
+| heal_back | event | `GlobalEventManager.onServerDamageDealt` | Infernal Resilience: heal back part of each hit |
+| stack_triggers | component | `Buffs.Stack` (our guns and projectiles) | Fixation burst, Static discharge, Afterburn ignition |
+| mired_urn | component | RoR2 `SiphonNearbyBodyAttachment` on Abrams | Siphon Life tethers, drain and heal |
+| warbanner_ward | component | RoR2 `WarbannerWard` (BuffWard) | Thunderhead's +30 % attack and move speed |
+| kill_heal | event | `GlobalEventManager.onCharacterDeathGlobal` | Concussive Combustion heals per kill |
 | ult charge | events | `GlobalEventManager.onServerDamageDealt`, `onCharacterDeathGlobal` | meter |
 | ult_slot | component | `UltController` on the body | lock R until charged |
 | hud_ult_icon | Harmony postfix | `RoR2.UI.HUD.Update()` | charge % on the R icon |
@@ -381,6 +418,7 @@ Private members we touch by reflection, which **can break on a RoR2 update**:
 - `CharacterBody` stat property setters
 - `LoadoutPanelController.Row`, a private nested type (`FromSkin`, `rowData`, `AddButton`)
 - `CameraModeBase.camToRawInstanceData` (test mode only)
+- `CharacterBody.AddTimedBuffInternal` (private method, patched by name for debuff resistance)
 
 ---
 
@@ -409,6 +447,7 @@ hand-written copy works for local runs). The JSON's `"checks"` value is the file
      - Teleport back to the arena, face the same way, and aim the camera.
      - Summon 2 Lemurians (AI off; 200 stacks of BoostHp, i.e. +2000 % health, so ults don't kill them before a stun can be seen) at 6 m (10 m for guns and the leap), the second 1.5 m further and 2 m to the side, on the ground under that spot.
      - If the row expects `self_heal`, take 40 % NonLethal damage first.
+     - Seismic Impact has no player to press R during the hover: in test mode it dives 0.5 s after `minDuration`, onto the reticle on the first target. Flame Dash is not held, so it lasts `minDuration`.
      - Subscribe `onServerDamageDealt` (damage dealt by the hero to the targets) and `HealthComponent.onCharacterHealServer`.
      - Fire through the **real** skill slot:
        - primary: hold via `WantsFire` for 2.5 s
@@ -418,8 +457,9 @@ hand-written copy works for local runs). The JSON's `"checks"` value is the file
        - keep `aimDirection` on a live target
        - poll target buffs, `StunState` on the Body state machine, Burn DoT, self buffs, cloak, and distance moved
      - Compare against the row's **`expect`** list (`enemy_damage`, `enemy_stun`, `enemy_burn`, `enemy_debuff:<buff>`, `self_buff:<buff>`, `self_heal`, `self_move` > 3 m, `self_cloak`). Log what was seen and anything missing. Log damage to other bodies as "other damage seen".
+   - **Heal-back passive** (heroes with `damageHealBack`, i.e. Abrams): take 40 % NonLethal damage, wait 1.5 s, and require some heal.
    - Read `GunDrift`.
-   - Report `<hero>-plays` (gun + 2 abilities + ult all as expected).
+   - Report `<hero>-plays` (gun + 2 abilities + ult all as expected, and the heal-back passive). The other passives are in the gun rows' `expect`: Haze's gun must apply `fixation_slow` (the 20-stack burst), Seven's must stun (the Static discharge), Infernus' must burn (Afterburn ignition).
    - Check level growth.
    - Kill the targets and give a level.
 4. **Summary checks** (each name is written **once**: the first `Write` for a name wins, so a per-hero `fail ult-charges` is not overwritten by the final `pass`):
@@ -428,7 +468,7 @@ hand-written copy works for local runs). The JSON's `"checks"` value is the file
    - `gun-aims`, `gun-in-hand`, `four-slots`
    - `level-stats`, `hero-scale`
 
-**The recipe** can list at most 12 checks. 0.2.0 lists:
+**The recipe** can list at most 12 checks, so the passives are folded into `<hero>-plays` rather than given a check of their own. 0.2.0 (and 0.3.0) list:
 - `deadlock-content`, `survivors-listed`
 - `haze-plays`, `abrams-plays`, `seven-plays`, `infernus-plays` (these cover every skill's effects)
 - `ult-charges`, `gun-aims`, `gun-in-hand`, `four-slots`, `level-stats`, `hero-scale`
@@ -486,3 +526,5 @@ hand-written copy works for local runs). The JSON's `"checks"` value is the file
 11. **Test-mode flakiness** comes from the stage: random first stage, slopes, and monsters wandering in. Use the arena reset and `QuietStage`.
 12. **The Melty app turns BepInEx off between its own launches** (`winhttp.dll` → `winhttp.dll.melty-off`). For a manual dev launch, copy it back to `winhttp.dll` (`tools/dev_run.sh` does). Delete the copy afterwards so the folder is the way Melty left it.
 13. **Steam must be signed in** for launches. A "Sign in to Steam" window blocks `steam://run/632360` silently.
+14. **Runtime particle systems:** a new `ParticleSystem` starts playing; `Stop(true, StopEmittingAndClear)` it before setting `main.duration`, or Unity logs an error and ignores it (`Vfx.Particles` does).
+15. **Negative `moveSpeedAdd` divides** speed: write the slow you want as `−(1/(1 − x) − 1)` (§7.4).

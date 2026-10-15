@@ -29,7 +29,7 @@ namespace DeadlockOfRain.States
     [Kind("ult_dance")]
     public sealed class UltDance : UltState
     {
-        float next; int loop; float startDelay;
+        float next; int loop; float startDelay; GameObject vfx;
         static readonly System.Random rng = new System.Random();
         public override void OnEnter()
         {
@@ -44,7 +44,12 @@ namespace DeadlockOfRain.States
         {
             base.FixedUpdate();
             if (fixedAge < startDelay) return;
-            if (loop == 0) { loop = Fx.Loop(row.Id, transform.position); if (anim) anim.Override("ult_loop", row.Duration, true); }
+            if (loop == 0)
+            {
+                loop = Fx.Loop(row.Id, transform.position);
+                if (anim) anim.Override("ult_loop", row.Duration, true);
+                vfx = Vfx.Play(row.Vfx, "loop", transform.position, row.Radius, transform);
+            }
             if (fixedAge >= next)
             {
                 next = fixedAge + row.Interval / attackSpeedStat;
@@ -66,6 +71,8 @@ namespace DeadlockOfRain.States
                             force = 50f, bulletCount = 1, falloffModel = BulletAttack.FalloffModel.None,
                         }.Fire();
                     }
+                    Vfx.Play(row.Vfx, "cast", from);
+                    Vfx.Play(row.Vfx, "hit", target.transform.position);
                     Fx.Sound(row.Id, "hit", transform.position);
                 }
             }
@@ -75,6 +82,8 @@ namespace DeadlockOfRain.States
         {
             DeadlockAudio.Stop(loop);
             Sound("end");
+            Vfx.Stop(vfx, 0.5f);
+            Vfx.Play(row.Vfx, "end", transform.position);
             if (anim) anim.StopOverride();
             base.OnExit();
         }
@@ -84,132 +93,141 @@ namespace DeadlockOfRain.States
     [Kind("ult_leap")]
     public sealed class UltLeap : UltState
     {
-        Vector3 target; int phase; float phaseStart; int loop;
+        // rise for interval seconds, hover while a reticle on the ground follows the aim (at least minDuration, at most
+        // duration), then dive at speed onto the reticle and slam
+        enum Phase { Rise, Hover, Dive, Done }
+        Phase phase; float phaseStart; int loop; Vector3 target; GameObject reticle, trail;
+
         public override void OnEnter()
         {
             base.OnEnter();
             Sound("cast");
-            // land on the enemy you aim at, or on the ground you aim at (own and allied hurtboxes are skipped)
+            characterBody.bodyFlags |= CharacterBody.BodyFlags.IgnoreFallDamage;
+            Vfx.Play(row.Vfx, "cast", characterBody.footPosition, row.Radius);
+            if (anim) anim.Override("ult_start", row.Interval);
+            if (characterMotor) { characterMotor.Motor.ForceUnground(); characterMotor.velocity = Vector3.up * row.Speed * 0.6f; }
+            loop = Fx.Loop(row.Id, transform.position);
+            target = characterBody.footPosition;
+        }
+
+        /// <summary>Where the slam lands: the enemy or ground under the crosshair, at most range away (flat distance).</summary>
+        Vector3 AimPoint()
+        {
             var aim = GetAimRay();
-            target = aim.origin + aim.direction * row.Range;
-            var hits = Physics.SphereCastAll(aim, 0.5f, row.Range, LayerIndex.world.mask | LayerIndex.entityPrecise.mask, QueryTriggerInteraction.Ignore);
-            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+            var point = aim.origin + aim.direction * row.Range;
+            var hits = Physics.SphereCastAll(aim, 0.5f, row.Range * 2f, LayerIndex.world.mask | LayerIndex.entityPrecise.mask, QueryTriggerInteraction.Ignore);
+            System.Array.Sort(hits, (x, y) => x.distance.CompareTo(y.distance));
             foreach (var h in hits)
             {
                 var hb = h.collider.GetComponent<HurtBox>();
                 if (hb && (!hb.healthComponent || !hb.healthComponent.body || hb.healthComponent.body.teamComponent.teamIndex == teamComponent.teamIndex)) continue;
-                target = hb ? hb.healthComponent.body.footPosition : h.point;
+                point = hb ? hb.healthComponent.body.footPosition : h.point;
                 break;
             }
-            if (Physics.Raycast(target + Vector3.up * 2f, Vector3.down, out var ground, 200f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) target = ground.point;
-            characterBody.bodyFlags |= CharacterBody.BodyFlags.IgnoreFallDamage;
-            if (anim) anim.Override("ult_start", row.Duration * 0.6f);
-            if (characterMotor) { characterMotor.Motor.ForceUnground(); characterMotor.velocity = Vector3.up * row.Speed * 0.6f; }
-            loop = Fx.Loop(row.Id, transform.position);
+            var flat = point - transform.position; flat.y = 0;
+            if (flat.magnitude > row.Range) point = transform.position + flat.normalized * row.Range;
+            if (Physics.Raycast(point + Vector3.up * 3f, Vector3.down, out var ground, 300f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) point = ground.point;
+            return point;
         }
+
         public override void FixedUpdate()
         {
             base.FixedUpdate();
             if (!characterMotor) { if (isAuthority) outer.SetNextStateToMain(); return; }
             if (isAuthority) characterMotor.moveDirection = Vector3.zero;
-            if (phase == 0 && fixedAge >= row.Duration * 0.6f) { phase = 1; phaseStart = fixedAge; if (anim) anim.Override("ult_loop", 0.25f, true); }
-            if (phase == 0 && isAuthority)
+            float t = fixedAge - phaseStart;
+            switch (phase)
             {
-                var flat = target - transform.position; flat.y = 0;
-                characterMotor.velocity = new Vector3(flat.x, 0, flat.z) / Mathf.Max(0.3f, row.Duration) + Vector3.up * Mathf.Max(characterMotor.velocity.y, 2f);
-            }
-            if (phase == 1)
-            {
-                if (isAuthority) characterMotor.velocity = Vector3.zero;
-                if (fixedAge - phaseStart > 0.25f) { phase = 2; Fx.Sound(row.Id, "hit", transform.position); if (anim) anim.Override("ult_end", 0.6f); }
-            }
-            if (phase == 2)
-            {
-                if (isAuthority)
+                case Phase.Rise:
+                    if (isAuthority) characterMotor.velocity = Vector3.up * (row.Speed * 0.6f * Mathf.Clamp01(1f - t / row.Interval) + 2f);
+                    if (t >= row.Interval)
+                    {
+                        phase = Phase.Hover; phaseStart = fixedAge;
+                        if (anim) anim.Override("ult_loop", row.Duration, true);
+                        target = AimPoint();
+                        reticle = Vfx.Play(row.Vfx, "aim", target, row.Radius);
+                    }
+                    break;
+                case Phase.Hover:
                 {
-                    var to = target - transform.position;
-                    characterMotor.velocity = to.normalized * row.Speed;
+                    // hang in the air (a slow bob) while the reticle follows the crosshair; Abrams can still be hit
+                    if (isAuthority) characterMotor.velocity = Vector3.up * Mathf.Sin(t * 3f) * 0.6f;
+                    target = AimPoint();
+                    if (reticle) reticle.transform.position = target;
+                    bool pressed = inputBank && (inputBank.skill4.justPressed || inputBank.skill1.justPressed);
+                    // test mode has no player to press: it slams shortly after the reticle is up
+                    bool test = MeltyTest.Active && t >= row.MinDuration + 0.5f;
+                    if (t >= row.Duration || t >= row.MinDuration && (pressed || test))
+                    {
+                        phase = Phase.Dive; phaseStart = fixedAge;
+                        Fx.Sound(row.Id, "hit", transform.position);
+                        if (anim) anim.Override("ult_end", 0.6f);
+                        trail = Vfx.Play(row.Vfx, "loop", transform.position, row.Radius, transform);
+                    }
+                    break;
                 }
-                if (characterMotor.isGrounded || Vector3.Distance(transform.position, target) < 1.5f || fixedAge > row.Duration + 3f)
-                {
-                    Slam();
-                    if (isAuthority) outer.SetNextStateToMain();
-                }
+                case Phase.Dive:
+                    if (isAuthority) characterMotor.velocity = (target - transform.position).normalized * row.Speed;
+                    if (reticle) reticle.transform.position = target;
+                    if (characterMotor.isGrounded && t > 0.1f || Vector3.Distance(transform.position, target) < 1.5f || t > 3f)
+                    {
+                        Slam();
+                        if (isAuthority) outer.SetNextStateToMain();
+                    }
+                    break;
             }
         }
+
         void Slam()
         {
-            phase = 3;
-            Fx.Impact(row.Effect, transform.position, row.Radius);
-            Fx.Sound(row.Id, "end", transform.position);
+            phase = Phase.Done;
+            var at = characterBody.footPosition;
+            Fx.Impact(row.Effect, at, row.Radius);
+            Vfx.Play(row.Vfx, "hit", at, row.Radius);
+            Fx.Sound(row.Id, "end", at);
             if (Server)
             {
-                Fx.Blast(characterBody, transform.position, row.Radius, Coef, row.ProcCoefficient);
-                foreach (var hb in Fx.Enemies(characterBody, transform.position, row.Radius)) Fx.Stun(hb.healthComponent, row.StunDuration);
+                Fx.Blast(characterBody, at, row.Radius, Coef, row.ProcCoefficient);
+                foreach (var hb in Fx.Enemies(characterBody, at, row.Radius)) Fx.Stun(hb.healthComponent, row.StunDuration);
             }
             if (characterMotor) characterMotor.velocity = Vector3.zero;
         }
+
         public override void OnExit()
         {
             DeadlockAudio.Stop(loop);
+            Vfx.Stop(reticle, 0.1f);
+            Vfx.Stop(trail, 0.4f);
             characterBody.bodyFlags &= ~CharacterBody.BodyFlags.IgnoreFallDamage;
-            if (phase != 3 && Server) Slam();
+            if (phase != Phase.Done && Server) Slam();
             if (anim) anim.StopOverride();
             base.OnExit();
         }
     }
 
-    // ---------------- Seven: Storm Cloud ----------------
-    [Kind("ult_storm")]
-    public sealed class UltStorm : UltState
+    // ---------------- Seven: Thunderhead ----------------
+    [Kind("ult_zone")]
+    public sealed class UltZone : UltState
     {
-        float next; int loop; float hoverY;
-        static readonly System.Random rng = new System.Random();
         public override void OnEnter()
         {
             base.OnEnter();
             Sound("cast");
-            loop = Fx.Loop(row.Id, transform.position);
-            if (anim) anim.Override("ult_start", 0.8f);
-            if (Server) Buffs.AddTimed(characterBody, row.Buff, row.Duration);
-            if (characterMotor) { characterMotor.Motor.ForceUnground(); characterMotor.velocity = Vector3.up * 14f; }
-            hoverY = transform.position.y + 6f;
-            characterBody.bodyFlags |= CharacterBody.BodyFlags.IgnoreFallDamage;
+            if (anim) anim.Override("ult_start", 0.6f);
+            if (Server)
+            {
+                Buffs.AddTimed(characterBody, row.Buff, row.Duration);
+                DlrZone.Plant(characterBody, row, characterBody.footPosition);
+            }
         }
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (fixedAge > 0.8f && anim && fixedAge - Time.fixedDeltaTime <= 0.8f) anim.Override("ult_loop", row.Duration, true);
-            if (isAuthority && characterMotor)
-            {
-                var mv = inputBank ? inputBank.moveVector : Vector3.zero;
-                var v = mv * moveSpeedStat * row.MoveSpeedMult;
-                float dy = hoverY - transform.position.y;
-                v.y = fixedAge < 0.5f ? Mathf.Max(characterMotor.velocity.y, 4f) : Mathf.Clamp(dy * 3f, -4f, 4f);
-                characterMotor.moveDirection = Vector3.zero;
-                characterMotor.velocity = v;
-            }
-            float radius = Mathf.Lerp(row.Range, row.Radius, Mathf.Clamp01(fixedAge / row.Speed));
-            if (fixedAge >= next)
-            {
-                next = fixedAge + row.Interval;
-                if (Server)
-                {
-                    var center = transform.position; center.y -= 6f;
-                    var enemies = Fx.Enemies(characterBody, center, radius);
-                    foreach (var hb in enemies) Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, hb.transform.position, default, DamageColorIndex.Default);
-                    for (int i = 0; i < Mathf.Min(3, enemies.Count); i++) Fx.Impact(row.Effect, enemies[rng.Next(enemies.Count)].transform.position);
-                    if (enemies.Count > 0) Fx.Sound(row.Id, "hit", center);
-                }
-            }
-            if (fixedAge >= row.Duration && isAuthority) outer.SetNextStateToMain();
+            if (fixedAge >= 0.6f && isAuthority) outer.SetNextStateToMain();
         }
         public override void OnExit()
         {
-            DeadlockAudio.Stop(loop);
-            Sound("end");
-            if (anim) { anim.Override("ult_end", 0.4f); }
-            characterBody.bodyFlags &= ~CharacterBody.BodyFlags.IgnoreFallDamage;
+            if (anim) anim.StopOverride();
             base.OnExit();
         }
     }
@@ -242,8 +260,14 @@ namespace DeadlockOfRain.States
                 Sound("end");
                 if (Server)
                 {
-                    Fx.Blast(characterBody, transform.position, row.Radius, Coef, row.ProcCoefficient);
+                    // each kill by the blast heals healFraction of max health (deaths are reported while the blast lands)
+                    int kills = 0;
+                    System.Action<DamageReport> onDeath = r => { if (r != null && r.attackerBody == characterBody) kills++; };
+                    GlobalEventManager.onCharacterDeathGlobal += onDeath;
+                    try { Fx.Blast(characterBody, transform.position, row.Radius, Coef, row.ProcCoefficient); }
+                    finally { GlobalEventManager.onCharacterDeathGlobal -= onDeath; }
                     foreach (var hb in Fx.Enemies(characterBody, transform.position, row.Radius)) Fx.Stun(hb.healthComponent, row.StunDuration);
+                    if (kills > 0 && row.HealFraction > 0) healthComponent.HealFraction(row.HealFraction * kills, default);
                 }
             }
             if (fixedAge >= row.Duration + 0.6f && isAuthority) outer.SetNextStateToMain();

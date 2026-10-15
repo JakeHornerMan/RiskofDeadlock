@@ -58,7 +58,7 @@ namespace DeadlockOfRain
         }
 
         static string MachineFor(string kind) =>
-            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "ult_storm" ? "Body" : "Weapon";
+            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" ? "Body" : "Weapon";
 
         public static IEnumerator Build()
         {

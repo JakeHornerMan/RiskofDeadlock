@@ -1,6 +1,6 @@
 # 04: Ability redesign proposals (planning)
 
-> **Status: proposal only. Nothing here is implemented yet.**
+> **Status: decided and implemented in v0.3.0. The creator's picks are in §6**; sections 1–5 are the proposals they chose from.
 > The creator picks one option (or a mix) per hero. The chosen kit then goes into `design/skills.json` /
 > `buffs.json` / `heroes.json`, gets its `expect` lists, and the other docs are updated as usual (see `CLAUDE.md`).
 >
@@ -210,3 +210,30 @@ A **mix-and-match** is fine: options are per slot, not all-or-nothing. In RoR2 t
 - **Cooldowns** follow the §0 bands. Ult totals stay within 1500–3000 % (preflight).
 - **Seven's gun DPS** is really about 440 %/s (doc 02 §7.6). If his passive adds chain damage (Alt A or B), lower his gun's `damagePct` to compensate.
 - **Rename Catalyst to Napalm** in every option (it is Deadlock's current name). Its sound events (`Inferno.Incend.*`) are unchanged.
+
+---
+
+## 6. What the creator chose (v0.3.0, 2026-10-16)
+
+Asked slot by slot. Several picks are the creator's own versions rather than A or B.
+
+| Hero | Slot | Pick | Numbers in the sheets |
+|---|---|---|---|
+| Haze | Passive | **Alt A Fixation** | +2.5 %/stack, max 40, 6 s; crits add 3; every 20 stacks 200 % + 12 % slow 2 s |
+| Haze | M2 | **Current Sleep Dagger, retuned** | 350 %, RoR2 stun **4 s**, cooldown **10 s** |
+| Haze | Shift | **Current Smoke Bomb, retuned** | invisible **5 s**, **+50 %** speed, cooldown **12 s** |
+| Haze | R | **Current Bullet Dance** | unchanged numbers; "lots of cool VFX built in Unity, similar to Deadlock, not a rip from the Deadlock engine files" |
+| Abrams | Passive | **Alt A Infernal Resilience, softened** | heals back **10 % of damage taken over 10 s**; debuffs 20 % shorter |
+| Abrams | M2 | **Siphon Life as RoR2's Mired Urn** (creator's idea) | RoR2's own Mired Urn tethers: **3 targets, 25 m, 8 s**, 250 %/s each, heals for all of it; cooldown **15 s** |
+| Abrams | Shift | **Current Shoulder Charge, retuned** | lasts **3 s**, **every enemy hit is stunned 1 s** (no wall needed); cooldown **8 s** |
+| Abrams | R | **Seismic Impact rebuilt** (creator's version) | rise, **hover up to 3 s with a ground reticle you aim** (≤ 40 m), R or Left Click slams; **he can be hit** while hovering; new effects and re-timed animation; 2200 %, 12 m, stun 1.6 s |
+| Seven | Passive | **Alt B Capacitor** | Static max 10, 5 s; at 10: 300 % to the target + 2 nearby, stun 1 s; gun lowered to 48 % per bullet |
+| Seven | M2 | **Current Lightning Ball** | its shocks build Static too; rebuilt effects (240 %/s, ticks every 0.25 s) |
+| Seven | Shift | **Current Static Charge** | unchanged numbers; a Risk of Rain-style thunderbolt |
+| Seven | R | **Alt B Thunderhead**, placed where Seven stands | 20 m zone, 10 s, strikes up to 4 enemies every 0.4 s for 110 %; the attack speed is **RoR2's Warbanner** ward with its ground ring (creator's idea) |
+| Infernus | Passive | **Current Afterburn** | unchanged numbers; clear effects on burning enemies |
+| Infernus | M2 | **Alt A Napalm** | lobbed flask, 5 m splash, 300 %, 28 % slow 4 s, +16 % damage from Infernus 8 s; 2 charges, 5 s |
+| Infernus | Shift | **Alt A Flame Dash** | hold up to 3 s, 50 % slow resistance, trail stays **8 s**; 8 s |
+| Infernus | R | **Alt A Concussive Combustion** | 3 s fuse, 2500 % in 18 m, stun 2 s, each kill heals 10 % |
+
+How each is built: doc 02 §7.3 (kinds), §7.4 (passives) and §8.1 (effects).

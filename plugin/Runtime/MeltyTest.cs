@@ -188,14 +188,31 @@ namespace DeadlockOfRain
                         if (!result.Charged) Write("ult-charges", false, hero.Id + ": damage did not charge the ult");
                     }
                 }
+                // a heal-back passive (Abrams' Infernal Resilience) gives part of a hit back over the next seconds
+                bool passive = true;
+                if (hero.DamageHealBack > 0f)
+                {
+                    body = master.GetBody();
+                    var hc = body.healthComponent;
+                    float healed = 0f;
+                    System.Action<HealthComponent, float, ProcChainMask> onHeal = (h, amount, mask) => { if (h == hc) healed += amount; };
+                    HealthComponent.onCharacterHealServer += onHeal;
+                    hc.godMode = false;
+                    hc.TakeDamage(new DamageInfo { damage = hc.fullHealth * 0.4f, position = body.corePosition, damageType = DamageType.NonLethal | DamageType.BypassArmor, procCoefficient = 0f });
+                    hc.godMode = true;
+                    yield return new WaitForSeconds(1.5f);
+                    HealthComponent.onCharacterHealServer -= onHeal;
+                    Log.Info($"Melty test: {hero.Id} passive heal-back: healed {healed:F0} in 1.5s");
+                    passive = healed > 0f;
+                }
                 if (anim)
                 {
                     Log.Info($"Melty test: {hero.Id} gun drift from the hand over all skills: {anim.GunDrift * 100f:F1} cm");
                     if (anim.GunDrift > 0.02f) { handOk = false; handWhy += $"{hero.Id}: gun moved {anim.GunDrift * 100f:F1} cm in the hand; "; }
                 }
 
-                bool plays = gun && abilities == 2 && ultFired;
-                Write(hero.Id + "-plays", plays, $"gun={gun}, abilities={abilities}/2, ult={ultFired}");
+                bool plays = gun && abilities == 2 && ultFired && passive;
+                Write(hero.Id + "-plays", plays, $"gun={gun}, abilities={abilities}/2, ult={ultFired}, passive={passive}");
                 if (plays) heroes++;
 
                 // level-up growth matches the sheet (no items in a fresh run)
