@@ -7,6 +7,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 A Melty mashup that adds Deadlock heroes (Haze, Abrams, Seven, Infernus) to Risk of Rain 2 as survivors. It reads
 Deadlock's assets from the player's own install; nothing from either game ships.
 
+## Origin and goals (from Melty's original setup brief, as summarised by the creator)
+- A real mashup: you play inside RoR2, and Deadlock supplies its real heroes, read from the player's own install. Nothing is copied out of either game.
+- The creator picked "Deadlock heroes drop into RoR2": pick Haze, Seven or Abrams (Infernus was added later) from the
+  survivor menu, each with their real model, gun sounds and Deadlock abilities. Solo first; **co-op with friends planned for later**.
+- Options not chosen, kept as possible future ideas: a Deadlock Soul shop between teleporters (real Deadlock items stacking
+  with RoR2's), both combined, or RoR2 music and sounds inside Deadlock (look-and-sound only, because of Deadlock's limits).
+- Working agreement: the agent does all technical work (tools, loaders, build, package, test) and talks to the creator
+  about the game only, in plain words. Ask only for a sign-in, a payment, before starting a game while the creator is at the PC,
+  and before publishing. Never close a game the creator has open; ask before taking over mouse and keyboard.
+- Melty listing needs a title, tagline, description, license/remix choice and a real in-game screenshot; test through
+  Melty's `test_release` before asking to publish.
+
 ## Read these first
 1. `docs/03-PROCESS-OVERVIEW.md`: what the project is, repo layout, workflow, testing, releasing on Melty, git rules, add-a-hero checklist.
 2. `docs/01-DEADLOCK-ASSETS.md`: Deadlock side: VPK paths, the extractor, the DLM format, manifest, sounds, exploration tools.
