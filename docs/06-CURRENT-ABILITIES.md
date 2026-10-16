@@ -4,6 +4,11 @@
 > behaviour, passive, ult meter) updates this page **and** adds a "retest needed" row to doc 05 §0, in the same commit
 > (CLAUDE.md standing rule). After `bash tools/run_bench.sh`, the DPS columns here and doc 05 are refreshed together.
 
+**Pages (claude.ai Artifacts, private to the creator):** [Haze](https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p) ·
+[Abrams](https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG) · [Seven](https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m) ·
+[Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) · [Balance vs Commando](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3).
+Built by `python tools/kit_pages.py` (into `build/pages/`); republish each to its link when this doc or doc 05 changes.
+
 **Version:** 0.3.0 (commit `081139c`, 2026-10-16). **DPS source:** the benchmark of 2026-10-16 (commit `714977f`;
 doc 05 has every variable): Monsoon, level 1, no items, 12 still enemies 10–15 m away, perfect aim, **each ability
 used alone, whenever ready, for 30 s**.

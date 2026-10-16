@@ -77,6 +77,7 @@ tools/package.py          builds build/DeadlockOfRain-<ver>.zip (+ .json with si
 tools/dev_run.sh          kill RoR2, re-enable BepInEx, deploy the built DLL, launch via Steam
 tools/run_test.sh         full local test run (test mode + devshots), prints every check
 tools/lab_restore.sh      put the PC back the way Melty set it up
+tools/kit_pages.py        builds the hero kit pages + balance page (claude.ai Artifacts, links in doc 06) into build/pages/
 tools/run_bench.sh        DPS benchmark (Monsoon, 12-enemy pack, 30 s passes) -> build/bench_results.txt; closes the game itself (doc 05)
 tools/dlm_*.py            DLM debugging (skinning check, triangles, submeshes, gun pose per clip)
 tools/dev/                (gitignored) listings from this PC's installs: vpk_files.txt, sound_events.txt, anim_names.json, addressable_keys.txt

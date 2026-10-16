@@ -44,6 +44,7 @@ Deadlock's assets from the player's own install; nothing from either game ships.
   and measured DPS. Any change to an ability (sheet numbers, kind behaviour, passives, the ult meter) updates doc 06
   **and** adds a row to the "Retest needed" table in `docs/05-DAMAGE-COMPARISON.md` §0, in the same commit. After
   `bash tools/run_bench.sh`, refresh the DPS in docs 05 and 06 and clear the flags that run covered. Visual-only changes need no flag.
+  Then update `tools/kit_pages.py`, run it, and republish the five pages to their existing links (listed at the top of doc 06).
 - Every skill row needs an `expect` list. A skill must measurably affect an enemy or the player, and `tools/run_test.sh` checks it in game.
 
 ## Architecture (big picture)
