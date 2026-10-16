@@ -217,10 +217,9 @@ namespace DeadlockOfRain
                 {
                     if (!to.HasValue) return null;
                     var from = new Vector3(to.Value.x + Random.Range(-2f, 2f), at.y + cloudHeight, to.Value.z + Random.Range(-2f, 2f));
-                    Bolt(from, to.Value, sevenWhite, 0.35f, 0.2f, 12, 1.5f);
-                    Bolt(from, to.Value, sevenBlue, 0.8f, 0.15f, 9, 2.2f);
-                    Burst(to.Value, "mat_spark", sevenWhite, 14, 0.4f, 9f, 0.08f, upward: true);
-                    Flash(to.Value + Vector3.up * 2f, sevenBlue, 8f, 0.15f, 1.5f);
+                    // one thin bolt from the cloud: RoR2's own lightning strike (the row's effect) already lights it up
+                    Bolt(from, to.Value, sevenBlue, 0.25f, 0.15f, 10, 1.5f);
+                    Burst(to.Value, "mat_spark", sevenWhite, 10, 0.35f, 8f, 0.07f, upward: true);
                     return null;
                 }
             }

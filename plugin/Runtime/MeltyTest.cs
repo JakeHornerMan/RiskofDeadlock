@@ -458,7 +458,7 @@ namespace DeadlockOfRain
             {
                 if (row.Slot == "primary")
                 {
-                    fireBody = body; fireUntil = Time.time + 4f;
+                    fireBody = body; fireUntil = Time.time + 6f;
                     body.skillLocator.primary.ExecuteIfReady();
                 }
                 else if (row.Slot == "ult")
@@ -482,7 +482,7 @@ namespace DeadlockOfRain
                     gs.ExecuteIfReady();
                 }
 
-                float window = row.Slot == "primary" ? 4f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
+                float window = row.Slot == "primary" ? 6f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
                 float t0 = Time.time;
                 int shots = 0;
                 while (Time.time - t0 < window)
