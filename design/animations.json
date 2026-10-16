@@ -1,12 +1,15 @@
 {
   "sheet": "animations",
-  "about": "Which of the hero's own Deadlock animation clips (names as VRF exports them from the player's install) plays for each RoR2 action. Locomotion columns play full-body; gesture columns (reload, secondary, utility, ult*) play on the upper body from upperBodyBone so the legs keep running. 'none' = no clip for that action on purpose. The extractor exports only the clips named here. 'land' is none for Haze, Abrams and Seven: their Deadlock jump_landing clips are partial layers that crush the pose when played on their own. Gun rig: gunArms ('R' or 'LR') are held rigid in the aimPose clip's first frame and the chest turns so the gun points where the camera aims (no fire clip on the arms); gunBone (when the gun is not a child of the hand, e.g. Abrams' weaponPivot) is welded to gunHand with its aimPose offset. The heroes' shoot_idle clips are additive layers that point the guns ~60 deg at the floor on their own, so fire and fire_alt are none: shots use a procedural recoil kick on the rigid gun arms instead.",
+  "about": "Which of the hero's own Deadlock animation clips (names as VRF exports them from the player's install) plays for each RoR2 action. Locomotion columns play full-body; gesture columns (reload, secondary, utility, ult*) play on the upper body from upperBodyBone so the legs keep running. 'none' = no clip for that action on purpose. The extractor exports only the clips named here. 'land' is none for Haze, Abrams and Seven: their Deadlock jump_landing clips are partial layers that crush the pose when played on their own. Gun rig: gunArms ('R' or 'LR') are held rigid in the aimPose clip's first frame and the chest turns so the gun points where the camera aims (no fire clip on the arms); gunBone (when the gun is not a child of the hand, e.g. Abrams' weaponPivot) is welded to gunHand with its aimPose offset. The heroes' shoot_idle clips are additive layers that point the guns ~60 deg at the floor on their own, so fire and fire_alt are none: shots use a procedural recoil kick on the rigid gun arms instead. muzzle/muzzleLeft: the bone at the end of the gun (right / second gun) where shots, tracers, muzzle flashes and thrown abilities start (none = the hand). clothParents: Deadlock cloth bones ($cloth_*) are exported without a parent; each is attached to the nearest of these bones (Abrams' coat), or none.",
   "columns": [
     "hero",
     "upperBodyBone",
     "gunArms",
     "gunBone",
     "gunHand",
+    "muzzle",
+    "muzzleLeft",
+    "clothParents",
     "aimPose",
     "idle",
     "run_n",
@@ -35,6 +38,11 @@
       "gunArms": "LR",
       "gunBone": "none",
       "gunHand": "hand_R",
+      "muzzle": "muzzle_fx",
+      "muzzleLeft": "muzzle_fx_L",
+      "clothParents": [
+        "none"
+      ],
       "aimPose": "weapon_stand_idle",
       "idle": "weapon_stand_idle",
       "run_n": "weapon_run_n",
@@ -62,6 +70,15 @@
       "gunArms": "LR",
       "gunBone": "weaponPivot",
       "gunHand": "hand_R",
+      "muzzle": "muzzle_fx",
+      "muzzleLeft": "none",
+      "clothParents": [
+        "pelvis",
+        "spine_0",
+        "spine_1",
+        "spine_2",
+        "spine_3"
+      ],
       "aimPose": "weapon_stand_idle",
       "idle": "weapon_stand_idle",
       "run_n": "weapon_run_n",
@@ -89,6 +106,11 @@
       "gunArms": "R",
       "gunBone": "none",
       "gunHand": "hand_R",
+      "muzzle": "muzzle_fx",
+      "muzzleLeft": "none",
+      "clothParents": [
+        "none"
+      ],
       "aimPose": "weapon_stand_idle",
       "idle": "weapon_stand_idle",
       "run_n": "weapon_run_n",
@@ -116,6 +138,11 @@
       "gunArms": "R",
       "gunBone": "none",
       "gunHand": "hand_R",
+      "muzzle": "muzzle_fx",
+      "muzzleLeft": "none",
+      "clothParents": [
+        "none"
+      ],
       "aimPose": "weapon_stand_idle",
       "idle": "weapon_stand_idle",
       "run_n": "weapon_run_n",

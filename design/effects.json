@@ -32,7 +32,7 @@
     { "id": "mat_fire", "kind": "material", "addressable": "RoR2/Base/Common/VFX/matFireStatic.mat", "scaleWithRadius": false, "notes": "flame particles" },
     { "id": "mat_smoke", "kind": "material", "addressable": "RoR2/Base/Common/VFX/matGenericSmoke.mat", "scaleWithRadius": false, "notes": "smoke and cloud particles" },
     { "id": "mat_spark", "kind": "material", "addressable": "RoR2/Base/Common/VFX/matSpark1.mat", "scaleWithRadius": false, "notes": "spark particles" },
-    { "id": "mat_area", "kind": "material", "addressable": "RoR2/Base/Common/VFX/matAreaIndicatorRim.mat", "scaleWithRadius": false, "notes": "ground area indicator (the slam reticle)" },
+    { "id": "mat_area", "kind": "material", "addressable": "RoR2/Base/Common/VFX/matAreaIndicatorIntersectionOnly.mat", "scaleWithRadius": false, "notes": "ground area indicator: draws only where its dome meets the ground (the slam reticle)" },
     { "id": "haze_dance", "kind": "custom", "addressable": "none", "scaleWithRadius": false, "notes": "Bullet Dance: spinning violet blade ring, afterimage trails, pink muzzle bursts and hit sparks" },
     { "id": "abrams_slam", "kind": "custom", "addressable": "none", "scaleWithRadius": true, "notes": "Seismic Impact: ground reticle while hovering, dive streaks, shockwave ring, dust and debris on impact" },
     { "id": "seven_ball", "kind": "custom", "addressable": "none", "scaleWithRadius": false, "notes": "Lightning Ball: glowing core with crackling arcs, and a bolt to every enemy it shocks" },

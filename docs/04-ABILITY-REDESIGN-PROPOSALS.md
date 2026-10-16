@@ -228,12 +228,12 @@ Asked slot by slot. Several picks are the creator's own versions rather than A o
 | Abrams | Shift | **Current Shoulder Charge, retuned** | lasts **3 s**, **every enemy hit is stunned 1 s** (no wall needed); cooldown **8 s** |
 | Abrams | R | **Seismic Impact rebuilt** (creator's version) | rise, **hover up to 3 s with a ground reticle you aim** (≤ 40 m), R or Left Click slams; **he can be hit** while hovering; new effects and re-timed animation; 2200 %, 12 m, stun 1.6 s |
 | Seven | Passive | **Alt B Capacitor** | Static max 10, 5 s; at 10: 300 % to the target + 2 nearby, stun 1 s; gun lowered to 48 % per bullet |
-| Seven | M2 | **Current Lightning Ball** | its shocks build Static too; rebuilt effects (240 %/s, ticks every 0.25 s) |
+| Seven | M2 | **Current Lightning Ball** | its shocks build Static too; **flies through enemies** instead of stopping on the first; rebuilt effects (240 %/s, ticks every 0.25 s) |
 | Seven | Shift | **Current Static Charge** | unchanged numbers; a Risk of Rain-style thunderbolt |
 | Seven | R | **Alt B Thunderhead**, placed where Seven stands | 20 m zone, 10 s, strikes up to 4 enemies every 0.4 s for 110 %; the attack speed is **RoR2's Warbanner** ward with its ground ring (creator's idea) |
 | Infernus | Passive | **Current Afterburn** | unchanged numbers; clear effects on burning enemies |
 | Infernus | M2 | **Alt A Napalm** | lobbed flask, 5 m splash, 300 %, 28 % slow 4 s, +16 % damage from Infernus 8 s; 2 charges, 5 s |
-| Infernus | Shift | **Alt A Flame Dash** | hold up to 3 s, 50 % slow resistance, trail stays **8 s**; 8 s |
+| Infernus | Shift | **Alt A Flame Dash** | hold up to 3 s, 50 % slow resistance, burning trail stays **5 s** and hurts enemies in it, enemies he runs into are **knocked aside** to clear his path; 8 s |
 | Infernus | R | **Alt A Concussive Combustion** | 3 s fuse, 2500 % in 18 m, stun 2 s, each kill heals 10 % |
 
 How each is built: doc 02 §7.3 (kinds), §7.4 (passives) and §8.1 (effects).

@@ -322,7 +322,7 @@ How the plugin turns this into Unity objects (details in doc 02 §4):
   body itself.
   - **Side effect:** for Haze, Seven and Infernus, `pelvis` is itself a root (see §8), so the pelvis' up/down bob from
     clips is also dropped. Rotations still play.
-  - For Abrams, his parentless `$cloth_*` bones lose their translation too.
+  - For Abrams, his ~170 parentless `$cloth_*` coat bones: since v0.3.0 the model builder attaches each to the nearest of the animations sheet's `clothParents` (pelvis, spine_0–3) and their clip tracks are skipped, so the coat follows his body instead of stretching to a fixed point (doc 02 §4.3).
   - This is a known open item (doc 03 §10).
 
 ---

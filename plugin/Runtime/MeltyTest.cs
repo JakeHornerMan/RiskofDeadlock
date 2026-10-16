@@ -458,7 +458,7 @@ namespace DeadlockOfRain
             {
                 if (row.Slot == "primary")
                 {
-                    fireBody = body; fireUntil = Time.time + 2.5f;
+                    fireBody = body; fireUntil = Time.time + 4f;
                     body.skillLocator.primary.ExecuteIfReady();
                 }
                 else if (row.Slot == "ult")
@@ -482,9 +482,9 @@ namespace DeadlockOfRain
                     gs.ExecuteIfReady();
                 }
 
-                float window = row.Slot == "primary" ? 2.5f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
+                float window = row.Slot == "primary" ? 4f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
                 float t0 = Time.time;
-                bool shot = false;
+                int shots = 0;
                 while (Time.time - t0 < window)
                 {
                     // the player controller re-aims at the crosshair every Update; keep the aim on a live target
@@ -504,7 +504,8 @@ namespace DeadlockOfRain
                         var dc = DotController.FindDotController(t.gameObject);
                         if (dc && dc.HasDotActive(DotController.DotIndex.Burn)) fx.Burn = true;
                     }
-                    if (!shot && Time.time - t0 > 0.5f) { shot = true; Shot(row.Id); }
+                    // dev screenshots through the skill: early, middle, late
+                    if (shots < 3 && Time.time - t0 > new[] { 0.5f, 1.4f, 2.3f }[shots]) { Shot(shots == 0 ? row.Id : row.Id + "_" + (shots + 1)); shots++; }
                     yield return null;
                 }
             }

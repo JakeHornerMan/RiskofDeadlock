@@ -59,9 +59,6 @@ namespace DeadlockOfRain
                     }
                     Particles(spin, "mat_spark", hazeViolet, rate: 60, life: 0.4f, speed: 4f, size: 0.08f, shapeRadius: 1.3f, world: true);
                     Light(root, hazeViolet, 8f, 2.5f, Vector3.up);
-                    var ring = Circle(root.transform, hazeViolet * new Color(1, 1, 1, 0.35f), radius, 0.08f);
-                    ring.transform.localPosition = Vector3.up * 0.15f;
-                    ring.gameObject.AddComponent<Spin>().DegPerSec = -40f;
                     return root;
                 }
                 case "cast":
@@ -97,12 +94,10 @@ namespace DeadlockOfRain
                     dome.transform.SetParent(root.transform, false);
                     dome.transform.localScale = Vector3.one * radius * 2f;
                     dome.GetComponent<MeshRenderer>().sharedMaterial = Mat("mat_area", abramsRed);
-                    var outer = Circle(root.transform, abramsRed, radius, 0.25f, 64, dashed: true);
-                    outer.transform.localPosition = Vector3.up * 0.3f;
-                    outer.gameObject.AddComponent<Spin>().DegPerSec = 60f;
-                    var inner = Circle(root.transform, new Color(1f, 0.75f, 0.4f), radius * 0.35f, 0.15f);
-                    inner.transform.localPosition = Vector3.up * 0.3f;
-                    inner.gameObject.AddComponent<Pulse>().Speed = 4f;
+                    // embers rising from the edge of the circle, and a glow at its centre
+                    var edge = new GameObject("edge"); edge.transform.SetParent(root.transform, false); edge.transform.localPosition = Vector3.up * 0.4f;
+                    Particles(edge, "mat_glow", abramsRed, rate: 90, life: 0.6f, speed: 1.5f, size: 0.7f, shapeRadius: radius, world: true, ring: true);
+                    Particles(edge, "mat_glow", new Color(1f, 0.75f, 0.4f), rate: 10, life: 0.5f, speed: 0f, size: 2.5f);
                     var beam = Line(root.transform, abramsRed, 0.4f, Vector3.up * 0.2f, Vector3.up * 14f, "mat_tracer");
                     beam.widthCurve = new AnimationCurve(new Keyframe(0, 1), new Keyframe(1, 0));
                     Light(root, abramsRed, radius, 3f, Vector3.up * 2f);
@@ -173,10 +168,10 @@ namespace DeadlockOfRain
                 {
                     // the charge: a ring that closes in on the target while it counts down, sparks and a pulsing light
                     var root = Root(at, 0f, follow);
-                    var ring = Circle(root.transform, sevenBlue, radius, 0.18f, 48, dashed: true);
-                    ring.transform.localPosition = Vector3.up * 0.4f;
-                    ring.gameObject.AddComponent<Spin>().DegPerSec = 200f;
-                    ring.gameObject.AddComponent<Shrink>().To = 0.12f;
+                    var ring = new GameObject("ring"); ring.transform.SetParent(root.transform, false); ring.transform.localPosition = Vector3.up * 0.4f;
+                    Particles(ring, "mat_glow", sevenBlue, rate: 120, life: 0.25f, speed: 0f, size: 0.5f, shapeRadius: radius, ring: true);
+                    ring.AddComponent<Spin>().DegPerSec = 200f;
+                    ring.AddComponent<Shrink>().To = 0.12f;
                     Particles(root, "mat_spark", sevenBlue, rate: 40, life: 0.3f, speed: 3f, size: 0.07f, shapeRadius: 0.8f, world: true);
                     Particles(root, "mat_glow", sevenWhite, rate: 12, life: 0.25f, speed: 0f, size: 1.2f);
                     var c = root.AddComponent<Crackle>(); c.Color = sevenBlue; c.Radius = 1.4f; c.Count = 2;
@@ -202,33 +197,30 @@ namespace DeadlockOfRain
 
         static GameObject SevenStorm(string moment, Vector3 at, float radius, Vector3? to)
         {
-            const float cloudHeight = 14f;
+            const float cloudHeight = 16f;
             switch (moment)
             {
                 case "loop":
                 {
-                    // the thunderhead: a dark churning cloud deck over the zone, blue light flashing inside it, rain sparks
+                    // the thunderhead: a dark churning cloud deck high over the zone, blue light flickering inside it, a few
+                    // rain streaks, and a dashed ring on the ground marking the storm's edge
                     var root = Root(at, 0f, null);
                     var cloud = new GameObject("cloud"); cloud.transform.SetParent(root.transform, false); cloud.transform.localPosition = Vector3.up * cloudHeight;
-                    Particles(cloud, "mat_smoke", new Color(0.18f, 0.2f, 0.28f, 0.9f), rate: 40, life: 3f, speed: 0.6f, size: radius * 0.55f, shapeRadius: radius * 0.85f, flat: true);
-                    Particles(cloud, "mat_smoke", new Color(0.32f, 0.38f, 0.5f, 0.7f), rate: 20, life: 2.5f, speed: 0.4f, size: radius * 0.4f, shapeRadius: radius * 0.7f, flat: true);
+                    Particles(cloud, "mat_smoke", new Color(0.16f, 0.18f, 0.24f, 0.75f), rate: 18, life: 3f, speed: 0.3f, size: radius * 0.3f, shapeRadius: radius * 0.8f, flat: true);
+                    Particles(cloud, "mat_smoke", new Color(0.28f, 0.33f, 0.45f, 0.55f), rate: 10, life: 2.5f, speed: 0.2f, size: radius * 0.22f, shapeRadius: radius * 0.6f, flat: true);
                     cloud.AddComponent<Spin>().DegPerSec = 12f;
-                    Particles(cloud, "mat_tracer", new Color(0.6f, 0.75f, 1f, 0.5f), rate: 120, life: 0.6f, speed: 22f, size: 0.05f, shapeRadius: radius * 0.8f, flat: true, down: true, stretch: 6f);
-                    var flash = Light(cloud, sevenBlue, radius * 1.6f, 0f, Vector3.down * 2f);
+                    var flash = Light(cloud, sevenBlue, radius * 1.2f, 0f, Vector3.down * 2f);
                     flash.gameObject.AddComponent<StormFlash>();
-                    var edge = Circle(root.transform, sevenBlue * new Color(1, 1, 1, 0.6f), radius, 0.2f, 72, dashed: true);
-                    edge.transform.localPosition = Vector3.up * 0.3f;
-                    edge.gameObject.AddComponent<Spin>().DegPerSec = 20f;
                     return root;
                 }
                 case "hit":
                 {
                     if (!to.HasValue) return null;
                     var from = new Vector3(to.Value.x + Random.Range(-2f, 2f), at.y + cloudHeight, to.Value.z + Random.Range(-2f, 2f));
-                    Bolt(from, to.Value, sevenWhite, 0.9f, 0.25f, 12, 2f);
-                    Bolt(from, to.Value, sevenBlue, 1.8f, 0.18f, 9, 3f);
-                    Burst(to.Value, "mat_spark", sevenWhite, 20, 0.4f, 10f, 0.1f, upward: true);
-                    Flash(to.Value + Vector3.up * 2f, sevenBlue, 14f, 0.18f, 6f);
+                    Bolt(from, to.Value, sevenWhite, 0.35f, 0.2f, 12, 1.5f);
+                    Bolt(from, to.Value, sevenBlue, 0.8f, 0.15f, 9, 2.2f);
+                    Burst(to.Value, "mat_spark", sevenWhite, 14, 0.4f, 9f, 0.08f, upward: true);
+                    Flash(to.Value + Vector3.up * 2f, sevenBlue, 8f, 0.15f, 1.5f);
                     return null;
                 }
             }
@@ -322,7 +314,7 @@ namespace DeadlockOfRain
         /// <summary>A particle system on parent: continuous (rate) or a one-off burst (count).</summary>
         static ParticleSystem Particles(GameObject parent, string mat, Color c, float rate = 0f, int count = 0, float life = 0.5f,
             float speed = 1f, float size = 0.5f, float shapeRadius = 0f, bool world = false, bool flat = false, bool upward = false,
-            bool down = false, float gravity = 0f, float stretch = 0f)
+            bool down = false, float gravity = 0f, float stretch = 0f, bool ring = false)
         {
             var go = new GameObject("ps");
             go.transform.SetParent(parent.transform, false);
@@ -345,7 +337,8 @@ namespace DeadlockOfRain
             if (count > 0) em.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)count) });
             var shape = ps.shape;
             shape.enabled = true;
-            if (flat) { shape.shapeType = ParticleSystemShapeType.Circle; shape.rotation = new Vector3(90f, 0, 0); }
+            if (ring) { shape.shapeType = ParticleSystemShapeType.Circle; shape.rotation = new Vector3(90f, 0, 0); shape.radiusThickness = 0f; }
+            else if (flat) { shape.shapeType = ParticleSystemShapeType.Circle; shape.rotation = new Vector3(90f, 0, 0); }
             else if (upward) { shape.shapeType = ParticleSystemShapeType.Hemisphere; shape.rotation = new Vector3(-90f, 0, 0); }
             else if (down) { shape.shapeType = ParticleSystemShapeType.Circle; shape.rotation = new Vector3(90f, 0, 0); }
             else shape.shapeType = ParticleSystemShapeType.Sphere;
@@ -593,7 +586,7 @@ namespace DeadlockOfRain
             {
                 if (!l) return;
                 if (Time.time >= next) { next = Time.time + Random.Range(0.15f, 0.6f); until = Time.time + Random.Range(0.05f, 0.12f); }
-                l.intensity = Time.time < until ? Random.Range(4f, 9f) : 0.6f;
+                l.intensity = Time.time < until ? Random.Range(1.2f, 2.5f) : 0.2f;
             }
         }
 

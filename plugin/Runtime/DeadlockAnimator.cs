@@ -147,6 +147,9 @@ namespace DeadlockOfRain
                 foreach (var t in c.Tracks)
                 {
                     if (t.Bone < 0 || t.Bone >= bones.Length) continue;
+                    // a parentless bone the model builder attached to the body (Abrams' coat cloth) keeps its rest pose:
+                    // its tracks are in model space and would twist it now that it has a parent
+                    if (asset.Bones[t.Bone].Parent < 0 && bones[t.Bone].parent && bones[t.Bone].parent.name != "Armature") continue;
                     var p = paths[t.Bone];
                     // Deadlock clips carry root motion (runs move the root metres per loop); RoR2 moves the body itself
                     bool isRoot = asset.Bones[t.Bone].Parent < 0 || asset.Bones[t.Bone].Name == "root_motion";

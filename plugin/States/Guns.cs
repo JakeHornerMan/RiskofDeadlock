@@ -76,8 +76,8 @@ namespace DeadlockOfRain.States
             if (anim) anim.Recoil(row.Pellets > 1 ? 9f : 3f);
             Sound("cast");
             var aim = GetAimRay();
-            var muzzle = Fx.Muzzle(characterBody, left);
-            Fx.Impact("muzzle", muzzle ? muzzle.position : aim.origin);
+            // the flash rides on the end of the gun (the sheet's muzzle bone)
+            Fx.MuzzleFlash(characterBody, left);
             if (isAuthority)
             {
                 var ba = new BulletAttack

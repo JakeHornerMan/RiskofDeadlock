@@ -71,7 +71,8 @@ namespace DeadlockOfRain.States
                             force = 50f, bulletCount = 1, falloffModel = BulletAttack.FalloffModel.None,
                         }.Fire();
                     }
-                    Vfx.Play(row.Vfx, "cast", from);
+                    Fx.MuzzleFlash(characterBody, left);
+                    Vfx.Play(row.Vfx, "cast", from, 1f, Fx.Muzzle(characterBody, left));
                     Vfx.Play(row.Vfx, "hit", target.transform.position);
                     Fx.Sound(row.Id, "hit", transform.position);
                 }

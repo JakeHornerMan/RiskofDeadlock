@@ -70,6 +70,15 @@ namespace DeadlockOfRain
             return t ? t : (body ? body.aimOriginTransform : null);
         }
 
+        /// <summary>The muzzle flash, parented to the gun's muzzle so it moves with the gun.</summary>
+        public static void MuzzleFlash(CharacterBody body, bool left = false)
+        {
+            var p = Prefab("muzzle");
+            if (!p || !body) return;
+            if (p.GetComponent<EffectComponent>()) EffectManager.SimpleMuzzleFlash(p, body.gameObject, left ? "MuzzleLeft" : "MuzzleRight", false);
+            else { var m = Muzzle(body, left); if (m) Impact("muzzle", m.position); }
+        }
+
         public static void Sound(string skillId, string moment, Vector3? at = null)
         {
             var row = Sheet.Sound(skillId);

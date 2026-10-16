@@ -261,6 +261,7 @@ namespace DeadlockOfRain.States
     public sealed class DashTrail : DlrState
     {
         DamageTrail trail; int loop;
+        readonly HashSet<HealthComponent> shoved = new HashSet<HealthComponent>();
         public override void OnEnter()
         {
             base.OnEnter();
@@ -297,6 +298,23 @@ namespace DeadlockOfRain.States
                 if (characterDirection) characterDirection.forward = mv;
             }
             if (trail) trail.transform.position = transform.position;
+            // enemies Infernus runs into are knocked aside (and a little up) at `speed` m/s to clear his path, once each
+            if (Server && row.Speed > 0)
+            {
+                var fwd = characterDirection ? characterDirection.forward : transform.forward; fwd.y = 0; fwd.Normalize();
+                foreach (var hb in Fx.Enemies(characterBody, transform.position + fwd * 1.2f, characterBody.radius + 1.5f))
+                {
+                    var hc = hb.healthComponent;
+                    if (!shoved.Add(hc) || !hc.body) continue;
+                    var to = hc.body.corePosition - transform.position; to.y = 0;
+                    // away from his path: mostly sideways, partly forward
+                    var side = Vector3.Cross(Vector3.up, fwd) * Mathf.Sign(Vector3.Dot(to, Vector3.Cross(Vector3.up, fwd)) + 0.001f);
+                    var push = (side * 0.8f + fwd * 0.6f).normalized * row.Speed + Vector3.up * row.Speed * 0.35f;
+                    float mass = hc.body.characterMotor ? hc.body.characterMotor.mass : hc.body.rigidbody ? hc.body.rigidbody.mass : 100f;
+                    hc.TakeDamageForce(push * mass, true, true);
+                    Fx.Sound(row.Id, "hit", hc.body.corePosition);
+                }
+            }
             // a tap dashes for minDuration; holding Shift keeps going up to duration
             bool held = inputBank && inputBank.skill3.down;
             if (isAuthority && (fixedAge >= row.Duration || fixedAge >= row.MinDuration && !held)) outer.SetNextStateToMain();

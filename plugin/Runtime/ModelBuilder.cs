@@ -35,6 +35,19 @@ namespace DeadlockOfRain
                 bones[i].localRotation = b.Rot;
                 bones[i].localScale = b.Scale;
             }
+            // Deadlock exports cloth bones ($cloth_*, Abrams' coat) without a parent, so they would stay put while the body
+            // moves and stretch the coat: attach each to the nearest of the sheet's clothParents, keeping its rest pose
+            var anims = Sheet.Anims(hero.Id);
+            var clothParents = new List<Transform>();
+            foreach (var n in anims.ClothParents) { var t = n == "none" ? null : Find(bones, n); if (t) clothParents.Add(t); }
+            if (clothParents.Count > 0)
+                for (int i = 0; i < bones.Length; i++)
+                {
+                    if (asset.Bones[i].Parent >= 0 || !asset.Bones[i].Name.StartsWith("$cloth")) continue;
+                    Transform best = null; float bd = float.MaxValue;
+                    foreach (var c in clothParents) { float d = (c.position - bones[i].position).sqrMagnitude; if (d < bd) { bd = d; best = c; } }
+                    bones[i].SetParent(best, true);
+                }
 
             // one skinned renderer per material: RoR2's CharacterModel drives exactly one material per renderer
             var parts = asset.Parts;
@@ -63,6 +76,9 @@ namespace DeadlockOfRain
                 var t = Find(bones, bone);
                 if (t) pairs.Add(new ChildLocator.NameTransformPair { name = name, transform = t });
             }
+            // the end of the gun first (shots, tracers, muzzle flashes and thrown abilities start there), the hand otherwise
+            if (anims.Muzzle != "none") Add("MuzzleRight", anims.Muzzle);
+            if (anims.MuzzleLeft != "none") Add("MuzzleLeft", anims.MuzzleLeft);
             Add("MuzzleRight", "weapon_hand_R"); Add("MuzzleRight", "hand_R");
             Add("MuzzleLeft", "weapon_hand_L"); Add("MuzzleLeft", "hand_L");
             Add("Head", "head"); Add("Chest", "spine_2"); Add("Pelvis", "pelvis");

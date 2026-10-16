@@ -6,7 +6,7 @@ using UnityEngine;
 namespace DeadlockOfRain
 {
     /// <summary>Server-side simulated projectile for Sleep Dagger (hit once: damage + sleep) and Lightning Ball
-    /// (stops on the first enemy and shocks everything around it until its lifetime ends).</summary>
+    /// (flies through enemies, stops on a wall, and shocks everything around it until its lifetime ends).</summary>
     public sealed class DlrProjectile : MonoBehaviour
     {
         CharacterBody owner; SkillRow row; Vector3 dir; float travelled, age, nextTick;
@@ -34,7 +34,9 @@ namespace DeadlockOfRain
             {
                 float step = row.Speed * dt;
                 var pos = transform.position;
-                if (Physics.SphereCast(pos, Mathf.Max(0.3f, orb ? 1.0f : row.Radius * 0.5f), dir, out var hit, step, LayerIndex.world.mask | LayerIndex.entityPrecise.mask, QueryTriggerInteraction.Ignore))
+                // the orb flies through enemies (it shocks them on the way) and only stops on the world
+                int mask = orb ? (int)LayerIndex.world.mask : LayerIndex.world.mask | LayerIndex.entityPrecise.mask;
+                if (Physics.SphereCast(pos, Mathf.Max(0.3f, orb ? 1.0f : row.Radius * 0.5f), dir, out var hit, step, mask, QueryTriggerInteraction.Ignore))
                 {
                     var hb = hit.collider.GetComponent<HurtBox>();
                     bool enemy = hb && hb.healthComponent && hb.healthComponent.body && hb.healthComponent.body.teamComponent.teamIndex != owner.teamComponent.teamIndex;
@@ -60,7 +62,6 @@ namespace DeadlockOfRain
                 else transform.position += dir * step;
                 travelled += step;
                 if (!orb && travelled > row.Range) { Destroy(gameObject); return; }
-                if (orb && !stuck && Fx.Enemies(owner, transform.position, 1.5f).Count > 0) stuck = true;
             }
             if (orb)
             {
