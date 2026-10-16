@@ -34,8 +34,6 @@
         "gun_model"
       ],
       "clips": [
-        "ability_charge",
-        "ability_charge_precast",
         "ability_leap_hover_loop",
         "ability_leap_smash",
         "ability_leap_upwards",
