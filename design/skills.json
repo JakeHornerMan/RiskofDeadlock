@@ -1,6 +1,6 @@
 {
   "sheet": "skills",
-  "about": "One row per skill (4 per hero). slot: primary=M1 gun, secondary=M2 (Deadlock ability 1), utility=Shift (ability 2), ult=R (Deadlock ultimate in RoR2's special slot, locked until its charge meter fills). RoR2 survivors have 4 skills, so each hero has exactly these 4. Numbers are RoR2-scale: damagePct is % of the body's damage stat (RoR2 convention), cooldowns are RoR2 seconds. deadlock* columns hold the source values read from the player's Deadlock scripts/abilities.vdata (ClientVersion 6774) so every conversion is traceable. kind picks the generic EntityState that implements the row. Unused numeric params are 0, unused refs are \"none\" (filled on purpose, not missing). Balance targets: sustained primary DPS 300-450 %/s (Commando Double Tap ~ 400 %/s incl. downtime); secondaries 2-8 s; utilities 4-10 s; specials 8-14 s; ultimates 1500-3000 % total, gated by ultCharge. knockback: dashes knock the enemies they run into to the side of their path at this many m/s (0 = none). minDuration: hold skills (Flame Dash, the Seismic Impact hover) last at least this long on a tap and at most duration while held; 0 otherwise. vfx: our own Unity-built visual for the skill (an effects row of kind custom), or none. extra: a second RoR2 object the kind spawns (the Warbanner ward of Thunderhead), or none. expect: what the skill must measurably do, checked in test mode (enemy_damage, enemy_stun, enemy_burn, enemy_debuff:<buff>, self_buff:<buff>, self_heal, self_move, self_cloak).",
+  "about": "One row per skill (5 per hero). slot: primary=M1 gun, secondary=M2 (Deadlock ability 1), utility=Shift (ability 2), special=R (a new move from a Deadlock item, melee or ability, on a normal cooldown), equipment=Q (the hero's Deadlock ultimate as a RoR2 equipment: every hero starts holding their own, anyone can find it wherever the Preon Accumulator can drop; design/equipment.json). Numbers are RoR2-scale: damagePct is % of the body's damage stat (RoR2 convention), cooldowns are RoR2 seconds. deadlock* columns hold the source values read from the player's Deadlock scripts/abilities.vdata (ClientVersion 6774) so every conversion is traceable. kind picks the generic EntityState that implements the row. Unused numeric params are 0, unused refs are \"none\" (filled on purpose, not missing). Balance targets: sustained primary DPS 240-600 %/s (Commando Double Tap ~ 400 %/s incl. downtime); secondaries 2-15 s; utilities 4-12 s; specials 4-15 s; equipment ults 120 s cooldown and 6000-7500 % per enemy (Preon Accumulator scaled from 140 s to 120 s). buffStacks: stacks of buff a hit adds (Phantom Strike's Fixation, Torment Pulse's Afterburn build-up), 0 = the usual one. knockback: dashes and punches knock enemies away at this many m/s (0 = none). minDuration: hold skills (Flame Dash, the Seismic Impact hover) last at least this long on a tap and at most duration while held; 0 otherwise. vfx: our own Unity-built visual for the skill (an effects row of kind custom), or none. extra: a second RoR2 object the kind spawns (the Warbanner ward of Thunderhead), or none. expect: what the skill must measurably do, checked in test mode (enemy_damage, enemy_stun, enemy_burn, enemy_debuff:<buff>, self_buff:<buff>, self_heal, self_move, self_cloak).",
   "columns": [
     "id",
     "hero",
@@ -30,13 +30,12 @@
     "healFraction",
     "moveSpeedMult",
     "chainCount",
+    "buffStacks",
     "buff",
     "dot",
     "effect",
     "vfx",
     "extra",
-    "ultCharge",
-    "killCharge",
     "deadlockCooldown",
     "deadlockDamage",
     "targetDps",
@@ -77,8 +76,6 @@
       "effect": "tracer_haze",
       "vfx": "none",
       "extra": "none",
-      "ultCharge": 0,
-      "killCharge": 0,
       "deadlockCooldown": 0,
       "deadlockDamage": 5.26,
       "targetDps": 280,
@@ -86,7 +83,8 @@
         "enemy_damage",
         "enemy_debuff:fixation",
         "enemy_debuff:fixation_slow"
-      ]
+      ],
+      "buffStacks": 0
     },
     {
       "id": "haze_sleep_dagger",
@@ -122,15 +120,14 @@
       "effect": "dagger",
       "vfx": "none",
       "extra": "none",
-      "ultCharge": 0,
-      "killCharge": 0,
       "deadlockCooldown": 30,
       "deadlockDamage": 65,
       "targetDps": 0,
       "expect": [
         "enemy_damage",
         "enemy_stun"
-      ]
+      ],
+      "buffStacks": 0
     },
     {
       "id": "haze_smoke_bomb",
@@ -166,28 +163,71 @@
       "effect": "smoke_puff",
       "vfx": "none",
       "extra": "none",
-      "ultCharge": 0,
-      "killCharge": 0,
       "deadlockCooldown": 33,
       "deadlockDamage": 0,
       "targetDps": 0,
       "expect": [
         "self_cloak",
         "self_buff:smoke"
+      ],
+      "buffStacks": 0
+    },
+    {
+      "id": "haze_phantom_strike",
+      "hero": "haze",
+      "slot": "special",
+      "deadlockAbility": "upgrade_phantom_strike",
+      "name": "Phantom Strike",
+      "description": "Blink behind the enemy you aim at (up to 30m away) and cut it with <style=cIsDamage>3 dagger slashes for 250% damage</style> each. Every slash adds <style=cIsUtility>5 Fixation</style>. No target, no cast.",
+      "kind": "phantom_strike",
+      "icon": "panorama/images/items/vitality/phantom_strike_psd.vtex",
+      "damagePct": 250,
+      "procCoefficient": 1.0,
+      "cooldown": 10,
+      "stocks": 1,
+      "duration": 0.75,
+      "minDuration": 0,
+      "interval": 0.15,
+      "radius": 2.5,
+      "range": 30,
+      "speed": 0,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 1,
+      "spreadDeg": 0,
+      "burst": 3,
+      "stunDuration": 0,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 0,
+      "chainCount": 0,
+      "buffStacks": 5,
+      "buff": "fixation",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "haze_phantom",
+      "extra": "none",
+      "deadlockCooldown": 35,
+      "deadlockDamage": 0,
+      "targetDps": 0,
+      "expect": [
+        "self_move",
+        "enemy_damage",
+        "enemy_debuff:fixation"
       ]
     },
     {
       "id": "haze_bullet_dance",
       "hero": "haze",
-      "slot": "ult",
+      "slot": "equipment",
       "deadlockAbility": "ability_bullet_flurry",
       "name": "Bullet Dance",
-      "description": "<style=cIsUtility>Charges from damage and kills (R).</style> Spin for 5s, firing at every enemy within 25m for <style=cIsDamage>49% damage</style> 12 times a second, with a <style=cIsUtility>30% chance to evade</style> attacks.",
+      "description": "Spin for 5s, firing at every enemy within 25m for <style=cIsDamage>113% damage</style> 12 times a second (about <style=cIsDamage>6800%</style> in all), with a <style=cIsUtility>30% chance to evade</style> attacks.",
       "kind": "ult_dance",
       "icon": "panorama/images/hud/abilities/haze/haze_bullet_flurry_psd.vtex",
-      "damagePct": 49,
+      "damagePct": 113,
       "procCoefficient": 0.5,
-      "cooldown": 0,
+      "cooldown": 120,
       "stocks": 1,
       "duration": 5,
       "minDuration": 0,
@@ -210,15 +250,14 @@
       "effect": "tracer_haze",
       "vfx": "haze_dance",
       "extra": "none",
-      "ultCharge": 5000,
-      "killCharge": 150,
       "deadlockCooldown": 165,
       "deadlockDamage": 7,
       "targetDps": 0,
       "expect": [
         "enemy_damage",
         "self_buff:bullet_dance"
-      ]
+      ],
+      "buffStacks": 0
     },
     {
       "id": "abrams_gun",
@@ -254,14 +293,13 @@
       "effect": "tracer_abrams",
       "vfx": "none",
       "extra": "none",
-      "ultCharge": 0,
-      "killCharge": 0,
       "deadlockCooldown": 0,
       "deadlockDamage": 3.6,
       "targetDps": 508,
       "expect": [
         "enemy_damage"
-      ]
+      ],
+      "buffStacks": 0
     },
     {
       "id": "abrams_siphon",
@@ -297,15 +335,14 @@
       "effect": "siphon_urn",
       "vfx": "none",
       "extra": "none",
-      "ultCharge": 0,
-      "killCharge": 0,
       "deadlockCooldown": 42,
       "deadlockDamage": 22,
       "targetDps": 0,
       "expect": [
         "enemy_damage",
         "self_heal"
-      ]
+      ],
+      "buffStacks": 0
     },
     {
       "id": "abrams_charge",
@@ -341,8 +378,6 @@
       "effect": "charge_impact",
       "vfx": "none",
       "extra": "none",
-      "ultCharge": 0,
-      "killCharge": 0,
       "deadlockCooldown": 33,
       "deadlockDamage": 30,
       "targetDps": 0,
@@ -350,20 +385,63 @@
         "self_move",
         "enemy_damage",
         "enemy_stun"
+      ],
+      "buffStacks": 0
+    },
+    {
+      "id": "abrams_haymaker",
+      "hero": "abrams",
+      "slot": "special",
+      "deadlockAbility": "heavy_melee",
+      "name": "Haymaker",
+      "description": "Wind up and lunge 6m into a heavy punch for <style=cIsDamage>900% damage</style> that <style=cIsUtility>knocks enemies flying</style>.",
+      "kind": "heavy_melee",
+      "icon": "panorama/images/items/weapon/melee_charge_psd.vtex",
+      "damagePct": 900,
+      "procCoefficient": 1.0,
+      "cooldown": 5,
+      "stocks": 1,
+      "duration": 0.9,
+      "minDuration": 0,
+      "interval": 0.4,
+      "radius": 3.5,
+      "range": 6,
+      "speed": 22,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 1,
+      "spreadDeg": 0,
+      "burst": 1,
+      "stunDuration": 0,
+      "knockback": 30,
+      "healFraction": 0,
+      "moveSpeedMult": 0,
+      "chainCount": 0,
+      "buffStacks": 0,
+      "buff": "none",
+      "dot": "none",
+      "effect": "charge_impact",
+      "vfx": "abrams_haymaker",
+      "extra": "none",
+      "deadlockCooldown": 1,
+      "deadlockDamage": 116,
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage"
       ]
     },
     {
       "id": "abrams_seismic",
       "hero": "abrams",
-      "slot": "ult",
+      "slot": "equipment",
       "deadlockAbility": "citadel_ability_bull_leap",
       "name": "Seismic Impact",
-      "description": "<style=cIsUtility>Charges from damage and kills (R).</style> Leap into the air and hover for up to 3s while you pick a spot within 40m, then <style=cIsUtility>press R or fire</style> to crash down for <style=cIsDamage>2200% damage</style> in a 12m radius, <style=cIsUtility>stunning</style> enemies for 1.6s. You can be hit while you hover.",
+      "description": "Leap into the air and hover for up to 3s while you pick a spot within 40m, then <style=cIsUtility>fire (Left Click)</style> to crash down for <style=cIsDamage>6800% damage</style> in a 12m radius, <style=cIsUtility>stunning</style> enemies for 1.6s. You can be hit while you hover.",
       "kind": "ult_leap",
       "icon": "panorama/images/hud/abilities/bull_jump_psd.vtex",
-      "damagePct": 2200,
+      "damagePct": 6800,
       "procCoefficient": 1.0,
-      "cooldown": 0,
+      "cooldown": 120,
       "stocks": 1,
       "duration": 3,
       "minDuration": 0.4,
@@ -386,8 +464,6 @@
       "effect": "slam",
       "vfx": "abrams_slam",
       "extra": "none",
-      "ultCharge": 4500,
-      "killCharge": 150,
       "deadlockCooldown": 215,
       "deadlockDamage": 100,
       "targetDps": 0,
@@ -395,7 +471,8 @@
         "self_move",
         "enemy_damage",
         "enemy_stun"
-      ]
+      ],
+      "buffStacks": 0
     },
     {
       "id": "seven_gun",
@@ -431,8 +508,6 @@
       "effect": "tracer_seven",
       "vfx": "none",
       "extra": "none",
-      "ultCharge": 0,
-      "killCharge": 0,
       "deadlockCooldown": 0,
       "deadlockDamage": 10.8,
       "targetDps": 250,
@@ -440,7 +515,8 @@
         "enemy_damage",
         "enemy_debuff:static",
         "enemy_stun"
-      ]
+      ],
+      "buffStacks": 0
     },
     {
       "id": "seven_lightning_ball",
@@ -476,15 +552,14 @@
       "effect": "lightning_orb",
       "vfx": "seven_ball",
       "extra": "none",
-      "ultCharge": 0,
-      "killCharge": 0,
       "deadlockCooldown": 26,
       "deadlockDamage": 75,
       "targetDps": 0,
       "expect": [
         "enemy_damage",
         "enemy_debuff:static"
-      ]
+      ],
+      "buffStacks": 0
     },
     {
       "id": "seven_static_charge",
@@ -520,28 +595,69 @@
       "effect": "static_blast",
       "vfx": "seven_static",
       "extra": "none",
-      "ultCharge": 0,
-      "killCharge": 0,
       "deadlockCooldown": 42,
       "deadlockDamage": 35,
       "targetDps": 0,
       "expect": [
         "enemy_damage",
         "enemy_stun"
+      ],
+      "buffStacks": 0
+    },
+    {
+      "id": "seven_power_surge",
+      "hero": "seven",
+      "slot": "special",
+      "deadlockAbility": "citadel_ability_power_surge",
+      "name": "Power Surge",
+      "description": "For 8s, every Shock Rifle burst <style=cIsDamage>arcs Tesla lightning</style> from the target to up to 4 more enemies within 10m for <style=cIsDamage>60% damage</style> each, building <style=cIsUtility>Static</style>. +40% movement speed.",
+      "kind": "power_surge",
+      "icon": "panorama/images/hud/abilities/giga_chain_psd.vtex",
+      "damagePct": 60,
+      "procCoefficient": 0.2,
+      "cooldown": 14,
+      "stocks": 1,
+      "duration": 8,
+      "minDuration": 0,
+      "interval": 0,
+      "radius": 10,
+      "range": 10,
+      "speed": 0,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 0,
+      "spreadDeg": 0,
+      "burst": 0,
+      "stunDuration": 0,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 0,
+      "chainCount": 4,
+      "buffStacks": 1,
+      "buff": "power_surge",
+      "dot": "none",
+      "effect": "tesla_arc",
+      "vfx": "seven_surge",
+      "extra": "none",
+      "deadlockCooldown": 50,
+      "deadlockDamage": 10,
+      "targetDps": 0,
+      "expect": [
+        "self_buff:power_surge"
       ]
     },
     {
       "id": "seven_thunderhead",
       "hero": "seven",
-      "slot": "ult",
+      "slot": "equipment",
       "deadlockAbility": "citadel_ability_storm_cloud",
       "name": "Thunderhead",
-      "description": "<style=cIsUtility>Charges from damage and kills (R).</style> Call a storm on the spot where you stand: for 10s, lightning strikes up to 4 enemies inside its 20m radius every 0.4s for <style=cIsDamage>110% damage</style>, and allies inside get a <style=cIsUtility>Warbanner</style> (+30% attack and movement speed).",
+      "description": "Call a storm on the spot where you stand: for 10s, lightning strikes up to 4 enemies inside its 20m radius every 0.4s for <style=cIsDamage>272% damage</style> (<style=cIsDamage>6800%</style> per enemy), and allies inside get a <style=cIsUtility>Warbanner</style> (+30% attack and movement speed).",
       "kind": "ult_zone",
       "icon": "panorama/images/hud/abilities/giga_storm_psd.vtex",
-      "damagePct": 110,
+      "damagePct": 272,
       "procCoefficient": 0.5,
-      "cooldown": 0,
+      "cooldown": 120,
       "stocks": 1,
       "duration": 10,
       "minDuration": 0,
@@ -564,15 +680,14 @@
       "effect": "storm_strike",
       "vfx": "seven_storm",
       "extra": "warbanner_ward",
-      "ultCharge": 5500,
-      "killCharge": 150,
       "deadlockCooldown": 205,
       "deadlockDamage": 95,
       "targetDps": 0,
       "expect": [
         "enemy_damage",
         "self_buff:thunderhead"
-      ]
+      ],
+      "buffStacks": 0
     },
     {
       "id": "infernus_gun",
@@ -608,8 +723,6 @@
       "effect": "tracer_infernus",
       "vfx": "infernus_afterburn",
       "extra": "none",
-      "ultCharge": 0,
-      "killCharge": 0,
       "deadlockCooldown": 0,
       "deadlockDamage": 5.5,
       "targetDps": 255,
@@ -617,7 +730,8 @@
         "enemy_damage",
         "enemy_debuff:afterburn_buildup",
         "enemy_burn"
-      ]
+      ],
+      "buffStacks": 0
     },
     {
       "id": "infernus_napalm",
@@ -653,15 +767,14 @@
       "effect": "napalm",
       "vfx": "infernus_napalm",
       "extra": "none",
-      "ultCharge": 0,
-      "killCharge": 0,
       "deadlockCooldown": 25,
       "deadlockDamage": 40,
       "targetDps": 0,
       "expect": [
         "enemy_damage",
         "enemy_debuff:napalm"
-      ]
+      ],
+      "buffStacks": 0
     },
     {
       "id": "infernus_flame_dash",
@@ -695,10 +808,8 @@
       "buff": "flame_dash",
       "dot": "none",
       "effect": "fire_trail",
-      "vfx": "none",
+      "vfx": "infernus_trail",
       "extra": "none",
-      "ultCharge": 0,
-      "killCharge": 0,
       "deadlockCooldown": 38,
       "deadlockDamage": 30,
       "targetDps": 0,
@@ -706,20 +817,65 @@
         "self_move",
         "enemy_damage",
         "self_buff:flame_dash"
+      ],
+      "buffStacks": 0
+    },
+    {
+      "id": "infernus_torment_pulse",
+      "hero": "infernus",
+      "slot": "special",
+      "deadlockAbility": "upgrade_torment_pulse",
+      "name": "Torment Pulse",
+      "description": "For 6s, rings of fire pulse out of you every 0.5s, burning everything within 10m for <style=cIsDamage>120% damage</style> and adding <style=cIsUtility>2 Afterburn</style> build-up.",
+      "kind": "aura_pulse",
+      "icon": "panorama/images/items/spirit/torment_pulse_psd.vtex",
+      "damagePct": 120,
+      "procCoefficient": 0.5,
+      "cooldown": 12,
+      "stocks": 1,
+      "duration": 6,
+      "minDuration": 0,
+      "interval": 0.5,
+      "radius": 10,
+      "range": 0,
+      "speed": 0,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 0,
+      "spreadDeg": 0,
+      "burst": 0,
+      "stunDuration": 0,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 0,
+      "chainCount": 0,
+      "buffStacks": 2,
+      "buff": "afterburn_buildup",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "infernus_pulse",
+      "extra": "none",
+      "deadlockCooldown": 0,
+      "deadlockDamage": 0,
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "enemy_debuff:afterburn_buildup",
+        "enemy_burn"
       ]
     },
     {
       "id": "infernus_combustion",
       "hero": "infernus",
-      "slot": "ult",
+      "slot": "equipment",
       "deadlockAbility": "ability_fire_bomb",
       "name": "Concussive Combustion",
-      "description": "<style=cIsUtility>Charges from damage and kills (R).</style> Become a bomb: after 3s you explode for <style=cIsDamage>2500% damage</style> to everything within 18m, <style=cIsUtility>stunning</style> enemies for 2s. Each kill <style=cIsHealing>heals you for 10%</style> of your health. You can move while it builds.",
+      "description": "Become a bomb: after 3s you explode for <style=cIsDamage>6800% damage</style> to everything within 18m, <style=cIsUtility>stunning</style> enemies for 2s. Each kill <style=cIsHealing>heals you for 10%</style> of your health. You can move while it builds.",
       "kind": "ult_selfbomb",
       "icon": "panorama/images/hud/abilities/inferno_bomb_psd.vtex",
-      "damagePct": 2500,
+      "damagePct": 6800,
       "procCoefficient": 1.0,
-      "cooldown": 0,
+      "cooldown": 120,
       "stocks": 1,
       "duration": 3,
       "minDuration": 0,
@@ -740,17 +896,16 @@
       "buff": "none",
       "dot": "none",
       "effect": "big_explosion",
-      "vfx": "none",
+      "vfx": "infernus_bomb",
       "extra": "none",
-      "ultCharge": 5000,
-      "killCharge": 150,
       "deadlockCooldown": 190,
       "deadlockDamage": 125,
       "targetDps": 0,
       "expect": [
         "enemy_damage",
         "enemy_stun"
-      ]
+      ],
+      "buffStacks": 0
     }
   ]
 }

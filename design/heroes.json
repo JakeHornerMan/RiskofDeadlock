@@ -107,7 +107,7 @@
       "subtitle": "The Living Storm",
       "passiveName": "Capacitor",
       "passiveDescription": "Your gun and Lightning Ball build <style=cIsUtility>Static</style> on enemies. At 10 stacks the target <style=cIsDamage>discharges for 300% damage</style>, arcing to 2 nearby enemies, and everything hit is <style=cIsUtility>stunned</style> for 1s.",
-      "passiveIcon": "panorama/images/hud/abilities/giga_chain_psd.vtex",
+      "passiveIcon": "panorama/images/items/weapon/tesla_bullets_psd.vtex",
       "damageHealBack": 0,
       "damageHealBackTime": 0,
       "debuffResist": 0,

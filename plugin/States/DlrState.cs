@@ -11,6 +11,8 @@ namespace DeadlockOfRain.States
     public abstract class DlrState : BaseState, ISkillState
     {
         public GenericSkill activatorSkillSlot { get; set; }
+        /// <summary>The row to run, for a state started without a skill slot: an ult fired from its equipment (any body can hold it).</summary>
+        public SkillRow RowOverride;
         protected SkillRow row;
         protected HeroRuntime rt;
         protected DeadlockAnimator anim;
@@ -20,7 +22,7 @@ namespace DeadlockOfRain.States
         public override void OnEnter()
         {
             base.OnEnter();
-            row = Survivors.RowFor(activatorSkillSlot) ?? FallbackRow();
+            row = RowOverride ?? Survivors.RowFor(activatorSkillSlot) ?? FallbackRow();
             rt = characterBody ? characterBody.GetComponent<HeroRuntime>() : null;
             anim = DeadlockAnimator.Of(characterBody);
             if (row != null) MeltyTest.Report("skill:" + row.Id, true, characterBody ? characterBody.baseNameToken : "");
@@ -34,6 +36,20 @@ namespace DeadlockOfRain.States
             if (hero == null || k == null) return null;
             foreach (var r in Sheet.SkillsOf(hero)) if (r.Kind == k.Kind) return r;
             return null;
+        }
+
+        // the row travels with the state, so an ult fired from equipment runs the same row on the server and every client
+        public override void OnSerialize(NetworkWriter writer)
+        {
+            base.OnSerialize(writer);
+            writer.Write(RowOverride?.Id ?? "");
+        }
+
+        public override void OnDeserialize(NetworkReader reader)
+        {
+            base.OnDeserialize(reader);
+            var id = reader.ReadString();
+            if (!string.IsNullOrEmpty(id)) RowOverride = Sheet.Skill(id);
         }
 
         protected void SlowWhileActive(float mult)

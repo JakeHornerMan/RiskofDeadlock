@@ -216,23 +216,16 @@ namespace DeadlockOfRain
             next = age + row.Interval;
             var enemies = Fx.Enemies(owner, transform.position, row.Radius);
             if (enemies.Count == 0) return;
-            // the storm's damage is the ult's: it must not charge the ult meter again
-            var ult = UltController.Of(owner);
-            if (ult) ult.UltDamageInFlight = true;
-            try
+            for (int i = 0; i < row.ChainCount && enemies.Count > 0; i++)
             {
-                for (int i = 0; i < row.ChainCount && enemies.Count > 0; i++)
-                {
-                    int k = rng.Next(enemies.Count);
-                    var hb = enemies[k]; enemies.RemoveAt(k);
-                    var at = hb.healthComponent.body ? hb.healthComponent.body.corePosition : hb.transform.position;
-                    Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, at);
-                    // RoR2's own strike effect once per tick (it is bright; one per enemy washed the screen out)
-                    if (i == 0) Fx.Impact(row.Effect, at);
-                    Vfx.Play(row.Vfx, "hit", transform.position, row.Radius, null, at);
-                }
+                int k = rng.Next(enemies.Count);
+                var hb = enemies[k]; enemies.RemoveAt(k);
+                var at = hb.healthComponent.body ? hb.healthComponent.body.corePosition : hb.transform.position;
+                Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, at);
+                // RoR2's own strike effect once per tick (it is bright; one per enemy washed the screen out)
+                if (i == 0) Fx.Impact(row.Effect, at);
+                Vfx.Play(row.Vfx, "hit", transform.position, row.Radius, null, at);
             }
-            finally { if (ult) ult.UltDamageInFlight = false; }
             Fx.Sound(row.Id, "hit", transform.position);
         }
 

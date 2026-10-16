@@ -361,6 +361,36 @@
       "withBuff": "none",
       "slowResist": 0.5,
       "notes": "on Infernus while dashing: 50% slow resistance"
+    },
+    {
+      "id": "power_surge",
+      "name": "Power Surge",
+      "icon": "panorama/images/hud/abilities/giga_chain_psd.vtex",
+      "color": "#9FE3FF",
+      "canStack": false,
+      "isDebuff": false,
+      "isHidden": false,
+      "maxStacks": 1,
+      "duration": 8,
+      "moveSpeedAdd": 0.4,
+      "attackSpeedAdd": 0,
+      "armorAdd": 0,
+      "regenAdd": 0,
+      "damageTakenFromOwnerPerStack": 0,
+      "cloak": false,
+      "evasionChance": 0,
+      "dotDamagePct": 0,
+      "critStacks": 0,
+      "triggerStacks": 0,
+      "triggerClears": false,
+      "triggerDamagePct": 0,
+      "triggerTargets": 0,
+      "triggerRadius": 0,
+      "triggerStun": 0,
+      "triggerBuff": "none",
+      "withBuff": "none",
+      "slowResist": 0,
+      "notes": "on Seven while Power Surge runs: each Shock Rifle burst arcs RoR2 Tesla lightning to up to chainCount enemies (skills seven_power_surge); +40% move speed (Deadlock +3 m/s)"
     }
   ]
 }

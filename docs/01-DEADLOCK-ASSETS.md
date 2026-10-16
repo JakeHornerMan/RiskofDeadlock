@@ -128,14 +128,18 @@ Where every entry comes from:
 |---|---|---|
 | `heroes[].id`, `vmdl` | `heroes.json` → `id`, `vmdl` | |
 | `heroes[].meshes` | `heroes.json` → `meshInclude` | VRF **MeshFilter**: only these mesh names are exported. This drops LODs, alternate costumes, ability props and effect meshes. Mesh names are glTF mesh names (the part after the last `.`). |
-| `heroes[].clips` | `animations.json`: every column **except** `ANIM_RIG_COLUMNS` = {`hero`, `upperBodyBone`, `gunArms`, `gunBone`, `gunHand`}, de-duplicated, `none` dropped | VRF **AnimationFilter**. `aimPose` *is* a clip column (it names a clip). |
-| `images` | `heroes.imageSmall`, `heroes.imageCard`, `heroes.passiveIcon` (unless `none`), `skills.icon`, `buffs.icon` (unless `none`) | sorted, unique |
+| `heroes[].clips` | `animations.json`: every column **except** `ANIM_RIG_COLUMNS` = {`hero`, `upperBodyBone`, `gunArms`, `gunBone`, `gunHand`, `muzzle`, `muzzleLeft`, `clothParents`}, de-duplicated, `none` dropped | VRF **AnimationFilter**. `aimPose` *is* a clip column (it names a clip). |
+| `images` | `heroes.imageSmall`, `heroes.imageCard`, `heroes.passiveIcon` (unless `none`), `skills.icon` (the equipment ults use their skill's icon), `buffs.icon` (unless `none`) | sorted, unique |
 | `soundEvents` | `sounds.json` columns `cast`, `loop`, `hit`, `end`, `reload` (unless `none`) | sorted, unique |
 | `soundEventFiles` | `heroes.soundevents` | **informational only.** The extractor indexes *every* `soundevents/*.vsndevts_c` in the VPK, so cross-file `base` inheritance resolves. |
 
-Counts at v0.3.0: 4 heroes, 28 images, 46 sound events. (0.3.0 **added** two images, the passive icons
-`bull_beef_psd` for Abrams' Infernal Resilience and `giga_chain_psd` for Seven's Capacitor and Static, so a 0.2.0 cache
-needs a rebuild: see below.)
+Counts at v0.4.0: 4 heroes, 32 images, 55 sound events. (0.3.0 **added** two images, the passive icons
+`bull_beef_psd` for Abrams' Infernal Resilience and `giga_chain_psd` for Seven's Capacitor and Static. 0.4.0 **adds** the
+new R moves' content: item icons `phantom_strike_psd`, `melee_charge_psd`, `torment_pulse_psd` and `tesla_bullets_psd` (Seven's
+Capacitor icon now; `giga_chain_psd` is Power Surge's), sound events from the shared item and melee soundevents
+(`Mods.Armor.Phantom.Strike.*`, `Mods.Tech.TormentPulse.Proc`, `Abrams.Melee.Swing.Charged`, `Ability.Melee.Impact.Heavy.NPC`,
+`Gigawatt.PowerSurge.*`) and the clips in the new `special_start`/`special` columns (Haze `melee_dash`, `melee_quick_1`;
+Abrams `melee_start`, `melee_hit`; Seven `ability_power_surge`). So a 0.3.0 cache needs a rebuild too: see below.)
 
 Changing the manifest changes the cache stamp (section 6.6), so the next first start re-extracts. On a PC that
 already has `ready.json`, though, Melty's `setup.done` check is satisfied and **setup is skipped**. So an *older*
@@ -216,7 +220,7 @@ The writer returns a stats line that goes into `extract.log`. Real values at bui
 | seven | 245 | 95 250 | 4 / 4 | 17/17 (1623) | 2.866 m |
 | infernus | 158 | 63 071 | 4 / 4 | 15/15 (944) | 2.657 m |
 
-(The clip counts above are from the 0.1.0 manifest. The 0.2.0 manifest has fewer clips: `fire`/`fire_alt` (the `shoot_idle*` clips) are `none` for everyone, `land` is `none` except for Infernus, and the `special` column, which held Seven's `ability_power_surge`, was removed with ability 3.)
+(The clip counts above are from the 0.1.0 manifest. The 0.2.0 manifest has fewer clips: `fire`/`fire_alt` (the `shoot_idle*` clips) are `none` for everyone, `land` is `none` except for Infernus, and the `special` column, which held Seven's `ability_power_surge`, was removed with ability 3. 0.4.0 brings `special_start`/`special` back for the new R moves.)
 
 **Warning: the log's "height" is not `heroes.sourceHeight`.** The log measures max−min Y over **every** included
 vertex in the bind pose. That includes guns, which sit *below* the feet in the bind pose (Seven's gun goes down to

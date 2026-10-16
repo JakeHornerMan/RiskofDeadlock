@@ -4,7 +4,7 @@ Checks (each row x column crossing is a checkbox):
   - every row has every declared column, and no cell is null / empty
   - every cross-sheet reference resolves (hero ids, buffs, effects, skills, kinds)
   - every skill kind has an implementing state in plugin/States (a class carrying [Kind("...")])
-  - slot layout: each hero has exactly primary/secondary/utility/ult (RoR2's 4 skills; the ult sits in the special slot, R)
+  - slot layout: each hero has exactly primary/secondary/utility/special (RoR2's 4 skills) plus one equipment (the Deadlock ult on Q)
   - balance: gun DPS computed from the row matches targetDps (+-10%) and sits in the RoR2 band
   - Deadlock assets named by the sheets exist in the player's install listing (dev files, if present):
     vmdl/vtex paths, sound events, animation clip names, mesh names
@@ -24,7 +24,7 @@ def load(name):
     with open(os.path.join(D, name + '.json'), encoding='utf-8') as f:
         return json.load(f)
 
-sheets = {n: load(n) for n in ['heroes', 'stats', 'skills', 'buffs', 'animations', 'sounds', 'effects', 'hooks']}
+sheets = {n: load(n) for n in ['heroes', 'stats', 'skills', 'equipment', 'buffs', 'animations', 'sounds', 'effects', 'hooks']}
 
 # 1. every cell filled
 for name, s in sheets.items():
@@ -93,20 +93,27 @@ for sid in skills:
         bad(f'sounds: skill {sid} needs exactly one row')
 
 # 3. slots
-SLOTS = ['primary', 'secondary', 'utility', 'ult']
+SLOTS = ['primary', 'secondary', 'utility', 'special', 'equipment']
 for h in heroes:
     got = sorted(r['slot'] for r in skills.values() if r['hero'] == h)
     if got != sorted(SLOTS):
         bad(f'skills: hero {h} slots {got} != {SLOTS}')
 for r in skills.values():
     if r['slot'] not in SLOTS: bad(f'skills[{r["id"]}].slot: "{r["slot"]}" unknown')
-    if r['slot'] == 'ult':
-        if r['ultCharge'] <= 0 or r['killCharge'] <= 0: bad(f'skills[{r["id"]}]: ult needs ultCharge and killCharge > 0')
-        if r['cooldown'] != 0: bad(f'skills[{r["id"]}]: ult is gated by charge, cooldown must be 0')
-    else:
-        if r['ultCharge'] != 0 or r['killCharge'] != 0: bad(f'skills[{r["id"]}]: only ults charge')
-    if r['slot'] in ('secondary', 'utility') and r['cooldown'] <= 0:
+    if r['slot'] in ('secondary', 'utility', 'special') and r['cooldown'] <= 0:
         bad(f'skills[{r["id"]}]: ability needs a cooldown')
+    if r['slot'] == 'equipment' and r['cooldown'] != 120:
+        bad(f'skills[{r["id"]}]: equipment ults recharge in 120 s (cooldown {r["cooldown"]})')
+equipment = sheets['equipment']['rows']
+for e in equipment:
+    ref('equipment', e['id'], 'hero', e['hero'], heroes, False)
+    ref('equipment', e['id'], 'skill', e['skill'], skills, False)
+    sk = skills.get(e['skill'])
+    if sk and (sk['slot'] != 'equipment' or sk['hero'] != e['hero']):
+        bad(f'equipment[{e["id"]}].skill: "{e["skill"]}" must be the equipment-slot skill of {e["hero"]}')
+for r in skills.values():
+    if r['slot'] == 'equipment' and sum(1 for e in equipment if e['skill'] == r['id']) != 1:
+        bad(f'equipment: skill {r["id"]} needs exactly one equipment row')
 
 # 4. kinds implemented
 states_dir = os.path.join(ROOT, 'plugin', 'States')
@@ -136,12 +143,13 @@ for r in skills.values():
             bad(f'skills[{r["id"]}].targetDps: row computes {dps:.0f} %/s, sheet says {r["targetDps"]}')
         if not (240 <= dps <= 600):
             bad(f'skills[{r["id"]}]: sustained DPS {dps:.0f} %/s outside RoR2 primary band 240-600')
-    if r['slot'] == 'ult':
+    if r['slot'] == 'equipment':
+        # Preon Accumulator (140 s) scaled to our 120 s cooldown: about 6800 % per enemy per use
         if r['kind'] == 'ult_dance': total = r['duration'] / r['interval'] * r['damagePct']
         elif r['kind'] == 'ult_zone': total = r['duration'] / r['interval'] * r['damagePct']  # per target: every tick strikes up to chainCount enemies
         else: total = r['damagePct']
-        if not (1500 <= total <= 3000):
-            bad(f'skills[{r["id"]}]: ult total {total:.0f}% outside 1500-3000')
+        if not (6000 <= total <= 7500):
+            bad(f'skills[{r["id"]}]: equipment ult total {total:.0f}% outside 6000-7500')
 
 # 6. Deadlock assets (dev listings from this PC's install; not shipped)
 def dev(name):

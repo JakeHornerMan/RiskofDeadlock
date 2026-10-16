@@ -7,90 +7,100 @@ OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
 os.makedirs(OUT, exist_ok=True)
 E = html.escape
 
-COMMANDO = {'all': 1058, 'M1': ('Double Tap', 603), 'M2': ('Phase Round', 592), 'Shift': ('Tactical Dive', 0), 'R': ('Suppressive Fire', 80)}
-BENCH = 'Benchmark 2026-10-16 (commit 714977f): Monsoon, level 1, no items, 12 still enemies at 10-15 m, perfect aim, 30 s per pass.'
+COMMANDO = {'all': 3008, 'M1': ('Double Tap', 603), 'M2': ('Phase Round', 854), 'Shift': ('Tactical Dive', 0), 'R': ('Suppressive Fire', 80), 'Q': ('Preon Accumulator', 2013)}
+BENCH = 'Benchmark 2026-10-16 (v0.4.0): Monsoon, level 1, no items, 12 still enemies at 10-15 m, perfect aim, 30 s per pass, one Q use per pass.'
+VERSION = 'v0.4.0'
 
 HEROES = [
  dict(id='haze', name='Haze', tag='The smoke-shrouded assassin', analog='Commando / Bandit', accent='#e46aa8', accent2='#a68cff',
-      all=395, ults=1, meter=5000,
+      all=611,
       kit=[
         ('Passive', 'Fixation', None, 'Each SMG hit stacks Fixation on the target; each stack is +2.5 % damage from Haze. Crits add 3 stacks. Every 20 stacks the target takes a 200 % burst and is slowed 12 % for 2 s.',
          [('Stacks', 'max 40, 6 s'), ('Per stack', '+2.5 % from Haze'), ('Burst', '200 % every 20'), ('Slow', '12 % for 2 s')], 'in M1', False),
-        ('M1', 'Twin SMGs', 298, 'Two SMGs, alternating, firing from the end of each gun. Firing breaks Smoke Bomb.',
+        ('M1', 'Twin SMGs', 278, 'Two SMGs, alternating, firing from the end of each gun. Firing breaks Smoke Bomb.',
          [('Damage', '45 % per bullet'), ('Rate', '9.5 shots/s'), ('Magazine', '25, reload 1.4 s'), ('Proc', '0.5')], None, False),
         ('M2', 'Sleep Dagger', 35, 'A thrown dagger; the first enemy it hits takes the damage and is put to sleep (stunned).',
          [('Damage', '350 %'), ('Stun', '4 s'), ('Cooldown', '10 s'), ('Speed', '120 m/s')], None, False),
         ('Shift', 'Smoke Bomb', 0, 'Invisible (vanilla Cloak) and faster. Enemies lose her as a target and can’t pick her again until she fires.',
          [('Duration', '5 s'), ('Speed', '+50 %'), ('Cooldown', '12 s')], None, False),
-        ('R', 'Bullet Dance', 98, 'Charge-meter ultimate. Spins and auto-fires at random enemies within 25 m with a 30 % chance to evade attacks.',
-         [('Damage', '49 % per shot'), ('Rate', '~12 shots/s for 5 s'), ('Total', '≈ 2950 %'), ('Meter', '5000')], 'one cast', False),
+        ('R', 'Phantom Strike', 84, 'From Deadlock’s Phantom Strike item. Blinks behind the enemy under the crosshair and cuts it three times, each cut adding 5 Fixation. No target, no blink: R stays ready.',
+         [('Damage', '3 × 250 %'), ('Range', '30 m'), ('Fixation', '+5 per cut'), ('Cooldown', '10 s')], '3 casts', False),
+        ('Q', 'Bullet Dance', 215, 'Ult equipment (held from the start). Spins and auto-fires at random enemies within 25 m with a 30 % chance to evade attacks.',
+         [('Damage', '113 % per shot'), ('Rate', '~12 shots/s for 5 s'), ('Total', '≈ 6800 %'), ('Cooldown', '120 s')], 'one use: 6 440 %', False),
       ],
-      verdict=('below', 663),
-      fixes=['Twin SMGs 45 → 55–60 % per bullet (+70 to +100 %/s)',
-             'Fixation burst every 10 stacks for 300 %, splashing 6 m around the target (+150 to +250)',
-             'Sleep Dagger: 6 s cooldown, 500 %, pierces every enemy in a line (+150 to +250)',
-             'Bullet Dance shots ricochet to a second enemy (+80 to +100)'],
-      est='about 900–1000 %/s'),
+      verdict=('below', 2397),
+      fixes=['Bullet Dance: count the 6800 % per enemy like the other ults (each shot hits every enemy in 25 m, or ricochets to 3 more) (+1000 to +1500)',
+             'Twin SMGs 45 → 55–60 % per bullet (+70 to +100)',
+             'Fixation burst every 10 stacks for 300 %, splashing 6 m (+150 to +250)',
+             'Sleep Dagger: 6 s, 500 %, pierces every enemy in a line (+150 to +250)',
+             'Phantom Strike: the last cut bursts 6 m around the target for 300 % (+100)'],
+      est='about 2400–2900 %/s with one Q'),
  dict(id='abrams', name='Abrams', tag='The unstoppable detective', analog='Loader / Acrid', accent='#e0603a', accent2='#d9a25b',
-      all=2336, ults=4, meter=4500,
+      all=1684,
       kit=[
         ('Passive', 'Infernal Resilience', None, 'Heals back part of every hit he takes; debuffs on him wear off sooner.',
          [('Heal-back', '10 % over 10 s'), ('Debuffs', '−20 % duration')], 'no damage', False),
-        ('M1', 'Shotgun', 511, 'Nine pellets with spread, fired from the end of the gun.',
+        ('M1', 'Shotgun', 499, 'Nine pellets with spread, fired from the end of the gun.',
          [('Damage', '9 × 45 %'), ('Rate', '1.6 shots/s'), ('Shells', '9, reload 1.5 s'), ('Proc', '0.4')], None, False),
         ('M2', 'Siphon Life', 400, 'Risk of Rain 2’s Mired Urn tethers: drains the nearest enemies and heals him for all of it.',
          [('Targets', 'up to 3 within 25 m'), ('Drain', '250 %/s each'), ('Duration', '8 s'), ('Cooldown', '15 s')], None, False),
-        ('Shift', 'Shoulder Charge', 257, 'Charges along his aim, running like his sprint but faster. Every enemy he runs into is hit, stunned and knocked aside.',
+        ('Shift', 'Shoulder Charge', 175, 'Charges along his aim, running like his sprint but faster. Every enemy he runs into is hit, stunned and knocked aside.',
          [('Damage', '350 % per enemy'), ('Stun', '1 s'), ('Knockback', '22 m/s'), ('Cooldown', '8 s')], None, False),
-        ('R', 'Seismic Impact', 880, 'Charge-meter ultimate. Rises, hovers up to 3 s while a ground reticle follows the aim, then slams down on R or Left Click. He can be hit while hovering.',
-         [('Damage', '2200 % in 12 m'), ('Stun', '1.6 s'), ('Aim range', '40 m'), ('Meter', '4500')], 'one cast: 26 400 %', False),
+        ('R', 'Haymaker', 330, 'Deadlock’s heavy melee. A short wind-up with a glowing fist, a 6 m lunge, then a punch that knocks enemies in front of him flying.',
+         [('Damage', '900 %'), ('Wind-up', '0.4 s'), ('Knockback', '30 m/s'), ('Cooldown', '5 s')], None, False),
+        ('Q', 'Seismic Impact', 1587, 'Ult equipment (held from the start). Rises, hovers up to 3 s while a ground reticle follows the aim, then Left Click slams down there. He can be hit while hovering.',
+         [('Damage', '6800 % in 12 m'), ('Stun', '1.6 s'), ('Aim range', '40 m'), ('Cooldown', '120 s')], 'one use: 47 600 %', False),
       ],
-      verdict=('above', 1278),
-      fixes=['Ult meter counts one enemy per hit (4 slams in 30 s → about 1)',
-             'Seismic Impact 2200 % in 12 m → 1500 % in 9 m (Deadlock’s radius)',
-             'Siphon Life optional: 250 → 200 %/s',
-             'Shotgun and Shoulder Charge stay as they are'],
-      est='about 1150–1300 %/s'),
+      verdict=('below', 1324),
+      fixes=['Seismic Impact radius 12 → 18 m (Preon’s blast is 20 m) (+700 to +900)',
+             'Haymaker becomes a 6 m shockwave cone in front (+150 to +250)',
+             'Shoulder Charge 350 → 500 % per enemy (+75)',
+             'Shotgun and Siphon Life stay as they are'],
+      est='about 2600–3000 %/s with one Q'),
  dict(id='seven', name='Seven', tag='The living storm', analog='Artificer', accent='#5cc8ff', accent2='#b9e8ff',
-      all=6850, ults=14, meter=5500,
+      all=5113,
       kit=[
-        ('Passive', 'Capacitor', None, 'Gun and Lightning Ball hits build Static. At 10 stacks the target discharges, arcing to 2 nearby enemies, and everything hit is stunned.',
-         [('Discharge', '300 % to each'), ('Arcs', '2 enemies, 12 m'), ('Stun', '1 s'), ('Static', 'max 10, 5 s')], 'in M1 and M2', False),
-        ('M1', 'Shock Rifle', 632, '3-round bursts from the end of the gun; every hit builds Static.',
-         [('Damage', '3 × 48 %'), ('Burst', 'every 0.26 s'), ('Magazine', '29, reload 1.4 s'), ('Proc', '0.7')], None, False),
-        ('M2', 'Lightning Ball', 1852, 'A slow ball that flies through enemies and stops only on walls, shocking everything near it. Every shock builds Static.',
+        ('Passive', 'Capacitor', None, 'Gun hits, Lightning Ball shocks and Power Surge arcs build Static. At 10 stacks the target discharges, arcing to 2 nearby enemies, and everything hit is stunned.',
+         [('Discharge', '300 % to each'), ('Arcs', '2 enemies, 12 m'), ('Stun', '1 s'), ('Static', 'max 10, 5 s')], 'in M1, M2 and R', False),
+        ('M1', 'Shock Rifle', 62, '3-round bursts from the end of the gun; every hit builds Static.',
+         [('Damage', '3 × 48 %'), ('Burst', 'every 0.26 s'), ('Magazine', '29, reload 1.4 s'), ('Proc', '0.7')], 'bench fault: the gun stopped after one magazine in this pass (v0.3.0: 632)', True),
+        ('M2', 'Lightning Ball', 1168, 'A slow ball that flies through enemies and stops only on walls, shocking everything near it. Every shock builds Static.',
          [('Shock', '60 % every 0.25 s'), ('Radius', '6 m'), ('Lifetime', '5 s'), ('Cooldown', '6 s')], None, False),
-        ('Shift', 'Static Charge', 585, 'Plants a charge on the aimed enemy or spot; after a countdown a thunderbolt strikes from the sky.',
+        ('Shift', 'Static Charge', 810, 'Plants a charge on the aimed enemy or spot; after a countdown a thunderbolt strikes from the sky.',
          [('Damage', '450 % in 8 m'), ('Stun', '0.9 s'), ('Fuse', '1.5 s'), ('Cooldown', '7 s')], None, False),
-        ('R', 'Thunderhead', 367, 'Charge-meter ultimate. Dark storm clouds over the spot he stands on darken the area and strike enemies with lightning; allies inside get Warbanner.',
-         [('Strikes', '4 enemies / 0.4 s'), ('Damage', '110 % each'), ('Area', '20 m for 10 s'), ('Meter', '5500')], 'one cast: 11 000 %', False),
+        ('R', 'Power Surge', 0, 'His real Deadlock ability, built like RoR2’s Unstable Tesla Coil. For 8 s every Shock Rifle burst arcs Tesla lightning from the target to up to 4 more enemies, each arc building Static. +40 % move speed.',
+         [('Arc', '60 % each'), ('Jumps', '4 enemies, 10 m'), ('Duration', '8 s'), ('Cooldown', '14 s')], 'it powers the gun, so it counts only in “all”', False),
+        ('Q', 'Thunderhead', 907, 'Ult equipment (held from the start). Dark storm clouds over the spot he stands on darken the area and strike enemies with lightning; allies inside get Warbanner.',
+         [('Strikes', '4 enemies / 0.4 s'), ('Damage', '272 % each'), ('Area', '20 m for 10 s'), ('Cooldown', '120 s')], 'one use: 27 200 %', False),
       ],
-      verdict=('above', 5792),
-      fixes=['Ult meter counts one enemy per hit, and only one storm at a time (14 storms in 30 s → about 1)',
-             'Lightning Ball 60 → 35 % per shock, 6 → 4 m, and only the gun builds Static',
-             'Capacitor discharge 300 → 200 % (stun stays)',
-             'Static Charge cooldown 7 → 9 s, or 6 m radius'],
-      est='about 1200–1400 %/s'),
+      verdict=('above', 2105),
+      fixes=['Lightning Ball 60 → 35 % per shock, 6 → 4 m, and only the gun builds Static (about −700)',
+             'Static Charge cooldown 7 → 9 s, or 6 m radius (−200 to −300)',
+             'Capacitor discharge 300 → 200 % (stun stays) (−200 to −300)',
+             'Power Surge arcs 60 → 40 %, 3 enemies (−200 to −400)',
+             'Rerun the bench for his gun first (bench fault)'],
+      est='about 2800–3300 %/s with one Q'),
  dict(id='infernus', name='Infernus', tag='The burning man', analog='Acrid / Engineer', accent='#ff8a2a', accent2='#ffc66b',
-      all=3209, ults=3, meter=5000,
+      all=3005,
       kit=[
-        ('Passive', 'Afterburn', None, 'Gun hits build Afterburn; at 12 stacks the target burns. Embers show the build-up, flames the burn.',
-         [('Build-up', 'max 12, 4 s'), ('Burn', '100 %/s for 3 s')], 'in M1', False),
-        ('M1', 'Flame Gun', 267, 'Automatic, from the end of the gun; every hit builds Afterburn.',
+        ('Passive', 'Afterburn', None, 'Gun and Torment Pulse hits build Afterburn; at 12 stacks the target burns. Embers show the build-up; RoR2’s Helfire flare and big flames show the burn.',
+         [('Build-up', 'max 12, 4 s'), ('Burn', '100 %/s for 3 s')], 'in M1 and R', False),
+        ('M1', 'Flame Gun', 246, 'Automatic, from the end of the gun; every hit builds Afterburn.',
          [('Damage', '40 % per bullet'), ('Rate', '9.5 shots/s'), ('Magazine', '27, reload 1.4 s'), ('Proc', '0.5')], None, False),
-        ('M2', 'Napalm', 523, 'A lobbed flask that bursts in a splash: damage, a slow, and the target takes more damage from him.',
+        ('M2', 'Napalm', 602, 'A lobbed flask that bursts in a ring of fire and leaves a burning puddle: damage, a slow, and the target takes more damage from him.',
          [('Damage', '300 % in 5 m'), ('Slow', '28 % for 4 s'), ('Amp', '+16 % for 8 s'), ('Charges', '2, 5 s each')], None, False),
-        ('Shift', 'Flame Dash', 214, 'Dash at ×2.2 speed, hold to keep going. Leaves a fire trail; enemies he runs into are knocked aside and scorched.',
-         [('Trail', '150 %/s for 5 s'), ('Shove', '75 % + 22 m/s'), ('Length', '0.8 s tap, 3 s held'), ('Cooldown', '8 s')], None, True),
-        ('R', 'Concussive Combustion', 917, 'Charge-meter ultimate. Becomes a bomb he can move with; the blast stuns, and each kill heals him.',
-         [('Damage', '2500 % in 18 m'), ('Fuse', '3 s'), ('Stun', '2 s'), ('Heal', '10 % per kill')], 'one cast: 27 500 %', False),
+        ('Shift', 'Flame Dash', 307, 'Dash at ×2.2 speed, hold to keep going. Leaves burning ground; enemies he runs into are knocked aside and scorched.',
+         [('Trail', '150 %/s for 5 s'), ('Shove', '75 % + 22 m/s'), ('Length', '0.8 s tap, 3 s held'), ('Cooldown', '8 s')], None, False),
+        ('R', 'Torment Pulse', 1667, 'From Deadlock’s Torment Pulse item. For 6 s, rings of fire race out of him every 0.5 s, burning everything within 10 m and building Afterburn.',
+         [('Damage', '120 % per pulse'), ('Radius', '10 m'), ('Afterburn', '+2 per pulse'), ('Cooldown', '12 s')], None, False),
+        ('Q', 'Concussive Combustion', 2720, 'Ult equipment (held from the start). Becomes a bomb, fire gathering on him; the blast stuns, leaves burning ground, and each kill heals him.',
+         [('Damage', '6800 % in 18 m'), ('Fuse', '3 s'), ('Stun', '2 s'), ('Cooldown', '120 s')], 'one use: 81 600 %', False),
       ],
-      verdict=('above', 2151),
-      fixes=['Ult meter counts one enemy per hit (3 Combustions in 30 s → about 1)',
-             'Concussive Combustion 2500 % in 18 m → 1600 % in 12 m',
-             'Flame Gun 40 → 50 % per bullet (it is half of Double Tap)',
-             'Napalm optional: 5 → 4 m splash'],
-      est='about 1100–1300 %/s'),
+      verdict=('inside', 3),
+      fixes=['Torment Pulse is out of line on its own: 120 → 50 % per pulse, or 6 m radius, or one pulse per second (−800 to −1100)',
+             'Then Flame Gun 40 → 50 % per bullet (+60), or a slightly larger Napalm splash, to stay near Commando',
+             'Napalm, Flame Dash and Combustion stay as they are'],
+      est='about 2000–2300 %/s if only Torment Pulse is cut'),
 ]
 
 FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">'
@@ -175,7 +185,7 @@ def hero_page(h):
     slots = {k[0]: k for k in h['kit']}
     scale = max([v for _, _, v, *_ in h['kit'] if v] + [COMMANDO['M1'][1]]) * 1.05
     rows = []
-    for slot in ['M1', 'M2', 'Shift', 'R']:
+    for slot in ['M1', 'M2', 'Shift', 'R', 'Q']:
         k = slots[slot]
         rows.append((slot, k[1], k[2], 'hero'))
         rows.append(('Commando', COMMANDO[slot][0], COMMANDO[slot][1], 'base'))
@@ -186,8 +196,8 @@ def hero_page(h):
         else:
             d = f'<span>DPS alone</span> <strong>{dps:,} %/s</strong> <span>· {dps*12/100:.0f} dmg/s at level 1</span>'
             if note: d += f' <span>· {E(note)}</span>'
-        if retest: d += ' <span class="pill warn">⚠ retest: changed after the benchmark</span>'
-        sub = 'passive' if slot == 'Passive' else {'M1': 'left click', 'M2': 'right click', 'Shift': 'utility', 'R': 'ultimate'}[slot]
+        if retest: d += ' <span class="pill warn">⚠ retest</span>'
+        sub = 'passive' if slot == 'Passive' else {'M1': 'left click', 'M2': 'right click', 'Shift': 'utility', 'R': 'special', 'Q': 'ult equipment'}[slot]
         plates.append(f'''<article class="plate{' passive' if slot == 'Passive' else ''}">
   <div class="key">{E(slot)}<small>{sub}</small></div>
   <div class="desc"><h3>{E(name)}</h3><p>{E(desc)}</p></div>
@@ -195,7 +205,8 @@ def hero_page(h):
   <div class="dps">{d}</div>
 </article>''')
     side, gap = h['verdict']
-    pill = f'<span class="pill bad">{"+" if side == "above" else "−"}{gap:,} %/s vs Commando: outside ±250</span>'
+    pill = (f'<span class="pill good">{gap:,} %/s from Commando: inside ±250</span>' if side == 'inside' else
+            f'<span class="pill bad">{"+" if side == "above" else "−"}{gap:,} %/s vs Commando: outside ±250</span>')
     fixes = ''.join(f'<li>{E(f)}</li>' for f in h['fixes'])
     return f'''<title>{E(h["name"])} Kit Sheet</title>
 {FONTS}
@@ -203,21 +214,21 @@ def hero_page(h):
 <main class="wrap">
   <header class="head">
     <div>
-      <div class="eyebrow">Deadlock of Rain · v0.3.0 · Risk of Rain 2 analog: {E(h["analog"])}</div>
+      <div class="eyebrow">Deadlock of Rain · {VERSION} · Risk of Rain 2 analog: {E(h["analog"])}</div>
       <h1>{E(h["name"])}</h1>
       <div class="tag">{E(h["tag"])}</div>
     </div>
     <div class="score">
       <div class="eyebrow">Everything at once, 30 s</div>
       <div class="big">{h["all"]:,}</div>
-      <div class="unit">% of damage per second · {h["all"]*12/100:.0f} dmg/s at level 1 · R used {h["ults"]}×</div>
+      <div class="unit">% of damage per second · {h["all"]*12/100:.0f} dmg/s at level 1 · one Q use included</div>
       {pill}
     </div>
   </header>
 
   <section class="strip" aria-labelledby="s1">
     <h2 id="s1">Each ability alone vs Commando</h2>
-    <div class="legend"><span><i style="background:var(--accent)"></i>{E(h["name"])}</span><span><i style="background:var(--base)"></i>Commando (baseline)</span><span>Scale: % of damage per second, used whenever ready for 30 s. R = one cast spread over 30 s.</span></div>
+    <div class="legend"><span><i style="background:var(--accent)"></i>{E(h["name"])}</span><span><i style="background:var(--base)"></i>Commando (baseline)</span><span>Scale: % of damage per second, used whenever ready for 30 s. Q = one use spread over 30 s (it recharges in 120 s); Commando’s Q is the Preon Accumulator.</span></div>
     {bars(rows, scale)}
   </section>
 
@@ -229,7 +240,7 @@ def hero_page(h):
   <section class="cols">
     <div class="box">
       <h2>Why the number</h2>
-      <p>Everything at once: <strong>{h["all"]:,} %/s</strong> against Commando’s <strong>{COMMANDO["all"]:,} %/s</strong>. The ultimate fired <strong>{h["ults"]}×</strong> in 30 s (meter {h["meter"]:,}); the meter fills from damage dealt and counts every enemy hit, so kits that hit the whole pack refill it fast.</p>
+      <p>Everything at once: <strong>{h["all"]:,} %/s</strong> against Commando’s <strong>{COMMANDO["all"]:,} %/s</strong> (his includes one Preon Accumulator, about 2000 of it). Every survivor used their Q once; the R moves are normal cooldown skills. The pack of 12 bunched enemies favours area damage.</p>
     </div>
     <div class="box">
       <h2>Suggested changes</h2>
@@ -245,7 +256,7 @@ def hero_page(h):
 def compare_page():
     acc, acc2 = '#c9d6e3', '#8fb7a3'
     all_rows = [('Baseline', 'Commando', COMMANDO['all'], 'base')] + [(h['analog'], h['name'], h['all'], 'hero') for h in HEROES]
-    scale = 7200
+    scale = 5600
     def allbar(label, name, val, kind, color):
         w = val / scale * 100
         band_l, band_r = (COMMANDO['all'] - 250) / scale * 100, (COMMANDO['all'] + 250) / scale * 100
@@ -261,7 +272,7 @@ def compare_page():
         r = f'<br><span class="muted" style="font-size:11px">{ratio:.1f}×</span>' if ratio else ''
         return f'<td class="heat" style="color:{col}">{v:,}{r}</td>'
     slot_rows = []
-    for slot in ['M1', 'M2', 'Shift', 'R']:
+    for slot in ['M1', 'M2', 'Shift', 'R', 'Q']:
         base = COMMANDO[slot][1]
         cells = ''.join(cell(next(k for k in h['kit'] if k[0] == slot)[2], base) for h in HEROES)
         slot_rows.append(f'<tr><th scope="row">{slot}</th><td class="heat">{base:,}<br><span class="muted" style="font-size:11px">{E(COMMANDO[slot][0])}</span></td>{cells}</tr>')
@@ -280,15 +291,15 @@ def compare_page():
 <main class="wrap">
   <header class="head">
     <div>
-      <div class="eyebrow">Deadlock of Rain · v0.3.0 · docs 04, 05 and 06</div>
+      <div class="eyebrow">Deadlock of Rain · {VERSION} · docs 04, 05 and 06</div>
       <h1>Balance <span>vs</span> Commando</h1>
       <div class="tag">Every survivor, same pack, same 30 seconds, Monsoon.</div>
     </div>
     <div class="score">
       <div class="eyebrow">Target band</div>
-      <div class="big" style="color:var(--base)">1,058</div>
-      <div class="unit">Commando, % of damage per second · ±250 allowed (808–1,308)</div>
-      <span class="pill bad">4 of 4 heroes outside the band</span>
+      <div class="big" style="color:var(--base)">3,008</div>
+      <div class="unit">Commando with one Preon Accumulator, % of damage per second · ±250 allowed (2,758–3,258)</div>
+      <span class="pill bad">3 of 4 heroes outside the band</span>
     </div>
   </header>
 
@@ -300,7 +311,7 @@ def compare_page():
 
   <section class="box" aria-labelledby="c2">
     <h2 id="c2">Each ability alone</h2>
-    <p class="muted">%/s for 30 s, used whenever ready; R is one cast spread over 30 s (Commando’s R is a 9 s cooldown, 4 casts). Colour: green within half to 1.5× of Commando’s same slot, yellow below half, red above 1.5×.</p>
+    <p class="muted">%/s for 30 s, used whenever ready; Q is one use spread over 30 s (Commando’s Q is the Preon Accumulator). Colour: green within half to 1.5× of Commando’s same slot, yellow below half, red above 1.5×.</p>
     <div class="tablewrap"><table>
       <thead><tr><th>Slot</th><th>Commando</th>{"".join(f"<th>{E(h['name'])}</th>" for h in HEROES)}</tr></thead>
       <tbody>{"".join(slot_rows)}</tbody>
@@ -311,21 +322,19 @@ def compare_page():
     <div class="box">
       <h2>What drives the gaps</h2>
       <ul>
-        <li><strong>The ult meter.</strong> It fills from damage and counts every enemy hit. In 30 s Seven used R 14 times, Abrams 4, Infernus 3, Haze once.</li>
-        <li><strong>Area damage against a pack.</strong> Seismic Impact (×12), Combustion (×11), Lightning Ball (518 hits) and Static discharges all multiply; Commando’s only area tool is Phase Round.</li>
-        <li><strong>Haze is single-target everywhere.</strong> Sleep Dagger adds 35 %/s; she has nothing like Phase Round.</li>
-        <li><strong>Guns are close.</strong> 603 (Commando), 632, 511, 298, 267.</li>
+        <li><strong>The ult meter is gone.</strong> The ults are Q equipment with a 120 s cooldown, one use per fight here (v0.3.0: Seven fired 14 storms in 30 s).</li>
+        <li><strong>Q per pack, not per enemy.</strong> Every ult deals about 6800 % per enemy, but per use: Combustion 81 600 %, Preon 60 400 %, Seismic Impact 47 600 % (7 of 12 inside), Thunderhead 27 200 %, Bullet Dance 6 440 % (one target per shot).</li>
+        <li><strong>Torment Pulse</strong> alone is 1667 %/s: 120 % to everything in 10 m twice a second.</li>
+        <li><strong>Haze is single-target everywhere</strong>; Abrams’ slam reaches only half the pack.</li>
       </ul>
     </div>
     <div class="box">
-      <h2>Fix first: the ult meter</h2>
+      <h2>Read before acting</h2>
       <ul>
-        <li><strong>A (recommended):</strong> a hit on several enemies charges as if it hit one.</li>
-        <li><strong>B:</strong> cap charge per second (fastest ult every ~25 s).</li>
-        <li><strong>C:</strong> charge over time plus kills.</li>
-        <li><strong>D:</strong> raise <code>ultCharge</code> for area heroes.</li>
+        <li>One Q in a 30 s pass inflates every number; over a 120 s fight the Q is a quarter as large per second. Commando is about 1000 without the Preon.</li>
+        <li>Twelve still, bunched enemies favours area damage; a single-target test would complete the picture.</li>
+        <li>Seven’s gun-alone pass is a bench fault (62 %/s); it needs a rerun.</li>
       </ul>
-      <p class="muted">With A, B or C each hero gets about one ult per 30 s; the estimates below assume that.</p>
     </div>
   </section>
 
@@ -338,7 +347,7 @@ def compare_page():
     <h2 id="c4">Retest needed</h2>
     <div class="tablewrap"><table>
       <thead><tr><th>Survivor</th><th>Ability</th><th>Change since the last benchmark</th><th>Commit</th><th>Status</th></tr></thead>
-      <tbody><tr><td>Infernus</td><td>Flame Dash</td><td>Enemies he shoves now take one tick of the trail (75 %), since the knockback threw them out of the flames.</td><td><code>081139c</code></td><td><span class="pill warn">⚠ retest</span></td></tr></tbody>
+      <tbody><tr><td>Seven</td><td>Shock Rifle (M1 alone)</td><td>The gun stopped after about one magazine in its own pass (62 %/s, 34 hits). The in-game test fires it normally, and it fired normally in “all”. v0.3.0 measured 632.</td><td>v0.4.0</td><td><span class="pill warn">⚠ retest</span></td></tr></tbody>
     </table></div>
   </section>
 
@@ -355,7 +364,7 @@ def compare_page():
     <ul>
       <li>Monsoon, first stage of a fresh run, one fixed flat spot; level 1, no items, damage stat 12 for all.</li>
       <li>12 enemies (8 Lemurians, 4 Beetles), AI off, ×101 health, a 3 × 4 grid 10–15 m in front; nothing dies.</li>
-      <li>M1 held; M2, Shift and R pressed about 25 times a second, so each fires the moment it is ready; aim on the nearest enemy; put back on the spot after dashes.</li>
+      <li>M1 held; M2, Shift, R and Q pressed about 25 times a second, so each fires the moment it is ready; Q charged once per pass (heroes: their ult; Commando: Preon Accumulator); aim on the nearest enemy; put back on the spot after dashes.</li>
       <li>Counted: every hit the survivor lands (direct, projectiles, zones, DoTs), after crits and damage mods, before armor. One run per pass: about ±10 % noise.</li>
       <li>Not measured: stuns, slows, heals, invisibility, Warbanner. The setup favours area damage; a single-target test would complete the picture.</li>
     </ul>

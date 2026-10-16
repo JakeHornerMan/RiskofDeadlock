@@ -35,6 +35,14 @@
       "reload": "none"
     },
     {
+      "skill": "haze_phantom_strike",
+      "cast": "Mods.Armor.Phantom.Strike.Cast",
+      "loop": "none",
+      "hit": "Mods.Armor.Phantom.Strike.Hit",
+      "end": "none",
+      "reload": "none"
+    },
+    {
       "skill": "haze_bullet_dance",
       "cast": "Haze.BulletFlurry.Cast.Delay",
       "loop": "Haze.BulletFlurry.Modifier.Lp",
@@ -64,6 +72,14 @@
       "loop": "none",
       "hit": "Abrams.Charge.HitEnemy",
       "end": "Abrams.Charge.Wall.Impact",
+      "reload": "none"
+    },
+    {
+      "skill": "abrams_haymaker",
+      "cast": "Abrams.Melee.Swing.Charged",
+      "loop": "none",
+      "hit": "Ability.Melee.Impact.Heavy.NPC",
+      "end": "none",
       "reload": "none"
     },
     {
@@ -99,6 +115,14 @@
       "reload": "none"
     },
     {
+      "skill": "seven_power_surge",
+      "cast": "Gigawatt.PowerSurge.Cast",
+      "loop": "Gigawatt.PowerSurge.Lp",
+      "hit": "Gigawatt.PowerSurge.ChainMod.Proc",
+      "end": "Gigawatt.PowerSurge.End",
+      "reload": "none"
+    },
+    {
       "skill": "seven_thunderhead",
       "cast": "Gigawatt.StormCloud.Cast",
       "loop": "Gigawatt.StormCloud.Lp",
@@ -128,6 +152,14 @@
       "loop": "Inferno.FlameDash.Modifier.Lp",
       "hit": "Infernus.FlameDash.Hit",
       "end": "Inferno.FlameDash.Modifier.Stop",
+      "reload": "none"
+    },
+    {
+      "skill": "infernus_torment_pulse",
+      "cast": "Mods.Tech.TormentPulse.Proc",
+      "loop": "none",
+      "hit": "Mods.Tech.TormentPulse.Proc",
+      "end": "none",
       "reload": "none"
     },
     {

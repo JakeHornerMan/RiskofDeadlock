@@ -12,6 +12,7 @@ namespace DeadlockOfRain.States
     {
         float nextShot;
         int burstLeft;
+        bool surgedThisBurst;
         float nextBurstShot;
 
         public override void OnEnter()
@@ -39,6 +40,7 @@ namespace DeadlockOfRain.States
                 if (rt != null && rt.Reloading) return;
                 if (rt != null && rt.Ammo <= 0) { StartReload(); return; }
                 nextShot = t + row.Interval / attackSpeedStat;
+                surgedThisBurst = false;
                 int burst = (int)Mathf.Max(1, row.Burst);
                 if (row.Kind == "gun_burst" && burst > 1)
                 {
@@ -125,6 +127,12 @@ namespace DeadlockOfRain.States
             if (row.Buff == "none") return;
             bool fired = Buffs.Stack(characterBody, victim, row.Buff, crit);
             Vfx.Play(row.Vfx, fired ? "trigger" : "hit", point, 1f, victim.transform);
+            // Power Surge: once per burst, Tesla arcs from the target to the enemies around it
+            if (!surgedThisBurst)
+            {
+                var surge = PowerSurgeCast.Active(characterBody);
+                if (surge != null) { surgedThisBurst = true; PowerSurgeCast.Arc(characterBody, victim, surge, row.Buff); }
+            }
         }
 
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Skill;

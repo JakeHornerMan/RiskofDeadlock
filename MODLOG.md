@@ -31,4 +31,7 @@
 7. Heroes lose the Commando model's ModelSkinController, so body.portraitIcon/skins come from our own code.
 8. RoR2 disables Unity audio (Wwise only): Deadlock sounds go through our own waveOut mixer.
 9. glTF -> Unity: mirror X, swap winding, flip V; this gives correct facing (models face +Z).
+10. Equipment (v0.4.0 ults on Q): EquipmentSlot.PerformEquipmentAction runs on the server only, and a server SetState is
+   ignored by a client that owns its body: start the state where the body has authority (prefix for server-owned bodies,
+   the activation ClientRpc for remote owners) and serialize the row id with the state.
 lab restored Tue Oct 13 01:42:10 GMTST 2026

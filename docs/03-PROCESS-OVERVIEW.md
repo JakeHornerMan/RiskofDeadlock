@@ -11,7 +11,8 @@
 **Deadlock of Rain** (repo folder `RiskofDeadlock`) is a **Melty mashup** that adds four **Deadlock** heroes (Haze,
 Abrams, Seven, Infernus) to **Risk of Rain 2** as playable survivors. Each hero has:
 - the real Deadlock model, animations, portrait, ability icons and sounds, read from the player's own Deadlock install
-- RoR2's **four skills**: Deadlock gun (Left Click), two Deadlock abilities (Right Click, Shift), and the Deadlock **ultimate on R**, locked every run until it charges from damage and kills
+- RoR2's **four skills**: Deadlock gun (Left Click), two Deadlock abilities (Right Click, Shift) and a new **R** move (from a Deadlock item, melee or ability)
+- their Deadlock **ultimate as RoR2 equipment (Q)**: held from the start of every run, 120 s cooldown, Preon Accumulator power, droppable and findable by anyone (v0.4.0)
 - stats balanced against a vanilla analog, growing per level like vanilla survivors
 - a size scaled so Haze = Commando, with Deadlock's relative heights kept
 - the gun locked in the hand and pointing where the camera aims
@@ -20,7 +21,7 @@ Abrams, Seven, Infernus) to **Risk of Rain 2** as playable survivors. Each hero 
 1. Deadlock characters selectable in RoR2.
 2. **Scaled properly** relative to RoR2 characters.
 3. **Four abilities** from their Deadlock kit. Later clarified: RoR2 has 4 active skills, so gun + 2 abilities + ult on R.
-4. Their **Deadlock ultimate**, **locked when selected**, charging up from kills and damage.
+4. Their **Deadlock ultimate**, **locked when selected**, charging up from kills and damage. (v0.4.0, creator: the ults became Q equipment instead, each hero starts holding theirs, 120 s, Preon-level, droppable; R got a new move.)
 5. **Balanced** like RoR2's base survivors.
 6. **Base stats increase on level-up** like RoR2 survivors.
 7. (Playtest) The gun paired to the hand, the hand facing the camera direction, and no animation on the gun hand.
@@ -99,9 +100,10 @@ clip name, sound event, effect key or icon.
 |---|---|---|
 | `heroes.json` | hero | `id, displayName, deadlockKey, vmdl, meshInclude, imageSmall, imageCard, soundevents, sourceHeight, heightScale, widthScale, primaryColor, sortPosition, roR2Analog, subtitle, passiveName, passiveDescription, passiveIcon, lore`; top level `anchorHero`, `anchorRoR2Body` |
 | `stats.json` | hero | `hero, analog, baseMaxHealth, levelMaxHealth, baseRegen, levelRegen, baseDamage, levelDamage, baseArmor, levelArmor, baseAttackSpeed, levelAttackSpeed, baseCrit, levelCrit, baseMoveSpeed, baseJumpPower, baseJumpCount, baseAcceleration, baseMaxShield, sprintingSpeedMultiplier` |
-| `skills.json` | skill (4 per hero) | `id, hero, slot, deadlockAbility, name, description, kind, icon, damagePct, procCoefficient, cooldown, stocks, duration, interval, radius, range, speed, clipSize, reloadTime, pellets, spreadDeg, burst, stunDuration, healFraction, moveSpeedMult, chainCount, buff, dot, effect, ultCharge, killCharge, deadlockCooldown, deadlockDamage, targetDps, expect` |
+| `skills.json` | skill (5 per hero) | `id, hero, slot, deadlockAbility, name, description, kind, icon, damagePct, procCoefficient, cooldown, stocks, duration, minDuration, interval, radius, range, speed, clipSize, reloadTime, pellets, spreadDeg, burst, stunDuration, knockback, healFraction, moveSpeedMult, chainCount, buffStacks, buff, dot, effect, vfx, extra, deadlockCooldown, deadlockDamage, targetDps, expect` |
+| `equipment.json` | equipment (1 per hero) | `id, hero, skill, pickupText, lore, canDrop, enigmaCompatible, randomTrigger` |
 | `buffs.json` | buff | `id, name, icon, color, canStack, isDebuff, isHidden, maxStacks, duration, moveSpeedAdd, attackSpeedAdd, armorAdd, regenAdd, damageTakenFromOwnerPerStack, cloak, evasionChance, dotDamagePct, notes` |
-| `animations.json` | hero | `hero, upperBodyBone, gunArms, gunBone, gunHand, aimPose, idle, run_n, run_s, run_e, run_w, sprint, jump_start, jump_air, land, fire, fire_alt, reload, secondary, utility, utility_loop, ult_start, ult_loop, ult_end, death` |
+| `animations.json` | hero | `hero, upperBodyBone, gunArms, gunBone, gunHand, muzzle, muzzleLeft, clothParents, aimPose, idle, run_n, run_s, run_e, run_w, sprint, jump_start, jump_air, land, fire, fire_alt, reload, secondary, utility, utility_loop, special_start, special, ult_start, ult_loop, ult_end, death` |
 | `sounds.json` | skill | `skill, cast, loop, hit, end, reload` (a Deadlock sound event per moment) |
 | `effects.json` | effect | `id, kind, addressable, scaleWithRadius, notes` |
 | `hooks.json` | hook | `id, method, target, purpose, reads, side` |
@@ -115,8 +117,8 @@ Each sheet has an `about` that explains its columns. **Unused cells are `0` or `
    - **References resolve:** hero, buff, effect, skill, sound; `dot` must be `burn` or `none`.
    - **Row counts:** exactly one stats row and one animations row per hero, and one sounds row per skill.
    - **Kinds:** every `kind` has a `[Kind]` state in `plugin/States`.
-   - **Slots:** exactly `primary`, `secondary`, `utility`, `ult` per hero. Only ults have `ultCharge`/`killCharge`, ults have cooldown 0, and secondary and utility need a cooldown.
-   - **Balance:** gun DPS math within ±10 % of `targetDps` and inside 240–600 %/s; ult totals 1500–3000 %.
+   - **Slots:** exactly `primary`, `secondary`, `utility`, `special`, `equipment` per hero; secondary, utility and special need a cooldown; equipment has 120 s and exactly one `equipment.json` row naming it.
+   - **Balance:** gun DPS math within ±10 % of `targetDps` and inside 240–600 %/s; equipment ult totals 6000–7500 % per enemy.
    - **`expect`:** every entry is a known effect, and buff names resolve.
    - **Passives:** the columns are all set or all `none`.
    - **Gun rig:** `gunArms` is R or LR, and `aimPose` is not none.
@@ -223,7 +225,7 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
   "launch": {"kind":"game"},
   "runtimeData": ["{localappdata}/DeadlockOfRain"],
   "test": { "checks": ["deadlock-content","survivors-listed","haze-plays","abrams-plays","seven-plays","infernus-plays",
-                       "ult-charges","gun-aims","gun-in-hand","four-slots","level-stats","hero-scale"], "minutes": 8 } }
+                       "ult-equipment","gun-aims","gun-in-hand","four-slots","level-stats","hero-scale"], "minutes": 8 } }
 ```
    - **Max 12 checks.** Only list names the mod really reports.
    - **Do not** take `inspect_package`'s draft mappings. It suggests `{game}/BepInEx/plugins/DeadlockOfRain-<ver>`, which is version-named, and puts the extractor inside the plugins folder.
@@ -257,12 +259,12 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 ## 8. Checklist: adding a new Deadlock hero
 
 0. **Read the three per-doc checklists** (doc 01 §10, doc 02 §11 including its §0 test-mode limits, and this one); each covers a different part. Doc 01 §8 has a ready asset cheat-sheet for **Wraith**.
-1. **Pick a hero** and a RoR2 analog (play style, durability). Read their kit in the decompiled `scripts/abilities.vdata` and `scripts/heroes.vdata` (doc 01 §8). Choose the gun, **two** abilities and the ultimate.
+1. **Pick a hero** and a RoR2 analog (play style, durability). Read their kit in the decompiled `scripts/abilities.vdata` and `scripts/heroes.vdata` (doc 01 §8). Choose the gun, **two** abilities, an R move and the ultimate (the Q equipment).
 2. **Deadlock half** (doc 01 §10): find the vmdl, mesh names, clip names, bones, images and sound events. Update the dev listings.
 3. **Sheets:** `heroes.json`, `stats.json`, `skills.json` (4 rows with `expect`), `animations.json` (gun rig + clips), `sounds.json`, maybe `buffs.json` and `effects.json`.
 4. **Code only if a new mechanic is needed:** a new `[Kind]` state (doc 02 §11).
 5. **Run:** `gen.py` (preflight clean) → build plugin → extractor `--force` → `tools/run_test.sh` until every check passes → inspect the devshots (scale next to Commando, gun in hand, aim) → `lab_restore.sh`.
-6. **Recipe:** add `<hero>-plays`. The recipe is at the 12-check cap, so drop `four-slots` or `ult-charges` (doc 02 §11), and raise `test.minutes` by about 2 per hero.
+6. **Recipe:** add `<hero>-plays`. The recipe is at the 12-check cap, so drop `four-slots` (doc 02 §11), and raise `test.minutes` by about 2 per hero.
 7. **Docs:** update **all three** docs, CLAUDE.md's hero list, README/listing text, and the "four heroes" wording in §1. **Commit.**
 8. **Release** as in §6. Ask before publishing.
 
@@ -285,6 +287,7 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 | Solo only | Interview choice; networking (UNet) of custom bodies and the waveOut audio is untested |
 | Ability redesign (v0.3.0) | The creator went through doc 04 slot by slot. Picks: Haze Fixation+ passive, Sleep Dagger stun 4 s / 10 s, Smoke Bomb 5 s +50 % / 12 s, Bullet Dance unchanged with new effects; Abrams Infernal Resilience (10 % over 10 s), Siphon Life as a Mired Urn (3 targets, 25 m, 8 s, 15 s), Shoulder Charge 3 s stunning everything hit / 8 s, Seismic Impact with a hover and a reticle you aim (he can be hit); Seven Capacitor passive, Lightning Ball builds Static, Static Charge with a thunderbolt, Thunderhead zone at his feet with a Warbanner; Infernus Afterburn with visible embers, Napalm (lobbed, 2 charges), Flame Dash held up to 3 s with a 5 s trail that knocks enemies aside, Combustion 3 s fuse / 2 s stun / heal per kill. Details in doc 04 §6 |
 | Reuse RoR2 items for skills | The creator's idea: Siphon Life *is* RoR2's Mired Urn attachment and Thunderhead's attack speed *is* RoR2's Warbanner ward, so they look and work like the items players know, with no new buff code |
+| Ults as Q equipment (v0.4.0) | The creator: the ults should be pickups on Q, "auto equipped at the start" but droppable, other heroes' ults findable in the game, the item looking like the hero (picked: a whole mini hero), 120 s recharge, Preon Accumulator power. Answers: drop pool = everyone, same rules as Preon (chests, Enigma, Bottled Chaos); power = Preon scaled to 120 s (≈6800 % per enemy); charge meter removed; Seismic Impact slams on Left Click. New R per hero after deadlock.wiki research (all four Deadlock abilities were already used): Haze **Phantom Strike** (item) with a 3-cut flurry, Abrams **Haymaker** (heavy melee, tap), Seven **Power Surge** (his real ability) as RoR2 Tesla arcs per burst, Infernus **Torment Pulse** (item). Plus: rebuild all Infernus fire in Unity with RoR2's fire materials. Details in doc 04 §7 |
 | Effects built in Unity, not ripped | The creator: "make it similar to the Deadlock game, not a rip from the Deadlock engine files". `Runtime/Vfx.cs` builds them at runtime from Unity components and RoR2 materials (doc 02 §8.1) |
 
 ---
@@ -295,14 +298,14 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 - Seven's Thunderhead cast uses his Storm Cloud `ult_start` clip (0.6 s); its loop pose (tilted) is no longer used.
 - **No normal maps** (VRF does not export them for Deadlock's hero shader). Only the albedo is used.
 - **Reload clips still animate the arms** (gun parts stay frozen), by design.
-- **Listing screenshots** are from 0.1.0 and should be replaced with 0.3.0 shots (4 skills, R meter, the new effects).
-- **0.3.0 adds two Deadlock images** (the new passive icons). A player's cache from 0.2.0 has `ready.json`, so Melty skips setup and those two icons stay blank until the cache is rebuilt. The release must force a re-extract (doc 01 §5) or accept blank passive icons for updating players.
+- **Listing screenshots** are from 0.1.0 and should be replaced with 0.4.0 shots (4 skills, the Q ults, the hero pickups, the new effects).
+- **0.3.0 and 0.4.0 add Deadlock content** (icons, sounds, clips; doc 01 §5). A player's older cache has `ready.json`, so Melty skips setup and the new icons, sounds and R clips stay missing until the cache is rebuilt. The release must force a re-extract (doc 01 §5).
 - **New effects are only checked by eye** (devshots); the test measures what skills do, not how they look.
-- **Multiplayer** would need: network-safe states, the ult meter synced, audio per client, `recipe.multiplayer`.
+- **Multiplayer** would need: network-safe states (the equipment ults already start on the owning client and send their row id), audio per client, `recipe.multiplayer`. Phantom Strike picks its target on each side separately.
+- **Equipment ults on non-heroes** (Commando, Equipment Drones) use plain muzzles and no Deadlock animation; they work but look plainer than on the hero.
 - **More heroes:** follow §8. Abrams-style off-hand weapon pivots need `gunBone`.
 - **Seven's gun is stronger than the sheet says:** about 350 %/s sustained (before Capacitor), against a `targetDps` of 250. Preflight's burst formula doesn't match `GunState`'s re-arm timing (doc 02 §7.6).
 - **Negative move-speed adds divide** (doc 02 §7.4). The 0.3.0 slows (Napalm Slow, Fixation Slow) are written so they really are 28 % and 12 %.
-- The `about` text of `skills.json` still mentions "specials" and a 300–450 %/s band.
 - **Pelvis bob is lost** for Haze, Seven and Infernus: their `pelvis` is a separate root in the DLM, and the animator skips position curves on every root bone (doc 01 §7). A fix would skip only `root_motion`, plus the pelvis' *horizontal* drift.
 - **The local cache is from the 0.1.0 manifest**, a superset of 0.2.0's. A clean re-extract with `--manifest extractor/manifest.json --force` has not been run for 0.2.0. Melty's 0.2.0 test skipped setup because `ready.json` existed.
 

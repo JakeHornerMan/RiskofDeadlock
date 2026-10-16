@@ -5,22 +5,14 @@ using UnityEngine;
 
 namespace DeadlockOfRain.States
 {
-    /// <summary>Base of the ultimates (R): entering empties the charge meter, and ult damage never charges it.</summary>
+    /// <summary>Base of the ultimates, fired from their equipment (Q, Content/Equipment.cs) by whichever body holds it: the hero
+    /// it came from, another hero, a vanilla survivor or an Equipment Drone. Nothing interrupts an ult once it runs.</summary>
     public abstract class UltState : DlrState
     {
-        protected UltController ult;
         public override void OnEnter()
         {
             base.OnEnter();
-            ult = UltController.Of(characterBody);
-            // pressing R spent the one stock the full meter gave; the meter starts over
-            if (ult) { ult.Consume(); ult.UltDamageInFlight = true; }
             MeltyTest.Report("ult-fires", true, characterBody.baseNameToken);
-        }
-        public override void OnExit()
-        {
-            if (ult) ult.UltDamageInFlight = false;
-            base.OnExit();
         }
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Frozen;
     }
@@ -155,7 +147,8 @@ namespace DeadlockOfRain.States
                     if (isAuthority) characterMotor.velocity = Vector3.up * Mathf.Sin(t * 3f) * 0.6f;
                     target = AimPoint();
                     if (reticle) reticle.transform.position = target;
-                    bool pressed = inputBank && (inputBank.skill4.justPressed || inputBank.skill1.justPressed);
+                    // fire (Left Click) slams; Q was the press that started it
+                    bool pressed = inputBank && inputBank.skill1.justPressed;
                     // test mode has no player to press: it slams shortly after the reticle is up
                     bool test = MeltyTest.Active && t >= row.MinDuration + 0.5f;
                     if (t >= row.Duration || t >= row.MinDuration && (pressed || test))
@@ -237,27 +230,26 @@ namespace DeadlockOfRain.States
     [Kind("ult_selfbomb")]
     public sealed class UltSelfBomb : UltState
     {
-        bool exploded; int loop; float nextPulse;
+        bool exploded; int loop; GameObject fuse;
         public override void OnEnter()
         {
             base.OnEnter();
             Sound("cast");
             loop = Fx.Loop(row.Id, transform.position);
             SlowWhileActive(row.MoveSpeedMult);
+            // fire gathering on him through the fuse
+            fuse = Vfx.Play(row.Vfx, "loop", characterBody.corePosition, row.Radius, characterBody.coreTransform ? characterBody.coreTransform : transform);
         }
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (fixedAge >= nextPulse && !exploded)
-            {
-                nextPulse = fixedAge + 0.5f;
-                Fx.Impact("napalm", transform.position + Vector3.up);
-            }
             if (!exploded && fixedAge >= row.Duration)
             {
                 exploded = true;
                 if (anim) anim.Override("ult_end", 0.8f);
+                Vfx.Stop(fuse, 0.2f);
                 Fx.Impact(row.Effect, transform.position, row.Radius);
+                Vfx.Play(row.Vfx, "hit", characterBody.footPosition, row.Radius);
                 Sound("end");
                 if (Server)
                 {
@@ -276,6 +268,7 @@ namespace DeadlockOfRain.States
         public override void OnExit()
         {
             DeadlockAudio.Stop(loop);
+            Vfx.Stop(fuse, 0.2f);
             base.OnExit();
         }
     }

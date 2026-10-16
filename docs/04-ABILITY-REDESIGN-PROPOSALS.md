@@ -237,3 +237,51 @@ Asked slot by slot. Several picks are the creator's own versions rather than A o
 | Infernus | R | **Alt A Concussive Combustion** | 3 s fuse, 2500 % in 18 m, stun 2 s, each kill heals 10 % |
 
 How each is built: doc 02 §7.3 (kinds), §7.4 (passives) and §8.1 (effects).
+
+---
+
+## 7. v0.4.0: the ults become Q equipment, and every hero gets a new R (2026-10-16)
+
+**The request:** the ults should not be R abilities. They become pickups on **Q (Activate Equipment)**:
+- every Deadlock hero starts with theirs equipped
+- they can drop it and find other heroes' ults in the game
+- the item looks like the character
+- recharge 120 s
+- the ults are scaled to the power of RoR2's **Preon Accumulator**
+
+That leaves each hero one ability short. The ask was for deep research and a lot of questions before building.
+
+**Research (2026-10-16):**
+- Sources: deadlock.wiki pages for [Haze](https://deadlock.wiki/Haze), [Abrams](https://deadlock.wiki/Abrams), [Seven](https://deadlock.wiki/Seven) and [Infernus](https://deadlock.wiki/Infernus), the [Items](https://deadlock.wiki/Items) list and the [Melee](https://deadlock.wiki/Melee) page, plus [Preon Accumulator](https://riskofrain2.wiki.gg/wiki/Preon_Accumulator) on the RoR2 wiki.
+- **Every Deadlock ability is already in our kits**: the passive (ability 3; Seven's Power Surge became Capacitor), M2, Shift and the ult. No cut or old abilities are documented for these four.
+- So the new R moves come from **Deadlock items** (Phantom Strike, Colossus, Torment Pulse, Return Fire, Alchemical Fire, Shadow Weave), **melee** (heavy melee, parry), or a passive's source ability made active again (Power Surge).
+- **Preon Accumulator** (140 s): a slow ball zaps enemies within 35 m (400 % bolts, 3 per second), then explodes for 8000 % over 20 m. The wiki notes say the in-game text halves both numbers.
+
+**The creator's answers:**
+
+| Question | Answer |
+|---|---|
+| Who can find the ults | **Everyone**, wherever the Preon Accumulator can drop (chests, Equipment Barrels, Artifact of Enigma, Bottled Chaos) |
+| Power | **Preon scaled to 120 s** (× 120/140): about **6800 % per enemy** per use |
+| Charge meter | **Removed**: RoR2's normal equipment cooldown |
+| Pickup look | **A whole mini hero** (their model in a still idle pose, spinning like any pickup) |
+| Seismic Impact slam key | **Left Click** only (or the 3 s timeout) |
+| Fire effects | **Rebuild all of Infernus' flames** in Unity with RoR2's fire materials, so they read clearly in RoR2 |
+
+| Hero | New R | Options offered | Numbers |
+|---|---|---|---|
+| Haze | **Phantom Strike** (Deadlock item), "rebuild the VFX in Unity and make it look cool" | Phantom Strike, Fixation cash-out, Fan of Knives, Shadow Weave. Variant picked: **blink + 3-hit flurry** | blink behind the aimed enemy ≤ 30 m (no target, no cast), 3 × 250 %, +5 Fixation per cut, 10 s |
+| Abrams | **Haymaker** (Deadlock heavy melee) | heavy melee, Colossus, Parry, Aftershock stomp. Variant picked: **tap, instant punch** | 0.4 s wind-up, 6 m lunge, 900 %, big knockback, 5 s |
+| Seven | **Power Surge** (his real Deadlock ability) | Power Surge, Static Step blink, Overload discharge. "Make shock work like Risk of Rain's... Unstable Tesla Coil but make the move feel like Deadlock". Picked: **gun-driven Tesla** | 8 s: every Shock Rifle burst arcs RoR2 Tesla lightning from the target to up to 4 enemies within 10 m, 60 % each, building Static; +40 % move speed (Deadlock +3 m/s); 14 s |
+| Infernus | **Torment Pulse** (Deadlock item) | Torment Pulse, Ignition, Alchemical Fire, Return Fire | 6 s, a pulse every 0.5 s: 120 % to everything within 10 m and +2 Afterburn build-up; 12 s |
+
+**Equipment numbers** (`skills.json` slot `equipment`, `equipment.json`):
+
+| Equipment | Numbers |
+|---|---|
+| Haze: Bullet Dance | 5 s, 113 % per shot ≈ 12 shots/s, so 6800 % in all |
+| Abrams: Seismic Impact | 6800 % in 12 m, stun 1.6 s |
+| Seven: Thunderhead | 25 strikes × 272 % per enemy (6800 %), Warbanner |
+| Infernus: Concussive Combustion | 6800 % in 18 m, stun 2 s, heal 10 % per kill |
+
+How it is built: doc 02 §7.1 (slots), §7.3 (kinds), §7.5 (equipment) and §8.1 (effects).

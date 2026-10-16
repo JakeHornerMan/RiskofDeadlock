@@ -1,26 +1,174 @@
 {
   "sheet": "hooks",
   "about": "Every place the mod touches Risk of Rain 2 (RoR2.dll, 2026-10 build, decompiled with ilspycmd for reference only). method = 'event' subscribes to a public RoR2 event, 'harmony-prefix'/'harmony-postfix' patch with HarmonyX (shipped with BepInEx 5), 'component' = our own MonoBehaviour on our own objects. No R2API: content is registered through RoR2's own ContentManager provider API so nothing extra has to be installed or bundled. reads = which sheet columns drive it.",
-  "columns": ["id", "method", "target", "purpose", "reads", "side"],
+  "columns": [
+    "id",
+    "method",
+    "target",
+    "purpose",
+    "reads",
+    "side"
+  ],
   "rows": [
-    { "id": "content_pack", "method": "event", "target": "RoR2.ContentManagement.ContentManager.collectContentPackProviders", "purpose": "register body prefabs, survivor defs, skill defs/families, entity state types and buff defs (one IContentPackProvider; loads the Deadlock cache during the loading screen)", "reads": "heroes.*, stats.*, skills.*, buffs.*", "side": "both" },
-    { "id": "language", "method": "harmony-prefix", "target": "RoR2.Language.GetLocalizedStringByToken(string)", "purpose": "answer DLR_* tokens (names, subtitles, lore, skill names/descriptions, buff names) in every language", "reads": "heroes.displayName/subtitle/lore, skills.name/description, buffs.name", "side": "client" },
-    { "id": "stats_recalc", "method": "harmony-postfix", "target": "RoR2.CharacterBody.RecalculateStats()", "purpose": "apply our buffs' move speed / attack speed / armor / regen and slow resistance (vanilla level scaling of base stats is untouched and comes from the level* fields)", "reads": "buffs.moveSpeedAdd/attackSpeedAdd/armorAdd/regenAdd/slowResist", "side": "both" },
-    { "id": "damage_mods", "method": "harmony-prefix", "target": "RoR2.HealthComponent.TakeDamage(RoR2.DamageInfo)", "purpose": "Fixation and Napalm damage amp from their owner, Bullet Dance evasion", "reads": "buffs.damageTakenFromOwnerPerStack/evasionChance", "side": "server" },
-    { "id": "ult_charge_damage", "method": "event", "target": "RoR2.GlobalEventManager.onServerDamageDealt", "purpose": "add ult charge = damage dealt / attacker damage stat * 100 (in % units), except the ult's own damage", "reads": "skills.ultCharge", "side": "server" },
-    { "id": "ult_charge_kill", "method": "event", "target": "RoR2.GlobalEventManager.onCharacterDeathGlobal", "purpose": "add killCharge per kill", "reads": "skills.killCharge", "side": "server" },
-    { "id": "ult_slot", "method": "component", "target": "DeadlockOfRain.UltController on the body (the ult is the SkillLocator's special, R)", "purpose": "hold the charge meter and keep the ult skill's stock at 0 until charged; RoR2's own R input fires it, and the ult state empties the meter", "reads": "skills.ultCharge/killCharge", "side": "both" },
-    { "id": "hud_ult_icon", "method": "harmony-postfix", "target": "RoR2.UI.HUD.Update()", "purpose": "overlay the ult charge % (READY when full) on the R skill icon", "reads": "skills(slot=ult).ultCharge", "side": "client" },
-    { "id": "model", "method": "component", "target": "DeadlockOfRain.ModelBuilder.Build (a model GameObject built per hero from the cache)", "purpose": "skeleton + one SkinnedMeshRenderer per material + legacy Animation clips from the player's Deadlock install, attached to the body's ModelLocator with CharacterModel/HurtBoxGroup/ChildLocator", "reads": "heroes.heightScale/widthScale/meshInclude, animations.*", "side": "client" },
-    { "id": "locomotion", "method": "component", "target": "DeadlockOfRain.DeadlockAnimator", "purpose": "pick idle/run/sprint/jump/land clips from CharacterMotor + InputBank each frame, layer gestures (reload/abilities) on the upper body; gun rig: hold the gun arms in aimPose, weld the gun to its hand, turn the chest so the gun points at the camera aim, recoil on shots", "reads": "animations.*", "side": "client" },
-    { "id": "audio", "method": "component", "target": "DeadlockOfRain.DeadlockAudio (winmm waveOut mixer)", "purpose": "play the hero's Deadlock sounds (decoded WAVs in the cache) at volume_master * volume_sfx, with distance falloff from the camera", "reads": "sounds.*", "side": "client" },
-    { "id": "test_mode", "method": "component", "target": "DeadlockOfRain.MeltyTest", "purpose": "Melty test.checks: while %LOCALAPPDATA%/Melty/test/deadlock-of-rain.json exists, start a run, play each hero, measure every skill's effect against skills.expect, check the gun rig, the 4 slots, the ult lock, level stats and scale, and append pass/fail lines to the checks file", "reads": "skills.*, stats.*, heroes.*", "side": "both" },
-    { "id": "loadout_skins", "method": "harmony-postfix", "target": "RoR2.UI.LoadoutPanelController+Row.FromSkin (public static on a private nested class)", "purpose": "give our heroes' empty skins row one 'Default' button, so the loadout panel's gamepad navigation does not index an empty row", "reads": "heroes.imageSmall/primaryColor", "side": "client" },
-    { "id": "debuff_resist", "method": "harmony-prefix", "target": "RoR2.CharacterBody.AddTimedBuffInternal(RoR2.BuffDef,float,float) (private)", "purpose": "shorten timed debuffs on a hero with debuffResist (Abrams' Infernal Resilience)", "reads": "heroes.debuffResist", "side": "server" },
-    { "id": "heal_back", "method": "event", "target": "RoR2.GlobalEventManager.onServerDamageDealt", "purpose": "a hero with damageHealBack heals back that fraction of each hit taken over damageHealBackTime (Infernal Resilience)", "reads": "heroes.damageHealBack/damageHealBackTime", "side": "server" },
-    { "id": "stack_triggers", "method": "component", "target": "DeadlockOfRain.Buffs.Stack (called from our guns and projectiles)", "purpose": "add stacking debuffs (crits add critStacks) and fire their trigger at triggerStacks: Fixation burst, Static discharge, Afterburn ignition", "reads": "buffs.critStacks/trigger*/withBuff", "side": "server" },
-    { "id": "mired_urn", "method": "component", "target": "RoR2's SiphonNearbyBodyAttachment (Mired Urn) spawned on Abrams for Siphon Life", "purpose": "tether up to chainCount enemies within radius, drain damagePct per second, heal Abrams for the damage", "reads": "skills(abrams_siphon).*", "side": "server" },
-    { "id": "warbanner_ward", "method": "component", "target": "RoR2's WarbannerWard (BuffWard) placed for Thunderhead", "purpose": "give allies inside Seven's storm the vanilla Warbanner buff (+30% attack and move speed)", "reads": "skills(seven_thunderhead).radius/duration/extra", "side": "server" },
-    { "id": "kill_heal", "method": "event", "target": "RoR2.GlobalEventManager.onCharacterDeathGlobal", "purpose": "Concussive Combustion: each kill by the blast heals Infernus healFraction of his max health", "reads": "skills(infernus_combustion).healFraction", "side": "server" }
+    {
+      "id": "content_pack",
+      "method": "event",
+      "target": "RoR2.ContentManagement.ContentManager.collectContentPackProviders",
+      "purpose": "register body prefabs, survivor defs, skill defs/families, entity state types and buff defs (one IContentPackProvider; loads the Deadlock cache during the loading screen)",
+      "reads": "heroes.*, stats.*, skills.*, buffs.*",
+      "side": "both"
+    },
+    {
+      "id": "language",
+      "method": "harmony-prefix",
+      "target": "RoR2.Language.GetLocalizedStringByToken(string)",
+      "purpose": "answer DLR_* tokens (names, subtitles, lore, skill names/descriptions, buff names) in every language",
+      "reads": "heroes.displayName/subtitle/lore, skills.name/description, buffs.name",
+      "side": "client"
+    },
+    {
+      "id": "stats_recalc",
+      "method": "harmony-postfix",
+      "target": "RoR2.CharacterBody.RecalculateStats()",
+      "purpose": "apply our buffs' move speed / attack speed / armor / regen and slow resistance (vanilla level scaling of base stats is untouched and comes from the level* fields)",
+      "reads": "buffs.moveSpeedAdd/attackSpeedAdd/armorAdd/regenAdd/slowResist",
+      "side": "both"
+    },
+    {
+      "id": "damage_mods",
+      "method": "harmony-prefix",
+      "target": "RoR2.HealthComponent.TakeDamage(RoR2.DamageInfo)",
+      "purpose": "Fixation and Napalm damage amp from their owner, Bullet Dance evasion",
+      "reads": "buffs.damageTakenFromOwnerPerStack/evasionChance",
+      "side": "server"
+    },
+    {
+      "id": "model",
+      "method": "component",
+      "target": "DeadlockOfRain.ModelBuilder.Build (a model GameObject built per hero from the cache)",
+      "purpose": "skeleton + one SkinnedMeshRenderer per material + legacy Animation clips from the player's Deadlock install, attached to the body's ModelLocator with CharacterModel/HurtBoxGroup/ChildLocator",
+      "reads": "heroes.heightScale/widthScale/meshInclude, animations.*",
+      "side": "client"
+    },
+    {
+      "id": "locomotion",
+      "method": "component",
+      "target": "DeadlockOfRain.DeadlockAnimator",
+      "purpose": "pick idle/run/sprint/jump/land clips from CharacterMotor + InputBank each frame, layer gestures (reload/abilities) on the upper body; gun rig: hold the gun arms in aimPose, weld the gun to its hand, turn the chest so the gun points at the camera aim, recoil on shots",
+      "reads": "animations.*",
+      "side": "client"
+    },
+    {
+      "id": "audio",
+      "method": "component",
+      "target": "DeadlockOfRain.DeadlockAudio (winmm waveOut mixer)",
+      "purpose": "play the hero's Deadlock sounds (decoded WAVs in the cache) at volume_master * volume_sfx, with distance falloff from the camera",
+      "reads": "sounds.*",
+      "side": "client"
+    },
+    {
+      "id": "test_mode",
+      "method": "component",
+      "target": "DeadlockOfRain.MeltyTest",
+      "purpose": "Melty test.checks: while %LOCALAPPDATA%/Melty/test/deadlock-of-rain.json exists, start a run, play each hero, measure every skill's effect against skills.expect, check the gun rig, the 4 skill slots plus the starting ult equipment, level stats and scale, and append pass/fail lines to the checks file",
+      "reads": "skills.*, stats.*, heroes.*",
+      "side": "both"
+    },
+    {
+      "id": "loadout_skins",
+      "method": "harmony-postfix",
+      "target": "RoR2.UI.LoadoutPanelController+Row.FromSkin (public static on a private nested class)",
+      "purpose": "give our heroes' empty skins row one 'Default' button, so the loadout panel's gamepad navigation does not index an empty row",
+      "reads": "heroes.imageSmall/primaryColor",
+      "side": "client"
+    },
+    {
+      "id": "debuff_resist",
+      "method": "harmony-prefix",
+      "target": "RoR2.CharacterBody.AddTimedBuffInternal(RoR2.BuffDef,float,float) (private)",
+      "purpose": "shorten timed debuffs on a hero with debuffResist (Abrams' Infernal Resilience)",
+      "reads": "heroes.debuffResist",
+      "side": "server"
+    },
+    {
+      "id": "heal_back",
+      "method": "event",
+      "target": "RoR2.GlobalEventManager.onServerDamageDealt",
+      "purpose": "a hero with damageHealBack heals back that fraction of each hit taken over damageHealBackTime (Infernal Resilience)",
+      "reads": "heroes.damageHealBack/damageHealBackTime",
+      "side": "server"
+    },
+    {
+      "id": "stack_triggers",
+      "method": "component",
+      "target": "DeadlockOfRain.Buffs.Stack (called from our guns and projectiles)",
+      "purpose": "add stacking debuffs (crits add critStacks) and fire their trigger at triggerStacks: Fixation burst, Static discharge, Afterburn ignition",
+      "reads": "buffs.critStacks/trigger*/withBuff",
+      "side": "server"
+    },
+    {
+      "id": "mired_urn",
+      "method": "component",
+      "target": "RoR2's SiphonNearbyBodyAttachment (Mired Urn) spawned on Abrams for Siphon Life",
+      "purpose": "tether up to chainCount enemies within radius, drain damagePct per second, heal Abrams for the damage",
+      "reads": "skills(abrams_siphon).*",
+      "side": "server"
+    },
+    {
+      "id": "warbanner_ward",
+      "method": "component",
+      "target": "RoR2's WarbannerWard (BuffWard) placed for Thunderhead",
+      "purpose": "give allies inside Seven's storm the vanilla Warbanner buff (+30% attack and move speed)",
+      "reads": "skills(seven_thunderhead).radius/duration/extra",
+      "side": "server"
+    },
+    {
+      "id": "kill_heal",
+      "method": "event",
+      "target": "RoR2.GlobalEventManager.onCharacterDeathGlobal",
+      "purpose": "Concussive Combustion: each kill by the blast heals Infernus healFraction of his max health",
+      "reads": "skills(infernus_combustion).healFraction",
+      "side": "server"
+    },
+    {
+      "id": "equipment_defs",
+      "method": "event",
+      "target": "RoR2.ContentManagement.ContentManager.collectContentPackProviders (ContentPack.equipmentDefs)",
+      "purpose": "register one EquipmentDef per equipment row (cooldown, drop rules, icon, a small hero figure as the pickup model); RoR2 puts canDrop equipment into the chest pools itself",
+      "reads": "equipment.*, skills(slot=equipment).cooldown/icon/name/description",
+      "side": "both"
+    },
+    {
+      "id": "equipment_fire",
+      "method": "harmony-prefix",
+      "target": "RoR2.EquipmentSlot.PerformEquipmentAction(RoR2.EquipmentDef) (private)",
+      "purpose": "answer true for our equipment so RoR2 spends the charge and starts the 120 s cooldown; starts the ult state at once when this side has authority over the body (the host's own body, AI bodies, Bottled Chaos)",
+      "reads": "equipment.skill, skills.kind",
+      "side": "server"
+    },
+    {
+      "id": "equipment_fire_client",
+      "method": "harmony-postfix",
+      "target": "RoR2.EquipmentSlot.RpcOnClientEquipmentActivationRecieved() (private ClientRpc)",
+      "purpose": "on a remote client that owns the body, start the ult state there (states run where the body has authority)",
+      "reads": "equipment.skill, skills.kind",
+      "side": "client"
+    },
+    {
+      "id": "starting_equipment",
+      "method": "event",
+      "target": "RoR2.CharacterBody.onBodyStartGlobal",
+      "purpose": "a Deadlock hero's first body of the run gets their own ult equipment (once per player; swap it away and it stays gone)",
+      "reads": "equipment.hero",
+      "side": "server"
+    },
+    {
+      "id": "torment_pulse",
+      "method": "component",
+      "target": "DeadlockOfRain.PulseAura on the body (Torment Pulse)",
+      "purpose": "pulse a fire blast around the body every interval for duration, adding Afterburn build-up",
+      "reads": "skills(kind=aura_pulse).*",
+      "side": "server"
+    }
   ]
 }

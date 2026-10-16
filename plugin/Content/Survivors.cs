@@ -57,8 +57,12 @@ namespace DeadlockOfRain
             return d;
         }
 
-        static string MachineFor(string kind) =>
-            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" ? "Body" : "Weapon";
+        /// <summary>Movement skills run on the Body machine (they steer the character), everything else on Weapon.</summary>
+        public static string MachineFor(string kind) =>
+            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" ? "Body" : "Weapon";
+
+        public static Type StateFor(string kind) => kindTypes != null && kindTypes.TryGetValue(kind, out var t) ? t : null;
+        static Dictionary<string, Type> kindTypes;
 
         public static IEnumerator Build()
         {
@@ -80,7 +84,7 @@ namespace DeadlockOfRain
             ModelBuilder.GlobalScale = CommandoHeight / anchor.SourceHeight;
             Log.Info($"Commando height {CommandoHeight:F3} m (mesh {meshH:F3}, capsule {cap.height:F3}); Deadlock->RoR2 scale {ModelBuilder.GlobalScale:F4}");
 
-            var kinds = KindTypes();
+            var kinds = kindTypes = KindTypes();
             Buffs.Create();
             Fx.Preload();
             yield return null;
@@ -110,6 +114,8 @@ namespace DeadlockOfRain
                 AddTokens(hero);
                 Log.Info($"Built survivor {hero.DisplayName}");
             }
+            // the ults, as Q equipment anyone can find; each hero starts holding their own
+            Equipment.Build(holder.transform);
         }
 
         static GameObject BuildBody(GameObject commando, HeroRow hero, Dictionary<string, Type> kinds)
@@ -185,11 +191,13 @@ namespace DeadlockOfRain
                 ctp.cameraParams = cp;
             }
 
-            // skills: Commando's four slots get the hero's four families; the Deadlock ultimate is the special (R)
+            // skills: Commando's four slots get the hero's four families (gun, two abilities, the new R); the Deadlock
+            // ultimate is not a skill but the hero's equipment (Q, Equipment.cs)
             var sl = body.GetComponent<SkillLocator>();
             var familyField = AccessTools.Field(typeof(GenericSkill), "_skillFamily");
             foreach (var row in Sheet.SkillsOf(hero.Id))
             {
+                if (row.Slot == "equipment") continue;
                 var def = MakeSkillDef(row, kinds);
                 var fam = ScriptableObject.CreateInstance<SkillFamily>();
                 ((ScriptableObject)fam).name = "sfDeadlock_" + row.Id;
@@ -201,7 +209,7 @@ namespace DeadlockOfRain
                     case "primary": gs = sl.primary; break;
                     case "secondary": gs = sl.secondary; break;
                     case "utility": gs = sl.utility; break;
-                    case "ult": gs = sl.special; break;
+                    case "special": gs = sl.special; break;
                     default: Log.Error($"skill {row.Id}: unknown slot {row.Slot}"); continue;
                 }
                 familyField.SetValue(gs, fam);
@@ -222,7 +230,6 @@ namespace DeadlockOfRain
 
             var tag = body.AddComponent<DeadlockHero>();
             tag.HeroId = hero.Id;
-            body.AddComponent<UltController>();
             body.AddComponent<HeroRuntime>();
             return body;
         }
@@ -238,21 +245,21 @@ namespace DeadlockOfRain
             if (!kinds.TryGetValue(row.Kind, out var type)) { Log.Error("no state for kind " + row.Kind); type = typeof(Idle); }
             def.activationState = new SerializableEntityStateType(type);
             def.activationStateMachineName = MachineFor(row.Kind);
-            bool primary = row.Slot == "primary", ult = row.Slot == "ult";
-            def.interruptPriority = primary ? InterruptPriority.Any : ult ? InterruptPriority.PrioritySkill : InterruptPriority.Skill;
-            def.baseRechargeInterval = primary ? 0f : ult ? 1f : row.Cooldown;
+            bool primary = row.Slot == "primary", special = row.Slot == "special";
+            def.interruptPriority = primary ? InterruptPriority.Any : special ? InterruptPriority.PrioritySkill : InterruptPriority.Skill;
+            def.baseRechargeInterval = primary ? 0f : row.Cooldown;
             def.baseMaxStock = (int)Mathf.Max(1, row.Stocks);
-            def.rechargeStock = ult ? 0 : 1;
+            def.rechargeStock = 1;
             def.requiredStock = 1;
             def.stockToConsume = primary ? 0 : 1;
-            def.fullRestockOnAssign = !ult;
+            def.fullRestockOnAssign = true;
             def.isCombatSkill = true;
             def.mustKeyPress = !primary;
             bool movement = row.Kind.StartsWith("dash") || row.Kind == "self_buff" && row.Buff == "smoke";
             def.cancelSprintingOnActivation = !movement;
             def.canceledFromSprinting = false;
-            def.hideCooldown = ult;
-            def.hideStockCount = ult || primary;
+            def.hideCooldown = false;
+            def.hideStockCount = primary;
             def.beginSkillCooldownOnSkillEnd = false;
             SkillDefs[row.Id] = def;
             RowOfSkill[def] = row;
@@ -271,10 +278,10 @@ namespace DeadlockOfRain
             sb.Append(hero.Lore).Append("\n\n");
             foreach (var s in Sheet.SkillsOf(hero.Id))
             {
-                string key = s.Slot == "primary" ? "M1" : s.Slot == "secondary" ? "M2" : s.Slot == "utility" ? "Shift" : "R (Ultimate)";
+                string key = s.Slot == "primary" ? "M1" : s.Slot == "secondary" ? "M2" : s.Slot == "utility" ? "Shift" : s.Slot == "special" ? "R" : "Q (Ultimate equipment)";
                 sb.Append("< ! > <style=cIsUtility>").Append(key).Append(" - ").Append(s.Name).Append("</style>\n");
             }
-            sb.Append("\n<style=cIsUtility>Your Deadlock ultimate starts locked: deal damage and get kills to charge it, then press R.</style>");
+            sb.Append("\n<style=cIsUtility>You start every run holding your Deadlock ultimate as equipment (Q, 120s). Swap it for another and it stays on the ground for anyone to take.</style>");
             Tokens[Sheet.Token("desc", hero.Id)] = sb.ToString();
             foreach (var b in BuffRow.All) Tokens[Sheet.Token("buff", b.Id)] = b.Name;
         }
@@ -348,6 +355,7 @@ namespace DeadlockOfRain
             pack.skillFamilies.Add(Survivors.Families.ToArray());
             pack.entityStateTypes.Add(Survivors.StateTypes.ToArray());
             pack.buffDefs.Add(Buffs.Defs.Values.ToArray());
+            pack.equipmentDefs.Add(Equipment.Defs.Values.ToArray());
             args.ReportProgress(1f);
         }
 

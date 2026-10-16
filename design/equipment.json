@@ -1,0 +1,56 @@
+{
+  "sheet": "equipment",
+  "about": "The heroes' Deadlock ultimates as RoR2 equipment (Q). One row per equipment; its numbers, kind, sounds and effects are the skill row it names (skills slot equipment, cooldown 120). hero: who starts every run holding it. canDrop/enigmaCompatible/randomTrigger follow the Preon Accumulator (anyone can find it in chests, the Artifact of Enigma and Bottled Chaos can fire it). The pickup is a small figure of the hero; the HUD and logbook icon is the skill's Deadlock icon.",
+  "columns": [
+    "id",
+    "hero",
+    "skill",
+    "pickupText",
+    "lore",
+    "canDrop",
+    "enigmaCompatible",
+    "randomTrigger"
+  ],
+  "rows": [
+    {
+      "id": "eq_haze_bullet_dance",
+      "hero": "haze",
+      "skill": "haze_bullet_dance",
+      "pickupText": "Spin and fire at every enemy nearby, evading attacks.",
+      "lore": "Haze never misses twice. The second shot is for the one who saw the first.",
+      "canDrop": true,
+      "enigmaCompatible": true,
+      "randomTrigger": true
+    },
+    {
+      "id": "eq_abrams_seismic",
+      "hero": "abrams",
+      "skill": "abrams_seismic",
+      "pickupText": "Leap, hover and crash down on the spot you pick, stunning everything there.",
+      "lore": "\"Case closed.\" The crater was the only evidence left.",
+      "canDrop": true,
+      "enigmaCompatible": true,
+      "randomTrigger": true
+    },
+    {
+      "id": "eq_seven_thunderhead",
+      "hero": "seven",
+      "skill": "seven_thunderhead",
+      "pickupText": "Call a storm where you stand: lightning strikes enemies inside, allies get a Warbanner.",
+      "lore": "The storm follows Seven the way a dog follows its master: loyal, loud, and dangerous to strangers.",
+      "canDrop": true,
+      "enigmaCompatible": true,
+      "randomTrigger": true
+    },
+    {
+      "id": "eq_infernus_combustion",
+      "hero": "infernus",
+      "skill": "infernus_combustion",
+      "pickupText": "Become a bomb: after 3s, explode, stunning everything nearby. Kills heal you.",
+      "lore": "Infernus doesn't run from fires. He is the fire.",
+      "canDrop": true,
+      "enigmaCompatible": true,
+      "randomTrigger": true
+    }
+  ]
+}

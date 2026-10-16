@@ -11,7 +11,7 @@ using UnityEngine.Networking;
 namespace DeadlockOfRain
 {
     /// <summary>Melty test mode (recipe test.checks). Only active while %LOCALAPPDATA%\Melty\test\deadlock-of-rain.json exists:
-    /// starts a run, plays every hero (gun, three abilities, ult charge from real damage, ult) against summoned Lemurians and
+    /// starts a run, plays every hero (gun, three abilities, the ult equipment it starts holding) against summoned Lemurians and
     /// measures what each skill does (damage, stun, burn, buffs, heal, movement: the skills sheet's expect column), checks the
     /// gun rig (gun in hand, aimed where the camera aims), levels up, checks stats and scale, and appends "pass name" / "fail name: why" lines to the checks file Melty gives.</summary>
     public sealed class MeltyTest : MonoBehaviour
@@ -102,7 +102,7 @@ namespace DeadlockOfRain
             bool scaleOk = true; string scaleWhy = "";
             bool levelOk = true; string levelWhy = "";
             bool aimOk = true, handOk = true, slotsOk = true; string aimWhy = "", handWhy = "", slotsWhy = "";
-            string gunsWhy = "", abilitiesWhy = "", ultsWhy = "";
+            string gunsWhy = "", abilitiesWhy = "", ultsWhy = "", equipWhy = "";
             int heroes = 0;
             foreach (var hero in HeroRow.All)
             {
@@ -157,20 +157,34 @@ namespace DeadlockOfRain
                 }
                 else { aimOk = false; aimWhy += hero.Id + ": no animator; "; }
 
-                // the ult starts every life locked
-                var ultCtl = UltController.Of(body);
-                bool lockedAtStart = ultCtl && ultCtl.Skill && ultCtl.Skill.stock == 0;
+                // the ult is the hero's equipment (Q): the first hero must already hold it from the start of the run; later
+                // heroes (the test turns the same player into each) are handed theirs; 120 s cooldown; a hero figure as its pickup
+                var eqDef = Equipment.OfHero(hero.Id);
+                var inv = master.inventory;
+                if (!eqDef) equipWhy += hero.Id + ": no equipment built; ";
+                else
+                {
+                    if (hero == HeroRow.All[0] && inv.currentEquipmentIndex != eqDef.equipmentIndex)
+                        equipWhy += $"{hero.Id}: started holding {(inv.currentEquipmentIndex == EquipmentIndex.None ? "nothing" : EquipmentCatalog.GetEquipmentDef(inv.currentEquipmentIndex).name)}; ";
+#pragma warning disable CS0618
+                    var fig = eqDef.pickupModelPrefab ? eqDef.pickupModelPrefab.GetComponentInChildren<MeshRenderer>(true) : null;
+#pragma warning restore CS0618
+                    var mf = fig ? fig.GetComponent<MeshFilter>() : null;
+                    if (!mf || !mf.sharedMesh || mf.sharedMesh.vertexCount < 100) equipWhy += hero.Id + ": no hero figure for the pickup; ";
+                    if (Mathf.Abs(eqDef.cooldown - Sheet.SkillOf(hero.Id, "equipment").Cooldown) > 0.01f || eqDef.cooldown != 120f) equipWhy += $"{hero.Id}: cooldown {eqDef.cooldown}; ";
+                    if (DevShots) yield return ShowPickup(body, eqDef, hero.Id);
+                }
 
-                // RoR2's four skills: gun, two abilities, and the ultimate on R (no extra slot)
+                // RoR2's four skills: gun, two abilities and the R move (the ult is the equipment, not a skill)
                 var sl = body.skillLocator;
                 int skills = body.GetComponents<GenericSkill>().Count(g => g.skillDef);
                 var rRow = Survivors.RowFor(sl.special);
-                if (skills != 4 || rRow == null || rRow.Slot != "ult" || !ultCtl || ultCtl.Skill != sl.special)
+                if (skills != 4 || rRow == null || rRow.Slot != "special")
                 { slotsOk = false; slotsWhy += $"{hero.Id}: {skills} skills, R holds {(rRow != null ? rRow.Id : "nothing")}; "; }
 
                 // every skill must measurably do what its sheet row's expect column says
                 bool gun = false; int abilities = 0; bool ultFired = false;
-                foreach (var slot in new[] { "primary", "secondary", "utility", "ult" })
+                foreach (var slot in new[] { "primary", "secondary", "utility", "special", "equipment" })
                 {
                     body = master.GetBody();
                     var row = Sheet.SkillOf(hero.Id, slot);
@@ -180,13 +194,9 @@ namespace DeadlockOfRain
                     Log.Info($"Melty test: {row.Id}: {result} -> {(missing.Count == 0 ? "ok" : "MISSING " + string.Join(", ", missing))}");
                     bool ok = missing.Count == 0;
                     if (slot == "primary") { gun = ok; if (!ok) gunsWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
-                    else if (slot == "ult") { ultFired = ok; if (!ok) ultsWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
+                    else if (slot == "equipment") { ultFired = ok; if (!ok) ultsWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
                     else { if (ok) abilities++; else abilitiesWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
-                    if (slot == "ult")
-                    {
-                        if (!lockedAtStart) Write("ult-charges", false, hero.Id + ": ult was not locked at spawn");
-                        if (!result.Charged) Write("ult-charges", false, hero.Id + ": damage did not charge the ult");
-                    }
+                    if (slot == "equipment" && !result.Charged) equipWhy += $"{hero.Id}: Q did not start a 120 s cooldown; ";
                 }
                 // a heal-back passive (Abrams' Infernal Resilience) gives part of a hit back over the next seconds
                 bool passive = true;
@@ -211,8 +221,8 @@ namespace DeadlockOfRain
                     if (anim.GunDrift > 0.02f) { handOk = false; handWhy += $"{hero.Id}: gun moved {anim.GunDrift * 100f:F1} cm in the hand; "; }
                 }
 
-                bool plays = gun && abilities == 2 && ultFired && passive;
-                Write(hero.Id + "-plays", plays, $"gun={gun}, abilities={abilities}/2, ult={ultFired}, passive={passive}");
+                bool plays = gun && abilities == 3 && ultFired && passive;
+                Write(hero.Id + "-plays", plays, $"gun={gun}, abilities={abilities}/3, ult={ultFired}, passive={passive}");
                 if (plays) heroes++;
 
                 // level-up growth matches the sheet (no items in a fresh run)
@@ -232,7 +242,7 @@ namespace DeadlockOfRain
             Write("guns-fire", gunsWhy == "", gunsWhy);
             Write("abilities-fire", abilitiesWhy == "", abilitiesWhy);
             Write("abilities-work", abilitiesWhy == "", abilitiesWhy);
-            Write("ult-charges", true);
+            Write("ult-equipment", equipWhy == "", equipWhy);
             Write("ult-fires", ultsWhy == "", ultsWhy);
             Write("ults-work", ultsWhy == "", ultsWhy);
             Write("gun-aims", aimOk, aimWhy);
@@ -277,6 +287,20 @@ namespace DeadlockOfRain
             }
             yield return new WaitForSeconds(1.5f);
             var extra = new List<GameObject>();
+            // the four ult pickups' hero figures, in a row in front of the models
+            int k = 0;
+            foreach (var h in HeroRow.All)
+            {
+                var def = Equipment.OfHero(h.Id);
+#pragma warning disable CS0618
+                var fig = def ? def.pickupModelPrefab : null;
+#pragma warning restore CS0618
+                if (!fig) continue;
+                var f = UnityEngine.Object.Instantiate(fig, origin + new Vector3((k++ - 1.5f) * 1.2f, 0.4f, -2.5f), Quaternion.LookRotation(Vector3.back));
+                f.transform.localScale = Vector3.one * 0.5f;
+                f.SetActive(true);
+                extra.Add(f);
+            }
             models.AddRange(extra);
             yield return null;
             var go2 = new GameObject("DevLineupCamera");
@@ -341,6 +365,43 @@ namespace DeadlockOfRain
             c.targetTexture = null; UnityEngine.Object.Destroy(rt); UnityEngine.Object.Destroy(go); UnityEngine.Object.Destroy(tex);
         }
 
+        /// <summary>Dev only: drop the hero's ult as a pickup beside them and photograph the figure, then remove it.</summary>
+        static IEnumerator ShowPickup(CharacterBody body, EquipmentDef def, string hero)
+        {
+            var fwd = body.inputBank.aimDirection; fwd.y = 0; fwd.Normalize();
+            var right = Vector3.Cross(Vector3.up, fwd);
+            var at = body.corePosition + fwd * 3f + right * 1.5f;
+            var before = new HashSet<GenericPickupController>(UnityEngine.Object.FindObjectsOfType<GenericPickupController>());
+            PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(def.equipmentIndex), at, Vector3.up * 8f);
+            yield return new WaitForSeconds(2.5f);
+            var made = UnityEngine.Object.FindObjectsOfType<GenericPickupController>().Where(g => !before.Contains(g)).ToList();
+            var cam = Camera.main;
+            foreach (var g in made)
+                foreach (var r in g.GetComponentsInChildren<MeshRenderer>(true))
+                    Log.Info($"Melty test: {hero} pickup renderer {r.name}: active {r.gameObject.activeInHierarchy}, enabled {r.enabled}, bounds {r.bounds.center} size {r.bounds.size}, materials {r.sharedMaterials.Length}");
+            if (made.Count > 0 && cam)
+            {
+                var p = made[0].transform.position;
+                var mr = made[0].GetComponentInChildren<MeshRenderer>();
+                Log.Info($"Melty test: {hero} pickup at {p}, figure centre {(mr ? mr.bounds.center : p)}");
+                if (mr) p = mr.bounds.center - Vector3.up * 0.4f;
+                var go = new GameObject("DevPickupCamera");
+                var c = go.AddComponent<Camera>(); c.CopyFrom(cam);
+                c.transform.position = p + (body.corePosition - p).normalized * 2.2f + Vector3.up * 0.8f;
+                c.transform.rotation = Quaternion.LookRotation(p + Vector3.up * 0.4f - c.transform.position);
+                c.fieldOfView = 45f;
+                var rt = new RenderTexture(1280, 720, 24); c.targetTexture = rt; c.Render();
+                RenderTexture.active = rt;
+                var tex = new Texture2D(1280, 720, TextureFormat.RGB24, false);
+                tex.ReadPixels(new Rect(0, 0, 1280, 720), 0, 0); tex.Apply();
+                RenderTexture.active = null;
+                var dir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DeadlockOfRain", "devshots");
+                File.WriteAllBytes(System.IO.Path.Combine(dir, hero + "_pickup.png"), tex.EncodeToPNG());
+                c.targetTexture = null; UnityEngine.Object.Destroy(rt); UnityEngine.Object.Destroy(go); UnityEngine.Object.Destroy(tex);
+            }
+            foreach (var g in made) if (g) UnityEngine.Object.Destroy(g.gameObject);
+        }
+
         static readonly List<CharacterBody> targets = new List<CharacterBody>();
         static Vector3 arena, arenaForward = Vector3.forward;
 
@@ -364,7 +425,7 @@ namespace DeadlockOfRain
         sealed class Effects
         {
             public float Damage, Healed, Moved;
-            public bool Stun, Burn, Cloak, Charged;
+            public bool Stun, Burn, Cloak, Charged; // Charged: the equipment went on its cooldown
             public readonly HashSet<string> EnemyBuffs = new HashSet<string>(), SelfBuffs = new HashSet<string>();
 
             public List<string> Missing(SkillRow row)
@@ -409,7 +470,7 @@ namespace DeadlockOfRain
             var aim = body.inputBank.GetAimRay();
             var fwd = aim.direction; fwd.y = 0; fwd.Normalize();
             var right = Vector3.Cross(Vector3.up, fwd);
-            float d = row.Slot == "primary" || row.Kind == "ult_leap" ? 10f : 6f;
+            float d = row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" ? 10f : 6f;
             foreach (var at in new[] { body.footPosition + fwd * d, body.footPosition + fwd * (d + 1.5f) + right * 2f })
             {
                 var p = at;
@@ -461,23 +522,24 @@ namespace DeadlockOfRain
                     fireBody = body; fireUntil = Time.time + 6f;
                     body.skillLocator.primary.ExecuteIfReady();
                 }
-                else if (row.Slot == "ult")
+                else if (row.Slot == "equipment")
                 {
-                    var ult = UltController.Of(body);
-                    if (ult) ult.Consume(); // earlier skills may have filled the meter already
-                    float before = 0f;
-                    if (targets.Count > 0 && targets[0]) Fx.Hit(body, targets[0].mainHurtBox, 1f, 1f, targets[0].corePosition);
-                    yield return new WaitForSeconds(0.2f);
-                    fx.Charged = ult && ult.Charge > before;
-                    fx.Damage = 0f; // that charging hit is not the ult's
-                    if (ult) ult.Add(ult.Required);
+                    // hold this hero's ult, charged, then Q through RoR2's own equipment slot, like a player pressing it
+                    var inv = body.inventory;
+                    var def = Equipment.OfHero(row.Hero);
+                    if (inv && def)
+                    {
+                        var loc = inv.activeEquipmentLocation;
+                        inv.SetEquipment(new EquipmentState(def.equipmentIndex, Run.FixedTimeStamp.now, 1), loc);
+                    }
                     yield return new WaitForFixedUpdate(); yield return new WaitForFixedUpdate();
-                    // R, through the real skill slot, like a player pressing it
-                    body.skillLocator.special.ExecuteIfReady();
+                    if (body.equipmentSlot) body.equipmentSlot.ExecuteIfReady();
+                    yield return new WaitForFixedUpdate();
+                    fx.Charged = inv && inv.currentEquipmentState.charges == 0 && body.equipmentSlot && body.equipmentSlot.cooldownTimer > 100f;
                 }
                 else
                 {
-                    var gs = row.Slot == "secondary" ? body.skillLocator.secondary : body.skillLocator.utility;
+                    var gs = row.Slot == "secondary" ? body.skillLocator.secondary : row.Slot == "utility" ? body.skillLocator.utility : body.skillLocator.special;
                     gs.Reset();
                     gs.ExecuteIfReady();
                 }

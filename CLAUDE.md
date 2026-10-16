@@ -22,7 +22,7 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 ## Read these first
 1. `docs/03-PROCESS-OVERVIEW.md`: what the project is, repo layout, workflow, testing, releasing on Melty, git rules, add-a-hero checklist.
 2. `docs/01-DEADLOCK-ASSETS.md`: Deadlock side: VPK paths, the extractor, the DLM format, manifest, sounds, exploration tools.
-3. `docs/02-RISK-OF-RAIN-2-INTEGRATION.md`: RoR2 side: content pack, bodies, models, scale, animation and gun rig, skills, ult, buffs, hooks, test mode. Its §12 "Gotchas" is worth reading before debugging.
+3. `docs/02-RISK-OF-RAIN-2-INTEGRATION.md`: RoR2 side: content pack, bodies, models, scale, animation and gun rig, skills, ult equipment, buffs, hooks, test mode. Its §12 "Gotchas" is worth reading before debugging.
 4. `docs/04-ABILITY-REDESIGN-PROPOSALS.md`: the ability options and the creator's v0.3.0 picks (§6).
 5. `docs/05-DAMAGE-COMPARISON.md`: DPS benchmark against Commando, balance suggestions, and the "retest needed" flags (§0).
 6. `docs/06-CURRENT-ABILITIES.md`: every survivor's current abilities, numbers and DPS (keep it in sync).
@@ -41,7 +41,7 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 - **Don't launch the game for the creator's playtests.** Leave the build installed and tell them it is ready.
   Launching for automated test runs is fine; run `tools/lab_restore.sh` afterwards.
 - **Keep the ability docs current.** `docs/06-CURRENT-ABILITIES.md` lists every survivor's abilities with their numbers
-  and measured DPS. Any change to an ability (sheet numbers, kind behaviour, passives, the ult meter) updates doc 06
+  and measured DPS. Any change to an ability (sheet numbers, kind behaviour, passives, the ult equipment) updates doc 06
   **and** adds a row to the "Retest needed" table in `docs/05-DAMAGE-COMPARISON.md` §0, in the same commit. After
   `bash tools/run_bench.sh`, refresh the DPS in docs 05 and 06 and clear the flags that run covered. Visual-only changes need no flag.
   Then update `tools/kit_pages.py`, run it, and republish the five pages to their existing links (listed at the top of doc 06).
@@ -51,7 +51,7 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 Three pieces, linked by generated data:
 - **`design/*.json` → `tools/gen.py`** generates `plugin/Generated/Sheets.g.cs` (one `*Row` class per sheet, static `All`)
   and `extractor/manifest.json` (what to pull from Deadlock). Preflight checks cells, cross-references, slots, balance
-  math (gun DPS vs `targetDps`, ult totals), scale, and Deadlock/RoR2 names against listings in the gitignored `tools/dev/`
+  math (gun DPS vs `targetDps`, equipment ult totals), scale, and Deadlock/RoR2 names against listings in the gitignored `tools/dev/`
   (a missing listing is a failure; on a fresh clone generate them per doc 01 §8 / doc 02 §1).
 - **`extractor/`** (DeadlockExtract, .NET 10 + ValveResourceFormat): Melty runs it once on the player's PC; it converts
   hero models/clips (to the custom DLM format, `DlmWriter.cs`), icons and sounds from the Deadlock VPK into
@@ -62,7 +62,9 @@ Three pieces, linked by generated data:
   because RoR2 disables Unity audio. Sheet access goes through `Runtime/SheetLookup.cs` (`Sheet.*`).
 - **Skills:** each `skills.json` row has a `kind`; it maps to an EntityState class tagged `[Kind("...")]` in
   `plugin/States/` (guns, abilities, ultimates, all deriving from `DlrState`). Preflight requires every kind to have a state.
-  Four slots per hero: `primary`, `secondary`, `utility`, `ult` (R, charged by damage/kills in `Content/Ult.cs`).
+  Four skill slots per hero: `primary`, `secondary`, `utility`, `special` (R, a normal-cooldown move), plus `equipment`: the
+  hero's Deadlock ultimate is a RoR2 equipment (Q, 120 s, `Content/Equipment.cs`, rows in `design/equipment.json`) that the
+  hero starts holding and anyone can find; firing it starts the ult's state on whatever body holds it (`DlrState.RowOverride`).
   Buff effects live in Harmony patches in `Content/Buffs.cs`; every hook is also listed in `design/hooks.json` (keep in sync).
 - **Test mode** (`Runtime/MeltyTest.cs`) activates only when `%LOCALAPPDATA%\Melty\test\deadlock-of-rain.json` exists;
   it runs each hero's skills on a fixed test spot and checks them against their `expect` lists.

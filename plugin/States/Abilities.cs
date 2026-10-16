@@ -256,13 +256,15 @@ namespace DeadlockOfRain.States
     [Kind("dash_trail")]
     public sealed class DashTrail : DlrState
     {
-        DamageTrail trail; int loop;
+        DamageTrail trail; int loop; GameObject flames; Vector3 lastPatch; float nextPatch;
         readonly HashSet<HealthComponent> shoved = new HashSet<HealthComponent>();
         public override void OnEnter()
         {
             base.OnEnter();
             Sound("cast");
             loop = Fx.Loop(row.Id, transform.position);
+            flames = Vfx.Play(row.Vfx, "loop", characterBody.footPosition, 1f, transform);
+            lastPatch = characterBody.footPosition + Vector3.up * 100f;
             if (anim) anim.Override("utility_loop", row.Duration, true);
             if (Server)
             {
@@ -294,6 +296,13 @@ namespace DeadlockOfRain.States
                 if (characterDirection) characterDirection.forward = mv;
             }
             if (trail) trail.transform.position = transform.position;
+            // burning patches of ground along the path, lasting as long as the trail does (chainCount seconds)
+            if (fixedAge >= nextPatch && Vector3.Distance(characterBody.footPosition, lastPatch) > 1.5f)
+            {
+                nextPatch = fixedAge + 0.12f;
+                lastPatch = characterBody.footPosition;
+                Vfx.Play(row.Vfx, "hit", lastPatch, row.ChainCount);
+            }
             // enemies Infernus runs into are knocked aside to clear his path, once each
             if (Server && row.Knockback > 0)
             {
@@ -315,6 +324,7 @@ namespace DeadlockOfRain.States
         {
             if (Server) Buffs.Clear(characterBody, row.Buff);
             if (trail) { trail.active = false; Object.Destroy(trail.gameObject, row.ChainCount + 0.5f); }
+            Vfx.Stop(flames, 0.6f);
             DeadlockAudio.Stop(loop);
             Sound("end");
             if (anim) anim.StopOverride();

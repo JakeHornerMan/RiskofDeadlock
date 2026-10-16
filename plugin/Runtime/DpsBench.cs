@@ -93,7 +93,7 @@ namespace DeadlockOfRain
         sealed class Tally
         {
             public double Raw, Pct; public int Hits; public readonly HashSet<CharacterBody> Victims = new HashSet<CharacterBody>();
-            public readonly int[] Uses = new int[4];
+            public readonly int[] Uses = new int[5];
         }
         Tally tally;
         CharacterBody benchBody;
@@ -115,6 +115,11 @@ namespace DeadlockOfRain
             var sl = benchBody.skillLocator;
             int i = s == sl.primary ? 0 : s == sl.secondary ? 1 : s == sl.utility ? 2 : s == sl.special ? 3 : -1;
             if (i >= 0) tally.Uses[i]++;
+        }
+
+        void OnEquipment(EquipmentSlot slot, EquipmentIndex index)
+        {
+            if (tally != null && benchBody && slot && slot.characterBody == benchBody) tally.Uses[4]++;
         }
 
         // ---------------------------------------------------------------- the run
@@ -171,7 +176,7 @@ namespace DeadlockOfRain
                     master.TransformBody(bodyName);
                     yield return new WaitForSeconds(1.5f);
                 }
-                foreach (var mode in new[] { "all", "primary", "secondary", "utility", "special" })
+                foreach (var mode in new[] { "all", "primary", "secondary", "utility", "special", "equipment" })
                 {
                     yield return Pass(master, pcmc, bodyName.Replace("Body", ""), mode);
                 }
@@ -193,15 +198,23 @@ namespace DeadlockOfRain
             if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
             SpawnPack();
             yield return new WaitForSeconds(1f);
-            // every slot starts ready; an R that is a charge-meter ultimate starts empty in "all" (as in a real run) and full in "special"
+            // every slot starts ready; the Q equipment is the hero's own ult (Commando: the Preon Accumulator it is scaled to),
+            // charged, in "all" and "equipment" (once per pass: it recharges in 120 s)
             var sl = body.skillLocator;
             foreach (var gs in new[] { sl.primary, sl.secondary, sl.utility, sl.special }) if (gs) gs.Reset();
-            var ult = UltController.Of(body);
-            if (ult) { ult.Consume(); if (mode == "special") ult.Add(ult.Required); }
+            bool useEquip = mode == "all" || mode == "equipment";
+            var inv = body.inventory;
+            if (inv)
+            {
+                var def = Equipment.OfHero(Survivors.HeroOf(body)) ?? (Survivors.HeroOf(body) == null ? RoR2Content.Equipment.BFG : null);
+                var loc = inv.activeEquipmentLocation;
+                inv.SetEquipment(new EquipmentState(useEquip && def ? def.equipmentIndex : EquipmentIndex.None, Run.FixedTimeStamp.now, 1), loc);
+            }
             benchBody = body;
             body.onSkillActivatedServer += OnSkill;
+            EquipmentSlot.onServerEquipmentActivated += OnEquipment;
             tally = new Tally();
-            float start = Time.time, nextRefill = 0f; int frame = 0, ultUsedAt = -1;
+            float start = Time.time, nextRefill = 0f; int frame = 0;
             while (Time.time - start < seconds)
             {
                 body = master.GetBody();
@@ -229,8 +242,8 @@ namespace DeadlockOfRain
                     ib.skill2.PushState((mode == "all" || mode == "secondary") && tap);
                     ib.skill3.PushState((mode == "all" || mode == "utility") && tap);
                     ib.skill4.PushState((mode == "all" || mode == "special") && tap);
+                    ib.activateEquipment.PushState(useEquip && tap);
                 }
-                if (mode == "special" && ult && tally.Uses[3] > 0 && ultUsedAt < 0) ultUsedAt = (int)(Time.time - start);
                 // dashes and leaps carry the survivor off the spot: once they are back in their main state, put them back
                 var esm = EntityStateMachine.FindByCustomName(body.gameObject, "Body");
                 if (esm && esm.state is EntityStates.GenericCharacterMain && (body.footPosition - arena).sqrMagnitude > 16f)
@@ -244,13 +257,13 @@ namespace DeadlockOfRain
             }
             var t = tally; tally = null;
             if (body) body.onSkillActivatedServer -= OnSkill;
+            EquipmentSlot.onServerEquipmentActivated -= OnEquipment;
             var b2 = master.GetBody();
-            if (b2 && b2.inputBank) { b2.inputBank.skill1.PushState(false); b2.inputBank.skill2.PushState(false); b2.inputBank.skill3.PushState(false); b2.inputBank.skill4.PushState(false); }
+            if (b2 && b2.inputBank) { b2.inputBank.skill1.PushState(false); b2.inputBank.skill2.PushState(false); b2.inputBank.skill3.PushState(false); b2.inputBank.skill4.PushState(false); b2.inputBank.activateEquipment.PushState(false); }
             float dur = Mathf.Max(0.1f, seconds);
             var sb = new StringBuilder();
             sb.Append($"{who} {mode}: raw {t.Raw:F0} ({t.Raw / dur:F1}/s), {t.Pct:F0}% of damage ({t.Pct / dur:F0}%/s), hits {t.Hits}, enemies hit {t.Victims.Count}, ");
-            sb.Append($"uses M1 {t.Uses[0]} M2 {t.Uses[1]} Shift {t.Uses[2]} R {t.Uses[3]}, level {(b2 ? b2.level : 0):F0}, damage stat {(b2 ? b2.damage : 0):F1}");
-            if (ult) sb.Append($", ult meter end {ult.Fraction * 100f:F0}%");
+            sb.Append($"uses M1 {t.Uses[0]} M2 {t.Uses[1]} Shift {t.Uses[2]} R {t.Uses[3]} Q {t.Uses[4]}, level {(b2 ? b2.level : 0):F0}, damage stat {(b2 ? b2.damage : 0):F1}");
             Write(sb.ToString());
             // let projectiles, storms and DoTs from this pass end before the next one is counted
             yield return new WaitForSeconds(2.5f);

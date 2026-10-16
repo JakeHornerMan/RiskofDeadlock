@@ -127,6 +127,16 @@ namespace DeadlockOfRain
             hc.TakeDamageForce(push * mass, true, true);
         }
 
+        /// <summary>Knock an enemy straight away along forward (a punch), a bit up, at speed m/s (scaled by its mass).</summary>
+        public static void KnockBack(CharacterBody owner, HealthComponent hc, Vector3 forward, float speed)
+        {
+            if (!hc || !hc.body || speed <= 0 || !UnityEngine.Networking.NetworkServer.active) return;
+            forward.y = 0; forward.Normalize();
+            var push = forward * speed + Vector3.up * speed * 0.45f;
+            float mass = hc.body.characterMotor ? hc.body.characterMotor.mass : hc.body.rigidbody ? hc.body.rigidbody.mass : 100f;
+            hc.TakeDamageForce(push * mass, true, true);
+        }
+
         /// <summary>Server-side direct damage to one hurtbox (used by ticks, chains and custom projectiles).</summary>
         public static void Hit(CharacterBody owner, HurtBox target, float coefficient, float proc, Vector3 at, DamageTypeCombo type = default, DamageColorIndex color = DamageColorIndex.Default)
         {
