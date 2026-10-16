@@ -22,8 +22,10 @@ namespace DeadlockOfRain
     {
         static string outFile;
         static float seconds = 30f;
-        // optional "only": one hero id; the bench then runs Commando and that hero only (for quick tuning)
+        // optional "only": one hero id; the bench then runs Commando, that hero and its RoR2 match only (for quick tuning)
         static string only = "";
+        // optional "portraits": a folder; studio renders of every hero, its RoR2 match and its ult figure go there first
+        static string portraits = "";
         public static bool Active => outFile != null;
 
         public static void Init()
@@ -35,7 +37,9 @@ namespace DeadlockOfRain
                 var text = File.ReadAllText(f);
                 outFile = Value(text, "out") ?? System.IO.Path.Combine(System.IO.Path.GetDirectoryName(f), "bench_results.txt");
                 only = Value(text, "only") ?? "";
-                if (float.TryParse(Value(text, "seconds"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s) && s > 0) seconds = s;
+                portraits = Value(text, "portraits") ?? "";
+                // seconds 0: portraits only, no passes
+                if (float.TryParse(Value(text, "seconds"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s) && s >= 0) seconds = s;
                 Log.Info($"DPS bench: {seconds}s passes, writing to {outFile}");
                 var go = new GameObject("DeadlockOfRainDpsBench");
                 DontDestroyOnLoad(go);
@@ -103,11 +107,15 @@ namespace DeadlockOfRain
 
         void OnDamage(DamageReport r)
         {
-            if (tally == null || r == null || !benchBody || r.attackerBody != benchBody || !r.victimBody || r.victimBody == benchBody) return;
+            if (tally == null || r == null || !benchBody || !r.victimBody || r.victimBody == benchBody) return;
+            // the survivor's own hits, and its minions' (Engineer's turrets) as part of its kit
+            bool own = r.attackerBody == benchBody
+                || r.attackerMaster && r.attackerMaster.minionOwnership && r.attackerMaster.minionOwnership.ownerMaster == benchBody.master;
+            if (!own) return;
             // damageInfo.damage: what the hit was worth after crits and damage mods, before the victim's armor and health cap
             float dmg = r.damageInfo != null ? r.damageInfo.damage : r.damageDealt;
             tally.Raw += dmg;
-            tally.Pct += dmg / Mathf.Max(1f, r.attackerBody.damage) * 100f;
+            tally.Pct += dmg / Mathf.Max(1f, benchBody.damage) * 100f;
             tally.Hits++;
             tally.Victims.Add(r.victimBody);
         }
@@ -148,6 +156,8 @@ namespace DeadlockOfRain
             if (first.currentVehicle) first.currentVehicle.EjectPassenger(first.gameObject);
             yield return new WaitForSeconds(2f);
             MeltyTest.QuietStage();
+            if (portraits != "") yield return Portraits(user.cachedBody);
+            if (seconds <= 0f) { Write("DPS bench finished"); yield break; }
 
             // one fixed flat spot, a pack 10 m in front: three rows of four, 2.5 m apart
             var body = user.cachedBody;
@@ -172,7 +182,12 @@ namespace DeadlockOfRain
             var pcmc = master.GetComponent<PlayerCharacterMasterController>();
             var survivors = new List<string> { "CommandoBody" };
             foreach (var h in HeroRow.All)
-                if (Survivors.Bodies.ContainsKey(h.Id) && (only == "" || only == h.Id)) survivors.Add(Survivors.Bodies[h.Id].name);
+            {
+                if (!Survivors.Bodies.ContainsKey(h.Id) || only != "" && only != h.Id) continue;
+                var match = StatRow.All.FirstOrDefault(r => r.Hero == h.Id)?.Analog;
+                if (!string.IsNullOrEmpty(match) && match != "none" && !survivors.Contains(match) && BodyCatalog.FindBodyPrefab(match)) survivors.Add(match);
+                survivors.Add(Survivors.Bodies[h.Id].name);
+            }
             foreach (var bodyName in survivors)
             {
                 if (master.GetBody() == null || master.GetBody().name.Replace("(Clone)", "") != bodyName)
@@ -180,6 +195,7 @@ namespace DeadlockOfRain
                     master.TransformBody(bodyName);
                     yield return new WaitForSeconds(1.5f);
                 }
+                WriteStats(bodyName);
                 foreach (var mode in new[] { "all", "primary", "secondary", "utility", "special", "equipment" })
                 {
                     yield return Pass(master, pcmc, bodyName.Replace("Body", ""), mode);
@@ -189,6 +205,126 @@ namespace DeadlockOfRain
             if (pcmc) pcmc.enabled = true;
             foreach (var b in pack) if (b && b.master) b.master.TrueKill();
             Write("DPS bench finished");
+        }
+
+        /// <summary>The survivor's base stats, as the body prefab has them (the pages show them beside the hero's).</summary>
+        void WriteStats(string bodyName)
+        {
+            var b = BodyCatalog.FindBodyPrefab(bodyName)?.GetComponent<CharacterBody>();
+            if (!b) return;
+            var inv = System.Globalization.CultureInfo.InvariantCulture;
+            Write(string.Format(inv, "stats {0}: name {1}, health {2} +{3}, regen {4} +{5}, armor {6}, damage {7} +{8}, speed {9}, jumps {10}, crit {11}",
+                bodyName.Replace("Body", ""), Language.GetString(b.baseNameToken), b.baseMaxHealth, b.levelMaxHealth, b.baseRegen, b.levelRegen,
+                b.baseArmor, b.baseDamage, b.levelDamage, b.baseMoveSpeed, b.baseJumpCount, b.baseCrit));
+        }
+
+        static void KillMinions(CharacterMaster owner)
+        {
+            foreach (var m in CharacterMaster.readOnlyInstancesList.ToList())
+                if (m && m != owner && m.minionOwnership && m.minionOwnership.ownerMaster == owner) m.TrueKill();
+        }
+
+        // ---------------------------------------------------------------- studio portraits (dev only, for the kit pages)
+        /// <summary>Each hero, its RoR2 match and its ult's pickup figure, alone high above the stage with a key light and a
+        /// rim light in the hero's colour. Each is rendered twice, on black and on white, so tools/portraits.py can cut it out
+        /// (alpha = 1 - (white - black)).</summary>
+        IEnumerator Portraits(CharacterBody near)
+        {
+            Directory.CreateDirectory(portraits);
+            var origin = near.transform.position + Vector3.up * 400f;
+            var jobs = new List<(string name, GameObject prefab, Color rim, bool figure)>();
+            foreach (var h in HeroRow.All)
+            {
+                var rim = Sheet.Color(h.PrimaryColor);
+                if (Survivors.Defs.TryGetValue(h.Id, out var d) && d.displayPrefab) jobs.Add((h.Id, d.displayPrefab, rim, false));
+                var match = StatRow.All.FirstOrDefault(r => r.Hero == h.Id)?.Analog;
+                var md = string.IsNullOrEmpty(match) ? null : SurvivorCatalog.FindSurvivorDefFromBody(BodyCatalog.FindBodyPrefab(match));
+                if (md && md.displayPrefab && !jobs.Any(j => j.name == match)) jobs.Add((match, md.displayPrefab, new Color(0.75f, 0.85f, 0.8f), false));
+                var def = Equipment.OfHero(h.Id);
+#pragma warning disable CS0618
+                if (def && def.pickupModelPrefab) jobs.Add((h.Id + "_figure", def.pickupModelPrefab, rim, true));
+#pragma warning restore CS0618
+            }
+            foreach (var job in jobs)
+            {
+                GameObject go = null;
+                try
+                {
+                    go = Instantiate(job.prefab, origin, Quaternion.LookRotation(Vector3.back));
+                    go.SetActive(true);
+                }
+                catch (Exception e) { Log.Warn($"portrait {job.name}: {e.Message}"); }
+                if (!go) continue;
+                // let the character-select intro settle into the idle pose
+                yield return new WaitForSeconds(job.figure ? 0.3f : 3f);
+                // vanilla display models dither themselves out near a camera (CharacterModel's fade): switch it off, fully opaque
+                foreach (var cm in go.GetComponentsInChildren<CharacterModel>()) cm.enabled = false;
+                var block = new MaterialPropertyBlock();
+                foreach (var r in go.GetComponentsInChildren<Renderer>())
+                {
+                    r.GetPropertyBlock(block); block.SetFloat("_Fade", 1f); r.SetPropertyBlock(block);
+                }
+                try { Render(go, job.name, job.rim, job.figure, origin); }
+                catch (Exception e) { Log.Warn($"portrait {job.name}: {e.Message}"); }
+                Destroy(go);
+                yield return null;
+            }
+            Write($"portraits: {jobs.Count} written to {portraits}");
+        }
+
+        void Render(GameObject go, string name, Color rim, bool figure, Vector3 origin)
+        {
+            var b = new Bounds(origin + Vector3.up, Vector3.one * 0.1f); bool any = false;
+            foreach (var r in go.GetComponentsInChildren<Renderer>())
+            {
+                if (!r.enabled || !r.gameObject.activeInHierarchy || r is ParticleSystemRenderer || r is TrailRenderer || r is LineRenderer) continue;
+                if (!any) { b = r.bounds; any = true; } else b.Encapsulate(r.bounds);
+            }
+            if (figure) b = new Bounds(b.center, b.size / Equipment.FigurePadding);
+            float h = Mathf.Max(0.3f, b.size.y);
+            // a front three-quarter view, slightly from above for the figure, at eye level for the heroes
+            var dir = Quaternion.Euler(0f, figure ? 30f : 22f, 0f) * Vector3.back;
+            const float fov = 28f;
+            float dist = h * 0.62f / Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad) + b.extents.z;
+            var target = b.center;
+            var lights = new List<GameObject>();
+            void L(Vector3 at, Color c, float intensity, float range, LightType type = LightType.Point)
+            {
+                var lg = new GameObject("PortraitLight"); lg.transform.position = at;
+                lg.transform.rotation = Quaternion.LookRotation(target - at);
+                var l = lg.AddComponent<Light>(); l.type = type; l.color = c; l.intensity = intensity; l.range = range;
+                l.renderMode = LightRenderMode.ForcePixel;
+                lights.Add(lg);
+            }
+            var right = Vector3.Cross(Vector3.up, -dir).normalized;
+            // a three-point setup: a warm directional key from front-left and above, a cool fill from the front-right,
+            // and two strong rim lights in the hero's colour behind
+            L(target + dir * h * 2f - right * h * 1.5f + Vector3.up * h * 2f, new Color(1f, 0.92f, 0.82f), 1.6f, 0f, LightType.Directional);
+            L(target + dir * h * 1.2f + right * h * 1.2f + Vector3.up * h * 0.3f, new Color(0.75f, 0.82f, 1f), 6f, h * 4f);
+            L(target - dir * h * 0.7f + right * h * 0.8f + Vector3.up * h * 0.4f, rim, 16f, h * 2.5f);
+            L(target - dir * h * 0.7f - right * h * 0.8f + Vector3.up * h * 0.6f, rim, 12f, h * 2.5f);
+            var cg = new GameObject("PortraitCamera");
+            var c = cg.AddComponent<Camera>();
+            if (Camera.main) c.CopyFrom(Camera.main);
+            c.transform.position = target + dir * dist + Vector3.up * h * (figure ? 0.25f : 0.05f);
+            c.transform.rotation = Quaternion.LookRotation(target - c.transform.position);
+            c.fieldOfView = fov; c.nearClipPlane = 0.05f; c.farClipPlane = dist + h * 4f;
+            c.clearFlags = CameraClearFlags.SolidColor;
+            int w = figure ? 800 : 1200, hh = figure ? 800 : 1500;
+            var rt = new RenderTexture(w, hh, 24);
+            c.targetTexture = rt; c.aspect = (float)w / hh;
+            var tex = new Texture2D(w, hh, TextureFormat.RGB24, false);
+            foreach (var (bg, suffix) in new[] { (Color.black, "black"), (Color.white, "white") })
+            {
+                c.backgroundColor = bg;
+                c.Render();
+                RenderTexture.active = rt;
+                tex.ReadPixels(new Rect(0, 0, w, hh), 0, 0); tex.Apply();
+                RenderTexture.active = null;
+                File.WriteAllBytes(System.IO.Path.Combine(portraits, $"{name}_{suffix}.png"), tex.EncodeToPNG());
+            }
+            c.targetTexture = null; Destroy(rt); Destroy(cg); Destroy(tex);
+            foreach (var l in lights) Destroy(l);
         }
 
         IEnumerator Pass(CharacterMaster master, PlayerCharacterMasterController pcmc, string who, string mode)
@@ -215,6 +351,7 @@ namespace DeadlockOfRain
                 var loc = inv.activeEquipmentLocation;
                 inv.SetEquipment(new EquipmentState(useEquip && def ? def.equipmentIndex : EquipmentIndex.None, Run.FixedTimeStamp.now, 1), loc);
             }
+            KillMinions(master);
             benchBody = body;
             body.onSkillActivatedServer += OnSkill;
             EquipmentSlot.onServerEquipmentActivated += OnEquipment;

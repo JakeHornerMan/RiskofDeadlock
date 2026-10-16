@@ -20,6 +20,8 @@ Deadlock's assets from the player's own install; nothing from either game ships.
   Melty's `test_release` before asking to publish.
 
 ## Read these first
+0. `docs/00-HANDOFF.md`: the current state, a paste-ready prompt for a new agent, how the creator likes to work, lessons;
+   then the newest entries of `docs/07-SESSION-LOG.md` (what was asked, asked back and done, session by session).
 1. `docs/03-PROCESS-OVERVIEW.md`: what the project is, repo layout, workflow, testing, releasing on Melty, git rules, add-a-hero checklist.
 2. `docs/01-DEADLOCK-ASSETS.md`: Deadlock side: VPK paths, the extractor, the DLM format, manifest, sounds, exploration tools.
 3. `docs/02-RISK-OF-RAIN-2-INTEGRATION.md`: RoR2 side: content pack, bodies, models, scale, animation and gun rig, skills, ult equipment, buffs, hooks, test mode. Its §12 "Gotchas" is worth reading before debugging.
@@ -29,6 +31,14 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 `MODLOG.md` is the short journal of versions, lab notes and gotchas.
 
 ## Standing rules
+- **Record every session.** For every creator request that changes anything, append an entry to
+  `docs/07-SESSION-LOG.md` (template at its top: the request verbatim, questions asked and answers, what was done,
+  results, what is open, lessons) and refresh `docs/00-HANDOFF.md` §1 (current state) and §9 (work in progress), in the
+  same commit as the work. New general lessons also go in doc 00 §7.
+- **Ask before big changes.** The creator wants research and clarifying questions first (AskUserQuestion, recommended
+  option first); read free-text answers closely, they often change the plan.
+- **Pages show no Deadlock art files.** The kit pages (claude.ai Artifacts) use our own in-game renders
+  (`PORTRAITS=1 bash tools/run_bench.sh 0`), never hero cards or icons copied from the VPK.
 - **Update the docs with every change.** Any change to code, design sheets, tools, recipe, versions or decisions must
   update the affected document(s) in `docs/` **in the same commit**: Deadlock side → 01, RoR2 side → 02, process,
   release and decisions → 03. Treat a change without its doc update as unfinished.

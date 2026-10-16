@@ -1,6 +1,7 @@
 # 03: Process overview: how Deadlock of Rain is made, tested and shipped
 
-> **Audience:** anyone (human or agent) picking this project up cold. Read this first, then docs 01 and 02 for depth.
+> **Audience:** anyone (human or agent) picking this project up cold. Start with `docs/00-HANDOFF.md` (current state)
+> and the newest entries of `docs/07-SESSION-LOG.md` (history), then this file, then docs 01 and 02 for depth.
 > **Keep this file current.** Any change to the workflow, tools, release process, test checks, versions or project
 > decisions must be reflected here in the same commit (see `CLAUDE.md`).
 
@@ -289,6 +290,7 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 | Reuse RoR2 items for skills | The creator's idea: Siphon Life *is* RoR2's Mired Urn attachment and Thunderhead's attack speed *is* RoR2's Warbanner ward, so they look and work like the items players know, with no new buff code |
 | Ults as Q equipment (v0.4.0) | The creator: the ults should be pickups on Q, "auto equipped at the start" but droppable, other heroes' ults findable in the game, the item looking like the hero (picked: a whole mini hero), 120 s recharge, Preon Accumulator power. Answers: drop pool = everyone, same rules as Preon (chests, Enigma, Bottled Chaos); power = Preon scaled to 120 s (≈6800 % per enemy); charge meter removed; Seismic Impact slams on Left Click. New R per hero after deadlock.wiki research (all four Deadlock abilities were already used): Haze **Phantom Strike** (item) with a 3-cut flurry, Abrams **Haymaker** (heavy melee, tap), Seven **Power Surge** (his real ability) as RoR2 Tesla arcs per burst, Infernus **Torment Pulse** (item). Plus: rebuild all Infernus fire in Unity with RoR2's fire materials. Details in doc 04 §7 |
 | Balance on main moves, ults unbalanced (v0.4.1) | The creator: the Q ults can be carried by any survivor, so they are left out of balance and "can be overpowered as we like"; compare the main moves only. Balanced = Commando (no equipment) **±20 %**. Picks: Haze all four buffs (SMGs 55 %, Fixation burst every 10 stacks for 300 % splashing 6 m, Sleep Dagger 6 s / 500 % / pierces) plus Bullet Dance hitting every enemy; Abrams Seismic 18 m, Haymaker shockwave cone, Shoulder Charge 500 %; Seven **cooldowns only, no damage cuts**, tuned with the bench until inside the band (Lightning Ball 16 s, Static Charge 16 s, Power Surge 30 s); Infernus Torment Pulse 50 % per pulse and Flame Gun 50 %. Details in doc 05 |
+| Each hero vs its own RoR2 match; kit pages redesigned (2026-10-16) | The creator: pages should open with a profile picture and stats, then each ability with its DPS maths beside it, Deadlock-wiki styling, the ult with a picture, then updates and balance; "give these guys corresponding actual risk of rain character and have the analysis be separate section for each character". Answers: studio renders made in game (Deadlock art may not be copied onto pages), matches = stat base (Haze Commando, Abrams Loader, Seven Artificer, Infernus Engineer), each hero compared with its own match (±20 %), 4 hero pages + an overview. `tools/kit_pages.py` now reads the sheets and `build/bench_results.txt` directly; `tools/portraits.py` cuts out the renders. The creator also asked for a full handoff and record system: `docs/00-HANDOFF.md` and `docs/07-SESSION-LOG.md` |
 | Effects built in Unity, not ripped | The creator: "make it similar to the Deadlock game, not a rip from the Deadlock engine files". `Runtime/Vfx.cs` builds them at runtime from Unity components and RoR2 materials (doc 02 §8.1) |
 
 ---
@@ -321,5 +323,7 @@ Every change to this project (code, sheets, tools, recipe, versions, decisions) 
 - RoR2-side changes go in doc 02.
 - Process, release and decision changes go here (doc 03).
 - Ability changes also go in doc 06 and add a "retest needed" row to doc 05 §0; a benchmark run refreshes both.
+- Every creator request that changes anything gets an entry in doc 07 (session log), and doc 00 (handoff) §1/§9 are
+  refreshed.
 
 `CLAUDE.md` repeats this rule for agents.

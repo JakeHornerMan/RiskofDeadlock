@@ -1,4 +1,4 @@
-# 05: Damage comparison (DPS benchmark, v0.4.1)
+# 05: Damage comparison (DPS benchmark, v0.4.1, each hero vs its RoR2 match)
 
 > Measured 2026-10-16 with `bash tools/run_bench.sh 30` on the v0.4.1 build (raw output: `build/bench_results.txt`, not in git).
 > The v0.4.0 numbers (one Q use inside every "all" pass, ±250 band) are in git history (commit `a333644`).
@@ -9,7 +9,7 @@ Any change to an ability after the last benchmark adds a row here **in the same 
 After `bash tools/run_bench.sh`, update §3, doc 06's DPS columns and the version line, then clear the rows that run covered.
 Visual-only changes (effects, animations, the pickup figure) don't need a row.
 
-**Last benchmark:** 2026-10-16, v0.4.1 (balance pass). It covered every ability, including v0.4.0's Seven gun flag (it was a real
+**Last benchmark:** 2026-10-16, v0.4.1 with the RoR2 matches (§3.0). It covered every ability, including v0.4.0's Seven gun flag (it was a real
 bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
@@ -52,6 +52,41 @@ Since v0.4.1 (creator's decisions):
 `tools/run_bench.sh [seconds] [hero]` with a hero id runs only Commando and that hero (about 7 minutes), used to tune Seven.
 
 ## 3. Results
+
+### 3.0 Each hero vs its own RoR2 match (the current balance rule)
+Creator's decision (2026-10-16): each hero is compared with the Risk of Rain 2 survivor its stats are built on
+(`design/stats.json` → `analog`), measured the same way; balanced = within **±20 % of the match**. Second run of the day
+(the matches were added to the bench; same build as §3.1), so the heroes' numbers differ from §3.1 by the usual noise.
+
+| Hero | %/s | RoR2 match | Match %/s | Band | Verdict |
+|---|---|---|---|---|---|
+| Haze | **1478** | Commando | 1064 | 851–1277 | **above** (+414) |
+| Abrams | **985** | Loader | 2747 | 2198–3296 | **below** (0.36×) |
+| Seven | **1242** | Artificer | 2790 | 2232–3348 | **below** (0.45×) |
+| Infernus | **1226** | Engineer | 1268 | 1014–1522 | **inside** |
+
+Each move alone (%/s, hero vs match):
+
+| Slot | Haze / Commando | Abrams / Loader | Seven / Artificer | Infernus / Engineer |
+|---|---|---|---|---|
+| M1 | 1020 / 603 | 508 / 1120 | 672 / 2342 | 317 / 1720 |
+| M2 | 100 / 588 | 400 / 11 | 118 / 1073 | 538 / 50 |
+| Shift | 0 / 0 | 350 / 2287 | 165 / 0 | 311 / 0 |
+| R | 352 / 80 | 570 / 1800 | 0 (powers the gun) / 853 | 768 / 69 |
+
+Notes:
+- **Loader** is carried by Charged Gauntlet (2287) and M551 Pylon (1800): big area hits on a bunched pack. Grapple Fist hit
+  once in its pass (11).
+- **Artificer** is carried by Flame Bolt (2342: 4 charges of 220 % that ignite) and Nano-Bomb (1073).
+- **Engineer**'s turrets (R) were placed twice but landed few hits in 30 s (69); his grenades carry him (1720). Turret damage
+  counts as his. His damage stat is **14** (Infernus 12): %/s removes that, raw damage favours him by ~17 %.
+- Stats per survivor come from the bench's `stats` lines (all four matches as in vanilla; the heroes as in `stats.json`).
+- Suggestions (not applied, the creator decides): Haze: Fixation splash 6 → 4 m, or bursts every 15 stacks, or SMGs 50 %.
+  Abrams: about 2.8× needed (e.g. Haymaker 900 → 1800 %, Shoulder Charge 500 → 1000 %) or a different yardstick.
+  Seven: bring the 0.4.1 cooldowns (16 / 16 / 30 s, tuned for Commando) back toward 6 / 7 / 14 s and retune.
+  Infernus: none.
+- Q, one use each in this run: Haze 44635 %, Abrams 54400 % (8 enemies), Seven 27200 %, Infernus 47600 % (7 enemies),
+  Preon 39200 % (10 enemies); per-use totals depend on how many of the pack are inside.
 
 ### 3.1 The headline: main moves together, 30 s (no equipment)
 Band: **1004–1506 %/s** (Commando 1255 ± 20 %).

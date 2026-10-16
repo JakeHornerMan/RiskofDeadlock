@@ -530,7 +530,16 @@ the `PlayerCharacterMasterController` off and drives the `InputBank` itself (M1 
 physics frame; since v0.4.1 "all" holds **no equipment**, because balance compares the main moves only, and Q is pressed only in
 the "equipment" pass with the survivor's ult charged (Commando holds the **Preon Accumulator**) for the "just for fun" table;
 aim at the nearest enemy, survivor put back on the spot after dashes). For Commando and every hero (with `only`: Commando and that hero) it runs
-an "all" pass and one pass per slot plus "equipment", counting every `onServerDamageDealt` from the survivor. Results and every variable:
+an "all" pass and one pass per slot plus "equipment", counting every `onServerDamageDealt` from the survivor **or its minions**
+(Engineer's turrets; % is of the survivor's damage stat; minions are killed between passes). Since the kit-page redesign each
+hero is preceded by **its RoR2 match** (`stats.json` → `analog`: Commando, Loader, Artificer (`MageBody`), Engineer (`EngiBody`)),
+measured the same way, and every survivor gets a `stats <body>: name, health +lvl, regen +lvl, armor, damage +lvl, speed, jumps, crit`
+line from its body prefab. With `"portraits": "<dir>"` (`PORTRAITS=1 tools/run_bench.sh 0`) it first renders **studio portraits**
+(`Portraits()`): each hero's and match's display prefab and each ult figure, alone 400 m above the stage, lit by a directional key,
+a fill and two rim point lights in the hero's colour, framed from the renderers' bounds (the figure's bounds divided by
+`Equipment.FigurePadding`), rendered twice on black and on white so `tools/portraits.py` can cut them out
+(alpha = 1 − (white − black)). Vanilla display prefabs dither themselves out near a camera, so `CharacterModel` is disabled and
+`_Fade` forced to 1 for the shot. `seconds` 0 = portraits only. The script copies the game log to `build/bench_log.txt`. Results and every variable:
 doc 05.
 
 ## 11. Adding another hero: the RoR2 half

@@ -49,7 +49,7 @@
       "roR2Analog": "CommandoBody",
       "subtitle": "The Smoke-Shrouded Assassin",
       "passiveName": "Fixation",
-      "passiveDescription": "Every SMG hit stacks <style=cIsUtility>Fixation</style> on the target (up to 40, for 6s; <style=cIsDamage>critical hits stack 3</style>). Each stack makes that target take <style=cIsDamage>+2.5% damage</style> from Haze. Every 20 stacks the target takes <style=cIsDamage>200% damage</style> and is <style=cIsUtility>slowed</style>.",
+      "passiveDescription": "Every SMG hit stacks <style=cIsUtility>Fixation</style> on the target (up to 40, for 6s; <style=cIsDamage>critical hits stack 3</style>). Each stack makes that target take <style=cIsDamage>+2.5% damage</style> from Haze. Every 10 stacks the target bursts for <style=cIsDamage>300% damage</style>, splashing every enemy within 6m, and is <style=cIsUtility>slowed</style>.",
       "passiveIcon": "panorama/images/hud/abilities/haze/haze_fixation_psd.vtex",
       "damageHealBack": 0,
       "damageHealBackTime": 0,

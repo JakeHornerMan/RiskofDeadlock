@@ -1,411 +1,569 @@
-"""Builds the hero kit pages and the balance page (claude.ai Artifacts, links in docs/06) into build/pages/.
+"""Builds the hero kit pages and the balance overview (claude.ai Artifacts, links in docs/06) into build/pages/.
 
-The numbers are copied from docs 05 and 06: update HEROES/COMMANDO here whenever those docs change, rerun, and republish
-each page to its existing link (Artifact tool, same URL)."""
-import html, os
-OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'build', 'pages')
+Inputs (nothing here is typed in twice):
+  design/*.json               every ability number, description, stat and colour (the source of truth)
+  build/bench_results.txt     the last `bash tools/run_bench.sh` (DPS per pass, and a `stats` line per survivor)
+  build/pages/img/*.webp      studio renders cut out by tools/portraits.py (our own in-game renders; no Deadlock art)
+Hand-written here: the RoR2 matches' vanilla skill names, the per-version change notes (CHANGES) and extra analysis
+lines per hero (ANALYSIS); update them after a bench run, as doc 05 §3/§5 change.
+
+Run: python tools/kit_pages.py, then republish each page to its existing link (doc 06 top)."""
+import base64, html, json, os, re
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT = os.path.join(ROOT, 'build', 'pages')
+IMG = os.path.join(OUT, 'img')
 os.makedirs(OUT, exist_ok=True)
 E = html.escape
-
-COMMANDO = {'all': 1255, 'M1': ('Double Tap', 603), 'M2': ('Phase Round', 752), 'Shift': ('Tactical Dive', 0), 'R': ('Suppressive Fire', 80), 'Q': ('Preon Accumulator', 1947)}
-BENCH = 'Benchmark 2026-10-16 (v0.4.1): Monsoon, level 1, no items, 12 still enemies at 10-15 m, perfect aim, 30 s per pass, no equipment in the balance passes.'
 VERSION = 'v0.4.1'
-BAND = 0.20  # balanced = Commando's main moves (no equipment) ±20 %
-LO, HI = round(COMMANDO['all'] * (1 - BAND)), round(COMMANDO['all'] * (1 + BAND))
-MAIN = ['M1', 'M2', 'Shift', 'R']
+BAND = 0.20
 
-def verdict(v):
-    gap = v - COMMANDO['all']
-    side = 'inside' if LO <= v <= HI else 'above' if gap > 0 else 'below'
-    return side, gap
+def sheet(name):
+    return json.load(open(os.path.join(ROOT, 'design', name + '.json'), encoding='utf-8'))['rows']
 
-HEROES = [
- dict(id='haze', name='Haze', tag='The smoke-shrouded assassin', analog='Commando / Bandit', accent='#e46aa8', accent2='#a68cff',
-      all=1315,
-      kit=[
-        ('Passive', 'Fixation', None, 'Each SMG hit stacks Fixation on the target; each stack is +2.5 % damage from Haze. Crits add 3 stacks. Every 10 stacks the target bursts for 300 %, splashing every enemy within 6 m, and is slowed 12 % for 2 s.',
-         [('Stacks', 'max 40, 6 s'), ('Per stack', '+2.5 % from Haze'), ('Burst', '300 % every 10, 6 m splash'), ('Slow', '12 % for 2 s')], 'in M1', False),
-        ('M1', 'Twin SMGs', 1448, 'Two SMGs, alternating, firing from the end of each gun. Firing breaks Smoke Bomb.',
-         [('Damage', '55 % per bullet'), ('Rate', '9.5 shots/s'), ('Magazine', '25, reload 1.4 s'), ('Proc', '0.5')], 'Fixation bursts included', False),
-        ('M2', 'Sleep Dagger', 100, 'A thrown dagger that pierces every enemy in its line; each takes the damage and is put to sleep (stunned).',
-         [('Damage', '500 % each'), ('Stun', '4 s'), ('Cooldown', '6 s'), ('Pierces', 'every enemy in line')], None, False),
-        ('Shift', 'Smoke Bomb', 0, 'Invisible (vanilla Cloak) and faster. Enemies lose her as a target and can’t pick her again until she fires.',
-         [('Duration', '5 s'), ('Speed', '+50 %'), ('Cooldown', '12 s')], None, False),
-        ('R', 'Phantom Strike', 282, 'From Deadlock’s Phantom Strike item. Blinks behind the enemy under the crosshair and cuts it three times, each cut adding 5 Fixation. No target, no blink: R stays ready.',
-         [('Damage', '3 × 250 %'), ('Range', '30 m'), ('Fixation', '+5 per cut'), ('Cooldown', '10 s')], None, False),
-        ('Q', 'Bullet Dance', 1567, 'Ult equipment (held from the start). Spins and fires at every enemy within 25 m at once, 12 times a second, with a 30 % chance to evade attacks.',
-         [('Damage', '113 % per shot'), ('Rate', '~12 shots/s for 5 s'), ('Per enemy', '≈ 6800 %'), ('Cooldown', '120 s')], '47 008 % (8 enemies in range)', False),
-      ],
-      fixes=['Twin SMGs 45 → 55 % per bullet',
-             'Fixation burst every 10 stacks (was 20) for 300 % (was 200), splashing every enemy within 6 m',
-             'Sleep Dagger 6 s (was 10), 500 % (was 350), pierces every enemy in its line',
-             'Bullet Dance (Q) fires at every enemy in range at once: 6 440 → 47 008 % per use'],
-      est='Inside the band. Her gun alone (1448) is now the strongest single ability in the test, mostly from Fixation bursts splashing the bunched pack; watch it against single targets.'),
- dict(id='abrams', name='Abrams', tag='The unstoppable detective', analog='Loader / Acrid', accent='#e0603a', accent2='#d9a25b',
-      all=729,
-      kit=[
-        ('Passive', 'Infernal Resilience', None, 'Heals back part of every hit he takes; debuffs on him wear off sooner.',
-         [('Heal-back', '10 % over 10 s'), ('Debuffs', '−20 % duration')], 'no damage', False),
-        ('M1', 'Shotgun', 513, 'Nine pellets with spread, fired from the end of the gun.',
-         [('Damage', '9 × 45 %'), ('Rate', '1.6 shots/s'), ('Shells', '9, reload 1.5 s'), ('Proc', '0.4')], None, False),
-        ('M2', 'Siphon Life', 400, 'Risk of Rain 2’s Mired Urn tethers: drains the nearest enemies and heals him for all of it.',
-         [('Targets', 'up to 3 within 25 m'), ('Drain', '250 %/s each'), ('Duration', '8 s'), ('Cooldown', '15 s')], None, False),
-        ('Shift', 'Shoulder Charge', 200, 'Charges along his aim, running like his sprint but faster. Every enemy he runs into is hit, stunned and knocked aside.',
-         [('Damage', '500 % per enemy'), ('Stun', '1 s'), ('Knockback', '22 m/s'), ('Cooldown', '8 s')], None, False),
-        ('R', 'Haymaker', 630, 'Deadlock’s heavy melee. A short wind-up with a glowing fist, a 6 m lunge, then a punch whose shockwave hits every enemy in a cone in front and knocks them flying.',
-         [('Damage', '900 % each'), ('Shockwave', '6 m cone, 30° each side'), ('Knockback', '30 m/s'), ('Cooldown', '5 s')], None, False),
-        ('Q', 'Seismic Impact', 2493, 'Ult equipment (held from the start). Rises, hovers up to 3 s while a ground reticle follows the aim, then Left Click slams down there. He can be hit while hovering.',
-         [('Damage', '6800 % in 18 m'), ('Stun', '1.6 s'), ('Aim range', '40 m'), ('Cooldown', '120 s')], '74 800 % (11 enemies)', False),
-      ],
-      fixes=['Seismic Impact (Q) radius 12 → 18 m: 7 → 11 enemies per slam',
-             'Haymaker: a shockwave cone (6 m, 30° each side) hits everything in front for 900 %; 330 → 630 %/s alone',
-             'Shoulder Charge 350 → 500 % per enemy'],
-      est='Still below the band (−526). His abilities add up to far more alone (513 + 400 + 200 + 630), but together each Shoulder Charge carries him up to 3 s and 70+ m away from the pack, and the Haymaker wind-up stops the shotgun. Suggestions only: a shorter charge (3 → 1.5 s) or one that ends after the first enemy hit; Shotgun 45 → 52 % per pellet; Siphon Life 15 → 12 s.'),
- dict(id='seven', name='Seven', tag='The living storm', analog='Artificer', accent='#5cc8ff', accent2='#b9e8ff',
-      all=1272,
-      kit=[
-        ('Passive', 'Capacitor', None, 'Gun hits, Lightning Ball shocks and Power Surge arcs build Static. At 10 stacks the target discharges, arcing to 2 nearby enemies, and everything hit is stunned.',
-         [('Discharge', '300 % to each'), ('Arcs', '2 enemies, 12 m'), ('Stun', '1 s'), ('Static', 'max 10, 5 s')], 'in M1, M2 and R', False),
-        ('M1', 'Shock Rifle', 552, '3-round bursts from the end of the gun; every hit builds Static.',
-         [('Damage', '3 × 48 %'), ('Burst', 'every 0.26 s'), ('Magazine', '29, reload 1.4 s'), ('Proc', '0.7')], 'fixed: it froze after one magazine', False),
-        ('M2', 'Lightning Ball', 114, 'A slow ball that flies through enemies and stops only on walls, shocking everything near it. Every shock builds Static.',
-         [('Shock', '60 % every 0.25 s'), ('Radius', '6 m'), ('Lifetime', '5 s'), ('Cooldown', '16 s')], None, False),
-        ('Shift', 'Static Charge', 315, 'Plants a charge on the aimed enemy or spot; after a countdown a thunderbolt strikes from the sky.',
-         [('Damage', '450 % in 8 m'), ('Stun', '0.9 s'), ('Fuse', '1.5 s'), ('Cooldown', '16 s')], None, False),
-        ('R', 'Power Surge', 0, 'His real Deadlock ability, built like RoR2’s Unstable Tesla Coil. For 8 s every Shock Rifle burst arcs Tesla lightning from the target to up to 4 more enemies, each arc building Static. +40 % move speed.',
-         [('Arc', '60 % each'), ('Jumps', '4 enemies, 10 m'), ('Duration', '8 s'), ('Cooldown', '30 s')], 'it powers the gun, so it counts only in “all”', False),
-        ('Q', 'Thunderhead', 907, 'Ult equipment (held from the start). Dark storm clouds over the spot he stands on darken the area and strike enemies with lightning; allies inside get Warbanner.',
-         [('Strikes', '4 enemies / 0.4 s'), ('Damage', '272 % each'), ('Area', '20 m for 10 s'), ('Cooldown', '120 s')], '27 200 %', False),
-      ],
-      fixes=['Cooldowns only, no damage cuts (creator’s choice), tuned with the bench until inside the band:',
-             'Lightning Ball 6 → 16 s',
-             'Static Charge 7 → 16 s',
-             'Power Surge 14 → 30 s',
-             'Shock Rifle bug fixed: the gun froze after a magazine (29 rounds in bursts of 3); 62 → 552 %/s alone'],
-      est='Inside the band (+17 vs Commando).'),
- dict(id='infernus', name='Infernus', tag='The burning man', analog='Acrid / Engineer', accent='#ff8a2a', accent2='#ffc66b',
-      all=920,
-      kit=[
-        ('Passive', 'Afterburn', None, 'Gun and Torment Pulse hits build Afterburn; at 12 stacks the target burns. Embers show the build-up; RoR2’s Helfire flare and big flames show the burn.',
-         [('Build-up', 'max 12, 4 s'), ('Burn', '100 %/s for 3 s')], 'in M1 and R', False),
-        ('M1', 'Flame Gun', 317, 'Automatic, from the end of the gun; every hit builds Afterburn.',
-         [('Damage', '50 % per bullet'), ('Rate', '9.5 shots/s'), ('Magazine', '27, reload 1.4 s'), ('Proc', '0.5')], None, False),
-        ('M2', 'Napalm', 644, 'A lobbed flask that bursts in a ring of fire and leaves a burning puddle: damage, a slow, and the target takes more damage from him.',
-         [('Damage', '300 % in 5 m'), ('Slow', '28 % for 4 s'), ('Amp', '+16 % for 8 s'), ('Charges', '2, 5 s each')], None, False),
-        ('Shift', 'Flame Dash', 257, 'Dash at ×2.2 speed, hold to keep going. Leaves burning ground; enemies he runs into are knocked aside and scorched.',
-         [('Trail', '150 %/s for 5 s'), ('Shove', '75 % + 22 m/s'), ('Length', '0.8 s tap, 3 s held'), ('Cooldown', '8 s')], None, False),
-        ('R', 'Torment Pulse', 823, 'From Deadlock’s Torment Pulse item. For 6 s, rings of fire race out of him every 0.5 s, burning everything within 10 m and building Afterburn.',
-         [('Damage', '50 % per pulse'), ('Radius', '10 m'), ('Afterburn', '+2 per pulse'), ('Cooldown', '12 s')], 'includes the burns it ignites', False),
-        ('Q', 'Concussive Combustion', 2493, 'Ult equipment (held from the start). Becomes a bomb, fire gathering on him; the blast stuns, leaves burning ground, and each kill heals him.',
-         [('Damage', '6800 % in 18 m'), ('Fuse', '3 s'), ('Stun', '2 s'), ('Cooldown', '120 s')], '74 800 % (11 enemies)', False),
-      ],
-      fixes=['Torment Pulse 120 → 50 % per pulse: 1667 → 823 %/s alone',
-             'Flame Gun 40 → 50 % per bullet: 246 → 317 %/s alone'],
-      est='Just below the band (−335; the band starts at 1004, 84 away), inside the test’s ±10 % noise. Suggestion only, if wanted: Napalm splash 5 → 6 m, or Torment Pulse 50 → 60 %.'),
-]
+HEROES = sheet('heroes'); STATS = {r['hero']: r for r in sheet('stats')}
+SKILLS = sheet('skills'); BUFFS = {r['id']: r for r in sheet('buffs')}
+EQUIP = {r['hero']: r for r in sheet('equipment')}
+LINKS = {'haze': 'https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p', 'abrams': 'https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG',
+         'seven': 'https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m', 'infernus': 'https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF',
+         'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
+SLOTS = ['primary', 'secondary', 'utility', 'special']
+KEY = {'primary': 'M1', 'secondary': 'M2', 'utility': 'Shift', 'special': 'R', 'equipment': 'Q'}
+KIND_LABEL = {'primary': 'Weapon', 'secondary': 'Ability', 'utility': 'Ability', 'special': 'Ability · new in 0.4'}
 
-FUN = [
-  ('Seismic Impact', 'Abrams', '74 800 %', '6800 % to each of the 11 enemies inside 18 m'),
-  ('Concussive Combustion', 'Infernus', '74 800 %', '6800 % to each of the 11 enemies inside 18 m'),
-  ('Preon Accumulator', 'Commando (vanilla item)', '58 400 %', 'the yardstick the ults were scaled to'),
-  ('Bullet Dance', 'Haze', '47 008 %', 'every shot hits every enemy within 25 m; 8 of the pack were in range'),
-  ('Thunderhead', 'Seven', '27 200 %', 'strikes 4 enemies per tick, so a big pack shares it'),
-]
+# ------------------------------------------------------------------ the RoR2 matches (vanilla, default loadout)
+VANILLA = {
+ 'CommandoBody': dict(name='Commando', who='Commando',
+   kit={'primary': ('Double Tap', 'Rapidly shoot an enemy for 100% damage.'),
+        'secondary': ('Phase Round', 'A blast that pierces every enemy for 300%.'),
+        'utility': ('Tactical Dive', 'Roll a short distance; no damage.'),
+        'special': ('Suppressive Fire', 'Fire 6 shots for 100% each, stunning.')}),
+ 'LoaderBody': dict(name='Loader', who='Loader',
+   kit={'primary': ('Knuckleboom', 'Swing at nearby enemies for 320%.'),
+        'secondary': ('Grapple Fist', 'Fire a hook that pulls you in.'),
+        'utility': ('Charged Gauntlet', 'Charge a punch for 320–2700%, launching forward.'),
+        'special': ('M551 Pylon', 'Throw a pylon that zaps nearby enemies with lightning.')}),
+ 'MageBody': dict(name='Artificer', who='Mage',
+   kit={'primary': ('Flame Bolt', 'Fire a bolt for 220% that ignites; 4 charges.'),
+        'secondary': ('Charged Nano-Bomb', 'Charge a bomb for 400–1200%, stunning.'),
+        'utility': ('Snapfreeze', 'Raise a wall of ice that freezes enemies.'),
+        'special': ('Flamethrower', 'Burn everything in front of you for 2000% over 2 s.')}),
+ 'EngiBody': dict(name='Engineer', who='Engi',
+   kit={'primary': ('Bouncing Grenades', 'Charge up to 8 grenades, 100% each.'),
+        'secondary': ('Pressure Mines', 'Place mines that explode when enemies come near.'),
+        'utility': ('Bubble Shield', 'A shield that blocks enemies and their shots; no damage.'),
+        'special': ('TR12 Gauss Auto-Turret', 'Place a turret that inherits your items.')}),
+}
 
-SAYS = [
-  '<strong>Baseline:</strong> Commando’s main moves come to 1,255 %/s, so balanced is 1,004–1,506.',
-  '<strong>Haze (1,315) and Seven (1,272) are inside.</strong> Haze’s gun is now her engine: Fixation bursts every 10 stacks splash the whole bunched pack (1,448 alone).',
-  '<strong>Seven</strong> is in through cooldowns alone: 16 / 16 / 30 s. His fixed gun now carries him (552 alone).',
-  '<strong>Abrams (729) is below</strong>, and lower together than his abilities alone: Shoulder Charge runs him up to 70 m away from the pack and he stops shooting while he charges and punches.',
-  '<strong>Infernus (920) is 84 under the band</strong>, within the test’s noise; Torment Pulse is now 823 alone, in line with Napalm.',
-]
+# ------------------------------------------------------------------ hand-written notes (update with doc 05)
+CHANGES = {
+ 'haze': [('v0.4.1', ['Twin SMGs 45 → 55 % per bullet', 'Fixation bursts every 10 stacks (was 20) for 300 % (was 200), splashing every enemy within 6 m',
+                      'Sleep Dagger: 6 s (was 10), 500 % (was 350), pierces every enemy in its line', 'Bullet Dance fires at every enemy in range at once']),
+          ('v0.4.0', ['Bullet Dance moves to Q as an equipment; new R: Phantom Strike'])],
+ 'abrams': [('v0.4.1', ['Haymaker: a shockwave cone (6 m, 30° each side) hits everything in front', 'Shoulder Charge 350 → 500 % per enemy',
+                        'Seismic Impact radius 12 → 18 m']),
+            ('v0.4.0', ['Seismic Impact moves to Q as an equipment and slams on Left Click; new R: Haymaker'])],
+ 'seven': [('v0.4.1', ['Cooldowns only, no damage cuts: Lightning Ball 6 → 16 s, Static Charge 7 → 16 s, Power Surge 14 → 30 s',
+                       'Shock Rifle fix: the gun froze after a magazine (29 rounds in bursts of 3)']),
+           ('v0.4.0', ['Thunderhead moves to Q as an equipment; new R: Power Surge with RoR2 Tesla arcs'])],
+ 'infernus': [('v0.4.1', ['Torment Pulse 120 → 50 % per pulse', 'Flame Gun 40 → 50 % per bullet']),
+              ('v0.4.0', ['Concussive Combustion moves to Q as an equipment; new R: Torment Pulse; all his fire rebuilt from RoR2 fire materials'])],
+}
+ANALYSIS = {
+ 'haze': ['<strong>Why she is above:</strong> her SMGs alone (1,020) beat Double Tap (603) because every 10 Fixation stacks burst for 300 % and splash the whole bunched pack. Against one target the splash adds nothing, so a single boss would bring her closer to Commando.',
+          '<strong>Options (not applied):</strong> splash radius 6 → 4 m, or bursts every 15 stacks, or SMGs back to 50 %. Each is worth roughly −150 to −250 here.'],
+ 'abrams': ['<strong>Why he is far below:</strong> Loader’s Charged Gauntlet (2,287 alone) and M551 Pylon (1,800) are huge area hits on a bunched pack, and the gauntlet also launches him through it. Abrams’ moves are 350–570 each and his shotgun stops while he charges or punches.',
+             '<strong>Options (not applied):</strong> to reach Loader he needs about 2.8×. Either raise Haymaker and Shoulder Charge a lot (e.g. Haymaker 900 → 1800 %, Shoulder Charge 500 → 1000 %), or pick a different yardstick for him. Ask the creator first.'],
+ 'seven': ['<strong>Why he is far below:</strong> Artificer’s Flame Bolt (2,342 alone: 4 charges of 220 % that ignite) and Nano-Bomb (1,073) outdamage Seven’s whole kit. Seven’s cooldowns were raised in 0.4.1 to fit <em>Commando</em> (Lightning Ball and Static Charge 16 s, Power Surge 30 s).',
+           '<strong>Options (not applied):</strong> against Artificer those cooldowns can come back down toward 0.4.0’s 6 / 7 / 14 s (he measured far higher then), retuned with the bench. Ask the creator first.'],
+ 'infernus': ['<strong>Inside the band.</strong> Engineer’s grenades (1,720 alone) carry him; his turrets were placed twice but hit only a few enemies in 30 s. Napalm (538) and Torment Pulse (768) carry Infernus.',
+              'Engineer’s damage stat is 14 against Infernus’ 12, so in raw damage per second Engineer is about 17 % ahead; the %/s comparison removes that difference. No change suggested.'],
+}
 
-CAVEATS = [
-  'The Q ults are left out of balance on purpose: any survivor can carry them. They are shown below for fun.',
-  'Twelve still, bunched enemies favours area damage (Fixation splash, Napalm, Torment Pulse); a single-target test would complete the picture.',
-  'One run per pass: about ±10 % noise. Commando’s Phase Round measured 752 here against 854 in the v0.4.0 run.',
-  'Dashes are put back on the spot only after they end, so long dashes (Shoulder Charge) cost more here than in a real fight, where they go into the pack.',
-]
+# ------------------------------------------------------------------ bench results
+BENCH = {}; BSTATS = {}
+bench_path = os.path.join(ROOT, 'build', 'bench_results.txt')
+for line in (open(bench_path, encoding='utf-8') if os.path.exists(bench_path) else []):
+    m = re.match(r'(\S+) (all|primary|secondary|utility|special|equipment): .*?([\d.]+)% of damage \((\d+)%/s\), hits (\d+), enemies hit (\d+)', line)
+    if m:
+        BENCH.setdefault(m.group(1), {})[m.group(2)] = dict(total=float(m.group(3)), dps=int(m.group(4)), hits=int(m.group(5)), enemies=int(m.group(6)))
+        continue
+    m = re.match(r'stats (\S+): name (.*?), health ([\d.]+) \+([\d.]+), regen ([\d.]+) \+([\d.]+), armor ([\d.]+), damage ([\d.]+) \+([\d.]+), speed ([\d.]+), jumps (\d+), crit ([\d.]+)', line)
+    if m:
+        g = m.groups()
+        BSTATS[g[0]] = dict(name=g[1], health=float(g[2]), lhealth=float(g[3]), regen=float(g[4]), lregen=float(g[5]), armor=float(g[6]),
+                           damage=float(g[7]), ldamage=float(g[8]), speed=float(g[9]), jumps=int(g[10]), crit=float(g[11]))
 
-RETEST = []
+def dps(who, mode):
+    return BENCH.get(who, {}).get(mode, {}).get('dps')
 
-FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">'
+def per_use(who):
+    return BENCH.get(who, {}).get('equipment')
 
-def css(accent, accent2):
+def img(name):
+    p = os.path.join(IMG, name + '.webp')
+    return 'data:image/webp;base64,' + base64.b64encode(open(p, 'rb').read()).decode() if os.path.exists(p) else None
+
+def img_tag(name, alt='', height=None):
+    src = img(name)
+    if not src: return ''
+    style = f' style="height:{height}px;width:auto"' if height else ''
+    return f'<img src="{src}" alt="{E(alt)}"{style}>'
+
+def strip_tags(s):
+    return re.sub(r'<[^>]+>', '', s)
+
+def n(v):
+    return f'{v:g}'
+
+def fmt(v, suffix=''):
+    return '–' if v is None else f'{v:,}{suffix}'
+
+def signed(v):
+    return ('+' if v >= 0 else '−') + f'{abs(v):,}'
+
+# ------------------------------------------------------------------ the maths beside each ability (sheet numbers)
+def gun_dps(r):
+    shots = r['clipSize']
+    if r['kind'] == 'gun_burst':
+        fire = shots / r['burst'] * (r['interval'] + (r['burst'] - 1) * r['duration'])
+    else:
+        fire = shots * r['interval']
+    return shots * r['pellets'] * r['damagePct'] / (fire + r['reloadTime'])
+
+def maths(r):
+    """(lines of working, %/s per target by the sheet numbers) for one skill row."""
+    k, d, cd = r['kind'], r['damagePct'], r['cooldown']
+    if k.startswith('gun_'):
+        shots = r['clipSize']; per = f"{n(r['pellets'])} × {n(d)} %" if r['pellets'] > 1 else f"{n(d)} %"
+        if k == 'gun_burst':
+            cyc = shots / r['burst'] * (r['interval'] + (r['burst'] - 1) * r['duration'])
+            return [f"{n(shots)} rounds × {per} = {n(shots * d * r['pellets'])} %",
+                    f"fired in {cyc:.2f} s ({n(r['burst'])}-round bursts) + {n(r['reloadTime'])} s reload"], gun_dps(r)
+        fire = shots * r['interval']
+        unit = 'shells' if r['pellets'] > 1 else 'rounds'
+        return [f"{n(shots)} {unit} × {per} = {n(shots * d * r['pellets'])} %", f"fired in {fire:.2f} s + {n(r['reloadTime'])} s reload"], gun_dps(r)
+    if k == 'projectile':
+        extra = ' to every enemy in its line' if r['extra'] == 'pierce' else ''
+        return [f"{n(d)} %{extra}, every {n(cd)} s"], d / cd
+    if k == 'mired_urn':
+        tot = d * r['duration']
+        return [f"{n(d)} %/s × {n(r['duration'])} s = {n(tot)} % to each of {n(r['chainCount'])} targets", f"every {n(cd)} s"], tot / cd
+    if k == 'dash_charge':
+        return [f"{n(d)} % to each enemy run into", f"every {n(cd)} s"], d / cd
+    if k == 'heavy_melee':
+        cone = f" to everything in a {n(r['range'])} m cone" if r['extra'] == 'shockwave' else ''
+        return [f"{n(d)} %{cone}", f"every {n(cd)} s"], d / cd
+    if k == 'projectile_orb':
+        tot = d / r['interval'] * r['duration']
+        return [f"{n(d)} % every {n(r['interval'])} s × {n(r['duration'])} s = {n(tot)} % to each enemy within {n(r['radius'])} m", f"every {n(cd)} s"], tot / cd
+    if k == 'delayed_blast':
+        return [f"{n(d)} % to everything within {n(r['radius'])} m", f"every {n(cd)} s"], d / cd
+    if k == 'lob':
+        return [f"{n(d)} % in {n(r['radius'])} m", f"{n(r['stocks'])} charges, {n(cd)} s each"], d / cd
+    if k == 'dash_trail':
+        per_s = d / r['interval']; tot = per_s * r['chainCount']
+        return [f"trail {n(per_s)} %/s × {n(r['chainCount'])} s = {n(tot)} % to an enemy standing in it", f"every {n(cd)} s"], tot / cd
+    if k == 'phantom_strike':
+        return [f"{n(r['burst'])} × {n(d)} % = {n(r['burst'] * d)} % to one enemy", f"every {n(cd)} s"], r['burst'] * d / cd
+    if k == 'aura_pulse':
+        tot = d / r['interval'] * r['duration']
+        return [f"{n(d)} % every {n(r['interval'])} s × {n(r['duration'])} s = {n(tot)} % to each enemy within {n(r['radius'])} m", f"every {n(cd)} s"], tot / cd
+    if k == 'power_surge':
+        return [f"{n(d)} % per arc, up to {n(r['chainCount'])} more enemies, once per gun burst, for {n(r['duration'])} s", f"every {n(cd)} s"], None
+    if k == 'self_buff':
+        return ['no damage: invisibility and speed'], 0
+    return [], None
+
+def tiles(r):
+    t = []
+    gun = r['kind'].startswith('gun')
+    if r['damagePct']: t.append(('Damage', f"{n(r['damagePct'])} %" + (f" × {n(r['pellets'])}" if r['pellets'] > 1 and gun else '')))
+    if r['cooldown']: t.append(('Cooldown', f"{n(r['cooldown'])} s"))
+    if r['clipSize']: t.append(('Magazine', n(r['clipSize'])))
+    if gun and r['reloadTime']: t.append(('Reload', f"{n(r['reloadTime'])} s"))
+    if r['duration'] and not gun: t.append(('Duration', f"{n(r['duration'])} s"))
+    if r['radius'] and not gun and r['kind'] not in ('dash_charge', 'heavy_melee', 'projectile'): t.append(('Radius', f"{n(r['radius'])} m"))
+    if r['stunDuration']: t.append(('Stun', f"{n(r['stunDuration'])} s"))
+    if r['stocks'] > 1: t.append(('Charges', n(r['stocks'])))
+    return t[:4]
+
+def tiles_html(t):
+    return ''.join(f'<div class="tile"><b>{E(b)}</b><span>{E(a)}</span></div>' for a, b in t)
+
+# ------------------------------------------------------------------ styles: a Deadlock field manual
+FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+         '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Federo&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">')
+
+def css(accent):
     return f'''
-/* layout: a field manual: dossier header, a to-scale DPS strip against Commando, then one plate per ability */
+/* layout: a Deadlock field manual. Dossier header (portrait + stat bands), ability ledger with the maths in a side
+   column, the ult as an exhibit, then updates and balance. One dark, brass-and-cream look on purpose (single theme). */
 :root {{
-  --bg: #0f1216; --panel: #161b21; --line: #26303a; --fg: #e8edf2; --muted: #93a1ae;
-  --accent: {accent}; --accent2: {accent2}; --base: #8fb7a3; --warn: #ffcf5a; --bad: #ff6b6b; --good: #7ed6a0;
-  --display: "Saira Condensed", "Arial Narrow", Arial, sans-serif;
-  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --ink: #0d1112; --panel: #151b1c; --panel2: #1b2324; --rule: #2c3637; --cream: #ece3cf; --cream2: #d6cfbd; --muted: #9aa49f;
+  --brass: #c9a35b; --weapon: #e58c3a; --vitality: #79b84f; --spirit: #b98be6; --good: #8fd18a; --bad: #ef7b6b;
+  --accent: {accent};
+  --display: "Federo", "Copperplate", Georgia, serif;
+  --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --cond: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
   color-scheme: dark;
 }}
-body {{ background: var(--bg); color: var(--fg); font: 15px/1.55 var(--body); }}
-.wrap {{ max-width: 1060px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; display: grid; gap: 28px; }}
-.eyebrow {{ font: 500 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }}
-h1 {{ font: 800 clamp(44px, 9vw, 88px)/.9 var(--display); letter-spacing: .01em; margin: 0; text-transform: uppercase; color: var(--fg); text-wrap: balance; }}
-h1 span {{ color: var(--accent); }}
-h2 {{ font: 700 26px/1.1 var(--display); text-transform: uppercase; letter-spacing: .03em; margin: 0; text-wrap: balance; }}
-h3 {{ font: 700 22px/1.1 var(--display); text-transform: uppercase; letter-spacing: .02em; margin: 0; }}
+body {{ background: var(--ink); color: var(--cream); font: 16px/1.55 var(--body); }}
+.wrap {{ max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 24px 64px; display: grid; gap: 44px; }}
+a {{ color: var(--brass); }}
+a:focus-visible {{ outline: 2px solid var(--brass); outline-offset: 2px; }}
+.eyebrow {{ font: 600 12px/1.25 var(--cond); letter-spacing: .2em; text-transform: uppercase; color: var(--brass); }}
+h1, h2, h3 {{ font-family: var(--display); font-weight: 400; margin: 0; text-wrap: balance; }}
+h2 {{ font-size: clamp(26px, 4vw, 34px); letter-spacing: .04em; display: flex; align-items: center; gap: 14px; }}
+h2::after {{ content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--brass), transparent); opacity: .6; }}
+h3 {{ font-size: 24px; letter-spacing: .03em; }}
 p {{ margin: 0; max-width: 68ch; }}
 .muted {{ color: var(--muted); }}
-.head {{ display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: 24px; align-items: end; border-bottom: 1px solid var(--line); padding-bottom: 22px; }}
-.tag {{ font: 500 18px/1.3 var(--body); color: var(--accent2); margin-top: 10px; }}
-.score {{ display: grid; gap: 6px; justify-items: end; text-align: right; }}
-.score .big {{ font: 800 64px/1 var(--display); font-variant-numeric: tabular-nums; color: var(--accent); }}
-.score .unit {{ font: 500 13px/1.3 var(--mono); color: var(--muted); }}
-.pill {{ display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font: 500 12px/1.2 var(--mono); letter-spacing: .04em; border: 1px solid currentColor; }}
-.pill.bad {{ color: var(--bad); }} .pill.good {{ color: var(--good); }} .pill.warn {{ color: var(--warn); }}
-.strip {{ display: grid; gap: 10px; }}
-.row {{ display: grid; grid-template-columns: 120px minmax(0,1fr) 64px; gap: 12px; align-items: center; }}
-.row .k {{ font: 500 12px/1.2 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }}
-.row .k b {{ display: block; color: var(--fg); font: 600 14px/1.25 var(--body); text-transform: none; letter-spacing: 0; }}
-.track {{ position: relative; height: 22px; background: var(--panel); border: 1px solid var(--line); border-radius: 3px; }}
-.bar {{ position: absolute; inset: 3px auto 3px 3px; border-radius: 2px; background: var(--accent); }}
-.bar.base {{ background: var(--base); opacity: .8; }}
-.row .v {{ font: 500 14px/1 var(--mono); font-variant-numeric: tabular-nums; text-align: right; }}
-.legend {{ display: flex; flex-wrap: wrap; gap: 16px; font: 12px/1.3 var(--mono); color: var(--muted); }}
-.legend i {{ display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -2px; }}
-.plates {{ display: grid; gap: 14px; }}
-.plate {{ display: grid; grid-template-columns: 92px minmax(0,1fr) minmax(0,.9fr); gap: 18px; padding: 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }}
-.plate.passive {{ border-style: dashed; }}
-.key {{ font: 800 30px/1 var(--display); color: var(--accent); text-transform: uppercase; }}
-.key small {{ display: block; font: 500 11px/1.4 var(--mono); color: var(--muted); letter-spacing: .1em; margin-top: 6px; }}
-.desc {{ display: grid; gap: 8px; min-width: 0; }}
-dl {{ margin: 0; display: grid; grid-template-columns: auto minmax(0,1fr); gap: 6px 14px; align-content: start; font-size: 14px; }}
-dt {{ font: 500 12px/1.6 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }}
-dd {{ margin: 0; font-variant-numeric: tabular-nums; }}
-.dps {{ grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: 10px; font: 13px/1.3 var(--mono); color: var(--muted); }}
-.dps strong {{ color: var(--fg); font-size: 16px; }}
-.cols {{ display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 18px; }}
-.box {{ background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 18px; display: grid; gap: 10px; align-content: start; }}
-ul {{ margin: 0; padding-left: 18px; display: grid; gap: 6px; }}
-.foot {{ font: 12px/1.5 var(--mono); color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }}
-a {{ color: var(--accent2); }}
+.num {{ font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 14px; }}
+.section {{ display: grid; gap: 14px; }}
+.nav {{ display: flex; flex-wrap: wrap; gap: 8px 20px; font: 600 13px/1 var(--cond); letter-spacing: .14em; text-transform: uppercase; }}
+.nav a {{ color: var(--muted); text-decoration: none; padding-bottom: 5px; border-bottom: 1px solid transparent; }}
+.nav a:hover, .nav a[aria-current] {{ color: var(--cream); border-color: var(--brass); }}
+
+/* dossier */
+.dossier {{ display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 32px; }}
+.portrait {{ margin: 0; position: relative; border: 1px solid var(--rule); min-height: 440px; overflow: hidden; display: grid; place-items: end center;
+    background: radial-gradient(60% 50% at 50% 40%, color-mix(in srgb, var(--accent) 40%, transparent), transparent 72%), linear-gradient(180deg, var(--panel2), var(--ink)); }}
+.portrait::before, .portrait::after {{ content: ""; position: absolute; inset: 10px; border: 1px solid color-mix(in srgb, var(--brass) 45%, transparent); pointer-events: none; }}
+.portrait::after {{ inset: 16px; border-color: color-mix(in srgb, var(--brass) 18%, transparent); }}
+.portrait img {{ position: relative; max-height: 410px; width: auto; margin-bottom: 26px; filter: drop-shadow(0 18px 22px rgba(0,0,0,.65)); }}
+.portrait figcaption {{ position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); background: var(--ink); border: 1px solid var(--brass); border-bottom: 0;
+    padding: 5px 16px; font: 600 12px/1.4 var(--cond); letter-spacing: .2em; text-transform: uppercase; color: var(--brass); white-space: nowrap; }}
+.id {{ display: grid; gap: 16px; align-content: start; min-width: 0; }}
+.id h1 {{ font-size: clamp(54px, 9vw, 100px); line-height: .9; letter-spacing: .02em; }}
+.sub {{ font: 600 20px/1.3 var(--cond); letter-spacing: .08em; color: var(--accent); text-transform: uppercase; }}
+.chips {{ display: flex; flex-wrap: wrap; gap: 8px; }}
+.chip {{ font: 600 12px/1 var(--cond); letter-spacing: .12em; text-transform: uppercase; padding: 8px 10px; border: 1px solid var(--rule); background: var(--panel); }}
+.chip b {{ color: var(--brass); font-weight: 700; margin-left: 4px; }}
+.bands {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }}
+.band {{ background: var(--panel); border-top: 3px solid var(--c); min-width: 0; }}
+.band h4 {{ margin: 0; padding: 8px 12px; font: 700 13px/1 var(--cond); letter-spacing: .2em; text-transform: uppercase; color: var(--c);
+    background: color-mix(in srgb, var(--c) 10%, transparent); display: flex; justify-content: space-between; gap: 8px; }}
+.band h4 span {{ color: var(--muted); font-weight: 600; letter-spacing: .1em; }}
+.stat {{ display: grid; grid-template-columns: 10px minmax(0, 1fr) auto minmax(56px, auto); gap: 10px; align-items: baseline; padding: 7px 12px; border-top: 1px solid var(--rule); }}
+.stat i {{ width: 7px; height: 7px; background: var(--c); transform: rotate(45deg); align-self: center; }}
+.stat .l {{ color: var(--muted); font-size: 14px; }}
+.stat .v {{ font: 600 15px/1 var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }}
+.stat .v small {{ color: var(--muted); font-weight: 400; font-size: 11px; }}
+.stat .m {{ font: 400 13px/1 var(--mono); color: var(--muted); text-align: right; white-space: nowrap; }}
+.lore {{ color: var(--muted); font-style: italic; border-left: 2px solid var(--brass); padding-left: 12px; }}
+
+/* ability ledger */
+.ab {{ display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); background: var(--panel); border: 1px solid var(--rule); }}
+.ab .main {{ padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }}
+.head {{ display: flex; align-items: center; gap: 14px; }}
+.key {{ flex: none; width: 52px; height: 58px; display: grid; place-items: center; font: 700 17px/1 var(--cond); letter-spacing: .06em;
+    color: var(--ink); background: var(--accent); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }}
+.key.passive {{ background: var(--brass); font-size: 11px; letter-spacing: .1em; }}
+.desc {{ color: var(--cream2); }}
+.tiles {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }}
+.tile {{ background: var(--panel2); border: 1px solid var(--rule); padding: 8px 10px; display: grid; gap: 3px; }}
+.tile b {{ font: 600 18px/1.1 var(--mono); font-variant-numeric: tabular-nums; }}
+.tile span {{ font: 600 11px/1.2 var(--cond); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }}
+.math {{ border-left: 1px solid var(--rule); padding: 18px; display: grid; gap: 10px; align-content: start; min-width: 0;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, var(--panel)), var(--panel)); }}
+.work {{ font: 400 13px/1.6 var(--mono); color: var(--cream2); display: grid; gap: 2px; overflow-wrap: anywhere; }}
+.work .eq {{ color: var(--cream); font-weight: 500; }}
+.meter {{ display: grid; gap: 6px; }}
+.mrow {{ display: grid; grid-template-columns: minmax(0, 120px) minmax(0, 1fr) 54px; gap: 8px; align-items: center; }}
+.mrow .who {{ font: 600 12px/1.15 var(--cond); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }}
+.track {{ height: 10px; background: var(--ink); border: 1px solid var(--rule); position: relative; }}
+.fill {{ position: absolute; inset: 1px auto 1px 1px; background: var(--accent); }}
+.fill.match {{ background: var(--muted); opacity: .75; }}
+.mrow .v {{ font: 500 13px/1 var(--mono); text-align: right; font-variant-numeric: tabular-nums; }}
+.note {{ font-size: 13px; color: var(--muted); }}
+
+/* the ult exhibit */
+.ult {{ display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); border: 1px solid var(--brass); background: var(--panel); }}
+.ult .fig {{ display: grid; place-items: center; padding: 18px; min-height: 250px; border-right: 1px solid var(--rule);
+    background: radial-gradient(55% 50% at 50% 55%, color-mix(in srgb, var(--accent) 35%, transparent), transparent 72%), var(--ink); }}
+.ult .fig img {{ max-height: 230px; width: auto; filter: drop-shadow(0 10px 14px rgba(0,0,0,.6)); }}
+.ult .body {{ padding: 20px; display: grid; gap: 12px; align-content: start; min-width: 0; }}
+.stamp {{ display: inline-block; font: 700 11px/1 var(--cond); letter-spacing: .2em; text-transform: uppercase; color: var(--brass); border: 1px solid var(--brass); padding: 5px 8px; margin-right: 8px; }}
+
+/* updates and balance */
+.cols {{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 18px; }}
+.box {{ background: var(--panel); border: 1px solid var(--rule); padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }}
+.box ul {{ margin: 6px 0 0; padding-left: 18px; display: grid; gap: 6px; }}
+.ver {{ font: 600 13px/1 var(--mono); color: var(--brass); }}
+.verdict {{ display: inline-flex; align-items: center; gap: 8px; font: 700 13px/1 var(--cond); letter-spacing: .14em; text-transform: uppercase; padding: 6px 10px; border: 1px solid currentColor; white-space: nowrap; }}
+.verdict.inside {{ color: var(--good); }} .verdict.above, .verdict.below {{ color: var(--bad); }} .verdict.unknown {{ color: var(--muted); }}
+.scale {{ position: relative; height: 62px; margin: 4px 8px 0; }}
+.scale .zone {{ position: absolute; top: 12px; height: 20px; background: color-mix(in srgb, var(--good) 16%, transparent); border-inline: 1px dashed var(--good); }}
+.scale .axis {{ position: absolute; left: 0; right: 0; top: 22px; height: 1px; background: var(--rule); }}
+.scale .pin {{ position: absolute; top: 6px; width: 3px; height: 32px; transform: translateX(-1px); }}
+.scale .pin span {{ position: absolute; top: 36px; left: 50%; transform: translateX(-50%); font: 500 12px/1 var(--mono); white-space: nowrap; }}
+.foot {{ font: 12px/1.6 var(--mono); color: var(--muted); border-top: 1px solid var(--rule); padding-top: 14px; max-width: none; }}
 .tablewrap {{ overflow-x: auto; }}
-table {{ border-collapse: collapse; width: 100%; min-width: 620px; font-size: 14px; }}
-th, td {{ padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }}
-th {{ font: 500 12px/1.3 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }}
-td.n {{ font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }}
-.heat {{ font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }}
-@media (max-width: 720px) {{
-  .head, .cols {{ grid-template-columns: minmax(0,1fr); }}
-  .score {{ justify-items: start; text-align: left; }}
-  .plate {{ grid-template-columns: minmax(0,1fr); }}
-  .row {{ grid-template-columns: 92px minmax(0,1fr) 52px; }}
+table {{ border-collapse: collapse; width: 100%; min-width: 600px; font-size: 15px; }}
+th, td {{ padding: 10px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: middle; }}
+th {{ font: 600 12px/1.3 var(--cond); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }}
+td.n, th.n {{ font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }}
+.who-cell {{ display: flex; align-items: center; gap: 10px; }}
+.badge {{ display: inline-grid; place-items: center; width: 44px; height: 50px; font: 700 15px/1 var(--cond); letter-spacing: .08em; color: var(--ink); background: var(--muted); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }}
+.grid2 {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }}
+@media (max-width: 760px) {{
+  .dossier, .ab, .ult, .cols, .grid2 {{ grid-template-columns: minmax(0, 1fr); }}
+  .math {{ border-left: 0; border-top: 1px solid var(--rule); }}
+  .ult .fig {{ border-right: 0; border-bottom: 1px solid var(--rule); }}
+  .portrait {{ min-height: 360px; }} .portrait img {{ max-height: 330px; }}
+  .bands {{ grid-template-columns: minmax(0, 1fr); }}
 }}
-@media (prefers-reduced-motion: no-preference) {{ .bar {{ transition: width .6s ease; }} }}
 '''
 
-def bars(rows, scale):
+# ------------------------------------------------------------------ pieces
+def match_of(hid):
+    body = STATS[hid]['analog']
+    return body, VANILLA.get(body, dict(name=body, who=body.replace('Body', ''), kit={}))
+
+def hero_who(hid):
+    return 'Deadlock' + next(h['displayName'] for h in HEROES if h['id'] == hid)
+
+def verdict(val, base):
+    if val is None or not base: return 'unknown', 0
+    lo, hi = base * (1 - BAND), base * (1 + BAND)
+    return ('inside' if lo <= val <= hi else 'above' if val > hi else 'below'), val - base
+
+def stat_bands(hid):
+    s = STATS[hid]; body, v = match_of(hid); m = BSTATS.get(v['who'], {})
+    def mv(key, unit=''):
+        return f'{m[key]:g}{unit}' if key in m else '–'
+    weapon = [('Damage', f"{n(s['baseDamage'])} <small>+{n(s['levelDamage'])}/lvl</small>", mv('damage')),
+              ('Crit chance', f"{n(s['baseCrit'])} %", mv('crit', ' %')),
+              ('Attack speed', f"{n(s['baseAttackSpeed'])}×", '1×')]
+    vital = [('Health', f"{n(s['baseMaxHealth'])} <small>+{n(s['levelMaxHealth'])}/lvl</small>", mv('health')),
+             ('Regen', f"{n(s['baseRegen'])}/s <small>+{n(s['levelRegen'])}</small>", mv('regen', '/s')),
+             ('Armor', n(s['baseArmor']), mv('armor')),
+             ('Move speed', f"{n(s['baseMoveSpeed'])} m/s", mv('speed', ' m/s')),
+             ('Jumps', n(s['baseJumpCount']), mv('jumps'))]
+    def band(title, color, rows):
+        r = ''.join(f'<div class="stat"><i></i><span class="l">{E(l)}</span><span class="v">{val}</span><span class="m">{E(mm)}</span></div>' for l, val, mm in rows)
+        return f'<section class="band" style="--c:var(--{color})"><h4>{title}<span>vs {E(v["name"])}</span></h4>{r}</section>'
+    return band('Weapon', 'weapon', weapon) + band('Vitality', 'vitality', vital)
+
+def meter(rows, scale):
     out = []
-    for label, name, val, kind in rows:
-        w = 0 if val is None else max(0.0, min(100.0, val / scale * 100))
-        v = '–' if val is None else f'{val:,}'
-        out.append(f'<div class="row"><div class="k">{E(label)}<b>{E(name)}</b></div><div class="track" role="img" aria-label="{E(name)} {v} percent per second"><div class="bar{" base" if kind == "base" else ""}" style="width:calc({w:.2f}% - 6px)"></div></div><div class="v">{v}</div></div>')
-    return '\n'.join(out)
+    for who, val, cls in rows:
+        w = 0 if not val else max(1.5, min(100, val / scale * 100))
+        out.append(f'<div class="mrow"><span class="who">{E(who)}</span><div class="track"><div class="fill{cls}" style="width:calc({w:.1f}% - 2px)"></div></div><span class="v">{fmt(val)}</span></div>')
+    return '<div class="meter">' + ''.join(out) + '</div>'
+
+def ability_card(r, hid, v, scale):
+    slot = r['slot']
+    work, per = maths(r)
+    mname = v['kit'].get(slot, ('–', ''))[0]
+    lines = ''.join(f'<span>{E(w)}</span>' for w in work)
+    eq = f'<span class="eq">= {per:,.0f} %/s per target</span>' if per else ('<span class="eq">= 0 %/s</span>' if per == 0 else '')
+    note = '<p class="note">Its arcs ride on the gun, so its damage shows in the all-together number, not alone.</p>' if r['kind'] == 'power_surge' else ''
+    rows = [(r['name'], dps(hero_who(hid), slot), ''), (f"{v['name']}: {mname}", dps(v['who'], slot), ' match')]
+    return f'''<article class="ab">
+  <div class="main">
+    <div class="head"><span class="key">{KEY[slot]}</span><div><h3>{E(r["name"])}</h3><div class="eyebrow">{E(KIND_LABEL[slot])}</div></div></div>
+    <p class="desc">{E(strip_tags(r["description"]))}</p>
+    <div class="tiles">{tiles_html(tiles(r))}</div>
+  </div>
+  <aside class="math" aria-label="{E(r['name'])} damage maths">
+    <div class="eyebrow">The maths</div>
+    <div class="work">{lines}{eq}</div>
+    <div class="eyebrow">Measured alone on the 12-enemy pack, %/s</div>
+    {meter(rows, scale)}
+    {note}
+  </aside>
+</article>'''
+
+def passive_card(h):
+    b = None
+    for r in SKILLS:
+        if r['hero'] == h['id'] and r['slot'] == 'primary' and r['buff'] != 'none': b = BUFFS.get(r['buff'])
+    t = []
+    if b:
+        if b['maxStacks']: t.append(('Max stacks', n(b['maxStacks'])))
+        if b['duration']: t.append(('Lasts', f"{n(b['duration'])} s"))
+        if b['triggerStacks']: t.append(('Bursts at', f"{n(b['triggerStacks'])} stacks"))
+        if b['triggerDamagePct']: t.append(('Burst', f"{n(b['triggerDamagePct'])} %"))
+    tl = tiles_html(t[:4])
+    return f'''<article class="ab">
+  <div class="main">
+    <div class="head"><span class="key passive">PASSIVE</span><div><h3>{E(h["passiveName"])}</h3><div class="eyebrow">Innate</div></div></div>
+    <p class="desc">{E(strip_tags(h["passiveDescription"]))}</p>
+    {f'<div class="tiles">{tl}</div>' if tl else ''}
+  </div>
+  <aside class="math"><div class="eyebrow">The maths</div><p class="note">A passive has no number of its own: it is counted inside the moves that trigger it.</p></aside>
+</article>'''
+
+def analysis(h):
+    hid = h['id']; body, v = match_of(hid)
+    me, base = dps(hero_who(hid), 'all'), dps(v['who'], 'all')
+    if me is None or base is None:
+        return ['No benchmark for this pair yet.']
+    side, gap = verdict(me, base)
+    out = [f"All main moves together: <strong>{me:,} %/s</strong> against {E(v['name'])}’s <strong>{base:,} %/s</strong> "
+           f"({signed(gap)}, {me / base:.2f}×). Balanced is {round(base * (1 - BAND)):,}–{round(base * (1 + BAND)):,}: <strong>{side} the band</strong>."]
+    parts = []
+    for slot in SLOTS:
+        a, b = dps(hero_who(hid), slot), dps(v['who'], slot)
+        if a is not None and b is not None: parts.append(f"{KEY[slot]} {a:,} vs {b:,}")
+    if parts: out.append(f"Each move alone ({E(h['displayName'])} vs {E(v['name'])}, %/s): " + ', '.join(parts) + '.')
+    return out + ANALYSIS.get(hid, [])
+
+# ------------------------------------------------------------------ pages
+def nav(current):
+    items = [('overview', 'Balance overview')] + [(h['id'], h['displayName']) for h in HEROES]
+    return '<nav class="nav" aria-label="Pages">' + ''.join(
+        f'<a href="{LINKS[k]}"' + (' aria-current="page"' if k == current else '') + f'>{E(label)}</a>' for k, label in items) + '</nav>'
+
+def balance_scale(h, v, me, base):
+    if not me or not base: return ''
+    lo, hi = base * (1 - BAND), base * (1 + BAND)
+    smax = max(me, hi) * 1.15
+    def pin(val, color, label):
+        return f'<div class="pin" style="left:{val / smax * 100:.1f}%;background:{color}"><span style="color:{color}">{E(label)} {val:,}</span></div>'
+    return (f'<div class="scale" role="img" aria-label="{E(h["displayName"])} {me} against {E(v["name"])} {base} percent per second">'
+            f'<div class="axis"></div><div class="zone" style="left:{lo / smax * 100:.1f}%;width:{(hi - lo) / smax * 100:.1f}%"></div>'
+            f'{pin(base, "var(--muted)", v["name"])}{pin(me, "var(--accent)", h["displayName"])}</div>')
 
 def hero_page(h):
-    slots = {k[0]: k for k in h['kit']}
-    scale = max([k[2] for k in h['kit'] if k[2] and k[0] in MAIN] + [COMMANDO[s][1] for s in MAIN]) * 1.05
-    rows = []
-    for slot in MAIN:
-        k = slots[slot]
-        rows.append((slot, k[1], k[2], 'hero'))
-        rows.append(('Commando', COMMANDO[slot][0], COMMANDO[slot][1], 'base'))
-    plates = []
-    for slot, name, dps, desc, nums, note, retest in h['kit']:
-        dl = ''.join(f'<dt>{E(a)}</dt><dd>{E(b)}</dd>' for a, b in nums)
-        if dps is None: d = f'<span>DPS</span> <strong>–</strong> <span>{E(note)}</span>'
-        elif slot == 'Q':
-            d = f'<span>One use</span> <strong>{E(note)}</strong> <span>· not balanced: a pickup any survivor can carry (spread over 30 s: {dps:,} %/s)</span>'
-        else:
-            d = f'<span>DPS alone</span> <strong>{dps:,} %/s</strong> <span>· {dps*12/100:.0f} dmg/s at level 1</span>'
-            if note: d += f' <span>· {E(note)}</span>'
-        if retest: d += ' <span class="pill warn">⚠ retest</span>'
-        sub = 'passive' if slot == 'Passive' else {'M1': 'left click', 'M2': 'right click', 'Shift': 'utility', 'R': 'special', 'Q': 'ult equipment'}[slot]
-        plates.append(f'''<article class="plate{' passive' if slot == 'Passive' else ''}">
-  <div class="key">{E(slot)}<small>{sub}</small></div>
-  <div class="desc"><h3>{E(name)}</h3><p>{E(desc)}</p></div>
-  <dl>{dl}</dl>
-  <div class="dps">{d}</div>
-</article>''')
-    side, gap = verdict(h['all'])
-    sign = '+' if gap >= 0 else '−'
-    pill = (f'<span class="pill good">{sign}{abs(gap):,} %/s vs Commando: inside ±20 %</span>' if side == 'inside' else
-            f'<span class="pill bad">{sign}{abs(gap):,} %/s vs Commando: outside ±20 %</span>')
-    fixes = ''.join(f'<li>{E(f)}</li>' for f in h['fixes'])
-    return f'''<title>{E(h["name"])} Kit Sheet</title>
+    hid = h['id']; body, v = match_of(hid)
+    rows = {r['slot']: r for r in SKILLS if r['hero'] == hid}
+    vals = [dps(hero_who(hid), s) or 0 for s in SLOTS] + [dps(v['who'], s) or 0 for s in SLOTS]
+    scale = max(vals + [100]) * 1.08
+    me, base = dps(hero_who(hid), 'all'), dps(v['who'], 'all')
+    side, gap = verdict(me, base)
+    eq = rows['equipment']; use = per_use(hero_who(hid))
+    use_html = f'<span class="num">One use on the pack: {use["total"]:,.0f} % ({use["enemies"]} enemies hit)</span>' if use else ''
+    changes = ''.join(f'<div><span class="ver">{E(ver)}</span><ul>' + ''.join(f'<li>{E(c)}</li>' for c in cs) + '</ul></div>' for ver, cs in CHANGES.get(hid, []))
+    paras = ''.join(f'<p>{t}</p>' for t in analysis(h))
+    return f'''<title>{E(h["displayName"])} Kit Sheet</title>
 {FONTS}
-<style>{css(h["accent"], h["accent2"])}</style>
+<style>{css(h["primaryColor"])}</style>
 <main class="wrap">
-  <header class="head">
-    <div>
-      <div class="eyebrow">Deadlock of Rain · {VERSION} · Risk of Rain 2 analog: {E(h["analog"])}</div>
-      <h1>{E(h["name"])}</h1>
-      <div class="tag">{E(h["tag"])}</div>
-    </div>
-    <div class="score">
-      <div class="eyebrow">Everything at once, 30 s</div>
-      <div class="big">{h["all"]:,}</div>
-      <div class="unit">% of damage per second · {h["all"]*12/100:.0f} dmg/s at level 1 · main moves only (M1, M2, Shift, R)</div>
-      {pill}
+  {nav(hid)}
+
+  <header class="dossier">
+    <figure class="portrait">
+      {img_tag(hid, h["displayName"] + " rendered in Risk of Rain 2")}
+      <figcaption>Survivor · {E(h["displayName"])}</figcaption>
+    </figure>
+    <div class="id">
+      <div class="eyebrow">Deadlock of Rain · {VERSION}</div>
+      <h1>{E(h["displayName"])}</h1>
+      <div class="sub">{E(h["subtitle"])}</div>
+      <div class="chips"><span class="chip">Risk of Rain match<b>{E(v["name"])}</b></span><span class="chip">Main moves<b>{fmt(me, " %/s")}</b></span><span class="chip">{E(v["name"])}<b>{fmt(base, " %/s")}</b></span></div>
+      <div class="bands">{stat_bands(hid)}</div>
+      <p class="lore">{E(h["lore"])}</p>
     </div>
   </header>
 
-  <section class="strip" aria-labelledby="s1">
-    <h2 id="s1">Each ability alone vs Commando</h2>
-    <div class="legend"><span><i style="background:var(--accent)"></i>{E(h["name"])}</span><span><i style="background:var(--base)"></i>Commando (baseline)</span><span>Scale: % of damage per second, used whenever ready for 30 s. The Q ult is left out of balance (see its plate).</span></div>
-    {bars(rows, scale)}
+  <section class="section" aria-labelledby="ab">
+    <h2 id="ab">Abilities</h2>
+    {passive_card(h)}
+    {"".join(ability_card(rows[s], hid, v, scale) for s in SLOTS)}
   </section>
 
-  <section class="plates" aria-labelledby="s2">
-    <h2 id="s2">The kit</h2>
-    {"".join(plates)}
+  <section class="section" aria-labelledby="ul">
+    <h2 id="ul">Ultimate · Q equipment</h2>
+    <article class="ult">
+      <div class="fig">{img_tag(hid + "_figure", "The " + eq["name"] + " pickup: a small figure of " + h["displayName"])}</div>
+      <div class="body">
+        <div class="head"><span class="key">Q</span><div><h3>{E(eq["name"])}</h3><div class="eyebrow">Starts in {E(h["displayName"])}’s hands · droppable · 120 s</div></div></div>
+        <p class="desc">{E(strip_tags(eq["description"]))}</p>
+        <div class="tiles">{tiles_html(tiles(eq))}</div>
+        <p class="note">{E(EQUIP[hid]["pickupText"])} Anyone can find it wherever the Preon Accumulator drops; the pickup is the little {E(h["displayName"])} shown here.</p>
+        <p><span class="stamp">Not balanced · just for fun</span>{use_html}</p>
+      </div>
+    </article>
   </section>
 
-  <section class="cols">
-    <div class="box">
-      <h2>Why the number</h2>
-      <p>Main moves at once: <strong>{h["all"]:,} %/s</strong> against Commando’s <strong>{COMMANDO["all"]:,} %/s</strong> (no equipment for anyone). Balanced is {LO:,}–{HI:,} (±20 %). The Q ults are pickups any survivor can carry, so they are left out of balance. The pack of 12 bunched enemies favours area damage.</p>
+  <section class="section" aria-labelledby="ba">
+    <h2 id="ba">Updates and balance</h2>
+    <div class="cols">
+      <div class="box"><div class="eyebrow">Changes</div>{changes}</div>
+      <div class="box">
+        <div class="eyebrow">Against {E(v["name"])}, all main moves together</div>
+        <div><span class="verdict {side}">{side} the band · {signed(gap)} %/s</span></div>
+        {balance_scale(h, v, me, base)}
+        {paras}
+      </div>
     </div>
-    <div class="box">
-      <h2>Changed in {VERSION}</h2>
-      <ul>{fixes}</ul>
-      <p class="muted">{E(h["est"])}</p>
-    </div>
   </section>
 
-  <p class="foot">{E(BENCH)} DPS = % of the survivor’s damage stat per second (100 %/s = one 100 % hit per second; damage stat 12 at level 1). Sources: docs/06-CURRENT-ABILITIES.md, docs/05-DAMAGE-COMPARISON.md, design/*.json.</p>
+  <p class="foot">Benchmark {VERSION}: Monsoon, level 1, no items, 12 still enemies 10–15 m away, perfect aim, every move used the moment it is ready for 30 s, no equipment; one run per pass (about ±10 % noise). {E(v["name"])} is measured the same way with its default loadout. %/s = % of the survivor’s damage stat per second (100 %/s is one 100 % hit per second). Balanced = within ±20 % of the Risk of Rain match. The maths column works from the design sheets; the bars are measured. Pictures are our own renders of the mod in Risk of Rain 2.</p>
 </main>
 '''
 
-def compare_page():
-    acc, acc2 = '#c9d6e3', '#8fb7a3'
-    all_rows = [('Baseline', 'Commando', COMMANDO['all'], 'base')] + [(h['analog'], h['name'], h['all'], 'hero') for h in HEROES]
-    scale = max([COMMANDO['all'] * 1.6] + [h['all'] * 1.1 for h in HEROES])
-    def allbar(label, name, val, kind, color):
-        w = val / scale * 100
-        band_l, band_r = LO / scale * 100, HI / scale * 100
-        return f'<div class="row"><div class="k">{E(label)}<b>{E(name)}</b></div><div class="track" role="img" aria-label="{E(name)} {val} percent per second"><div style="position:absolute;top:0;bottom:0;left:{band_l:.2f}%;width:{band_r-band_l:.2f}%;background:rgba(143,183,163,.18);border-left:1px dashed var(--base);border-right:1px dashed var(--base)"></div><div class="bar" style="width:calc({w:.2f}% - 6px);background:{color}"></div></div><div class="v">{val:,}</div></div>'
-    bars_html = '\n'.join(allbar(l, n, v, k, 'var(--base)' if k == 'base' else h_color) for (l, n, v, k), h_color in zip(all_rows, ['#8fb7a3'] + [h['accent'] for h in HEROES]))
-    # per-slot matrix
-    def cell(v, base):
-        if v is None: return '<td class="heat">–</td>'
-        ratio = v / base if base else None
-        col = 'var(--fg)'
-        if base:
-            col = 'var(--bad)' if v > base * 1.5 else 'var(--warn)' if v < base * 0.5 else 'var(--good)'
-        r = f'<br><span class="muted" style="font-size:11px">{ratio:.1f}×</span>' if ratio else ''
-        return f'<td class="heat" style="color:{col}">{v:,}{r}</td>'
-    slot_rows = []
-    for slot in MAIN:
-        base = COMMANDO[slot][1]
-        cells = ''.join(cell(next(k for k in h['kit'] if k[0] == slot)[2], base) for h in HEROES)
-        slot_rows.append(f'<tr><th scope="row">{slot}</th><td class="heat">{base:,}<br><span class="muted" style="font-size:11px">{E(COMMANDO[slot][0])}</span></td>{cells}</tr>')
-    fun_rows = ''.join(f'<tr><td>{E(name)}</td><td>{E(who)}</td><td class="n">{per_use}</td><td>{E(why)}</td></tr>' for name, who, per_use, why in FUN)
-    outside = sum(1 for h in HEROES if verdict(h['all'])[0] != 'inside')
-    kit_rows = []
+def overview_page():
+    def badge(name):
+        return f'<span class="badge" aria-hidden="true">{E(name[:2].upper())}</span>'
+    pairs, cards, fun = [], [], []
     for h in HEROES:
-        for slot, name, dps, desc, nums, note, retest in h['kit']:
-            flag = ' <span class="pill warn">⚠ retest</span>' if retest else ''
-            kit_rows.append(f'<tr><td>{E(h["name"])}</td><td>{E(slot)}</td><td>{E(name)}{flag}</td><td>{E(", ".join(b for a, b in nums[:3]))}</td><td class="n">{"–" if dps is None else f"{dps:,}"}</td></tr>')
-    sugg = ''.join(f'<div class="box"><h3 style="color:{h["accent"]}">{E(h["name"])}</h3><p><strong>{h["all"]:,} %/s</strong> · {"+" if verdict(h["all"])[1] >= 0 else "−"}{abs(verdict(h["all"])[1]):,} vs Commando · {verdict(h["all"])[0]} the band</p><ul>{"".join(f"<li>{E(f)}</li>" for f in h["fixes"])}</ul><p class="muted">{E(h["est"])}</p></div>' for h in HEROES)
+        hid = h['id']; body, v = match_of(hid)
+        me, base = dps(hero_who(hid), 'all'), dps(v['who'], 'all')
+        side, gap = verdict(me, base)
+        pairs.append(f'<tr><td><div class="who-cell">{img_tag(hid, "", 60)}<a href="{LINKS[hid]}">{E(h["displayName"])}</a></div></td>'
+                     f'<td><div class="who-cell">{img_tag(body, "", 60) or badge(v["name"])}{E(v["name"])}</div></td>'
+                     f'<td class="n">{fmt(me)}</td><td class="n">{fmt(base)}</td>'
+                     f'<td><span class="verdict {side}">{side} · {signed(gap)}</span></td></tr>')
+        paras = ''.join(f'<p>{t}</p>' for t in analysis(h))
+        cards.append(f'''<section class="box" style="--accent:{h["primaryColor"]};border-top:3px solid {h["primaryColor"]}" aria-labelledby="an-{hid}">
+  <div class="head">{img_tag(hid, "", 90)}<div><h3 id="an-{hid}">{E(h["displayName"])} <span class="muted">vs {E(v["name"])}</span></h3><div class="eyebrow">{E(h["subtitle"])}</div></div></div>
+  <div><span class="verdict {side}">{side} the band · {signed(gap)} %/s</span></div>
+  {balance_scale(h, v, me, base)}
+  {paras}
+  <p><a href="{LINKS[hid]}">Open {E(h["displayName"])}’s kit sheet</a></p>
+</section>''')
+        u = per_use(hero_who(hid)); eq = next(r for r in SKILLS if r['hero'] == hid and r['slot'] == 'equipment')
+        total = f'{u["total"]:,.0f} %' if u else '–'; hit = u['enemies'] if u else '–'
+        fun.append((u['total'] if u else 0, f'<tr><td><div class="who-cell">{img_tag(hid + "_figure", "", 48)}{E(eq["name"])}</div></td><td>{E(h["displayName"])}</td><td class="n">{total}</td><td class="n">{hit}</td></tr>'))
+    pre = per_use('Commando')
+    if pre: fun.append((pre['total'], f'<tr><td>Preon Accumulator</td><td>Commando (vanilla item)</td><td class="n">{pre["total"]:,.0f} %</td><td class="n">{pre["enemies"]}</td></tr>'))
+    fun_html = ''.join(r for _, r in sorted(fun, key=lambda x: -x[0]))
+    inside = sum(1 for h in HEROES if verdict(dps(hero_who(h['id']), 'all'), dps(match_of(h['id'])[1]['who'], 'all'))[0] == 'inside')
     return f'''<title>Deadlock of Rain Balance</title>
 {FONTS}
-<style>{css(acc, acc2)}
-.grid4 {{ display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }}
-@media (max-width: 720px) {{ .grid4 {{ grid-template-columns: minmax(0,1fr); }} }}
-</style>
+<style>{css("#c9a35b")}</style>
 <main class="wrap">
-  <header class="head">
-    <div>
-      <div class="eyebrow">Deadlock of Rain · {VERSION} · docs 04, 05 and 06</div>
-      <h1>Balance <span>vs</span> Commando</h1>
-      <div class="tag">Every survivor’s main moves, same pack, same 30 seconds, Monsoon. The Q ults are left out.</div>
-    </div>
-    <div class="score">
-      <div class="eyebrow">Target band</div>
-      <div class="big" style="color:var(--base)">{COMMANDO["all"]:,}</div>
-      <div class="unit">Commando’s main moves (M1, M2, Shift, R; no equipment), % of damage per second · ±20 % allowed ({LO:,}–{HI:,})</div>
-      <span class="pill {"good" if outside == 0 else "bad"}">{"all 4 heroes inside the band" if outside == 0 else f"{outside} of 4 heroes outside the band"}</span>
-    </div>
+  {nav("overview")}
+  <header class="id" style="gap:14px">
+    <div class="eyebrow">Deadlock of Rain · {VERSION} · Balance</div>
+    <h1>Each hero <span style="color:var(--brass)">vs</span> their Risk of Rain match</h1>
+    <p class="muted">Every Deadlock hero is paired with the Risk of Rain 2 survivor their stats are built on, and both are measured the same way: all main moves (M1, M2, Shift, R) used the moment they are ready for 30 s against a pack of 12. Balanced means within ±20 % of the match. <strong style="color:var(--cream)">{inside} of 4</strong> are inside.</p>
   </header>
 
-  <section class="strip" aria-labelledby="c1">
-    <h2 id="c1">Main moves at once, 30 s</h2>
-    <div class="legend"><span><i style="background:rgba(143,183,163,.35);border:1px dashed var(--base)"></i>Commando ±20 %</span><span>% of damage per second; level 1 damage stat 12 for everyone.</span></div>
-    {bars_html}
-  </section>
-
-  <section class="box" aria-labelledby="c2">
-    <h2 id="c2">Each ability alone</h2>
-    <p class="muted">%/s for 30 s, used whenever ready. Colour: green within half to 1.5× of Commando’s same slot, yellow below half, red above 1.5×.</p>
+  <section class="section" aria-labelledby="pr">
+    <h2 id="pr">The pairs</h2>
     <div class="tablewrap"><table>
-      <thead><tr><th>Slot</th><th>Commando</th>{"".join(f"<th>{E(h['name'])}</th>" for h in HEROES)}</tr></thead>
-      <tbody>{"".join(slot_rows)}</tbody>
+      <thead><tr><th>Hero</th><th>Risk of Rain match</th><th class="n">Hero %/s</th><th class="n">Match %/s</th><th>Verdict (±20 %)</th></tr></thead>
+      <tbody>{"".join(pairs)}</tbody>
     </table></div>
   </section>
 
-  <section class="cols">
-    <div class="box">
-      <h2>What the numbers say</h2>
-      <ul>{"".join(f"<li>{t}</li>" for t in SAYS)}</ul>
-    </div>
-    <div class="box">
-      <h2>Read before acting</h2>
-      <ul>{"".join(f"<li>{t}</li>" for t in CAVEATS)}</ul>
-    </div>
+  <section class="section" aria-labelledby="an">
+    <h2 id="an">Analysis, hero by hero</h2>
+    <div class="grid2">{"".join(cards)}</div>
   </section>
 
-  <section class="box" aria-labelledby="c7">
-    <h2 id="c7">Q ults: just for fun (not balanced)</h2>
-    <p class="muted">The ults are pickups any survivor can carry, so they are left out of balance and may be as strong as we like. One use each against the same pack of 12.</p>
+  <section class="section" aria-labelledby="fu">
+    <h2 id="fu">Q ults, just for fun</h2>
+    <p class="muted">The ults are pickups any survivor can carry, so they are left out of balance and may be as strong as we like. One use each against the same pack.</p>
     <div class="tablewrap"><table>
-      <thead><tr><th>Equipment</th><th>Starts on</th><th>One use</th><th>Why</th></tr></thead>
-      <tbody>{fun_rows}</tbody>
+      <thead><tr><th>Equipment</th><th>Starts on</th><th class="n">One use</th><th class="n">Enemies hit</th></tr></thead>
+      <tbody>{fun_html}</tbody>
     </table></div>
   </section>
 
-  <section class="plates" aria-labelledby="c3">
-    <h2 id="c3">Per hero: what changed in {VERSION}</h2>
-    <div class="grid4">{sugg}</div>
-  </section>
-
-  <section class="box" aria-labelledby="c4">
-    <h2 id="c4">Retest needed</h2>
-    <div class="tablewrap"><table>
-      <thead><tr><th>Survivor</th><th>Ability</th><th>Change since the last benchmark</th><th>Commit</th><th>Status</th></tr></thead>
-      <tbody>{"".join(f'<tr><td>{E(a)}</td><td>{E(b)}</td><td>{E(c)}</td><td>{E(d)}</td><td><span class="pill warn">⚠ retest</span></td></tr>' for a, b, c, d in RETEST) or '<tr><td colspan="5">Nothing: the last benchmark covers every ability.</td></tr>'}</tbody>
-    </table></div>
-  </section>
-
-  <section class="box" aria-labelledby="c5">
-    <h2 id="c5">Every ability today</h2>
-    <div class="tablewrap"><table>
-      <thead><tr><th>Hero</th><th>Key</th><th>Ability</th><th>Key numbers</th><th>DPS alone</th></tr></thead>
-      <tbody>{"".join(kit_rows)}</tbody>
-    </table></div>
-  </section>
-
-  <section class="box" aria-labelledby="c6">
-    <h2 id="c6">Test variables</h2>
-    <ul>
-      <li>Monsoon, first stage of a fresh run, one fixed flat spot; level 1, no items, damage stat 12 for all.</li>
-      <li>12 enemies (8 Lemurians, 4 Beetles), AI off, ×101 health, a 3 × 4 grid 10–15 m in front; nothing dies.</li>
-      <li>M1 held; M2, Shift and R pressed about 25 times a second, so each fires the moment it is ready; no equipment in the balance passes; a separate pass fires the Q once (heroes: their ult; Commando: Preon Accumulator) for the fun table; aim on the nearest enemy; put back on the spot after dashes.</li>
-      <li>Counted: every hit the survivor lands (direct, projectiles, zones, DoTs), after crits and damage mods, before armor. One run per pass: about ±10 % noise.</li>
-      <li>Not measured: stuns, slows, heals, invisibility, Warbanner. The setup favours area damage; a single-target test would complete the picture.</li>
-    </ul>
-  </section>
-
-  <p class="foot">{E(BENCH)} Sources: docs/04-ABILITY-REDESIGN-PROPOSALS.md (the creator’s picks), docs/05-DAMAGE-COMPARISON.md (method, results, suggestions, retest flags), docs/06-CURRENT-ABILITIES.md (current kit). Rerun with <code>bash tools/run_bench.sh</code>.</p>
+  <p class="foot">Benchmark {VERSION}: Monsoon, first stage of a fresh run, level 1, no items, god mode; 12 still enemies (8 Lemurians, 4 Beetles, ×101 health) 10–15 m away; M1 held, every other move pressed the moment it is ready; perfect aim at the nearest enemy; put back on the spot after dashes; no equipment except in the Q pass; turret damage counts for Engineer. Counted: every hit landed, after crits and damage mods, before armor. One run per pass, about ±10 % noise. Commando, the yardstick before 0.4.1: {fmt(dps("Commando", "all"))} %/s. Method: docs/05-DAMAGE-COMPARISON.md. Pictures are our own renders of the mod in Risk of Rain 2.</p>
 </main>
 '''
 
 for h in HEROES:
     open(os.path.join(OUT, f'{h["id"]}-kit.html'), 'w', encoding='utf-8').write(hero_page(h))
-open(os.path.join(OUT, 'balance-vs-commando.html'), 'w', encoding='utf-8').write(compare_page())
-print('\n'.join(sorted(os.listdir(OUT))))
+open(os.path.join(OUT, 'balance-vs-commando.html'), 'w', encoding='utf-8').write(overview_page())
+for f in sorted(os.listdir(OUT)):
+    p = os.path.join(OUT, f)
+    if os.path.isfile(p): print(f, os.path.getsize(p) // 1024, 'KB')

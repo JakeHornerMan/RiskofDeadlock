@@ -18,7 +18,7 @@ namespace DeadlockOfRain
         static readonly Dictionary<EquipmentDef, SkillRow> rowOf = new Dictionary<EquipmentDef, SkillRow>();
         static readonly HashSet<CharacterMaster> given = new HashSet<CharacterMaster>();
 
-        const float FigurePadding = 2.2f;
+        internal const float FigurePadding = 2.2f;
 
         public static SkillRow RowOf(EquipmentDef def) => def && rowOf.TryGetValue(def, out var r) ? r : null;
 
