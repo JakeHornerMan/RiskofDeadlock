@@ -221,8 +221,8 @@ Asked slot by slot. Several picks are the creator's own versions rather than A o
 |---|---|---|---|
 | Haze | Passive | **Alt A Fixation** | +2.5 %/stack, max 40, 6 s; crits add 3; every 20 stacks 200 % + 12 % slow 2 s |
 | Haze | M2 | **Current Sleep Dagger, retuned** | 350 %, RoR2 stun **4 s**, cooldown **10 s** |
-| Haze | Shift | **Current Smoke Bomb, retuned** | invisible **5 s**, **+50 %** speed, cooldown **12 s** |
-| Haze | R | **Current Bullet Dance** | unchanged numbers; "lots of cool VFX built in Unity, similar to Deadlock, not a rip from the Deadlock engine files" |
+| Haze | Shift | **Current Smoke Bomb, retuned** | invisible **5 s**, **+50 %** speed, cooldown **12 s**; enemies lose her as a target and can't target her while she is invisible |
+| Haze | R | **Current Bullet Dance, longer** | **5 s** (49 % per shot, so the total stays in the ult band); "lots of cool VFX built in Unity, similar to Deadlock, not a rip from the Deadlock engine files" |
 | Abrams | Passive | **Alt A Infernal Resilience, softened** | heals back **10 % of damage taken over 10 s**; debuffs 20 % shorter |
 | Abrams | M2 | **Siphon Life as RoR2's Mired Urn** (creator's idea) | RoR2's own Mired Urn tethers: **3 targets, 25 m, 8 s**, 250 %/s each, heals for all of it; cooldown **15 s** |
 | Abrams | Shift | **Current Shoulder Charge, retuned** | lasts **3 s**, **every enemy hit is stunned 1 s** (no wall needed); cooldown **8 s** |

@@ -313,6 +313,21 @@ namespace DeadlockOfRain
                 MeltyTest.Report("gun-reloads", true, body ? body.baseNameToken : "");
             }
         }
+
+        float nextUntarget;
+        void FixedUpdate()
+        {
+            // invisible (Smoke Bomb's vanilla Cloak): RoR2's AI won't pick a cloaked body as a new target, but keeps one it
+            // already has, so drop the hero from every enemy AI that is aiming at them; the cloak stops them finding the hero again
+            if (!UnityEngine.Networking.NetworkServer.active || !body || !body.hasCloakBuff || Time.fixedTime < nextUntarget) return;
+            nextUntarget = Time.fixedTime + 0.2f;
+            foreach (var m in CharacterMaster.readOnlyInstancesList)
+            {
+                if (!m || m.teamIndex == body.teamComponent.teamIndex || m.AiComponents == null) continue;
+                foreach (var ai in m.AiComponents)
+                    if (ai && ai.currentEnemy != null && ai.currentEnemy.gameObject == body.gameObject) ai.currentEnemy.Reset();
+            }
+        }
     }
 
     sealed class DeadlockContentProvider : IContentPackProvider

@@ -90,7 +90,7 @@
       "triggerBuff": "none",
       "withBuff": "none",
       "slowResist": 0,
-      "notes": "applies vanilla Cloak while active; removed when the gun fires"
+      "notes": "applies vanilla Cloak while active; enemy AIs aiming at Haze drop her (HeroRuntime) and cannot re-acquire a cloaked body; removed when the gun fires"
     },
     {
       "id": "bullet_dance",
@@ -101,7 +101,7 @@
       "isDebuff": false,
       "isHidden": false,
       "maxStacks": 1,
-      "duration": 3.5,
+      "duration": 5,
       "moveSpeedAdd": 0,
       "attackSpeedAdd": 0,
       "armorAdd": 0,
