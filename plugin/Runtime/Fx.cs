@@ -113,6 +113,20 @@ namespace DeadlockOfRain
             if (s && s.canBeStunned) s.SetStun(duration);
         }
 
+        /// <summary>Knock an enemy out of a dash's path: to whichever side of the path it stands on, a bit forward and up,
+        /// at speed m/s (scaled by its mass, so big and small enemies fly the same).</summary>
+        public static void KnockAside(CharacterBody owner, HealthComponent hc, Vector3 forward, float speed)
+        {
+            if (!hc || !hc.body || speed <= 0 || !UnityEngine.Networking.NetworkServer.active) return;
+            forward.y = 0; forward.Normalize();
+            var right = Vector3.Cross(Vector3.up, forward);
+            var to = hc.body.corePosition - (owner ? owner.corePosition : hc.body.corePosition);
+            var side = right * (Vector3.Dot(to, right) >= 0f ? 1f : -1f);
+            var push = (side * 0.8f + forward * 0.6f).normalized * speed + Vector3.up * speed * 0.35f;
+            float mass = hc.body.characterMotor ? hc.body.characterMotor.mass : hc.body.rigidbody ? hc.body.rigidbody.mass : 100f;
+            hc.TakeDamageForce(push * mass, true, true);
+        }
+
         /// <summary>Server-side direct damage to one hurtbox (used by ticks, chains and custom projectiles).</summary>
         public static void Hit(CharacterBody owner, HurtBox target, float coefficient, float proc, Vector3 at, DamageTypeCombo type = default, DamageColorIndex color = DamageColorIndex.Default)
         {

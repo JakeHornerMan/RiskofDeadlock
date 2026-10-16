@@ -111,7 +111,6 @@ namespace DeadlockOfRain.States
     {
         Vector3 dir;
         readonly HashSet<HealthComponent> hit = new HashSet<HealthComponent>();
-        readonly List<CharacterBody> carried = new List<CharacterBody>();
         Vector3 lastPos;
         float stuckTime;
         public override void OnEnter()
@@ -141,21 +140,18 @@ namespace DeadlockOfRain.States
                     if (!hit.Add(hb.healthComponent)) continue;
                     Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, hb.transform.position);
                     Fx.Stun(hb.healthComponent, row.StunDuration);
+                    // knocked to the side of his path, out of his way
+                    Fx.KnockAside(characterBody, hb.healthComponent, dir, row.Knockback);
                     Fx.Impact(row.Effect, hb.transform.position);
                     Fx.Sound(row.Id, "hit", hb.transform.position);
-                    if (hb.healthComponent.body) carried.Add(hb.healthComponent.body);
                 }
-                foreach (var c in carried)
-                    if (c && c.characterMotor) c.characterMotor.rootMotion += dir * row.Speed * Time.fixedDeltaTime;
-                    else if (c && c.rigidbody) c.rigidbody.MovePosition(c.transform.position + dir * row.Speed * Time.fixedDeltaTime);
             }
-            // wall: we stopped moving although we push forward; the charge ends there (everything carried is stunned again)
+            // wall: we stopped moving although we push forward; the charge ends there
             float moved = Vector3.Distance(transform.position, lastPos);
             lastPos = transform.position;
             if (fixedAge > 0.25f && moved < row.Speed * Time.fixedDeltaTime * 0.15f) stuckTime += Time.fixedDeltaTime; else stuckTime = 0;
             if (stuckTime > 0.08f)
             {
-                if (Server) foreach (var c in carried) if (c) Fx.Stun(c.healthComponent, row.StunDuration);
                 Sound("end");
                 Fx.Impact(row.Effect, transform.position + dir);
                 if (isAuthority) outer.SetNextStateToMain();
@@ -298,21 +294,15 @@ namespace DeadlockOfRain.States
                 if (characterDirection) characterDirection.forward = mv;
             }
             if (trail) trail.transform.position = transform.position;
-            // enemies Infernus runs into are knocked aside (and a little up) at `speed` m/s to clear his path, once each
-            if (Server && row.Speed > 0)
+            // enemies Infernus runs into are knocked aside to clear his path, once each
+            if (Server && row.Knockback > 0)
             {
                 var fwd = characterDirection ? characterDirection.forward : transform.forward; fwd.y = 0; fwd.Normalize();
                 foreach (var hb in Fx.Enemies(characterBody, transform.position + fwd * 1.2f, characterBody.radius + 1.5f))
                 {
-                    var hc = hb.healthComponent;
-                    if (!shoved.Add(hc) || !hc.body) continue;
-                    var to = hc.body.corePosition - transform.position; to.y = 0;
-                    // away from his path: mostly sideways, partly forward
-                    var side = Vector3.Cross(Vector3.up, fwd) * Mathf.Sign(Vector3.Dot(to, Vector3.Cross(Vector3.up, fwd)) + 0.001f);
-                    var push = (side * 0.8f + fwd * 0.6f).normalized * row.Speed + Vector3.up * row.Speed * 0.35f;
-                    float mass = hc.body.characterMotor ? hc.body.characterMotor.mass : hc.body.rigidbody ? hc.body.rigidbody.mass : 100f;
-                    hc.TakeDamageForce(push * mass, true, true);
-                    Fx.Sound(row.Id, "hit", hc.body.corePosition);
+                    if (!shoved.Add(hb.healthComponent)) continue;
+                    Fx.KnockAside(characterBody, hb.healthComponent, fwd, row.Knockback);
+                    Fx.Sound(row.Id, "hit", hb.transform.position);
                 }
             }
             // a tap dashes for minDuration; holding Shift keeps going up to duration

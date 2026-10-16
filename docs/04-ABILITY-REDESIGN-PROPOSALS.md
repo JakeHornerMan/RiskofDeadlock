@@ -225,7 +225,7 @@ Asked slot by slot. Several picks are the creator's own versions rather than A o
 | Haze | R | **Current Bullet Dance, longer** | **5 s** (49 % per shot, so the total stays in the ult band); "lots of cool VFX built in Unity, similar to Deadlock, not a rip from the Deadlock engine files" |
 | Abrams | Passive | **Alt A Infernal Resilience, softened** | heals back **10 % of damage taken over 10 s**; debuffs 20 % shorter |
 | Abrams | M2 | **Siphon Life as RoR2's Mired Urn** (creator's idea) | RoR2's own Mired Urn tethers: **3 targets, 25 m, 8 s**, 250 %/s each, heals for all of it; cooldown **15 s** |
-| Abrams | Shift | **Current Shoulder Charge, retuned** | lasts **3 s**, **every enemy hit is stunned 1 s** (no wall needed); cooldown **8 s** |
+| Abrams | Shift | **Current Shoulder Charge, retuned** | lasts **3 s**, **every enemy hit is stunned 1 s** (no wall needed) and **knocked aside** out of his path; plays his sprint animation; cooldown **8 s** |
 | Abrams | R | **Seismic Impact rebuilt** (creator's version) | rise, **hover up to 3 s with a ground reticle you aim** (≤ 40 m), R or Left Click slams; **he can be hit** while hovering; new effects and re-timed animation; 2200 %, 12 m, stun 1.6 s |
 | Seven | Passive | **Alt B Capacitor** | Static max 10, 5 s; at 10: 300 % to the target + 2 nearby, stun 1 s; gun lowered to 48 % per bullet |
 | Seven | M2 | **Current Lightning Ball** | its shocks build Static too; **flies through enemies** instead of stopping on the first; rebuilt effects (240 %/s, ticks every 0.25 s) |
