@@ -34,4 +34,7 @@
 10. Equipment (v0.4.0 ults on Q): EquipmentSlot.PerformEquipmentAction runs on the server only, and a server SetState is
    ignored by a client that owns its body: start the state where the body has authority (prefix for server-owned bodies,
    the activation ClientRpc for remote owners) and serialize the row id with the state.
+11. Burst guns (v0.4.1): when the magazine ran dry mid-burst, FireOne ended the burst (burstLeft = 0) and the caller
+   then decremented it to -1, so the gun never fired, reloaded or let go again. Seven's 29-round magazine in bursts of 3
+   hit it every magazine; other skills interrupting the state hid it in play and in the test.
 lab restored Tue Oct 13 01:42:10 GMTST 2026

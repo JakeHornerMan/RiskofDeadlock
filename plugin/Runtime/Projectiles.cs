@@ -11,6 +11,8 @@ namespace DeadlockOfRain
     {
         CharacterBody owner; SkillRow row; Vector3 dir; float travelled, age, nextTick;
         bool stuck; GameObject ghost, vfx; int loop;
+        // extra "pierce": the enemies this projectile has already gone through
+        HashSet<HealthComponent> pierced;
 
         public static void Launch(CharacterBody owner, SkillRow row, Vector3 from, Vector3 dir)
         {
@@ -41,18 +43,19 @@ namespace DeadlockOfRain
                     var hb = hit.collider.GetComponent<HurtBox>();
                     bool enemy = hb && hb.healthComponent && hb.healthComponent.body && hb.healthComponent.body.teamComponent.teamIndex != owner.teamComponent.teamIndex;
                     if (hb && !enemy) { transform.position += dir * step; }
+                    else if (enemy && !orb && row.Extra == "pierce")
+                    {
+                        // a piercing projectile hits each enemy once and flies on through it
+                        if (pierced == null) pierced = new HashSet<HealthComponent>();
+                        if (pierced.Add(hb.healthComponent)) HitEnemy(hb, hit.point);
+                        transform.position += dir * step;
+                    }
                     else
                     {
                         transform.position = hit.point;
                         if (!orb)
                         {
-                            if (enemy)
-                            {
-                                Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, hit.point);
-                                Fx.Stun(hb.healthComponent, row.StunDuration);
-                                Fx.Impact("stun", hit.point);
-                                Fx.Sound(row.Id, "hit", hit.point);
-                            }
+                            if (enemy) HitEnemy(hb, hit.point);
                             Destroy(gameObject);
                             return;
                         }
@@ -87,6 +90,14 @@ namespace DeadlockOfRain
                     Destroy(gameObject);
                 }
             }
+        }
+
+        void HitEnemy(HurtBox hb, Vector3 at)
+        {
+            Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, at);
+            Fx.Stun(hb.healthComponent, row.StunDuration);
+            Fx.Impact("stun", at);
+            Fx.Sound(row.Id, "hit", at);
         }
 
         void OnDestroy()

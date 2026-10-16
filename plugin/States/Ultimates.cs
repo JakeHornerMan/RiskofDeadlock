@@ -21,8 +21,7 @@ namespace DeadlockOfRain.States
     [Kind("ult_dance")]
     public sealed class UltDance : UltState
     {
-        float next; int loop; float startDelay; GameObject vfx;
-        static readonly System.Random rng = new System.Random();
+        float next; int loop, loopShot; float startDelay; GameObject vfx;
         public override void OnEnter()
         {
             base.OnEnter();
@@ -48,24 +47,33 @@ namespace DeadlockOfRain.States
                 var enemies = Fx.Enemies(characterBody, transform.position, row.Radius);
                 if (enemies.Count > 0)
                 {
-                    var target = enemies[rng.Next(enemies.Count)];
-                    bool left = rng.Next(2) == 0;
-                    var from = MuzzlePos(left);
-                    if (isAuthority)
+                    // one shot at every enemy in range each tick (the ult deals its full damage to each of them);
+                    // the guns alternate, and only a few of the shots per tick draw muzzle and hit effects
+                    bool crit = RollCrit();
+                    for (int i = 0; i < enemies.Count; i++)
                     {
-                        new BulletAttack
+                        var target = enemies[i];
+                        bool left = (loopShot++ & 1) == 0;
+                        var from = MuzzlePos(left);
+                        if (isAuthority)
                         {
-                            owner = gameObject, weapon = gameObject,
-                            origin = from, aimVector = (target.transform.position - from).normalized,
-                            damage = damageStat * Coef, procCoefficient = row.ProcCoefficient,
-                            tracerEffectPrefab = Fx.Prefab(row.Effect), muzzleName = left ? "MuzzleLeft" : "MuzzleRight",
-                            isCrit = RollCrit(), radius = 0.4f, smartCollision = true, maxDistance = row.Range * 1.5f,
-                            force = 50f, bulletCount = 1, falloffModel = BulletAttack.FalloffModel.None,
-                        }.Fire();
+                            new BulletAttack
+                            {
+                                owner = gameObject, weapon = gameObject,
+                                origin = from, aimVector = (target.transform.position - from).normalized,
+                                damage = damageStat * Coef, procCoefficient = row.ProcCoefficient,
+                                tracerEffectPrefab = i < 3 ? Fx.Prefab(row.Effect) : null, muzzleName = left ? "MuzzleLeft" : "MuzzleRight",
+                                isCrit = crit, radius = 0.4f, smartCollision = true, maxDistance = row.Range * 1.5f,
+                                force = 50f, bulletCount = 1, falloffModel = BulletAttack.FalloffModel.None,
+                            }.Fire();
+                        }
+                        if (i < 3)
+                        {
+                            Fx.MuzzleFlash(characterBody, left);
+                            Vfx.Play(row.Vfx, "cast", from, 1f, Fx.Muzzle(characterBody, left));
+                            Vfx.Play(row.Vfx, "hit", target.transform.position);
+                        }
                     }
-                    Fx.MuzzleFlash(characterBody, left);
-                    Vfx.Play(row.Vfx, "cast", from, 1f, Fx.Muzzle(characterBody, left));
-                    Vfx.Play(row.Vfx, "hit", target.transform.position);
                     Fx.Sound(row.Id, "hit", transform.position);
                 }
             }

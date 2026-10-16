@@ -51,7 +51,7 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 Three pieces, linked by generated data:
 - **`design/*.json` → `tools/gen.py`** generates `plugin/Generated/Sheets.g.cs` (one `*Row` class per sheet, static `All`)
   and `extractor/manifest.json` (what to pull from Deadlock). Preflight checks cells, cross-references, slots, balance
-  math (gun DPS vs `targetDps`, equipment ult totals), scale, and Deadlock/RoR2 names against listings in the gitignored `tools/dev/`
+  math (gun DPS vs `targetDps`, equipment ults at least Preon level), scale, and Deadlock/RoR2 names against listings in the gitignored `tools/dev/`
   (a missing listing is a failure; on a fresh clone generate them per doc 01 §8 / doc 02 §1).
 - **`extractor/`** (DeadlockExtract, .NET 10 + ValveResourceFormat): Melty runs it once on the player's PC; it converts
   hero models/clips (to the custom DLM format, `DlmWriter.cs`), icons and sounds from the Deadlock VPK into

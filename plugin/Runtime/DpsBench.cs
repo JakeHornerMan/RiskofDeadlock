@@ -22,6 +22,8 @@ namespace DeadlockOfRain
     {
         static string outFile;
         static float seconds = 30f;
+        // optional "only": one hero id; the bench then runs Commando and that hero only (for quick tuning)
+        static string only = "";
         public static bool Active => outFile != null;
 
         public static void Init()
@@ -32,6 +34,7 @@ namespace DeadlockOfRain
                 if (!File.Exists(f)) return;
                 var text = File.ReadAllText(f);
                 outFile = Value(text, "out") ?? System.IO.Path.Combine(System.IO.Path.GetDirectoryName(f), "bench_results.txt");
+                only = Value(text, "only") ?? "";
                 if (float.TryParse(Value(text, "seconds"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s) && s > 0) seconds = s;
                 Log.Info($"DPS bench: {seconds}s passes, writing to {outFile}");
                 var go = new GameObject("DeadlockOfRainDpsBench");
@@ -168,7 +171,8 @@ namespace DeadlockOfRain
             var master = user.cachedMaster;
             var pcmc = master.GetComponent<PlayerCharacterMasterController>();
             var survivors = new List<string> { "CommandoBody" };
-            foreach (var h in HeroRow.All) if (Survivors.Bodies.ContainsKey(h.Id)) survivors.Add(Survivors.Bodies[h.Id].name);
+            foreach (var h in HeroRow.All)
+                if (Survivors.Bodies.ContainsKey(h.Id) && (only == "" || only == h.Id)) survivors.Add(Survivors.Bodies[h.Id].name);
             foreach (var bodyName in survivors)
             {
                 if (master.GetBody() == null || master.GetBody().name.Replace("(Clone)", "") != bodyName)
@@ -198,11 +202,12 @@ namespace DeadlockOfRain
             if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
             SpawnPack();
             yield return new WaitForSeconds(1f);
-            // every slot starts ready; the Q equipment is the hero's own ult (Commando: the Preon Accumulator it is scaled to),
-            // charged, in "all" and "equipment" (once per pass: it recharges in 120 s)
+            // every slot starts ready. Balance is measured on the main moves only: "all" holds no equipment. The Q ults are
+            // pickups any survivor can carry and are left out of balance; the "equipment" pass fires the hero's own ult
+            // (Commando: the Preon Accumulator) once, for the "just for fun" table
             var sl = body.skillLocator;
             foreach (var gs in new[] { sl.primary, sl.secondary, sl.utility, sl.special }) if (gs) gs.Reset();
-            bool useEquip = mode == "all" || mode == "equipment";
+            bool useEquip = mode == "equipment";
             var inv = body.inventory;
             if (inv)
             {

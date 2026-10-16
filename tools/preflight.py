@@ -52,6 +52,7 @@ def ref(sheet, rid, col, val, valid, allow_none=True):
         bad(f'{sheet}[{rid}].{col}: "{val}" does not resolve')
 
 # 2. references
+EXTRA_FLAGS = {'pierce': 'projectile', 'shockwave': 'heavy_melee'}
 for r in sheets['stats']['rows']: ref('stats', r['hero'], 'hero', r['hero'], heroes, False)
 for r in sheets['animations']['rows']: ref('animations', r['hero'], 'hero', r['hero'], heroes, False)
 for r in sheets['sounds']['rows']: ref('sounds', r['skill'], 'skill', r['skill'], skills, False)
@@ -60,7 +61,10 @@ for r in sheets['skills']['rows']:
     ref('skills', r['id'], 'buff', r['buff'], buffs)
     ref('skills', r['id'], 'effect', r['effect'], effects, False)
     ref('skills', r['id'], 'vfx', r['vfx'], effects)
-    ref('skills', r['id'], 'extra', r['extra'], effects)
+    # extra: an effects row the kind spawns, or a behaviour flag for one kind
+    ref('skills', r['id'], 'extra', r['extra'], set(effects) | set(EXTRA_FLAGS))
+    if r['extra'] in EXTRA_FLAGS and r['kind'] != EXTRA_FLAGS[r['extra']]:
+        bad(f'skills[{r["id"]}].extra: flag "{r["extra"]}" only works on kind {EXTRA_FLAGS[r["extra"]]}')
     if r['vfx'] != 'none' and r['vfx'] in effects and effects[r['vfx']]['kind'] != 'custom':
         bad(f'skills[{r["id"]}].vfx: "{r["vfx"]}" must be an effects row of kind custom')
     if r['minDuration'] > r['duration']: bad(f'skills[{r["id"]}].minDuration: longer than duration')
@@ -144,12 +148,13 @@ for r in skills.values():
         if not (240 <= dps <= 600):
             bad(f'skills[{r["id"]}]: sustained DPS {dps:.0f} %/s outside RoR2 primary band 240-600')
     if r['slot'] == 'equipment':
-        # Preon Accumulator (140 s) scaled to our 120 s cooldown: about 6800 % per enemy per use
+        # at least the Preon Accumulator (140 s) scaled to our 120 s cooldown, about 6800 % per enemy per use;
+        # no upper limit: the ults are pickups any survivor can carry and are left out of balance
         if r['kind'] == 'ult_dance': total = r['duration'] / r['interval'] * r['damagePct']
         elif r['kind'] == 'ult_zone': total = r['duration'] / r['interval'] * r['damagePct']  # per target: every tick strikes up to chainCount enemies
         else: total = r['damagePct']
-        if not (6000 <= total <= 7500):
-            bad(f'skills[{r["id"]}]: equipment ult total {total:.0f}% outside 6000-7500')
+        if total < 6000:
+            bad(f'skills[{r["id"]}]: equipment ult total {total:.0f}% below the Preon level of 6000')
 
 # 6. Deadlock assets (dev listings from this PC's install; not shipped)
 def dev(name):

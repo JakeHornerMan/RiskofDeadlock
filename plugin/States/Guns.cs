@@ -31,7 +31,9 @@ namespace DeadlockOfRain.States
             if (burstLeft > 0 && t >= nextBurstShot)
             {
                 FireOne();
-                burstLeft--;
+                // FireOne ends the burst (burstLeft = 0) when the magazine runs dry mid-burst; never count below zero,
+                // or the gun would never fire, reload or let go again
+                burstLeft = Mathf.Max(0, burstLeft - 1);
                 nextBurstShot = t + row.Duration / attackSpeedStat;
             }
             if (t >= nextShot && burstLeft == 0 && isAuthority)

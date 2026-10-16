@@ -51,16 +51,16 @@
       "evasionChance": 0,
       "dotDamagePct": 0,
       "critStacks": 3,
-      "triggerStacks": 20,
+      "triggerStacks": 10,
       "triggerClears": false,
-      "triggerDamagePct": 200,
-      "triggerTargets": 0,
-      "triggerRadius": 0,
+      "triggerDamagePct": 300,
+      "triggerTargets": 99,
+      "triggerRadius": 6,
       "triggerStun": 0,
       "triggerBuff": "fixation_slow",
       "withBuff": "none",
       "slowResist": 0,
-      "notes": "on enemies; Haze's hits deal +2.5%/stack; crits add 3 stacks; every 20 stacks the target takes 200% and gets Fixation Slow; stacks fall off 6s after the last hit"
+      "notes": "on enemies; Haze's hits deal +2.5%/stack; crits add 3 stacks; every 10 stacks the target takes 300%, splashing to every enemy within 6m, and gets Fixation Slow; stacks fall off 6s after the last hit"
     },
     {
       "id": "smoke",

@@ -16,7 +16,7 @@ namespace DeadlockOfRain
         static readonly Dictionary<string, Material> baseMats = new Dictionary<string, Material>();
         static readonly Dictionary<string, Material> tinted = new Dictionary<string, Material>();
 
-        public static GameObject Play(string id, string moment, Vector3 at, float radius = 1f, Transform follow = null, Vector3? to = null)
+        public static GameObject Play(string id, string moment, Vector3 at, float radius = 1f, Transform follow = null, Vector3? to = null, float angle = 0f)
         {
             if (string.IsNullOrEmpty(id) || id == "none") return null;
             try
@@ -34,7 +34,7 @@ namespace DeadlockOfRain
                     case "infernus_bomb": return InfernusBomb(moment, at, radius, follow);
                     case "infernus_pulse": return InfernusPulse(moment, at, radius, follow);
                     case "haze_phantom": return HazePhantom(moment, at, radius, to);
-                    case "abrams_haymaker": return AbramsHaymaker(moment, at, radius, follow, to);
+                    case "abrams_haymaker": return AbramsHaymaker(moment, at, radius, follow, to, angle);
                     case "seven_surge": return SevenSurge(moment, at, follow);
                 }
             }
@@ -476,7 +476,7 @@ namespace DeadlockOfRain
         }
 
         // ------------------------------------------------------------------ Abrams: Haymaker
-        static GameObject AbramsHaymaker(string moment, Vector3 at, float radius, Transform follow, Vector3? to)
+        static GameObject AbramsHaymaker(string moment, Vector3 at, float radius, Transform follow, Vector3? to, float angle)
         {
             switch (moment)
             {
@@ -501,6 +501,32 @@ namespace DeadlockOfRain
                     Burst(at + Vector3.down * 0.8f, "mat_dust", abramsDust, 10, 1.2f, 4f, 2f, shapeRadius: 1f, flat: true);
                     Flash(at, abramsRed, radius * 3f, 0.3f, 7f);
                     Shake(at, radius * 4f, 2.5f, 0.35f);
+                    return null;
+                }
+                case "wave":
+                {
+                    // the shockwave rolls forward over the ground in a cone (radius = its length, angle = its half-angle):
+                    // a wall of dust and sparks racing out, and red arcs sweeping across the cone
+                    var dir = (to ?? at + Vector3.forward) - at; dir.y = 0; if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward; dir.Normalize();
+                    float life = 0.35f, half = Mathf.Max(5f, angle);
+                    var ground = at + Vector3.down * 0.8f;
+                    var cone = Root(ground, 1.5f, null); cone.transform.rotation = Quaternion.LookRotation(dir);
+                    var dust = Particles(cone, "mat_dust", abramsDust, count: 40, life: life * 2.5f, speed: radius / life, size: 1.6f, shapeRadius: 0.4f, world: true);
+                    var sh = dust.shape; sh.shapeType = ParticleSystemShapeType.Cone; sh.angle = half; sh.rotation = Vector3.zero;
+                    var dl = dust.limitVelocityOverLifetime; dl.enabled = true; dl.limit = 1f; dl.dampen = 0.15f;
+                    var sparks = Particles(cone, "mat_spark", new Color(1f, 0.6f, 0.3f), count: 40, life: life, speed: radius / life, size: 0.08f, shapeRadius: 0.3f, world: true, stretch: 3f);
+                    var ss = sparks.shape; ss.shapeType = ParticleSystemShapeType.Cone; ss.angle = half; ss.rotation = Vector3.zero;
+                    for (int i = 1; i <= 3; i++)
+                    {
+                        float d = radius * i / 3f;
+                        var arc = Root(ground + dir * d, life, null);
+                        arc.transform.rotation = Quaternion.LookRotation(dir);
+                        var ap = Particles(arc, "mat_glow", abramsRed, count: 14, life: life * 0.8f, speed: 0f, size: 0.9f);
+                        var ash = ap.shape; ash.shapeType = ParticleSystemShapeType.Circle; ash.radius = Mathf.Max(0.2f, d * Mathf.Tan(half * Mathf.Deg2Rad));
+                        ash.arc = 2f * half; ash.rotation = new Vector3(90f, 0f, 90f - half); ash.radiusThickness = 0f;
+                        var am = ap.main; am.startDelay = life * (i - 1) / 3f;
+                    }
+                    Shake(at + dir * radius * 0.5f, radius * 3f, 2f, 0.3f);
                     return null;
                 }
             }

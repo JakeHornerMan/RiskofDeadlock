@@ -144,7 +144,10 @@ namespace DeadlockOfRain.States
             Fx.Sound(row.Id, "hit", at);
             Fx.Impact(row.Effect, at);
             Vfx.Play(row.Vfx, "hit", at, row.Radius, null, at + dir);
+            bool wave = row.Extra == "shockwave";
+            if (wave) Vfx.Play(row.Vfx, "wave", at, row.Range, null, at + dir, row.SpreadDeg);
             if (!Server) return;
+            var punchedBodies = new HashSet<CharacterBody>();
             foreach (var hb in Fx.Enemies(characterBody, at, row.Radius))
             {
                 var b = hb.healthComponent.body;
@@ -152,6 +155,20 @@ namespace DeadlockOfRain.States
                 // only what is in front of him: a punch, not a stomp
                 var to = b.corePosition - characterBody.corePosition; to.y = 0;
                 if (to.sqrMagnitude > 1f && Vector3.Dot(to.normalized, dir) < 0.2f) continue;
+                punchedBodies.Add(b);
+                Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, b.corePosition);
+                Fx.KnockBack(characterBody, hb.healthComponent, dir, row.Knockback);
+            }
+            if (!wave) return;
+            // the shockwave: every other enemy in a cone in front (length range, half-angle spreadDeg) takes the same hit
+            float cos = Mathf.Cos(row.SpreadDeg * Mathf.Deg2Rad);
+            foreach (var hb in Fx.Enemies(characterBody, at, row.Range))
+            {
+                var b = hb.healthComponent.body;
+                if (!b || punchedBodies.Contains(b)) continue;
+                var to = b.corePosition - at; to.y = 0;
+                if (to.sqrMagnitude > 0.25f && Vector3.Dot(to.normalized, dir) < cos) continue;
+                punchedBodies.Add(b);
                 Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, b.corePosition);
                 Fx.KnockBack(characterBody, hb.healthComponent, dir, row.Knockback);
             }
