@@ -197,33 +197,75 @@ namespace DeadlockOfRain
 
         static GameObject SevenStorm(string moment, Vector3 at, float radius, Vector3? to)
         {
-            const float cloudHeight = 16f;
+            const float cloudHeight = 15f;
+            var stormDark = new Color(0.07f, 0.08f, 0.12f, 0.95f);
             switch (moment)
             {
                 case "loop":
                 {
-                    // the thunderhead: a dark churning cloud deck high over the zone, blue light flickering inside it, a few
-                    // rain streaks, and a dashed ring on the ground marking the storm's edge
+                    // the thunderhead: a thick, dark, churning cloud deck over the zone (RoR2's opaque dust, so it really is
+                    // dark), a dim haze under it that darkens the area, lightning flickering inside the clouds, and bolts
+                    // cracking down from the cloud base onto the ground all over the storm
                     var root = Root(at, 0f, null);
                     var cloud = new GameObject("cloud"); cloud.transform.SetParent(root.transform, false); cloud.transform.localPosition = Vector3.up * cloudHeight;
-                    Particles(cloud, "mat_smoke", new Color(0.16f, 0.18f, 0.24f, 0.75f), rate: 18, life: 3f, speed: 0.3f, size: radius * 0.3f, shapeRadius: radius * 0.8f, flat: true);
-                    Particles(cloud, "mat_smoke", new Color(0.28f, 0.33f, 0.45f, 0.55f), rate: 10, life: 2.5f, speed: 0.2f, size: radius * 0.22f, shapeRadius: radius * 0.6f, flat: true);
-                    cloud.AddComponent<Spin>().DegPerSec = 12f;
-                    var flash = Light(cloud, sevenBlue, radius * 1.2f, 0f, Vector3.down * 2f);
+                    // build the deck at once, then keep it churning
+                    var deck = Particles(cloud, "mat_dust", stormDark, rate: 45, life: 4f, speed: 0.4f, size: radius * 0.45f, shapeRadius: radius * 1.05f, flat: true);
+                    deck.Emit(70);
+                    var belly = Particles(cloud, "mat_dust", new Color(0.13f, 0.15f, 0.22f, 0.9f), rate: 30, life: 3.5f, speed: 0.3f, size: radius * 0.35f, shapeRadius: radius * 0.9f, flat: true);
+                    belly.transform.localPosition = Vector3.down * 2.5f;
+                    belly.Emit(40);
+                    var top = Particles(cloud, "mat_dust", new Color(0.2f, 0.22f, 0.3f, 0.85f), rate: 15, life: 4f, speed: 0.2f, size: radius * 0.4f, shapeRadius: radius * 0.75f, flat: true);
+                    top.transform.localPosition = Vector3.up * 3f;
+                    top.Emit(20);
+                    cloud.AddComponent<Spin>().DegPerSec = 10f;
+                    // the dim haze filling the storm, from the ground up to the clouds
+                    var haze = new GameObject("haze"); haze.transform.SetParent(root.transform, false); haze.transform.localPosition = Vector3.up * (cloudHeight * 0.45f);
+                    var hz = Particles(haze, "mat_dust", new Color(0.05f, 0.06f, 0.09f, 0.22f), rate: 25, life: 4f, speed: 0.2f, size: radius * 0.5f, shapeRadius: radius * 0.85f, flat: true);
+                    hz.Emit(30);
+                    // lightning lighting the clouds from inside
+                    var flash = Light(cloud, sevenBlue, radius * 1.4f, 0f, Vector3.down * 3f);
                     flash.gameObject.AddComponent<StormFlash>();
+                    // bolts striking the ground at random inside the storm (looks only; the damage strikes are "hit")
+                    var amb = root.AddComponent<StormBolts>();
+                    amb.Radius = radius * 0.9f; amb.Height = cloudHeight - 2f;
                     return root;
                 }
                 case "hit":
                 {
                     if (!to.HasValue) return null;
-                    var from = new Vector3(to.Value.x + Random.Range(-2f, 2f), at.y + cloudHeight, to.Value.z + Random.Range(-2f, 2f));
-                    // one thin bolt from the cloud: RoR2's own lightning strike (the row's effect) already lights it up
-                    Bolt(from, to.Value, sevenBlue, 0.25f, 0.15f, 10, 1.5f);
-                    Burst(to.Value, "mat_spark", sevenWhite, 10, 0.35f, 8f, 0.07f, upward: true);
+                    var from = new Vector3(to.Value.x + Random.Range(-2f, 2f), at.y + cloudHeight - 2f, to.Value.z + Random.Range(-2f, 2f));
+                    StrikeDown(from, to.Value, true);
                     return null;
                 }
             }
             return null;
+        }
+
+        /// <summary>One lightning strike from the cloud base down to a point: a white core, a blue glow around it, sparks
+        /// and a short light on the ground.</summary>
+        static void StrikeDown(Vector3 from, Vector3 to, bool big)
+        {
+            Bolt(from, to, sevenWhite, big ? 0.35f : 0.22f, 0.16f, 12, big ? 1.6f : 1.2f);
+            Bolt(from, to, sevenBlue, big ? 0.9f : 0.55f, 0.12f, 9, big ? 2.2f : 1.6f);
+            Burst(to, "mat_spark", sevenWhite, big ? 14 : 6, 0.35f, 8f, 0.07f, upward: true);
+            Flash(to + Vector3.up * 1.5f, sevenBlue, big ? 9f : 6f, 0.12f, big ? 2.2f : 1.4f);
+        }
+
+        /// <summary>Thunderhead's extra bolts: every 0.15–0.45 s a bolt from the cloud to a random spot on the ground inside the storm.</summary>
+        sealed class StormBolts : MonoBehaviour
+        {
+            public float Radius, Height;
+            float next;
+            void Update()
+            {
+                if (Time.time < next) return;
+                next = Time.time + Random.Range(0.15f, 0.45f);
+                var c = Random.insideUnitCircle * Radius;
+                var top = transform.position + new Vector3(c.x, Height, c.y);
+                var ground = top + Vector3.down * Height;
+                if (Physics.Raycast(top, Vector3.down, out var hit, Height * 2f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) ground = hit.point;
+                StrikeDown(top, ground, false);
+            }
         }
 
         // ------------------------------------------------------------------ Infernus: Afterburn, Napalm

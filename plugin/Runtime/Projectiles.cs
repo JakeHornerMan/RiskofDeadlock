@@ -227,7 +227,8 @@ namespace DeadlockOfRain
                     var hb = enemies[k]; enemies.RemoveAt(k);
                     var at = hb.healthComponent.body ? hb.healthComponent.body.corePosition : hb.transform.position;
                     Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, at);
-                    Fx.Impact(row.Effect, at);
+                    // RoR2's own strike effect once per tick (it is bright; one per enemy washed the screen out)
+                    if (i == 0) Fx.Impact(row.Effect, at);
                     Vfx.Play(row.Vfx, "hit", transform.position, row.Radius, null, at);
                 }
             }

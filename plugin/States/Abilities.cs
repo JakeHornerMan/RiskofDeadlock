@@ -301,6 +301,8 @@ namespace DeadlockOfRain.States
                 foreach (var hb in Fx.Enemies(characterBody, transform.position + fwd * 1.2f, characterBody.radius + 1.5f))
                 {
                     if (!shoved.Add(hb.healthComponent)) continue;
+                    // scorched on the way past (one tick of the trail), since the shove throws them out of the flames
+                    Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, hb.transform.position);
                     Fx.KnockAside(characterBody, hb.healthComponent, fwd, row.Knockback);
                     Fx.Sound(row.Id, "hit", hb.transform.position);
                 }
