@@ -67,7 +67,8 @@ MODLOG.md                 short journal: versions, lab notes, gotchas
 docs/01-DEADLOCK-ASSETS.md            Deadlock side in depth
 docs/02-RISK-OF-RAIN-2-INTEGRATION.md RoR2 side in depth
 docs/03-PROCESS-OVERVIEW.md           this file
-docs/05-DAMAGE-COMPARISON.md         DPS benchmark vs Commando: variables, results, balance suggestions
+docs/05-DAMAGE-COMPARISON.md         DPS benchmark vs Commando: variables, results, balance suggestions, retest flags (§0)
+docs/06-CURRENT-ABILITIES.md         every survivor's current abilities, numbers and DPS (living; updated with every ability change)
 docs/04-ABILITY-REDESIGN-PROPOSALS.md planning: current kit + 2 alternatives (abilities and passive) per hero, from the Deadlock and RoR2 wikis
 design/                   THE SOURCE OF TRUTH – JSON sheets (heroes, stats, skills, buffs, animations, sounds, effects, hooks)
 tools/preflight.py        checks every sheet cell and cross-reference (and Deadlock/RoR2 names against tools/dev listings)
@@ -313,5 +314,6 @@ Every change to this project (code, sheets, tools, recipe, versions, decisions) 
 - Deadlock-side changes go in doc 01.
 - RoR2-side changes go in doc 02.
 - Process, release and decision changes go here (doc 03).
+- Ability changes also go in doc 06 and add a "retest needed" row to doc 05 §0; a benchmark run refreshes both.
 
 `CLAUDE.md` repeats this rule for agents.

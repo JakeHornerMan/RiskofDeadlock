@@ -3,6 +3,17 @@
 > **Analysis only.** Nothing in the heroes was changed for this. The suggestions in §5 are proposals for the creator to pick from.
 > Measured 2026-10-16 with `bash tools/run_bench.sh 30` (raw output: `build/bench_results.txt`, not in git).
 
+## 0. Retest needed (flags)
+Any change to an ability after the last benchmark adds a row here **in the same commit** (CLAUDE.md standing rule).
+After `bash tools/run_bench.sh`, update §3, doc 06's DPS columns and the version line, then clear the rows that run covered.
+Visual-only changes (effects, animations) don't need a row.
+
+**Last benchmark:** 2026-10-16, commit `714977f`.
+
+| Survivor | Ability | Change since the last benchmark | Commit | Status |
+|---|---|---|---|---|
+| Infernus | Flame Dash | enemies he shoves now take one tick of the trail (75 %), since the knockback threw them out of the flames | `081139c` | **retest** |
+
 ## 1. The question
 The creator's hypothesis: **Commando, using every ability the moment it is ready while shooting constantly for 30 s
 against a big pack of enemies on Monsoon, is the Risk of Rain 2 standard for DPS.** Every Deadlock hero is measured the

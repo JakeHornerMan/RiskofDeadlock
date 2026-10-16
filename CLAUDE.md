@@ -24,7 +24,8 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 2. `docs/01-DEADLOCK-ASSETS.md`: Deadlock side: VPK paths, the extractor, the DLM format, manifest, sounds, exploration tools.
 3. `docs/02-RISK-OF-RAIN-2-INTEGRATION.md`: RoR2 side: content pack, bodies, models, scale, animation and gun rig, skills, ult, buffs, hooks, test mode. Its §12 "Gotchas" is worth reading before debugging.
 4. `docs/04-ABILITY-REDESIGN-PROPOSALS.md`: the ability options and the creator's v0.3.0 picks (§6).
-5. `docs/05-DAMAGE-COMPARISON.md`: DPS benchmark against Commando and balance suggestions.
+5. `docs/05-DAMAGE-COMPARISON.md`: DPS benchmark against Commando, balance suggestions, and the "retest needed" flags (§0).
+6. `docs/06-CURRENT-ABILITIES.md`: every survivor's current abilities, numbers and DPS (keep it in sync).
 `MODLOG.md` is the short journal of versions, lab notes and gotchas.
 
 ## Standing rules
@@ -39,6 +40,10 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 - **Commit after each logical step; do not push unless asked.** Ask the creator before `publish` on Melty.
 - **Don't launch the game for the creator's playtests.** Leave the build installed and tell them it is ready.
   Launching for automated test runs is fine; run `tools/lab_restore.sh` afterwards.
+- **Keep the ability docs current.** `docs/06-CURRENT-ABILITIES.md` lists every survivor's abilities with their numbers
+  and measured DPS. Any change to an ability (sheet numbers, kind behaviour, passives, the ult meter) updates doc 06
+  **and** adds a row to the "Retest needed" table in `docs/05-DAMAGE-COMPARISON.md` §0, in the same commit. After
+  `bash tools/run_bench.sh`, refresh the DPS in docs 05 and 06 and clear the flags that run covered. Visual-only changes need no flag.
 - Every skill row needs an `expect` list. A skill must measurably affect an enemy or the player, and `tools/run_test.sh` checks it in game.
 
 ## Architecture (big picture)
