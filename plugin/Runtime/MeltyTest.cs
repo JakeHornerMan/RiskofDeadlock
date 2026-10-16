@@ -346,7 +346,7 @@ namespace DeadlockOfRain
 
         /// <summary>Test mode only: stop the stage's monster spawns and remove the monsters already there, so the skill checks
         /// see only their own target Lemurians (wandering Wisps and Beetles used to soak up the shots).</summary>
-        static void QuietStage()
+        internal static void QuietStage()
         {
             if (!NetworkServer.active) return;
             foreach (var d in UnityEngine.Object.FindObjectsOfType<CombatDirector>()) d.enabled = false;
@@ -522,7 +522,7 @@ namespace DeadlockOfRain
 
         /// <summary>Turns the player's camera (and with it the aim) to look along a direction: the camera mode keeps its
         /// pitch/yaw in per-rig instance data, which has SetPitchYawFromLookVector.</summary>
-        static void AimCamera(CharacterBody body, Vector3 look)
+        internal static void AimCamera(CharacterBody body, Vector3 look)
         {
             foreach (var rig in CameraRigController.readOnlyInstancesList)
             {

@@ -491,6 +491,14 @@ hand-written copy works for local runs). The JSON's `"checks"` value is the file
 
 ---
 
+### 10.1 DPS benchmark (`Runtime/DpsBench.cs`, dev only)
+Active only while `%LOCALAPPDATA%\DeadlockOfRainench.json` exists (`{ "out": "<file>", "seconds": 30 }`; `tools/run_bench.sh`
+writes and removes it). Starts a run, sets Monsoon, picks one flat spot and a pack of 12 still, sturdy enemies, switches
+the `PlayerCharacterMasterController` off and drives the `InputBank` itself (M1 held, M2/Shift/R pressed every other
+physics frame, aim at the nearest enemy, survivor put back on the spot after dashes). For Commando and every hero it runs
+an "all" pass and one pass per slot, counting every `onServerDamageDealt` from the survivor. Results and every variable:
+doc 05.
+
 ## 11. Adding another hero: the RoR2 half
 
 0. **Test-mode limits first:**

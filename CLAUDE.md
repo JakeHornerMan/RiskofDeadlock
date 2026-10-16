@@ -23,7 +23,8 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 1. `docs/03-PROCESS-OVERVIEW.md`: what the project is, repo layout, workflow, testing, releasing on Melty, git rules, add-a-hero checklist.
 2. `docs/01-DEADLOCK-ASSETS.md`: Deadlock side: VPK paths, the extractor, the DLM format, manifest, sounds, exploration tools.
 3. `docs/02-RISK-OF-RAIN-2-INTEGRATION.md`: RoR2 side: content pack, bodies, models, scale, animation and gun rig, skills, ult, buffs, hooks, test mode. Its §12 "Gotchas" is worth reading before debugging.
-4. `docs/04-ABILITY-REDESIGN-PROPOSALS.md`: planning only (current kit + alternatives per hero); not implemented.
+4. `docs/04-ABILITY-REDESIGN-PROPOSALS.md`: the ability options and the creator's v0.3.0 picks (§6).
+5. `docs/05-DAMAGE-COMPARISON.md`: DPS benchmark against Commando and balance suggestions.
 `MODLOG.md` is the short journal of versions, lab notes and gotchas.
 
 ## Standing rules
@@ -65,7 +66,8 @@ Three pieces, linked by generated data:
 python tools/gen.py                      # preflight + generate code/manifest (python tools/preflight.py to check only)
 dotnet build plugin -c Release           # plugin DLL (other PC: -p:RoR2Dir="<RoR2 folder>")
 bash tools/run_test.sh [checks-file]     # full in-game test on this PC (Steam must be signed in; ~6-7 min)
-bash tools/lab_restore.sh                # restore the PC the way Melty set it up
+bash tools/lab_restore.sh                # restore the PC the way Melty set it up (closes the game)
+bash tools/run_bench.sh [seconds]        # DPS benchmark vs Commando (docs/05); closes the game itself
 python tools/package.py <version>        # release zip in build/
 python tools/dlm_pose.py <hero> [frame] [clip-substring]   # where each clip points the gun
 ```

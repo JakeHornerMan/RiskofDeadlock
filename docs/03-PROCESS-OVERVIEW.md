@@ -67,6 +67,7 @@ MODLOG.md                 short journal: versions, lab notes, gotchas
 docs/01-DEADLOCK-ASSETS.md            Deadlock side in depth
 docs/02-RISK-OF-RAIN-2-INTEGRATION.md RoR2 side in depth
 docs/03-PROCESS-OVERVIEW.md           this file
+docs/05-DAMAGE-COMPARISON.md         DPS benchmark vs Commando: variables, results, balance suggestions
 docs/04-ABILITY-REDESIGN-PROPOSALS.md planning: current kit + 2 alternatives (abilities and passive) per hero, from the Deadlock and RoR2 wikis
 design/                   THE SOURCE OF TRUTH – JSON sheets (heroes, stats, skills, buffs, animations, sounds, effects, hooks)
 tools/preflight.py        checks every sheet cell and cross-reference (and Deadlock/RoR2 names against tools/dev listings)
@@ -75,6 +76,7 @@ tools/package.py          builds build/DeadlockOfRain-<ver>.zip (+ .json with si
 tools/dev_run.sh          kill RoR2, re-enable BepInEx, deploy the built DLL, launch via Steam
 tools/run_test.sh         full local test run (test mode + devshots), prints every check
 tools/lab_restore.sh      put the PC back the way Melty set it up
+tools/run_bench.sh        DPS benchmark (Monsoon, 12-enemy pack, 30 s passes) -> build/bench_results.txt; closes the game itself (doc 05)
 tools/dlm_*.py            DLM debugging (skinning check, triangles, submeshes, gun pose per clip)
 tools/dev/                (gitignored) listings from this PC's installs: vpk_files.txt, sound_events.txt, anim_names.json, addressable_keys.txt
 extractor/                DeadlockExtract (.NET 10, VRF) – Program.cs, DlmWriter.cs, manifest.json (generated)

@@ -33,6 +33,7 @@ namespace DeadlockOfRain
             Buffs.InitHooks();
             DeadlockAudio.Init();
             MeltyTest.Init();
+            DpsBench.Init();
         }
 
         void OnDestroy() => DeadlockAudio.Shutdown();
