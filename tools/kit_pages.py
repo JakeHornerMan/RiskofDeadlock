@@ -15,8 +15,8 @@ OUT = os.path.join(ROOT, 'build', 'pages')
 IMG = os.path.join(OUT, 'img')
 os.makedirs(OUT, exist_ok=True)
 E = html.escape
-VERSION = 'v0.4.1'
-BAND = 0.20
+VERSION = 'v0.4.2'
+BAND = 500  # balanced = within ±500 %/s of the RoR2 match (creator, 2026-10-16)
 
 def sheet(name):
     return json.load(open(os.path.join(ROOT, 'design', name + '.json'), encoding='utf-8'))['rows']
@@ -60,24 +60,39 @@ CHANGES = {
  'haze': [('v0.4.1', ['Twin SMGs 45 → 55 % per bullet', 'Fixation bursts every 10 stacks (was 20) for 300 % (was 200), splashing every enemy within 6 m',
                       'Sleep Dagger: 6 s (was 10), 500 % (was 350), pierces every enemy in its line', 'Bullet Dance fires at every enemy in range at once']),
           ('v0.4.0', ['Bullet Dance moves to Q as an equipment; new R: Phantom Strike'])],
- 'abrams': [('v0.4.1', ['Haymaker: a shockwave cone (6 m, 30° each side) hits everything in front', 'Shoulder Charge 350 → 500 % per enemy',
+ 'abrams': [('v0.4.2', ['Damage only, to match Loader: Shotgun 45 → 52 % per pellet, Siphon Life 250 → 450 %/s, Shoulder Charge 500 → 1600 %, Haymaker 900 → 2400 %']),
+            ('v0.4.1', ['Haymaker: a shockwave cone (6 m, 30° each side) hits everything in front', 'Shoulder Charge 350 → 500 % per enemy',
                         'Seismic Impact radius 12 → 18 m']),
             ('v0.4.0', ['Seismic Impact moves to Q as an equipment and slams on Left Click; new R: Haymaker'])],
- 'seven': [('v0.4.1', ['Cooldowns only, no damage cuts: Lightning Ball 6 → 16 s, Static Charge 7 → 16 s, Power Surge 14 → 30 s',
+ 'seven': [('v0.4.2', ['To match Artificer: Shock Rifle 48 → 60 % per bullet; Lightning Ball 16 → 8 s, Static Charge 16 → 6 s, Power Surge 30 → 10 s']),
+           ('v0.4.1', ['Cooldowns only, no damage cuts: Lightning Ball 6 → 16 s, Static Charge 7 → 16 s, Power Surge 14 → 30 s',
                        'Shock Rifle fix: the gun froze after a magazine (29 rounds in bursts of 3)']),
            ('v0.4.0', ['Thunderhead moves to Q as an equipment; new R: Power Surge with RoR2 Tesla arcs'])],
  'infernus': [('v0.4.1', ['Torment Pulse 120 → 50 % per pulse', 'Flame Gun 40 → 50 % per bullet']),
               ('v0.4.0', ['Concussive Combustion moves to Q as an equipment; new R: Torment Pulse; all his fire rebuilt from RoR2 fire materials'])],
 }
+# "all" (main moves together, %/s) from every bench run of the current build, per survivor; the balance verdict uses the
+# mean, because one run is too noisy (Loader measured 1769–5241, Artificer 1526–4507). Add each new run's numbers here
+# (doc 05 §3.0 lists them); reset a hero's list when its kit changes.
+RUNS = {
+ 'Commando': [1298, 1304, 1255, 1064, 1144, 1244, 1261],
+ 'DeadlockHaze': [1315, 1478, 1056, 1236],
+ 'Loader': [2747, 2135, 1769, 5241],
+ 'DeadlockAbrams': [1990, 3026],
+ 'Mage': [2790, 4507, 1526, 4028, 4294, 4482],
+ 'DeadlockSeven': [3661, 4337],
+ 'Engi': [1268, 1555, 1641],
+ 'DeadlockInfernus': [920, 1226, 1161],
+}
+
 ANALYSIS = {
- 'haze': ['<strong>Why she is above:</strong> her SMGs alone (1,020) beat Double Tap (603) because every 10 Fixation stacks burst for 300 % and splash the whole bunched pack. Against one target the splash adds nothing, so a single boss would bring her closer to Commando.',
-          '<strong>Options (not applied):</strong> splash radius 6 → 4 m, or bursts every 15 stacks, or SMGs back to 50 %. Each is worth roughly −150 to −250 here.'],
- 'abrams': ['<strong>Why he is far below:</strong> Loader’s Charged Gauntlet (2,287 alone) and M551 Pylon (1,800) are huge area hits on a bunched pack, and the gauntlet also launches him through it. Abrams’ moves are 350–570 each and his shotgun stops while he charges or punches.',
-             '<strong>Options (not applied):</strong> to reach Loader he needs about 2.8×. Either raise Haymaker and Shoulder Charge a lot (e.g. Haymaker 900 → 1800 %, Shoulder Charge 500 → 1000 %), or pick a different yardstick for him. Ask the creator first.'],
- 'seven': ['<strong>Why he is far below:</strong> Artificer’s Flame Bolt (2,342 alone: 4 charges of 220 % that ignite) and Nano-Bomb (1,073) outdamage Seven’s whole kit. Seven’s cooldowns were raised in 0.4.1 to fit <em>Commando</em> (Lightning Ball and Static Charge 16 s, Power Surge 30 s).',
-           '<strong>Options (not applied):</strong> against Artificer those cooldowns can come back down toward 0.4.0’s 6 / 7 / 14 s (he measured far higher then), retuned with the bench. Ask the creator first.'],
- 'infernus': ['<strong>Inside the band.</strong> Engineer’s grenades (1,720 alone) carry him; his turrets were placed twice but hit only a few enemies in 30 s. Napalm (538) and Torment Pulse (768) carry Infernus.',
-              'Engineer’s damage stat is 14 against Infernus’ 12, so in raw damage per second Engineer is about 17 % ahead; the %/s comparison removes that difference. No change suggested.'],
+ 'haze': ['Unchanged in 0.4.2: with the ±500 band she is inside. Her SMGs alone (about 900–1,000) beat Double Tap (603) because Fixation bursts splash the bunched pack; against one target she is closer to Commando.'],
+ 'abrams': ['0.4.2 raised his damage only (no cooldown changes): Shotgun 45 → 52 % per pellet, Siphon Life 250 → 450 %/s, Shoulder Charge 500 → 1600 %, Haymaker 900 → 2400 %.',
+            'Loader is the least steady survivor in the test (1,769 to 5,241 across four runs: his Charged Gauntlet and Pylon sometimes kill pack members, and the bench refills them), so the verdict uses the averages.'],
+ 'seven': ['0.4.2: Shock Rifle 48 → 60 % per bullet; cooldowns Lightning Ball 16 → 8 s, Static Charge 16 → 6 s, Power Surge 30 → 10 s.',
+           'He is very sensitive to Lightning Ball’s cooldown: below about 8 s the balls overlap (each lives 5 s), every enemy stays charged and Capacitor discharges chain through the pack (5,300–5,650 at 6–7 s, against 1,893 at 8 s). Keep it at 8 s or more.'],
+ 'infernus': ['Unchanged in 0.4.2: inside the ±500 band. Engineer’s grenades carry him; his turrets land few hits in 30 s against a still pack.',
+              'Engineer’s damage stat is 14 against Infernus’ 12, so in raw damage per second Engineer is about 17 % further ahead; %/s removes that difference.'],
 }
 
 # ------------------------------------------------------------------ bench results
@@ -96,6 +111,14 @@ for line in (open(bench_path, encoding='utf-8') if os.path.exists(bench_path) el
 
 def dps(who, mode):
     return BENCH.get(who, {}).get(mode, {}).get('dps')
+
+def avg_all(who):
+    """Main moves together, %/s: the mean over RUNS when known, else this bench file's run."""
+    r = RUNS.get(who)
+    return round(sum(r) / len(r)) if r else dps(who, 'all')
+
+def runs_of(who):
+    return len(RUNS.get(who, [])) or 1
 
 def per_use(who):
     return BENCH.get(who, {}).get('equipment')
@@ -327,7 +350,7 @@ def hero_who(hid):
 
 def verdict(val, base):
     if val is None or not base: return 'unknown', 0
-    lo, hi = base * (1 - BAND), base * (1 + BAND)
+    lo, hi = base - BAND, base + BAND
     return ('inside' if lo <= val <= hi else 'above' if val > hi else 'below'), val - base
 
 def stat_bands(hid):
@@ -399,12 +422,12 @@ def passive_card(h):
 
 def analysis(h):
     hid = h['id']; body, v = match_of(hid)
-    me, base = dps(hero_who(hid), 'all'), dps(v['who'], 'all')
+    me, base = avg_all(hero_who(hid)), avg_all(v['who'])
     if me is None or base is None:
         return ['No benchmark for this pair yet.']
     side, gap = verdict(me, base)
-    out = [f"All main moves together: <strong>{me:,} %/s</strong> against {E(v['name'])}’s <strong>{base:,} %/s</strong> "
-           f"({signed(gap)}, {me / base:.2f}×). Balanced is {round(base * (1 - BAND)):,}–{round(base * (1 + BAND)):,}: <strong>{side} the band</strong>."]
+    out = [f"All main moves together: <strong>{me:,} %/s</strong> (mean of {runs_of(hero_who(hid))} runs) against {E(v['name'])}’s <strong>{base:,} %/s</strong> (mean of {runs_of(v['who'])}) "
+           f"({signed(gap)}, {me / base:.2f}×). Balanced is {max(0, base - BAND):,}–{base + BAND:,}: <strong>{side} the band</strong>."]
     parts = []
     for slot in SLOTS:
         a, b = dps(hero_who(hid), slot), dps(v['who'], slot)
@@ -420,7 +443,7 @@ def nav(current):
 
 def balance_scale(h, v, me, base):
     if not me or not base: return ''
-    lo, hi = base * (1 - BAND), base * (1 + BAND)
+    lo, hi = base - BAND, base + BAND
     smax = max(me, hi) * 1.15
     def pin(val, color, label):
         return f'<div class="pin" style="left:{val / smax * 100:.1f}%;background:{color}"><span style="color:{color}">{E(label)} {val:,}</span></div>'
@@ -433,7 +456,7 @@ def hero_page(h):
     rows = {r['slot']: r for r in SKILLS if r['hero'] == hid}
     vals = [dps(hero_who(hid), s) or 0 for s in SLOTS] + [dps(v['who'], s) or 0 for s in SLOTS]
     scale = max(vals + [100]) * 1.08
-    me, base = dps(hero_who(hid), 'all'), dps(v['who'], 'all')
+    me, base = avg_all(hero_who(hid)), avg_all(v['who'])
     side, gap = verdict(me, base)
     eq = rows['equipment']; use = per_use(hero_who(hid))
     use_html = f'<span class="num">One use on the pack: {use["total"]:,.0f} % ({use["enemies"]} enemies hit)</span>' if use else ''
@@ -493,7 +516,7 @@ def hero_page(h):
     </div>
   </section>
 
-  <p class="foot">Benchmark {VERSION}: Monsoon, level 1, no items, 12 still enemies 10–15 m away, perfect aim, every move used the moment it is ready for 30 s, no equipment; one run per pass (about ±10 % noise). {E(v["name"])} is measured the same way with its default loadout. %/s = % of the survivor’s damage stat per second (100 %/s is one 100 % hit per second). Balanced = within ±20 % of the Risk of Rain match. The maths column works from the design sheets; the bars are measured. Pictures are our own renders of the mod in Risk of Rain 2.</p>
+  <p class="foot">Benchmark {VERSION}: Monsoon, level 1, no items, 12 still enemies 10–15 m away, perfect aim, every move used the moment it is ready for 30 s, no equipment; the main-moves numbers are means over every run of this build (single runs swing ±10 %, Loader and Artificer far more); the per-move bars are the last run. {E(v["name"])} is measured the same way with its default loadout. %/s = % of the survivor’s damage stat per second (100 %/s is one 100 % hit per second). Balanced = within ±500 %/s of the Risk of Rain match. The maths column works from the design sheets; the bars are measured. Pictures are our own renders of the mod in Risk of Rain 2.</p>
 </main>
 '''
 
@@ -503,7 +526,7 @@ def overview_page():
     pairs, cards, fun = [], [], []
     for h in HEROES:
         hid = h['id']; body, v = match_of(hid)
-        me, base = dps(hero_who(hid), 'all'), dps(v['who'], 'all')
+        me, base = avg_all(hero_who(hid)), avg_all(v['who'])
         side, gap = verdict(me, base)
         pairs.append(f'<tr><td><div class="who-cell">{img_tag(hid, "", 60)}<a href="{LINKS[hid]}">{E(h["displayName"])}</a></div></td>'
                      f'<td><div class="who-cell">{img_tag(body, "", 60) or badge(v["name"])}{E(v["name"])}</div></td>'
@@ -523,7 +546,7 @@ def overview_page():
     pre = per_use('Commando')
     if pre: fun.append((pre['total'], f'<tr><td>Preon Accumulator</td><td>Commando (vanilla item)</td><td class="n">{pre["total"]:,.0f} %</td><td class="n">{pre["enemies"]}</td></tr>'))
     fun_html = ''.join(r for _, r in sorted(fun, key=lambda x: -x[0]))
-    inside = sum(1 for h in HEROES if verdict(dps(hero_who(h['id']), 'all'), dps(match_of(h['id'])[1]['who'], 'all'))[0] == 'inside')
+    inside = sum(1 for h in HEROES if verdict(avg_all(hero_who(h['id'])), avg_all(match_of(h['id'])[1]['who']))[0] == 'inside')
     return f'''<title>Deadlock of Rain Balance</title>
 {FONTS}
 <style>{css("#c9a35b")}</style>
@@ -532,13 +555,13 @@ def overview_page():
   <header class="id" style="gap:14px">
     <div class="eyebrow">Deadlock of Rain · {VERSION} · Balance</div>
     <h1>Each hero <span style="color:var(--brass)">vs</span> their Risk of Rain match</h1>
-    <p class="muted">Every Deadlock hero is paired with the Risk of Rain 2 survivor their stats are built on, and both are measured the same way: all main moves (M1, M2, Shift, R) used the moment they are ready for 30 s against a pack of 12. Balanced means within ±20 % of the match. <strong style="color:var(--cream)">{inside} of 4</strong> are inside.</p>
+    <p class="muted">Every Deadlock hero is paired with the Risk of Rain 2 survivor their stats are built on, and both are measured the same way: all main moves (M1, M2, Shift, R) used the moment they are ready for 30 s against a pack of 12. Balanced means within ±500 %/s of the match. <strong style="color:var(--cream)">{inside} of 4</strong> are inside.</p>
   </header>
 
   <section class="section" aria-labelledby="pr">
     <h2 id="pr">The pairs</h2>
     <div class="tablewrap"><table>
-      <thead><tr><th>Hero</th><th>Risk of Rain match</th><th class="n">Hero %/s</th><th class="n">Match %/s</th><th>Verdict (±20 %)</th></tr></thead>
+      <thead><tr><th>Hero</th><th>Risk of Rain match</th><th class="n">Hero %/s (mean)</th><th class="n">Match %/s (mean)</th><th>Verdict (±500)</th></tr></thead>
       <tbody>{"".join(pairs)}</tbody>
     </table></div>
   </section>
@@ -557,7 +580,7 @@ def overview_page():
     </table></div>
   </section>
 
-  <p class="foot">Benchmark {VERSION}: Monsoon, first stage of a fresh run, level 1, no items, god mode; 12 still enemies (8 Lemurians, 4 Beetles, ×101 health) 10–15 m away; M1 held, every other move pressed the moment it is ready; perfect aim at the nearest enemy; put back on the spot after dashes; no equipment except in the Q pass; turret damage counts for Engineer. Counted: every hit landed, after crits and damage mods, before armor. One run per pass, about ±10 % noise. Commando, the yardstick before 0.4.1: {fmt(dps("Commando", "all"))} %/s. Method: docs/05-DAMAGE-COMPARISON.md. Pictures are our own renders of the mod in Risk of Rain 2.</p>
+  <p class="foot">Benchmark {VERSION}: Monsoon, first stage of a fresh run, level 1, no items, god mode; 12 still enemies (8 Lemurians, 4 Beetles, ×101 health) 10–15 m away; M1 held, every other move pressed the moment it is ready; perfect aim at the nearest enemy; put back on the spot after dashes; no equipment except in the Q pass; turret damage counts for Engineer. Counted: every hit landed, after crits and damage mods, before armor. Hero and match numbers are means over every run of this build; single runs swing ±10 %, Loader and Artificer far more. Commando, the yardstick before 0.4.1: {fmt(avg_all("Commando"))} %/s. Method: docs/05-DAMAGE-COMPARISON.md. Pictures are our own renders of the mod in Risk of Rain 2.</p>
 </main>
 '''
 

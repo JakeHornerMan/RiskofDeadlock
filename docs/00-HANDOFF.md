@@ -33,14 +33,14 @@ Before touching anything:
 
 | Item | State |
 |---|---|
-| Version | **0.4.1** (`plugin/Plugin.cs`). Not published on Melty since 0.2.0 |
+| Version | **0.4.2** (`plugin/Plugin.cs`). Not published on Melty since 0.2.0 |
 | Installed build | v0.4.1 + the bench's match/portrait dev code (committed with the page redesign) |
 | Heroes | Haze, Abrams, Seven, Infernus; 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
 | Test | `run_test.sh`: every check passes, 4/4 heroes (2026-10-16, v0.4.1) |
-| Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, ±20 % (doc 05 §3.0) |
-| Balance now | Infernus 1226 vs Engineer 1268: **inside**. Haze 1478 vs Commando 1064: **above**. Abrams 985 vs Loader 2747 and Seven 1242 vs Artificer 2790: **far below**. The creator has **not chosen** fixes (suggestions in doc 05 §3.0) |
+| Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, within **±500 %/s**, comparing **means over every bench run** of the current build (`RUNS` in `tools/kit_pages.py`; doc 05 §3.0) |
+| Balance now | **All four inside** (means): Haze 1271 vs Commando 1224, Abrams 2508 vs Loader 2973, Seven 3999 vs Artificer 3605, Infernus 1102 vs Engineer 1488 |
 | Pages | Five claude.ai Artifacts, redesigned (links at the top of doc 06); the overview is shared "anyone with the link" |
-| Open | Retuning vs the matches (ask first); RoR2 survivor portraits fail to render (§9); pickup figure size and Haymaker wave vfx not seen in game |
+| Open | RoR2 survivor portraits fail to render (§9); pickup figure size and Haymaker wave vfx not seen in game; the bench is noisy for Loader/Artificer (a steadier multi-run bench would help) |
 
 ---|---|
 | Version | **0.4.1** (`plugin/Plugin.cs`), last commit `d91047f` (balance pass). Not published on Melty since 0.2.0 |
@@ -113,7 +113,8 @@ driven by `tools/run_bench.sh [seconds] [hero]`. Method and every variable: doc 
 - `run_bench.sh 30 seven` runs only Commando, Seven (and its match): quick tuning.
 - `PORTRAITS=1 run_bench.sh 0` renders studio portraits only (§9).
 
-**Balance rule (creator, 2026-10-16):** compare main moves only; balanced = **±20 %**. Until §9 lands the baseline is
+**Balance rule (creator, 2026-10-16):** compare main moves only, against the hero's own RoR2 match; balanced = **±500 %/s**, on the
+means over every run of the current build. (Earlier the same day: ±20 % of Commando.) Until §9 lands the baseline is
 Commando (1255 %/s → band 1004–1506). **Decided next:** each hero is compared with **its own RoR2 match** (§2), measured
 the same way, ability by ability ("Their own RoR2 match" was the creator's pick).
 
@@ -158,7 +159,10 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
 - **Burst-gun bug** (fixed 0.4.1, MODLOG 11): the burst counter went to −1 when the magazine ran dry mid-burst; it
   hid in play because other skills interrupt the gun state. Look for "stops after one magazine" symptoms.
 - The pickup figure first came out **life-size** (PickupDisplay scales by bounds volume); pad bounds to shrink it.
-- Benchmarks are noisy (Phase Round 592/854/752 across runs). Don't tune to single-digit differences.
+- Benchmarks are noisy (Phase Round 592/854/752 across runs; Loader 1769–5241, Artificer 1526–4507). Don't tune to one run; use means.
+- Seven is non-linear: Lightning Ball below ~8 s makes Capacitor discharges chain (1893 → 5300+). Keep it ≥ 8 s.
+- Claude Code may kill a long background job when the PC is low on memory; the game can then stay open, so check
+  `tasklist` and run `lab_restore.sh`. Poll long runs in the foreground (≤ 10 min per call) so the session is not idle.
 - In "all" passes, long dashes (Shoulder Charge 3 s) carry survivors away from the pack; that understates Abrams.
 - Artifact republish: publish the same `build/pages/*.html` path with the page's `url`; a sharing change on the page
   can make the first republish fail, so retry.

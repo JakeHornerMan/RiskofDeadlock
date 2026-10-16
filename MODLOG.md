@@ -20,6 +20,9 @@
 - Test mode: %LOCALAPPDATA%\Melty\test\deadlock-of-rain.json (a local copy written by hand for dev; Melty writes its own
   during test_release). Dev screenshots: create %LOCALAPPDATA%\DeadlockOfRain\devshots.
 
+## Balance
+- 0.4.2: each hero within ±500 %/s of its RoR2 match (means over bench runs; doc 05 §3.0).
+
 ## Gotchas found
 1. RoR2's CharacterModel keeps ONE material per renderer (it re-applies defaultMaterial), so a multi-material
    SkinnedMeshRenderer only drew submesh 0. Fix: one SkinnedMeshRenderer per material, one RendererInfo each.

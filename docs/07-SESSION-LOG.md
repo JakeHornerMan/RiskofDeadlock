@@ -169,3 +169,33 @@ pictures and the matches' DPS can only come from the game; asked → "One 30-min
 **Lessons:**
 - Say why before launching the game, and ask when the creator didn't ask for game time.
 - Python 3.11 rejects backslashes inside f-string expressions: build such strings first.
+
+### 2026-10-16 · Balance each hero to its RoR2 match · v0.4.2
+**Request (verbatim):** "ok come up witha  plan to balance the dps to their counter part! ask questions" (with a pasted copy
+of the overview's pairs table).
+
+**Questions asked → answers:**
+- Haze → (free text) "ok let increase the threshold to 500 dps i think that is good enough, so no change here".
+- Abrams → "Damage only".
+- Seven → "Cooldowns + gun buff".
+- Game runs → "As many as needed".
+- After a run was stopped for low memory and Artificer proved noisy: Seven target → "Artificer's average"; may I keep
+  running → "Yes, carry on".
+
+**Done:**
+- Band ±500 %/s, means over runs (`RUNS` in `kit_pages.py`).
+- Abrams: Shotgun 52 %, Siphon 450 %/s, Shoulder Charge 1600 %, Haymaker 2400 %.
+- Seven: Shock Rifle 60 %; cooldowns 8 / 6 / 10 s.
+- Six bench runs: two Seven-only tries jumped to 5300+ below 8 s Lightning Ball; one run was killed by the memory reaper, and
+  the game it left open was closed.
+- Full in-game test; docs 00/03/05/06/07; pages republished; version 0.4.2.
+
+**Results:** all four inside on the means. Haze 1271 vs Commando 1224, Abrams 2508 vs Loader 2973, Seven 3999 vs
+Artificer 3605, Infernus 1102 vs Engineer 1488.
+
+**Open:**
+- The single-run noise of Loader and Artificer; a steadier bench (3 runs per survivor, or 60 s passes) would make the
+  verdicts firmer.
+- Seven's chain-reaction cliff below 8 s Lightning Ball.
+
+**Lessons:** see doc 00 §7 (means not single runs, Seven's cliff, the memory reaper).

@@ -9,7 +9,7 @@
 [Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) · [Balance vs Commando](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3).
 Built by `python tools/kit_pages.py` into `build/pages/`. Republish each page to its link whenever this doc or doc 05 changes.
 
-**Version:** 0.4.1 (2026-10-16).
+**Version:** 0.4.2 (2026-10-16).
 
 **DPS source:** the v0.4.1 benchmark of 2026-10-16; doc 05 lists every variable. Setup:
 - Monsoon, level 1, no items
@@ -21,9 +21,10 @@ How to read the DPS:
 - **dmg/s** = the same at level 1 (damage stat 12, the same for every survivor).
 - **⚠ retest** = the number is out of date or suspect (see doc 05 §0).
 - **Balance** compares the main moves (M1, M2, Shift, R) together, without equipment, with the hero's **own RoR2 match** (the
-  survivor its stats are built on): balanced = within **±20 %** of the match (doc 05 §3.0). Haze → Commando, Abrams → Loader,
+  survivor its stats are built on): balanced = within **±500 %/s** of the match, comparing the **means over every bench run of
+  the current build** (doc 05 §3.0; one run is too noisy). Haze → Commando, Abrams → Loader,
   Seven → Artificer, Infernus → Engineer.
-- DPS below is from the second v0.4.1 run (with the matches); ±10 % noise between runs.
+- Per-ability DPS below is from the last full run (v0.4.2); single runs swing ±10 %.
 - **Q (equipment)** is **not balanced** (any survivor can carry it): its column is one use, spread over 30 s, plus its total, for fun.
 - Passives have no number of their own: they are inside their gun's (and other skills') numbers.
 
@@ -46,7 +47,7 @@ of the hero.
 
 ---
 
-## Haze: the smoke-shrouded assassin (main moves at once: **1478 %/s · 177 dmg/s**; match Commando 1064: above the band)
+## Haze: the smoke-shrouded assassin (main moves at once: **1271 %/s** mean of 4 runs; match Commando 1224: inside ±500)
 
 | Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
 |---|---|---|---|---|---|
@@ -57,29 +58,29 @@ of the hero.
 | R | **Phantom Strike** (Deadlock item) | Blinks behind the enemy under the crosshair (≤ 30 m) and cuts it 3 times; each cut adds 5 Fixation. No target: no blink, and R stays ready. Violet streak, smoke and slash effects. | 3 × 250 %, proc 1.0 | 10 s | **352** · 42 |
 | Q | **Bullet Dance** (equipment) | Spins and fires at every enemy within 25 m at once, 30 % chance to evade attacks, slowed to 60 %. Blade-ring and spark effects. | 113 % per shot to each enemy, ~12 shots/s for 5 s (≈6800 % per enemy) | 120 s | 1567 · 188 (not balanced; one use: 47008 %, 8 enemies) |
 
-## Abrams: the unstoppable detective (main moves at once: **985 %/s · 118 dmg/s**; match Loader 2747: below the band)
+## Abrams: the unstoppable detective (main moves at once: **2508 %/s** mean of 2 runs; match Loader 2973: inside ±500)
 
 | Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
 |---|---|---|---|---|---|
 | Passive | **Infernal Resilience** | Heals back part of every hit he takes; debuffs on him are shorter. | 10 % of damage taken over 10 s; debuffs −20 % | – | (no damage) |
-| M1 | **Shotgun** | Nine pellets with spread, from the end of the gun. | 9 × 45 %, 1.6 shots/s, 9 shells, 1.5 s reload, proc 0.4 | – | **508** · 61 |
-| M2 | **Siphon Life** | RoR2's Mired Urn tethers: drains the nearest enemies and heals him for all of it. | up to 3 enemies within 25 m, 250 %/s each, 8 s, heals 100 % of damage dealt | 15 s | **400** · 48 |
-| Shift | **Shoulder Charge** | Charges along his aim (steerable), running like his sprint, faster. Every enemy he runs into is hit, stunned and knocked aside. A wall stops him. | 500 % per enemy, stun 1 s, knockback 22 m/s, 28 m/s for up to 3 s | 8 s | **350** · 42 |
-| R | **Haymaker** (Deadlock heavy melee) | A 0.4 s wind-up with a glowing fist, a 6 m lunge, then a heavy punch whose shockwave hits every enemy in a cone in front and knocks them flying. | 900 % each; cone 6 m long, 30° each side; knockback 30 m/s, proc 1.0 | 5 s | **570** · 68 |
+| M1 | **Shotgun** | Nine pellets with spread, from the end of the gun. | 9 × 52 %, 1.6 shots/s, 9 shells, 1.5 s reload, proc 0.4 | – | **581** · 70 |
+| M2 | **Siphon Life** | RoR2's Mired Urn tethers: drains the nearest enemies and heals him for all of it. | up to 3 enemies within 25 m, 450 %/s each, 8 s, heals 100 % of damage dealt | 15 s | **720** · 86 |
+| Shift | **Shoulder Charge** | Charges along his aim (steerable), running like his sprint, faster. Every enemy he runs into is hit, stunned and knocked aside. A wall stops him. | 1600 % per enemy, stun 1 s, knockback 22 m/s, 28 m/s for up to 3 s | 8 s | **1120** · 134 |
+| R | **Haymaker** (Deadlock heavy melee) | A 0.4 s wind-up with a glowing fist, a 6 m lunge, then a heavy punch whose shockwave hits every enemy in a cone in front and knocks them flying. | 2400 % each; cone 6 m long, 30° each side; knockback 30 m/s, proc 1.0 | 5 s | **1520** · 182 |
 | Q | **Seismic Impact** (equipment) | Rises, hovers up to 3 s while a ground reticle follows the aim (≤ 40 m); **Left Click** slams there (or it slams by itself after 3 s). He can be hit while hovering. | 6800 % in 18 m, stun 1.6 s | 120 s | 2493 · 299 (not balanced; one use: 74800 % on 11 enemies) |
 
-## Seven: the living storm (main moves at once: **1242 %/s · 149 dmg/s**; match Artificer 2790: below the band)
+## Seven: the living storm (main moves at once: **3999 %/s** mean of 2 runs; match Artificer 3605: inside ±500)
 
 | Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
 |---|---|---|---|---|---|
 | Passive | **Capacitor** | Gun hits, Lightning Ball shocks and Power Surge arcs build Static. At 10 stacks the target discharges, arcing to 2 nearby enemies, and everything hit is stunned. | 300 % to each, 12 m, stun 1 s; Static max 10, 5 s | – | in M1, M2, R |
-| M1 | **Shock Rifle** | 3-round bursts from the end of the gun; hits build Static. | 3 × 48 %, burst every 0.26 s, 29 rounds, 1.4 s reload, proc 0.7 | – | **672** · 81 |
-| M2 | **Lightning Ball** | A slow ball that flies through enemies (stops only on walls), shocking everything near it; every shock builds Static. | 60 % every 0.25 s to all within 6 m (240 %/s), 14 m/s, 5 s, proc 0.3 | 16 s | **118** · 14 |
-| Shift | **Static Charge** | Plants a charge on the aimed enemy or spot; after a countdown, a thunderbolt from the sky. | 450 % in 8 m, stun 0.9 s, 1.5 s fuse | 16 s | **165** · 20 |
-| R | **Power Surge** (his Deadlock ability) | For 8 s he crackles with lightning: every Shock Rifle burst arcs RoR2 Tesla lightning (like the Unstable Tesla Coil) from the target to up to 4 more enemies within 10 m, each arc building Static. +40 % move speed. | 60 % per arc, proc 0.2 | 30 s | 0 alone (it powers the gun; counted in "all") |
+| M1 | **Shock Rifle** | 3-round bursts from the end of the gun; hits build Static. | 3 × 60 %, burst every 0.26 s, 29 rounds, 1.4 s reload, proc 0.7 | – | **704** · 84 |
+| M2 | **Lightning Ball** | A slow ball that flies through enemies (stops only on walls), shocking everything near it; every shock builds Static. | 60 % every 0.25 s to all within 6 m (240 %/s), 14 m/s, 5 s, proc 0.3 | 8 s (below ~8 s the balls overlap and Capacitor discharges chain: 5300+ in the bench) | **904** · 108 |
+| Shift | **Static Charge** | Plants a charge on the aimed enemy or spot; after a countdown, a thunderbolt from the sky. | 450 % in 8 m, stun 0.9 s, 1.5 s fuse | 6 s | **765** · 92 |
+| R | **Power Surge** (his Deadlock ability) | For 8 s he crackles with lightning: every Shock Rifle burst arcs RoR2 Tesla lightning (like the Unstable Tesla Coil) from the target to up to 4 more enemies within 10 m, each arc building Static. +40 % move speed. | 60 % per arc, proc 0.2 | 10 s | 0 alone (it powers the gun; counted in "all") |
 | Q | **Thunderhead** (equipment) | Dark storm clouds over the spot he stands on, darkening it; lightning strikes enemies from the clouds; allies inside get RoR2's Warbanner. | up to 4 enemies every 0.4 s, 272 % each, 20 m, 10 s (6800 % per enemy); Warbanner +30 % attack and move speed | 120 s | 907 · 109 (not balanced; one use: 27200 %) |
 
-## Infernus: the burning man (main moves at once: **1226 %/s · 147 dmg/s**; match Engineer 1268: inside the band)
+## Infernus: the burning man (main moves at once: **1102 %/s** mean of 3 runs; match Engineer 1488: inside ±500)
 
 | Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
 |---|---|---|---|---|---|
