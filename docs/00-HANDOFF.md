@@ -33,13 +33,14 @@ Before touching anything:
 
 | Item | State |
 |---|---|
-| Version | **0.4.2** (`plugin/Plugin.cs`). Not published on Melty since 0.2.0 |
+| Version | **0.5.0** (`plugin/Plugin.cs`; voice lines), extractor **1.1.0**. Not published on Melty since 0.2.0 |
 | Installed build | v0.4.1 + the bench's match/portrait dev code (committed with the page redesign) |
 | Heroes | Haze, Abrams, Seven, Infernus; 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
-| Test | `run_test.sh`: every check passes, 4/4 heroes (2026-10-16, v0.4.1) |
+| Test | `run_test.sh`: every check passes incl. `voice-lines`, 4/4 heroes (2026-10-17, v0.5.0) |
 | Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, within **±500 %/s**, comparing **means over every bench run** of the current build (`RUNS` in `tools/kit_pages.py`; doc 05 §3.0) |
 | Balance now | Pooled over every run incl. the library (doc 05 §6): Haze +169 and Infernus −242 inside; **Abrams −520 (just below Loader) and Seven +631 (above Artificer)**, not retuned yet, the creator decides |
 | Pages | Five claude.ai Artifacts, redesigned (links at the top of doc 06); the overview is shared "anyone with the link" |
+| Voice lines | `design/voice.json` + `Runtime/Voice.cs` (doc 02 §8). Not yet heard in a real run: unselect (teleporter finish), multikill and idle lines; the test only proves select/skill lines play. Release needs a forced re-extract (new voice files) and the recipe check `voice-lines` |
 | Open | RoR2 survivor portraits fail to render (§9); pickup figure size and Haymaker wave vfx not seen in game; the bench is noisy for Loader/Artificer (a steadier multi-run bench would help) |
 
 ---|---|

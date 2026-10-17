@@ -36,7 +36,7 @@ Related documents:
 | NLayer (MP3 decoder) | 1.16.0 | `extractor/DeadlockExtract.csproj` |
 | .NET SDK for the extractor | **net10.0**. VRF 20 needs it; net8 does not compile against it. | csproj `TargetFramework` |
 | SharpGLTF, SkiaSharp, ValvePak, ValveKeyValue | transitive deps of VRF | `THIRD-PARTY-NOTICES.txt` |
-| Extractor version | `1.0.1` (`Program.Version`) | `extractor/Program.cs`; also part of the cache stamp |
+| Extractor version | `1.1.0` (`Program.Version`; 1.1.0 added voice lines) | `extractor/Program.cs`; also part of the cache stamp |
 
 A Deadlock update can change asset paths, clip names, mesh names or sound event names. **Section 9** explains how to
 re-validate everything after an update.
@@ -118,7 +118,8 @@ Risk of Rain 2 plugin (DeadlockOfRain.dll): DeadlockCache reads it; ModelBuilder
                 "meshes": ["body","haze_gun_l","haze_gun_r"], "clips": ["ability_bullet_flurry", "..."] } ],
   "images": [ "panorama/images/heroes/haze_sm_psd.vtex", "..." ],
   "soundEvents": [ "Haze.Wpn.Fire.Main", "..." ],
-  "soundEventFiles": [ "soundevents/hero/haze.vsndevts", "..." ]
+  "soundEventFiles": [ "soundevents/hero/haze.vsndevts", "..." ],
+  "voiceGroups": [ "atlas/atlas_select", "atlas/emote/atlas_effort_melee_big", "..." ]
 }
 ```
 
@@ -248,6 +249,21 @@ is the vtex path with `.vtex` removed and `/` replaced by `_`, plus `.png`. For 
    - WAV is copied as-is
 4. Write `sounds/<EventName with non-alphanumerics→_>_<n>.wav` and `sounds/sounds.json`:
    `{ "Haze.Wpn.Fire.Main": { "volume": 1.0, "files": ["Haze_Wpn_Fire_Main_0.wav", ...] } }`.
+
+5. **Voice lines** (`ExportVoice`, since the voice update). They are loose files, not sound events.
+   - For every manifest `voiceGroups` entry `<group>`, every VPK file `sounds/vo/<group>_NN.vsnd_c` (any number of digits,
+     sorted, at most 24) is decoded the same way.
+   - The takes are written as `sounds/vo_<group>_<n>.wav` and indexed as one event `"vo:<group>"` in the same `sounds.json`.
+   - `ready.json` gets `voiceGroups` (how many were found).
+   - **Where voice lives:**
+     - Each hero's lines are under `sounds/vo/<code>/`; the codes are haze, **atlas** (Abrams), **gigawatt** (Seven) and
+       **inferno** (Infernus).
+     - Ability lines are `<code>_use_power1..4_NN`: Deadlock's ability slots, 4 = the ultimate, 3 = Seven's Power Surge.
+     - Item lines are `<code>_use_<item>_NN` (e.g. `haze_use_phantom_strike`).
+     - Also `<code>_select_NN` / `_unselect_NN`, `_killstreak_start|mid|high_NN`, and `_hunt` / `_happy`.
+     - Grunts are under `emote/` (`<code>_effort_melee_big_NN`, `<code>_effort_general_NN`).
+     - The wiki's `<Code>_<line>.mp3` names are the same files.
+   - Preflight checks every group's `_01` take against `tools/dev/vpk_files.txt`.
 
 ### 6.6 `ready.json` and the stamp
 Example from this PC. It was written by the **0.1.0 manifest**; the 0.2.0 manifest hashes to `9B04D13EFD588D39`, so

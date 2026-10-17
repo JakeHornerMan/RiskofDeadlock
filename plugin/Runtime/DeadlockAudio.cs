@@ -171,6 +171,13 @@ namespace DeadlockOfRain
             }
         }
 
+        /// <summary>True while the voice with this id is still sounding (voice lines use it so they never overlap).</summary>
+        public static bool IsPlaying(int id)
+        {
+            if (id == 0) return false;
+            lock (gate) return voices.Exists(v => v.id == id);
+        }
+
         public static void Stop(int id)
         {
             if (id == 0) return;

@@ -250,6 +250,9 @@ namespace DeadlockOfRain
             Write("four-slots", slotsOk, slotsWhy);
             Write("level-stats", levelOk && lb && lb.level > 1, levelWhy == "" ? "level did not rise" : levelWhy);
             Write("hero-scale", scaleOk, scaleWhy);
+            var missingVoice = VoiceRow.All.Where(v => !DeadlockAudio.Has("vo:" + v.Group)).Select(v => v.Group).Distinct().ToList();
+            Write("voice-lines", missingVoice.Count == 0 && Voice.Spoken > 0,
+                missingVoice.Count > 0 ? "not in the cache: " + string.Join(", ", missingVoice.Take(5)) : Voice.Spoken == 0 ? "no voice line played" : "");
             Log.Info($"Melty test finished: {heroes}/4 heroes: every skill did what its sheet expects; Deadlock sounds played: {DeadlockAudio.Played}");
             if (lb) lb.healthComponent.godMode = false;
         }

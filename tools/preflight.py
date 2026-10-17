@@ -24,7 +24,7 @@ def load(name):
     with open(os.path.join(D, name + '.json'), encoding='utf-8') as f:
         return json.load(f)
 
-sheets = {n: load(n) for n in ['heroes', 'stats', 'skills', 'equipment', 'buffs', 'animations', 'sounds', 'effects', 'hooks']}
+sheets = {n: load(n) for n in ['heroes', 'stats', 'skills', 'equipment', 'buffs', 'animations', 'sounds', 'effects', 'hooks', 'voice']}
 
 # 1. every cell filled
 for name, s in sheets.items():
@@ -156,6 +156,23 @@ for r in skills.values():
         if total < 6000:
             bad(f'skills[{r["id"]}]: equipment ult total {total:.0f}% below the Preon level of 6000')
 
+# 5b. voice lines (design/voice.json)
+VOICE_TRIGGERS = {'select', 'unselect', 'skill', 'multikill', 'idle'}
+for r in sheets['voice']['rows']:
+    ref('voice', r['id'], 'hero', r['hero'], heroes, False)
+    ref('voice', r['id'], 'trigger', r['trigger'], VOICE_TRIGGERS, False)
+    if r['trigger'] == 'skill':
+        ref('voice', r['id'], 'skill', r['skill'], skills, False)
+        if r['skill'] in skills and skills[r['skill']]['hero'] != r['hero']:
+            bad(f'voice[{r["id"]}].skill: {r["skill"]} belongs to {skills[r["skill"]]["hero"]}, not {r["hero"]}')
+    elif r['skill'] != 'none': bad(f'voice[{r["id"]}].skill: only skill lines name a skill')
+    if (r['trigger'] == 'multikill') != (r['kills'] > 0): bad(f'voice[{r["id"]}].kills: set (> 0) for multikill lines only')
+    if not (0 < r['chance'] <= 1): bad(f'voice[{r["id"]}].chance: must be in (0, 1]')
+    if r['gap'] < 0: bad(f'voice[{r["id"]}].gap: negative')
+for h in heroes:
+    for t in ('select', 'unselect', 'idle'):
+        if not any(r['hero'] == h and r['trigger'] == t for r in sheets['voice']['rows']): bad(f'voice: {h} has no {t} line')
+
 # 6. Deadlock assets (dev listings from this PC's install; not shipped)
 def dev(name):
     p = os.path.join(DEV, name)
@@ -169,6 +186,8 @@ if vpk:
         for c in ['vmdl', 'imageSmall', 'imageCard', 'soundevents']: has(h[c], f'heroes[{h["id"]}].{c}')
         if h['passiveIcon'] != 'none': has(h['passiveIcon'], f'heroes[{h["id"]}].passiveIcon')
     for r in skills.values(): has(r['icon'].replace('.vtex', '.vtex'), f'skills[{r["id"]}].icon')
+    for r in sheets['voice']['rows']:
+        if f"sounds/vo/{r['group']}_01.vsnd_c" not in files: bad(f'voice[{r["id"]}].group: no sounds/vo/{r["group"]}_01.vsnd in Deadlock install')
     for b in buffs.values():
         if b['icon'] != 'none': has(b['icon'], f'buffs[{b["id"]}].icon')
 else:

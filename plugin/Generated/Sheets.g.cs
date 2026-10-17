@@ -379,6 +379,71 @@ namespace DeadlockOfRain.Sheets
             new HookRow { Id = "equipment_fire_client", Method = "harmony-postfix", Target = "RoR2.EquipmentSlot.RpcOnClientEquipmentActivationRecieved() (private ClientRpc)", Purpose = "on a remote client that owns the body, start the ult state there (states run where the body has authority)", Reads = "equipment.skill, skills.kind", Side = "client" },
             new HookRow { Id = "starting_equipment", Method = "event", Target = "RoR2.CharacterBody.onBodyStartGlobal", Purpose = "a Deadlock hero's first body of the run gets their own ult equipment (once per player; swap it away and it stays gone)", Reads = "equipment.hero", Side = "server" },
             new HookRow { Id = "torment_pulse", Method = "component", Target = "DeadlockOfRain.PulseAura on the body (Torment Pulse)", Purpose = "pulse a fire blast around the body every interval for duration, adding Afterburn build-up", Reads = "skills(kind=aura_pulse).*", Side = "server" },
+            new HookRow { Id = "voice_select", Method = "event", Target = "RoR2.CharacterBody.onBodyStartGlobal", Purpose = "voice: the local player's hero says a select line once per stage (run start and every new world), and its skill activations are listened to", Reads = "voice.*", Side = "client" },
+            new HookRow { Id = "voice_skill", Method = "event", Target = "RoR2.CharacterBody.onSkillActivatedAuthority", Purpose = "voice: a skill of the local player's body starts; its row's hero says the skill's line (chance and gap from the sheet)", Reads = "voice.*, skills.id", Side = "client" },
+            new HookRow { Id = "voice_unselect", Method = "event", Target = "RoR2.TeleporterInteraction.onTeleporterFinishGlobal", Purpose = "voice: the teleporter finishes (leftover gold turns into experience, the player is about to leave); the local hero says an unselect line", Reads = "voice.*", Side = "client" },
+            new HookRow { Id = "voice_multikill", Method = "event", Target = "RoR2.GlobalEventManager.onCharacterDeathGlobal", Purpose = "voice: kills by the local player's hero within 1.5 s of each other; the highest killstreak line reached plays once per burst", Reads = "voice.kills", Side = "client" },
+        };
+    }
+
+    /// <summary>Row of design/voice.json. Deadlock voice lines (dialogue only, read from the player's install like every other sound; never shown on the pages). group: the line's files in the VPK, sound...</summary>
+    public sealed class VoiceRow
+    {
+        public string Id;
+        public string Hero;
+        public string Trigger;
+        public string Skill;
+        public float Kills;
+        public string Group;
+        public float Chance;
+        public float Gap;
+
+        public static readonly VoiceRow[] All = new VoiceRow[]
+        {
+            new VoiceRow { Id = "haze_select", Hero = "haze", Trigger = "select", Skill = "none", Kills = 0.0f, Group = "haze/haze_select", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "haze_unselect", Hero = "haze", Trigger = "unselect", Skill = "none", Kills = 0.0f, Group = "haze/haze_unselect", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "haze_sleep_dagger_vo", Hero = "haze", Trigger = "skill", Skill = "haze_sleep_dagger", Kills = 0.0f, Group = "haze/haze_use_power1", Chance = 0.4f, Gap = 8.0f },
+            new VoiceRow { Id = "haze_smoke_bomb_vo", Hero = "haze", Trigger = "skill", Skill = "haze_smoke_bomb", Kills = 0.0f, Group = "haze/haze_use_power2", Chance = 0.4f, Gap = 8.0f },
+            new VoiceRow { Id = "haze_phantom_strike_vo", Hero = "haze", Trigger = "skill", Skill = "haze_phantom_strike", Kills = 0.0f, Group = "haze/haze_use_phantom_strike", Chance = 0.4f, Gap = 8.0f },
+            new VoiceRow { Id = "haze_bullet_dance_vo", Hero = "haze", Trigger = "skill", Skill = "haze_bullet_dance", Kills = 0.0f, Group = "haze/haze_use_power4", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "haze_killstreak_start", Hero = "haze", Trigger = "multikill", Skill = "none", Kills = 4.0f, Group = "haze/haze_killstreak_start", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "haze_killstreak_mid", Hero = "haze", Trigger = "multikill", Skill = "none", Kills = 7.0f, Group = "haze/haze_killstreak_mid", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "haze_killstreak_high", Hero = "haze", Trigger = "multikill", Skill = "none", Kills = 10.0f, Group = "haze/haze_killstreak_high", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "haze_idle_hunt", Hero = "haze", Trigger = "idle", Skill = "none", Kills = 0.0f, Group = "haze/haze_hunt", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "haze_idle_happy", Hero = "haze", Trigger = "idle", Skill = "none", Kills = 0.0f, Group = "haze/haze_happy", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "abrams_select", Hero = "abrams", Trigger = "select", Skill = "none", Kills = 0.0f, Group = "atlas/atlas_select", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "abrams_unselect", Hero = "abrams", Trigger = "unselect", Skill = "none", Kills = 0.0f, Group = "atlas/atlas_unselect", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "abrams_siphon_vo", Hero = "abrams", Trigger = "skill", Skill = "abrams_siphon", Kills = 0.0f, Group = "atlas/atlas_use_power1", Chance = 0.4f, Gap = 8.0f },
+            new VoiceRow { Id = "abrams_charge_vo", Hero = "abrams", Trigger = "skill", Skill = "abrams_charge", Kills = 0.0f, Group = "atlas/atlas_use_power2", Chance = 0.4f, Gap = 8.0f },
+            new VoiceRow { Id = "abrams_haymaker_vo", Hero = "abrams", Trigger = "skill", Skill = "abrams_haymaker", Kills = 0.0f, Group = "atlas/emote/atlas_effort_melee_big", Chance = 0.6f, Gap = 3.0f },
+            new VoiceRow { Id = "abrams_seismic_vo", Hero = "abrams", Trigger = "skill", Skill = "abrams_seismic", Kills = 0.0f, Group = "atlas/atlas_use_power4", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "abrams_killstreak_start", Hero = "abrams", Trigger = "multikill", Skill = "none", Kills = 4.0f, Group = "atlas/atlas_killstreak_start", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "abrams_killstreak_mid", Hero = "abrams", Trigger = "multikill", Skill = "none", Kills = 7.0f, Group = "atlas/atlas_killstreak_mid", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "abrams_killstreak_high", Hero = "abrams", Trigger = "multikill", Skill = "none", Kills = 10.0f, Group = "atlas/atlas_killstreak_high", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "abrams_idle_hunt", Hero = "abrams", Trigger = "idle", Skill = "none", Kills = 0.0f, Group = "atlas/atlas_hunt", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "abrams_idle_happy", Hero = "abrams", Trigger = "idle", Skill = "none", Kills = 0.0f, Group = "atlas/atlas_happy", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "seven_select", Hero = "seven", Trigger = "select", Skill = "none", Kills = 0.0f, Group = "gigawatt/gigawatt_select", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "seven_unselect", Hero = "seven", Trigger = "unselect", Skill = "none", Kills = 0.0f, Group = "gigawatt/gigawatt_unselect", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "seven_lightning_ball_vo", Hero = "seven", Trigger = "skill", Skill = "seven_lightning_ball", Kills = 0.0f, Group = "gigawatt/gigawatt_use_power1", Chance = 0.4f, Gap = 8.0f },
+            new VoiceRow { Id = "seven_static_charge_vo", Hero = "seven", Trigger = "skill", Skill = "seven_static_charge", Kills = 0.0f, Group = "gigawatt/gigawatt_use_power2", Chance = 0.4f, Gap = 8.0f },
+            new VoiceRow { Id = "seven_power_surge_vo", Hero = "seven", Trigger = "skill", Skill = "seven_power_surge", Kills = 0.0f, Group = "gigawatt/gigawatt_use_power3", Chance = 0.4f, Gap = 8.0f },
+            new VoiceRow { Id = "seven_thunderhead_vo", Hero = "seven", Trigger = "skill", Skill = "seven_thunderhead", Kills = 0.0f, Group = "gigawatt/gigawatt_use_power4", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "seven_killstreak_start", Hero = "seven", Trigger = "multikill", Skill = "none", Kills = 4.0f, Group = "gigawatt/gigawatt_killstreak_start", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "seven_killstreak_mid", Hero = "seven", Trigger = "multikill", Skill = "none", Kills = 7.0f, Group = "gigawatt/gigawatt_killstreak_mid", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "seven_killstreak_high", Hero = "seven", Trigger = "multikill", Skill = "none", Kills = 10.0f, Group = "gigawatt/gigawatt_killstreak_high", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "seven_idle_hunt", Hero = "seven", Trigger = "idle", Skill = "none", Kills = 0.0f, Group = "gigawatt/gigawatt_hunt", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "seven_idle_happy", Hero = "seven", Trigger = "idle", Skill = "none", Kills = 0.0f, Group = "gigawatt/gigawatt_happy", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "infernus_select", Hero = "infernus", Trigger = "select", Skill = "none", Kills = 0.0f, Group = "inferno/inferno_select", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "infernus_unselect", Hero = "infernus", Trigger = "unselect", Skill = "none", Kills = 0.0f, Group = "inferno/inferno_unselect", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "infernus_napalm_vo", Hero = "infernus", Trigger = "skill", Skill = "infernus_napalm", Kills = 0.0f, Group = "inferno/inferno_use_power1", Chance = 0.4f, Gap = 8.0f },
+            new VoiceRow { Id = "infernus_flame_dash_vo", Hero = "infernus", Trigger = "skill", Skill = "infernus_flame_dash", Kills = 0.0f, Group = "inferno/inferno_use_power2", Chance = 0.4f, Gap = 8.0f },
+            new VoiceRow { Id = "infernus_torment_pulse_vo", Hero = "infernus", Trigger = "skill", Skill = "infernus_torment_pulse", Kills = 0.0f, Group = "inferno/emote/inferno_effort_general", Chance = 0.6f, Gap = 3.0f },
+            new VoiceRow { Id = "infernus_combustion_vo", Hero = "infernus", Trigger = "skill", Skill = "infernus_combustion", Kills = 0.0f, Group = "inferno/inferno_use_power4", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "infernus_killstreak_start", Hero = "infernus", Trigger = "multikill", Skill = "none", Kills = 4.0f, Group = "inferno/inferno_killstreak_start", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "infernus_killstreak_mid", Hero = "infernus", Trigger = "multikill", Skill = "none", Kills = 7.0f, Group = "inferno/inferno_killstreak_mid", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "infernus_killstreak_high", Hero = "infernus", Trigger = "multikill", Skill = "none", Kills = 10.0f, Group = "inferno/inferno_killstreak_high", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "infernus_idle_hunt", Hero = "infernus", Trigger = "idle", Skill = "none", Kills = 0.0f, Group = "inferno/inferno_hunt", Chance = 1.0f, Gap = 0.0f },
+            new VoiceRow { Id = "infernus_idle_happy", Hero = "infernus", Trigger = "idle", Skill = "none", Kills = 0.0f, Group = "inferno/inferno_happy", Chance = 1.0f, Gap = 0.0f },
         };
     }
 

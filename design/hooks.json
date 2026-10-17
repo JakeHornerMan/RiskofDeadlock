@@ -169,6 +169,38 @@
       "purpose": "pulse a fire blast around the body every interval for duration, adding Afterburn build-up",
       "reads": "skills(kind=aura_pulse).*",
       "side": "server"
+    },
+    {
+      "id": "voice_select",
+      "method": "event",
+      "target": "RoR2.CharacterBody.onBodyStartGlobal",
+      "purpose": "voice: the local player's hero says a select line once per stage (run start and every new world), and its skill activations are listened to",
+      "reads": "voice.*",
+      "side": "client"
+    },
+    {
+      "id": "voice_skill",
+      "method": "event",
+      "target": "RoR2.CharacterBody.onSkillActivatedAuthority",
+      "purpose": "voice: a skill of the local player's body starts; its row's hero says the skill's line (chance and gap from the sheet)",
+      "reads": "voice.*, skills.id",
+      "side": "client"
+    },
+    {
+      "id": "voice_unselect",
+      "method": "event",
+      "target": "RoR2.TeleporterInteraction.onTeleporterFinishGlobal",
+      "purpose": "voice: the teleporter finishes (leftover gold turns into experience, the player is about to leave); the local hero says an unselect line",
+      "reads": "voice.*",
+      "side": "client"
+    },
+    {
+      "id": "voice_multikill",
+      "method": "event",
+      "target": "RoR2.GlobalEventManager.onCharacterDeathGlobal",
+      "purpose": "voice: kills by the local player's hero within 1.5 s of each other; the highest killstreak line reached plays once per burst",
+      "reads": "voice.kills",
+      "side": "client"
     }
   ]
 }

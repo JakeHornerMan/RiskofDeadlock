@@ -258,3 +258,18 @@ decicion you think suit for the next task of voice lines!!!"
 **Done so far:** `design/voice.json` (44 rows), preflight checks against the install listing, `gen.py` manifest
 `voiceGroups`, extractor `ExportVoice` + version 1.1.0, `Runtime/Voice.cs`, `DeadlockAudio.IsPlaying`, hooks sheet, test
 check `voice-lines`, docs 01/02/03, README, CLAUDE.md.
+
+**Voice results:**
+- The extractor 1.1.0 re-extract found all 44 voice groups (331 takes).
+- `run_test.sh`: every check passes, including the new `voice-lines`; 4/4 heroes.
+- Version 0.5.0 is installed.
+
+**Not verified in a real run:**
+- unselect at the teleporter finish;
+- multikill and idle lines;
+- how loud the lines sit against RoR2's sounds (gain 1.15).
+
+**Release notes:**
+- Players' caches must re-extract: the extractor version is in the cache stamp, but Melty skips setup when `ready.json` exists
+  (doc 03 §10).
+- Add `voice-lines` to the recipe's checks.

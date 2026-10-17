@@ -76,6 +76,9 @@ Three pieces, linked by generated data:
   hero's Deadlock ultimate is a RoR2 equipment (Q, 120 s, `Content/Equipment.cs`, rows in `design/equipment.json`) that the
   hero starts holding and anyone can find; firing it starts the ult's state on whatever body holds it (`DlrState.RowOverride`).
   Buff effects live in Harmony patches in `Content/Buffs.cs`; every hook is also listed in `design/hooks.json` (keep in sync).
+- **Voice lines:** `design/voice.json` maps each hero's Deadlock dialogue groups (`sounds/vo/<group>_NN`) to triggers
+  (select, unselect, skill, multikill, idle); the extractor exports them as `vo:<group>` events and `Runtime/Voice.cs` plays
+  them for the local hero (an ult item speaks with its own hero's voice). Never list the lines on the pages.
 - **Test mode** (`Runtime/MeltyTest.cs`) activates only when `%LOCALAPPDATA%\Melty\test\deadlock-of-rain.json` exists;
   it runs each hero's skills on a fixed test spot and checks them against their `expect` lists.
 

@@ -1,0 +1,456 @@
+{
+  "sheet": "voice",
+  "about": "Deadlock voice lines (dialogue only, read from the player's install like every other sound; never shown on the pages). group: the line's files in the VPK, sounds/vo/<group>_NN.vsnd (every numbered take is extracted and one is picked at random). trigger: select = the hero's body starts a stage (run start and after every teleport); unselect = the teleporter finishes charging; skill = the skill row (or the ult equipment's row) starts, spoken by the hero the row belongs to, so an ult item used by anyone speaks with its own hero's voice; multikill = the player's hero kills at least `kills` enemies with gaps under 1.5 s (the highest reached plays once per burst); idle = the hero has said nothing for 2-5 min (random). chance: probability the line plays when triggered. gap: seconds since the hero's last line before this one may play (keeps abilities from chattering). One line at a time per hero; lines don't overlap.",
+  "columns": [
+    "id",
+    "hero",
+    "trigger",
+    "skill",
+    "kills",
+    "group",
+    "chance",
+    "gap"
+  ],
+  "rows": [
+    {
+      "id": "haze_select",
+      "hero": "haze",
+      "trigger": "select",
+      "skill": "none",
+      "kills": 0,
+      "group": "haze/haze_select",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "haze_unselect",
+      "hero": "haze",
+      "trigger": "unselect",
+      "skill": "none",
+      "kills": 0,
+      "group": "haze/haze_unselect",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "haze_sleep_dagger_vo",
+      "hero": "haze",
+      "trigger": "skill",
+      "skill": "haze_sleep_dagger",
+      "kills": 0,
+      "group": "haze/haze_use_power1",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "haze_smoke_bomb_vo",
+      "hero": "haze",
+      "trigger": "skill",
+      "skill": "haze_smoke_bomb",
+      "kills": 0,
+      "group": "haze/haze_use_power2",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "haze_phantom_strike_vo",
+      "hero": "haze",
+      "trigger": "skill",
+      "skill": "haze_phantom_strike",
+      "kills": 0,
+      "group": "haze/haze_use_phantom_strike",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "haze_bullet_dance_vo",
+      "hero": "haze",
+      "trigger": "skill",
+      "skill": "haze_bullet_dance",
+      "kills": 0,
+      "group": "haze/haze_use_power4",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "haze_killstreak_start",
+      "hero": "haze",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 4,
+      "group": "haze/haze_killstreak_start",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "haze_killstreak_mid",
+      "hero": "haze",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 7,
+      "group": "haze/haze_killstreak_mid",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "haze_killstreak_high",
+      "hero": "haze",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 10,
+      "group": "haze/haze_killstreak_high",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "haze_idle_hunt",
+      "hero": "haze",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "haze/haze_hunt",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "haze_idle_happy",
+      "hero": "haze",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "haze/haze_happy",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "abrams_select",
+      "hero": "abrams",
+      "trigger": "select",
+      "skill": "none",
+      "kills": 0,
+      "group": "atlas/atlas_select",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "abrams_unselect",
+      "hero": "abrams",
+      "trigger": "unselect",
+      "skill": "none",
+      "kills": 0,
+      "group": "atlas/atlas_unselect",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "abrams_siphon_vo",
+      "hero": "abrams",
+      "trigger": "skill",
+      "skill": "abrams_siphon",
+      "kills": 0,
+      "group": "atlas/atlas_use_power1",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "abrams_charge_vo",
+      "hero": "abrams",
+      "trigger": "skill",
+      "skill": "abrams_charge",
+      "kills": 0,
+      "group": "atlas/atlas_use_power2",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "abrams_haymaker_vo",
+      "hero": "abrams",
+      "trigger": "skill",
+      "skill": "abrams_haymaker",
+      "kills": 0,
+      "group": "atlas/emote/atlas_effort_melee_big",
+      "chance": 0.6,
+      "gap": 3
+    },
+    {
+      "id": "abrams_seismic_vo",
+      "hero": "abrams",
+      "trigger": "skill",
+      "skill": "abrams_seismic",
+      "kills": 0,
+      "group": "atlas/atlas_use_power4",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "abrams_killstreak_start",
+      "hero": "abrams",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 4,
+      "group": "atlas/atlas_killstreak_start",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "abrams_killstreak_mid",
+      "hero": "abrams",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 7,
+      "group": "atlas/atlas_killstreak_mid",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "abrams_killstreak_high",
+      "hero": "abrams",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 10,
+      "group": "atlas/atlas_killstreak_high",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "abrams_idle_hunt",
+      "hero": "abrams",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "atlas/atlas_hunt",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "abrams_idle_happy",
+      "hero": "abrams",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "atlas/atlas_happy",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "seven_select",
+      "hero": "seven",
+      "trigger": "select",
+      "skill": "none",
+      "kills": 0,
+      "group": "gigawatt/gigawatt_select",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "seven_unselect",
+      "hero": "seven",
+      "trigger": "unselect",
+      "skill": "none",
+      "kills": 0,
+      "group": "gigawatt/gigawatt_unselect",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "seven_lightning_ball_vo",
+      "hero": "seven",
+      "trigger": "skill",
+      "skill": "seven_lightning_ball",
+      "kills": 0,
+      "group": "gigawatt/gigawatt_use_power1",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "seven_static_charge_vo",
+      "hero": "seven",
+      "trigger": "skill",
+      "skill": "seven_static_charge",
+      "kills": 0,
+      "group": "gigawatt/gigawatt_use_power2",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "seven_power_surge_vo",
+      "hero": "seven",
+      "trigger": "skill",
+      "skill": "seven_power_surge",
+      "kills": 0,
+      "group": "gigawatt/gigawatt_use_power3",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "seven_thunderhead_vo",
+      "hero": "seven",
+      "trigger": "skill",
+      "skill": "seven_thunderhead",
+      "kills": 0,
+      "group": "gigawatt/gigawatt_use_power4",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "seven_killstreak_start",
+      "hero": "seven",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 4,
+      "group": "gigawatt/gigawatt_killstreak_start",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "seven_killstreak_mid",
+      "hero": "seven",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 7,
+      "group": "gigawatt/gigawatt_killstreak_mid",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "seven_killstreak_high",
+      "hero": "seven",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 10,
+      "group": "gigawatt/gigawatt_killstreak_high",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "seven_idle_hunt",
+      "hero": "seven",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "gigawatt/gigawatt_hunt",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "seven_idle_happy",
+      "hero": "seven",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "gigawatt/gigawatt_happy",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "infernus_select",
+      "hero": "infernus",
+      "trigger": "select",
+      "skill": "none",
+      "kills": 0,
+      "group": "inferno/inferno_select",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "infernus_unselect",
+      "hero": "infernus",
+      "trigger": "unselect",
+      "skill": "none",
+      "kills": 0,
+      "group": "inferno/inferno_unselect",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "infernus_napalm_vo",
+      "hero": "infernus",
+      "trigger": "skill",
+      "skill": "infernus_napalm",
+      "kills": 0,
+      "group": "inferno/inferno_use_power1",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "infernus_flame_dash_vo",
+      "hero": "infernus",
+      "trigger": "skill",
+      "skill": "infernus_flame_dash",
+      "kills": 0,
+      "group": "inferno/inferno_use_power2",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "infernus_torment_pulse_vo",
+      "hero": "infernus",
+      "trigger": "skill",
+      "skill": "infernus_torment_pulse",
+      "kills": 0,
+      "group": "inferno/emote/inferno_effort_general",
+      "chance": 0.6,
+      "gap": 3
+    },
+    {
+      "id": "infernus_combustion_vo",
+      "hero": "infernus",
+      "trigger": "skill",
+      "skill": "infernus_combustion",
+      "kills": 0,
+      "group": "inferno/inferno_use_power4",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "infernus_killstreak_start",
+      "hero": "infernus",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 4,
+      "group": "inferno/inferno_killstreak_start",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "infernus_killstreak_mid",
+      "hero": "infernus",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 7,
+      "group": "inferno/inferno_killstreak_mid",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "infernus_killstreak_high",
+      "hero": "infernus",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 10,
+      "group": "inferno/inferno_killstreak_high",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "infernus_idle_hunt",
+      "hero": "infernus",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "inferno/inferno_hunt",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "infernus_idle_happy",
+      "hero": "infernus",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "inferno/inferno_happy",
+      "chance": 1.0,
+      "gap": 0
+    }
+  ]
+}

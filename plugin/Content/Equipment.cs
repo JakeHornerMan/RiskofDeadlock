@@ -157,7 +157,10 @@ namespace DeadlockOfRain
             var state = (DlrState)System.Activator.CreateInstance(type);
             state.RowOverride = row;
             // false while another ult (or a stun) holds the machine: no charge is spent
-            return machine.SetInterruptState(state, InterruptPriority.PrioritySkill);
+            bool ok = machine.SetInterruptState(state, InterruptPriority.PrioritySkill);
+            // the ult speaks with its own hero's voice, whoever fired it (design/voice.json)
+            if (ok && body.isPlayerControlled && body.hasEffectiveAuthority) Voice.SkillLine(row);
+            return ok;
         }
 
         /// <summary>Our equipment: RoR2 spends the charge (and starts the cooldown) when this answers true. The ult starts here

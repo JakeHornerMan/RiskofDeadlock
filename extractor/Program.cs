@@ -19,7 +19,7 @@ namespace DeadlockExtract;
 
 public static class Program
 {
-    public const string Version = "1.0.1";
+    public const string Version = "1.1.0";
     static StreamWriter? log;
 
     public static int Main(string[] args)
@@ -111,8 +111,8 @@ public static class Program
             if (ExportImage(loader, img, Path.Combine(imagesDir, ImageFileName(img)))) images++;
         Log($"Images: {images}/{manifest.Images.Count}");
 
-        int sounds = ExportSounds(package, loader, manifest.SoundEvents, Path.Combine(outDir, "sounds"));
-        Log($"Sound events: {sounds}/{manifest.SoundEvents.Count}");
+        int sounds = ExportSounds(package, loader, manifest.SoundEvents, manifest.VoiceGroups, Path.Combine(outDir, "sounds"), out int voiceGroups);
+        Log($"Sound events: {sounds}/{manifest.SoundEvents.Count}, voice groups: {voiceGroups}/{manifest.VoiceGroups.Count}");
 
         var readyJson = JsonSerializer.Serialize(new
         {
@@ -122,6 +122,7 @@ public static class Program
             heroes = manifest.Heroes.Select(h => h.Id).ToArray(),
             images,
             soundEvents = sounds,
+            voiceGroups,
             time = DateTime.UtcNow.ToString("o"),
         }, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(readyPath, readyJson);
@@ -195,7 +196,7 @@ public static class Program
 
     // ---------------- sounds ----------------
 
-    static int ExportSounds(Package package, GameFileLoader loader, List<string> wanted, string dir)
+    static int ExportSounds(Package package, GameFileLoader loader, List<string> wanted, List<string> voiceGroups, string dir, out int voiceOk)
     {
         if (Directory.Exists(dir)) Directory.Delete(dir, true);
         Directory.CreateDirectory(dir);
@@ -243,7 +244,34 @@ public static class Program
             index[name] = new { volume = Math.Clamp(volume, 0f, 4f), files = outFiles };
             ok++;
         }
+        voiceOk = ExportVoice(package, loader, voiceGroups, dir, index);
         File.WriteAllText(Path.Combine(dir, "sounds.json"), JsonSerializer.Serialize(index, new JsonSerializerOptions { WriteIndented = true }));
+        return ok;
+    }
+
+    /// <summary>Voice lines are loose files, not sound events: every numbered take of a group, sounds/vo/&lt;group&gt;_NN.vsnd,
+    /// becomes one event "vo:&lt;group&gt;" in sounds.json (the plugin picks a take at random).</summary>
+    static int ExportVoice(Package package, GameFileLoader loader, List<string> groups, string dir, Dictionary<string, object> index)
+    {
+        if (groups.Count == 0 || !package.Entries.TryGetValue("vsnd_c", out var entries)) return 0;
+        var paths = entries.Select(e => e.GetFullPath()).ToList();
+        int ok = 0;
+        foreach (var g in groups)
+        {
+            var take = new System.Text.RegularExpressions.Regex("^sounds/vo/" + System.Text.RegularExpressions.Regex.Escape(g) + "_[0-9]+\\.vsnd_c$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            var outFiles = new List<string>();
+            foreach (var full in paths.Where(p => take.IsMatch(p)).OrderBy(p => p, StringComparer.OrdinalIgnoreCase).Take(24))
+            {
+                var wav = DecodeSound(loader, full.Substring(0, full.Length - 2));
+                if (wav == null) continue;
+                var fn = "vo_" + SafeName(g) + "_" + outFiles.Count + ".wav";
+                File.WriteAllBytes(Path.Combine(dir, fn), wav);
+                outFiles.Add(fn);
+            }
+            if (outFiles.Count == 0) { Log($"  voice group {g}: no takes"); continue; }
+            index["vo:" + g] = new { volume = 1f, files = outFiles };
+            ok++;
+        }
         return ok;
     }
 
@@ -333,6 +361,7 @@ public sealed class Manifest
     public List<HeroEntry> Heroes { get; set; } = new();
     public List<string> Images { get; set; } = new();
     public List<string> SoundEvents { get; set; } = new();
+    public List<string> VoiceGroups { get; set; } = new();
 }
 
 public sealed class HeroEntry
