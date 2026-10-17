@@ -23,6 +23,7 @@
 ## Balance
 - 0.4.2: each hero within ±500 %/s of its RoR2 match (means over bench runs; doc 05 §3.0).
 - 0.5.1: playtest feel pass (Haymaker lock-on rush, Phantom Strike 5 m area, bouncing 10 m Lightning Ball); benched once and reported, not retuned.
+- 0.6.0: co-op; no numbers changed. Power Surge's arcs are now limited to once per gun interval on the server (was once per burst in the owner's state).
 
 ## Gotchas found
 1. RoR2's CharacterModel keeps ONE material per renderer (it re-applies defaultMaterial), so a multi-material
@@ -43,4 +44,16 @@
    hit it every magazine; other skills interrupting the state hid it in play and in the test.
 12. Sound volume (v0.5.1, extractor 1.2.0): Deadlock's vsndevts `volume` is in dB, not a gain. Read as a gain, every event
    at 0 dB or below fell to the mixer's 0.2 floor (Infernus' gun, -1 dB, sounded thin). Now written as 10^(dB/20).
+13. Co-op (v0.6.0): before 0.6.0 every server-only object (dagger, ball, flask, storm, pulses) and every server-only sound or
+   visual (stack bursts, gun hit marks) existed on the host alone, and a joined player's gun passive never stacked (the
+   bullet's hit callback runs on the owner's PC, where NetworkServer.active is false). Now: objects fly on every machine,
+   damage on the server; server-only sounds/visuals go through one relay EffectDef; gun passives run in onServerDamageDealt.
+14. Two copies of RoR2 on one PC (co-op test): the second starts straight from the exe with SteamAppId=632360 (no Steam
+   restart); BepInEx writes it to LogOutput.log.1. RoR2 kicks a second connection of the same Steam account
+   (KICK_REASON_ACCOUNT_ALREADY_ON_SERVER) and one account can't join its own Steam lobby, so the test joins over loopback
+   (host 1 listens on UDP 7777) with a test-only fake id. The second copy needs 3-5 min to load and runs well behind the
+   host: never time a step on one copy's clock; wait for the other copy's answer.
+15. RoR2 never sends a player's aim (InputBankTest.aimDirection) to the server: on the host a joined player's body aims
+   straight ahead. A state that throws on the server must carry the owner's aim (DlrState.OwnerAim, serialized).
+   Symptom: a joined Infernus' Napalm never landed while the straight-ahead Sleep Dagger did.
 lab restored Tue Oct 13 01:42:10 GMTST 2026

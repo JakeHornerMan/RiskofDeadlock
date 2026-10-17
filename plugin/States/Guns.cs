@@ -7,12 +7,13 @@ using UnityEngine.Networking;
 namespace DeadlockOfRain.States
 {
     /// <summary>Deadlock gun on M1: holds while the button is held, fires at the sheet's cycle time (scaled by attack speed),
-    /// uses the hero's magazine and reload, and applies the hero's on-hit passive (Fixation, Static, Afterburn) and breaks Smoke Bomb.</summary>
+    /// uses the hero's magazine and reload, and breaks Smoke Bomb. The shots are the owner's (RoR2 bullets fire where the
+    /// hero has authority); each one is relayed so the other players hear and see it. The on-hit passive (Fixation, Static,
+    /// Afterburn) and Power Surge's arcs run on the server, from the damage the bullets deal (<see cref="GunHits"/>).</summary>
     public abstract class GunState : DlrState
     {
         float nextShot;
         int burstLeft;
-        bool surgedThisBurst;
         float nextBurstShot;
 
         public override void OnEnter()
@@ -42,7 +43,6 @@ namespace DeadlockOfRain.States
                 if (rt != null && rt.Reloading) return;
                 if (rt != null && rt.Ammo <= 0) { StartReload(); return; }
                 nextShot = t + row.Interval / attackSpeedStat;
-                surgedThisBurst = false;
                 int burst = (int)Mathf.Max(1, row.Burst);
                 if (row.Kind == "gun_burst" && burst > 1)
                 {
@@ -59,6 +59,37 @@ namespace DeadlockOfRain.States
             if (rt == null || rt.Reloading) return;
             rt.BeginReload(row, attackSpeedStat);
             if (anim) anim.Gesture("reload", 1f);
+            Relay.Reload(characterBody);
+        }
+
+        /// <summary>What another player's machine plays for one of this hero's shots: sound, flash, muzzle visual, recoil.</summary>
+        public static void ShotFx(CharacterBody body, bool left)
+        {
+            var row = Survivors.RowFor(body.skillLocator ? body.skillLocator.primary : null);
+            if (row == null) return;
+            var anim = DeadlockAnimator.Of(body);
+            if (anim) anim.Recoil(row.Pellets > 1 ? 9f : 3f);
+            Fx.Sound(row.Id, "cast", body.transform.position);
+            Fx.MuzzleFlash(body, left);
+            var muzzle = Fx.Muzzle(body, left);
+            if (muzzle) Vfx.Play(row.Vfx, "muzzle", muzzle.position, 1f, muzzle);
+        }
+
+        public static void BreakSmoke(CharacterBody body)
+        {
+            if (!NetworkServer.active || !body || Buffs.Count(body, "smoke") <= 0) return;
+            Buffs.Clear(body, "smoke");
+            if (body.HasBuff(RoR2Content.Buffs.Cloak)) body.RemoveBuff(RoR2Content.Buffs.Cloak);
+            Relay.Sound("haze_smoke_bomb", "end", body.transform.position);
+        }
+
+        public static void ReloadFx(CharacterBody body)
+        {
+            var row = Survivors.RowFor(body.skillLocator ? body.skillLocator.primary : null);
+            if (row == null) return;
+            var anim = DeadlockAnimator.Of(body);
+            if (anim) anim.Gesture("reload", 1f);
+            Fx.Sound(row.Id, "reload", body.transform.position);
         }
 
         void FireOne()
@@ -69,22 +100,15 @@ namespace DeadlockOfRain.States
                 rt.Ammo--;
                 rt.AltMuzzle = !rt.AltMuzzle;
             }
-            // firing reveals Haze from Smoke Bomb
-            if (Server && Buffs.Count(characterBody, "smoke") > 0)
-            {
-                Buffs.Clear(characterBody, "smoke");
-                if (characterBody.HasBuff(RoR2Content.Buffs.Cloak)) characterBody.RemoveBuff(RoR2Content.Buffs.Cloak);
-                Fx.Sound("haze_smoke_bomb", "end", transform.position);
-            }
+            // firing reveals Haze from Smoke Bomb (the server breaks it: here for the host's hero, from the relayed shot for a
+            // joined player's)
+            if (Server) BreakSmoke(characterBody);
             bool left = rt != null && rt.AltMuzzle && row.Hero == "haze";
-            if (anim) anim.Recoil(row.Pellets > 1 ? 9f : 3f);
-            Sound("cast");
+            // the sound, the flash on the end of the gun (the sheet's muzzle bone), the hero's own per-shot muzzle visual
+            // (Infernus' smoke) and the recoil; the other players get the same through the relay
+            ShotFx(characterBody, left);
+            Relay.Shot(characterBody, left);
             var aim = GetAimRay();
-            // the flash rides on the end of the gun (the sheet's muzzle bone)
-            Fx.MuzzleFlash(characterBody, left);
-            // the hero's own per-shot muzzle visual, if its gun visual has one (Infernus' smoke)
-            var muzzle = Fx.Muzzle(characterBody, left);
-            if (muzzle) Vfx.Play(row.Vfx, "muzzle", muzzle.position, 1f, muzzle);
             if (isAuthority)
             {
                 var ba = new BulletAttack
@@ -108,39 +132,44 @@ namespace DeadlockOfRain.States
                     maxDistance = row.Range,
                     falloffModel = row.Pellets > 1 ? BulletAttack.FalloffModel.Buckshot : BulletAttack.FalloffModel.DefaultBullet,
                     damageType = new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Primary },
-                    hitCallback = OnHit,
                 };
                 ba.Fire();
             }
             MeltyTest.Report("gun-fires", true, characterBody.baseNameToken);
         }
 
-        bool OnHit(BulletAttack attack, ref BulletAttack.BulletHit hit)
-        {
-            bool r = BulletAttack.DefaultHitCallback(attack, ref hit);
-            var hb = hit.hitHurtBox;
-            if (!hb || !hb.healthComponent || !NetworkServer.active) return r;
-            var victim = hb.healthComponent.body;
-            if (!victim || victim.teamComponent.teamIndex == characterBody.teamComponent.teamIndex) return r;
-            OnBulletHit(victim, hb, hit.point, attack.isCrit);
-            return r;
-        }
-
-        protected virtual void OnBulletHit(CharacterBody victim, HurtBox hb, Vector3 point, bool crit)
-        {
-            // the hero's passive: every hit stacks the gun's buff (Fixation, Static, Afterburn build-up); its trigger fires at full stacks
-            if (row.Buff == "none") return;
-            bool fired = Buffs.Stack(characterBody, victim, row.Buff, crit);
-            Vfx.Play(row.Vfx, fired ? "trigger" : "hit", point, 1f, victim.transform);
-            // Power Surge: once per burst, Tesla arcs from the target to the enemies around it
-            if (!surgedThisBurst)
-            {
-                var surge = PowerSurgeCast.Active(characterBody);
-                if (surge != null) { surgedThisBurst = true; PowerSurgeCast.Arc(characterBody, victim, surge, row.Buff); }
-            }
-        }
-
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Skill;
+    }
+
+    /// <summary>Server side of the guns: a bullet from a hero's gun (damage source Primary, dealt by the hero itself) stacks
+    /// the gun's buff (Fixation, Static, Afterburn build-up; its trigger fires at full stacks) and, while Power Surge runs,
+    /// sends Tesla arcs from the target once per burst. Works the same for the host's hero and a joined player's, whose
+    /// bullets RoR2 resolves on their PC and sends here as damage.</summary>
+    public static class GunHits
+    {
+        public static void Init() => GlobalEventManager.onServerDamageDealt += OnDamage;
+
+        static void OnDamage(DamageReport r)
+        {
+            var info = r?.damageInfo;
+            var owner = r?.attackerBody;
+            var victim = r?.victimBody;
+            if (info == null || !owner || !victim || info.damageType.damageSource != DamageSource.Primary || info.inflictor != owner.gameObject) return;
+            if (victim.teamComponent.teamIndex == owner.teamComponent.teamIndex) return;
+            var row = Survivors.RowFor(owner.skillLocator ? owner.skillLocator.primary : null);
+            if (row == null || !row.Kind.StartsWith("gun_")) return;
+            if (row.Buff != "none")
+            {
+                bool fired = Buffs.Stack(owner, victim, row.Buff, info.crit);
+                Relay.Vfx(row.Vfx, fired ? "trigger" : "hit", info.position, 1f, victim.gameObject);
+            }
+            // Power Surge: once per burst (the gun's interval), Tesla arcs from the target to the enemies around it
+            var surge = PowerSurgeCast.Active(owner);
+            var rt = owner.GetComponent<HeroRuntime>();
+            if (surge == null || rt == null || Time.fixedTime < rt.NextSurge) return;
+            rt.NextSurge = Time.fixedTime + 0.9f * row.Interval / Mathf.Max(0.1f, owner.attackSpeed);
+            PowerSurgeCast.Arc(owner, victim, surge, row.Buff);
+        }
     }
 
     [Kind("gun_auto")] public sealed class GunAuto : GunState { }

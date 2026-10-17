@@ -14,7 +14,7 @@ namespace DeadlockOfRain
     /// starts a run, plays every hero (gun, three abilities, the ult equipment it starts holding) against summoned Lemurians and
     /// measures what each skill does (damage, stun, burn, buffs, heal, movement: the skills sheet's expect column), checks the
     /// gun rig (gun in hand, aimed where the camera aims), levels up, checks stats and scale, and appends "pass name" / "fail name: why" lines to the checks file Melty gives.</summary>
-    public sealed class MeltyTest : MonoBehaviour
+    public sealed partial class MeltyTest : MonoBehaviour
     {
         const string Slug = "deadlock-of-rain";
         static string checksFile;
@@ -37,7 +37,14 @@ namespace DeadlockOfRain
                 if (i < 0) return;
                 int a = text.IndexOf('"', text.IndexOf(':', i) + 1), b = text.IndexOf('"', a + 1);
                 checksFile = text.Substring(a + 1, b - a - 1).Replace("\\\\", "\\");
-                Log.Info("Melty test mode: reporting to " + checksFile);
+                // the co-op test ("coop": true): the copy started with a join= line joins, the other hosts
+                Coop = System.Text.RegularExpressions.Regex.IsMatch(text, "\"coop\"\\s*:\\s*true");
+                Joiner = Coop && MeltyJoin.JoinAddress != "";
+                // optional "heroes": "haze,abrams": the co-op test plays only these
+                var hm = System.Text.RegularExpressions.Regex.Match(text, "\"heroes\"\\s*:\\s*\"([^\"]*)\"");
+                if (hm.Success) CoopHeroes = hm.Groups[1].Value.Split(',').Select(h => h.Trim()).Where(h => h != "").ToList();
+                if (Coop) CoopTestPatches.Apply(new HarmonyLib.Harmony(Plugin.Guid + ".cooptest"), Joiner);
+                Log.Info("Melty test mode: reporting to " + checksFile + (Coop ? Joiner ? " (co-op test, joining)" : " (co-op test, hosting)" : ""));
                 var go = new GameObject("DeadlockOfRainMeltyTest");
                 DontDestroyOnLoad(go);
                 instance = go.AddComponent<MeltyTest>();
@@ -57,7 +64,7 @@ namespace DeadlockOfRain
 
         static void Write(string name, bool pass, string why = null)
         {
-            if (!Active || written.Contains(name)) return;
+            if (!Active || Joiner || written.Contains(name)) return;
             written.Add(name);
             var line = pass ? "pass " + name : "fail " + name + ": " + (why ?? "not seen");
             Log.Info("Melty check: " + line);
@@ -66,6 +73,7 @@ namespace DeadlockOfRain
 
         IEnumerator Start()
         {
+            if (Coop) { yield return Joiner ? CoopJoin() : CoopHost(); yield break; }
             // 1. content
             while (!RoR2Application.loadFinished) yield return null;
             Write("deadlock-content", DeadlockCache.Ready && Survivors.Bodies.Count == 4, $"cache ready={DeadlockCache.Ready}, heroes built={Survivors.Bodies.Count}");

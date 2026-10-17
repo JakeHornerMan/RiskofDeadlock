@@ -111,7 +111,7 @@ namespace DeadlockOfRain
 
         public static void Stun(HealthComponent hc, float duration)
         {
-            if (!hc || duration <= 0) return;
+            if (!hc || duration <= 0 || !UnityEngine.Networking.NetworkServer.active) return;
             var s = hc.GetComponent<SetStateOnHurt>();
             if (s && s.canBeStunned) s.SetStun(duration);
         }

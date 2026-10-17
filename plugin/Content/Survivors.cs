@@ -116,6 +116,8 @@ namespace DeadlockOfRain
             }
             // the ults, as Q equipment anyone can find; each hero starts holding their own
             Equipment.Build(holder.transform);
+            // the co-op relay effect (Runtime/Net.cs)
+            Net.Build(holder.transform);
         }
 
         static GameObject BuildBody(GameObject commando, HeroRow hero, Dictionary<string, Type> kinds)
@@ -296,6 +298,8 @@ namespace DeadlockOfRain
         public bool Reloading;
         public bool AltMuzzle;
         public float SmokeUntil;
+        /// <summary>Server: when Power Surge may arc again (once per burst of the gun).</summary>
+        public float NextSurge;
         float reloadEnd;
         int clip;
         CharacterBody body;
@@ -356,6 +360,7 @@ namespace DeadlockOfRain
             pack.entityStateTypes.Add(Survivors.StateTypes.ToArray());
             pack.buffDefs.Add(Buffs.Defs.Values.ToArray());
             pack.equipmentDefs.Add(Equipment.Defs.Values.ToArray());
+            if (Net.RelayDef != null) pack.effectDefs.Add(new[] { Net.RelayDef });
             args.ReportProgress(1f);
         }
 

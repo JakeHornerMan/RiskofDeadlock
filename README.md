@@ -20,10 +20,10 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven or Infernus** from Deadlock, using 
 - Balanced against Risk of Rain 2's survivors: Haze ~ Commando, Abrams ~ Loader, Seven ~ Artificer, Infernus ~ Engineer.
   - Health, regen and damage grow on every level-up, just like vanilla survivors.
 - Scaled to Risk of Rain 2 with one shared factor (Haze is Commando's height), so Deadlock's size differences are kept. Abrams is the biggest.
-- Single player.
+- Co-op with up to 4 players: Risk of Rain 2's own lobby and Steam invites, or Melty's Join button. Every player needs this mashup (the same version) and their own Deadlock install.
 
 ## Requirements
-- Risk of Rain 2 and Deadlock, both installed.
+- Risk of Rain 2 and Deadlock, both installed (for co-op, on every player's PC).
 - On first start, the bundled DeadlockExtract tool reads the four heroes from your Deadlock folder into `%LOCALAPPDATA%\DeadlockOfRain\cache`. This takes a few minutes and happens once per Deadlock update.
 - Melty does all of this for you: press Play.
 

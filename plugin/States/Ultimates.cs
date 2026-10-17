@@ -155,8 +155,9 @@ namespace DeadlockOfRain.States
                     if (isAuthority) characterMotor.velocity = Vector3.up * Mathf.Sin(t * 3f) * 0.6f;
                     target = AimPoint();
                     if (reticle) reticle.transform.position = target;
-                    // fire (Left Click) slams; Q was the press that started it
-                    bool pressed = inputBank && inputBank.skill1.justPressed;
+                    // fire (Left Click) slams; Q was the press that started it. Only the owner sees the press: elsewhere the
+                    // dive shows as the body dropping fast
+                    bool pressed = isAuthority ? inputBank && inputBank.skill1.justPressed : Falling();
                     // test mode has no player to press: it slams shortly after the reticle is up
                     bool test = MeltyTest.Active && t >= row.MinDuration + 0.5f;
                     if (t >= row.Duration || t >= row.MinDuration && (pressed || test))
@@ -178,6 +179,15 @@ namespace DeadlockOfRain.States
                     }
                     break;
             }
+        }
+
+        Vector3 lastPos;
+        bool Falling()
+        {
+            var p = transform.position;
+            bool fast = lastPos != Vector3.zero && (lastPos.y - p.y) / Time.fixedDeltaTime > row.Speed * 0.4f;
+            lastPos = p;
+            return fast;
         }
 
         void Slam()
@@ -216,11 +226,9 @@ namespace DeadlockOfRain.States
             base.OnEnter();
             Sound("cast");
             if (anim) anim.Override("ult_start", 0.6f);
-            if (Server)
-            {
-                Buffs.AddTimed(characterBody, row.Buff, row.Duration);
-                DlrZone.Plant(characterBody, row, characterBody.footPosition);
-            }
+            if (Server) Buffs.AddTimed(characterBody, row.Buff, row.Duration);
+            // the storm sits on every machine (clouds, sound); the server's strikes and deals the damage
+            DlrZone.Plant(characterBody, row, characterBody.footPosition, Server);
         }
         public override void FixedUpdate()
         {

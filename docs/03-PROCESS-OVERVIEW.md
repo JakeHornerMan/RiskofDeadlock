@@ -173,7 +173,19 @@ On another PC, build the plugin with `dotnet build plugin -c Release -p:RoR2Dir=
    - `<hero>_aim*.png` (side render)
    - one per skill id
    - `lobby.png`, `lineup_cam.png`
-4. `bash tools/lab_restore.sh` when done. It closes the game, removes the test file, devshots and `build/checks.txt`, and removes the `winhttp.dll` copy. It then lists `BepInEx/plugins` so you can see Left4Rain and DeadlockOfRain are both there.
+4. `bash tools/lab_restore.sh` when done. It closes the game (every copy), removes the test file, devshots, the co-op step files and `build/checks.txt`, empties `join=` in `melty.properties`, and removes the `winhttp.dll` copy. It then lists `BepInEx/plugins` so you can see Left4Rain and DeadlockOfRain are both there.
+
+**Co-op test** (`bash tools/run_coop_test.sh`, about 12–15 min; doc 02 §10.2): two copies of the game on this PC.
+- The host starts through Steam with `{ "checks": ..., "coop": true }` in the test file; it hosts (`host 1`, loopback) and writes
+  `Melty join address: 127.0.0.1:7777` to `melty.log`. The script copies that log to `build/coop_host.log`.
+- The script then writes `join=<address>` to `melty.properties` and starts the second copy **straight from the exe** (env
+  `SteamAppId=632360`, `-logFile build/coop_player_join.log`), exactly as Melty's Join starts a friend's game. Its BepInEx log is
+  `LogOutput.log.1` (the first copy holds `LogOutput.log`). Its `Melty joined` line ends up in `build/coop_join.log`.
+- One Steam account can't join itself, so only in this test the joiner presents another id and the host skips the Steam
+  ticket check (`CoopTestPatches`). Real players join through Steam as usual.
+- The host's checks go to `build/coop_checks.txt`: `coop-hosts`, `coop-joined`, `coop-run`, `coop-<hero>` (every skill of the
+  hero, played by the joined player, did what its sheet expects, measured on the host), `coop-shots-seen`, `coop-effects-seen`.
+- Screenshots `<skill>_host1/2.png` (the host watching the joined player) and `<skill>_join1/2.png` (the joined player's own view).
 
 **User preference (important):** when a build is ready for the creator to playtest, **do not launch the game for
 them**. Leave it installed and tell them it is ready.
@@ -225,10 +237,14 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
              "done": {"file":"{localappdata}/DeadlockOfRain/cache/ready.json"} },
   "launch": {"kind":"game"},
   "runtimeData": ["{localappdata}/DeadlockOfRain"],
+  "multiplayer": { "maxPlayers": 4,
+                   "connect": { "address": {"log":"{localappdata}/DeadlockOfRain/melty.log","after":"Melty join address: "},
+                                "joinFile": {"path":"{localappdata}/DeadlockOfRain/melty.properties","key":"join"} } },
   "test": { "checks": ["deadlock-content","survivors-listed","haze-plays","abrams-plays","seven-plays","infernus-plays",
                        "ult-equipment","gun-aims","gun-in-hand","four-slots","level-stats","hero-scale"], "minutes": 8 } }
 ```
    - **Max 12 checks.** Only list names the mod really reports.
+   - `multiplayer` (since 0.6.0) is what `setup_multiplayer` returned for this mashup; call it again before `submit_release`, then with the co-op test's `build/coop_host.log` / `build/coop_join.log` as `hostLog` / `joinLog`.
    - **Do not** take `inspect_package`'s draft mappings. It suggests `{game}/BepInEx/plugins/DeadlockOfRain-<ver>`, which is version-named, and puts the extractor inside the plugins folder.
 4. `validate_recipe` (with `slug` and entries) → expect `valid`, one-click `yes`.
 5. `start_upload` (fileName, size, sha256, modId) → `curl -X PUT -H "content-type: application/octet-stream" --data-binary @zip "<url>"` → `finish_upload`.
@@ -285,7 +301,8 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 | 4 skills, ult on R (v0.2.0) | Playtest: "risk of rain only has 4 active abilities". Ability 3 dropped; Haze and Infernus keep their gun on-hit effects as passives. |
 | `expect` column + effect-measuring test | Playtest: "a lot of the abilities are not working". The 0.1.0 test only checked that states started. |
 | QuietStage + arena reset in the test | Wandering monsters and slopes made the test flaky across stages |
-| Solo only | Interview choice; networking (UNet) of custom bodies and the waveOut audio is untested |
+| Solo only (until v0.6.0) | Interview choice: solo first, co-op later |
+| Co-op (v0.6.0) | The creator: "make these character work online!". Answers: Steam invite + Melty's Join link; everyone needs Deadlock (the heroes come from each player's own install); the two-copy test may run any time, automatically; 4 players like vanilla. Built on RoR2's own networking (no R2API): states run everywhere, damage on the server, server-only sounds and visuals through one relay effect (doc 02 §7.7) |
 | Ability redesign (v0.3.0) | The creator went through doc 04 slot by slot. Picks: Haze Fixation+ passive, Sleep Dagger stun 4 s / 10 s, Smoke Bomb 5 s +50 % / 12 s, Bullet Dance unchanged with new effects; Abrams Infernal Resilience (10 % over 10 s), Siphon Life as a Mired Urn (3 targets, 25 m, 8 s, 15 s), Shoulder Charge 3 s stunning everything hit / 8 s, Seismic Impact with a hover and a reticle you aim (he can be hit); Seven Capacitor passive, Lightning Ball builds Static, Static Charge with a thunderbolt, Thunderhead zone at his feet with a Warbanner; Infernus Afterburn with visible embers, Napalm (lobbed, 2 charges), Flame Dash held up to 3 s with a 5 s trail that knocks enemies aside, Combustion 3 s fuse / 2 s stun / heal per kill. Details in doc 04 §6 |
 | Reuse RoR2 items for skills | The creator's idea: Siphon Life *is* RoR2's Mired Urn attachment and Thunderhead's attack speed *is* RoR2's Warbanner ward, so they look and work like the items players know, with no new buff code |
 | Ults as Q equipment (v0.4.0) | The creator: the ults should be pickups on Q, "auto equipped at the start" but droppable, other heroes' ults findable in the game, the item looking like the hero (picked: a whole mini hero), 120 s recharge, Preon Accumulator power. Answers: drop pool = everyone, same rules as Preon (chests, Enigma, Bottled Chaos); power = Preon scaled to 120 s (≈6800 % per enemy); charge meter removed; Seismic Impact slams on Left Click. New R per hero after deadlock.wiki research (all four Deadlock abilities were already used): Haze **Phantom Strike** (item) with a 3-cut flurry, Abrams **Haymaker** (heavy melee, tap), Seven **Power Surge** (his real ability) as RoR2 Tesla arcs per burst, Infernus **Torment Pulse** (item). Plus: rebuild all Infernus fire in Unity with RoR2's fire materials. Details in doc 04 §7 |
@@ -308,7 +325,7 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 - **Listing screenshots** are from 0.1.0 and should be replaced with 0.4.0 shots (4 skills, the Q ults, the hero pickups, the new effects).
 - **0.3.0 and 0.4.0 add Deadlock content** (icons, sounds, clips; doc 01 §5). A player's older cache has `ready.json`, so Melty skips setup and the new icons, sounds and R clips stay missing until the cache is rebuilt. The release must force a re-extract (doc 01 §5).
 - **New effects are only checked by eye** (devshots); the test measures what skills do, not how they look.
-- **Multiplayer** would need: network-safe states (the equipment ults already start on the owning client and send their row id), audio per client, `recipe.multiplayer`. Phantom Strike picks its target on each side separately.
+- **Co-op over the internet is untested with real friends.** The two-copy test proves joining, every skill of a joined player and the relay on one PC (loopback). Steam lobbies, Melty's Join link with a `.steamlobby` address and lag were not tested (one Steam account can't join itself); the first real session with a friend is the test. With lag, Haymaker's damage and Seismic Impact's slam land a moment after the owner sees them (doc 02 §7.7).
 - **Equipment ults on non-heroes** (Commando, Equipment Drones) use plain muzzles and no Deadlock animation; they work but look plainer than on the hero.
 - **More heroes:** follow §8. Abrams-style off-hand weapon pivots need `gunBone`.
 - **Seven's gun froze after a magazine (fixed in v0.4.1):** 29 rounds in bursts of 3 drove the burst counter below zero; any gun whose magazine is not a multiple of its burst would have done the same.

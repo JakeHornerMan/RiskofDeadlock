@@ -314,3 +314,36 @@ levels sit. Players need a forced re-extract (extractor 1.2.0).
 **Lessons:** Deadlock sound volumes are dB; a full bench re-measured stored vanilla numbers (stopped at the creator's
 word); `run_test.sh` can land on a ledge spot.
 
+### 2026-10-17 · co-op (play online with friends) · v0.6.0
+**Request (verbatim):** "ok now make these character work online!"
+**Questions asked → answers:** how friends join → "Steam invite + Melty link"; a friend without Deadlock → "Everyone
+needs Deadlock"; the two-copy test on this PC → "Anytime, automatically"; players → "4, like vanilla".
+**Done:**
+- `Runtime/Net.cs`: the mod-list entry (`melty.deadlockofrain;0.6.0`, so only the same version can join), the **relay**
+  (one EffectDef; server-only sounds/visuals and other players' shots/reloads reach every player once), `MeltyJoin`
+  (Melty's contract: a host's Steam lobby is written as `Melty join address: <id>.steamlobby`; `join=` joins from the
+  title screen), `CoopTestPatches` (test only).
+- Skill states made co-op safe (doc 02 §7.7): visuals/sounds in the states, damage on the server, owner-only movement and
+  bullets; lock-on targets, Static Charge's point and the owner's aim travel with the state; `MotionDir` for steered dashes;
+  Seismic Impact's dive seen as a fast drop; projectiles/zones/pulses on every machine with damage only on the server;
+  gun passives and Power Surge arcs moved to the server (`GunHits`, `onServerDamageDealt`); firing breaks Smoke Bomb on
+  the server; Siphon Life's loop sound for everyone (now also its end sound).
+- Co-op test: `plugin/Runtime/MeltyTestCoop.cs` + `tools/run_coop_test.sh [heroes]`; `lab_restore.sh` closes every copy
+  and empties `join=`. Hooks sheet: 5 new rows. Recipe gains a `multiplayer` block (doc 03 §6; `setup_multiplayer`: valid).
+- Docs 02 (§7.7, §10.2, hooks), 03 (decision row, test loop, recipe, open item), README (co-op), CLAUDE.md (co-op rules,
+  command), MODLOG (gotchas 13–15). Pages: a v0.6.0 "Co-op" line per hero, republished.
+**Results:** `run_coop_test.sh`: every check passes (`coop-hosts`, `coop-joined`, `coop-run`, `coop-haze/abrams/seven/infernus`,
+`coop-shots-seen`, `coop-effects-seen`): **4/4 heroes, all 25 skills, played by a joined player and measured on the host**;
+the joiner received 334 relayed effects. `run_test.sh` (solo) still passes everything, 4/4. On the way: the joiner skipped
+every "fire" (same step number as "prep"); one run landed the targets badly; the second copy loads in 3–5 min and runs well
+behind the host (the host now waits for each answer); **RoR2 doesn't send a player's aim to the server**, so a joined
+Infernus' Napalm never landed (fixed: `OwnerAim`); the joined copy's camera never settled, so the test switches its player
+controller off and aims at the target the host names.
+**Not done / open:** never played with a real friend: the Steam-lobby route and Melty's Join with a `.steamlobby` address
+can't be tested with one Steam account, and lag is untested (Haymaker's hit and Seismic Impact's slam land a moment after
+the owner sees them). The Melty address is written when the host opens a Multiplayer lobby, not at game start. Napalm's
+smoke looked larger and darker on the joined copy's small window: check in play. Not published (needs a release with the
+`multiplayer` recipe block and a forced re-extract, as before).
+**Lessons:** in RoR2 the skill states run on every machine but inputs (aim) exist only on the owner; never time one copy
+of the game on the other's clock; two copies of one Steam account can only meet over loopback with a test-only id.
+

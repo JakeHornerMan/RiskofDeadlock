@@ -20,7 +20,7 @@ namespace DeadlockOfRain.States
         public override void OnEnter()
         {
             base.OnEnter();
-            target = AimTarget(row.Range);
+            target = LockOn(row.Range);
             if (!target)
             {
                 // nothing under the crosshair in range: no blink, and R stays ready
@@ -62,9 +62,10 @@ namespace DeadlockOfRain.States
                 var at = victim ? victim.corePosition : transform.position + (characterDirection ? characterDirection.forward : transform.forward) * 1.5f;
                 Vfx.Play(row.Vfx, "hit", at, cuts);
                 Fx.Sound(row.Id, "hit", at);
-                if (Server && victim)
+                if (victim)
                 {
-                    // each cut sweeps every enemy within radius of the target, not just the target
+                    // each cut sweeps every enemy within radius of the target, not just the target (every player draws
+                    // the cuts; the server deals the damage)
                     var swept = Fx.Enemies(characterBody, at, row.Radius);
                     if (!swept.Exists(h => h.healthComponent == target.healthComponent)) swept.Insert(0, target);
                     foreach (var hb in swept)
@@ -72,6 +73,7 @@ namespace DeadlockOfRain.States
                         var b = hb.healthComponent.body;
                         if (!b) continue;
                         if (hb.healthComponent != target.healthComponent) Vfx.Play(row.Vfx, "hit", b.corePosition, cuts);
+                        if (!Server) continue;
                         Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, b.corePosition);
                         // each cut adds buffStacks of Haze's Fixation (its 20-stack burst can fire from here)
                         for (int i = 0; i < Mathf.Max(1, (int)row.BuffStacks); i++) Buffs.Stack(characterBody, b, row.Buff, false);
@@ -97,7 +99,7 @@ namespace DeadlockOfRain.States
         public override void OnEnter()
         {
             base.OnEnter();
-            target = AimTarget(row.Range);
+            target = LockOn(row.Range);
             if (!target)
             {
                 RefundStock();
@@ -301,7 +303,8 @@ namespace DeadlockOfRain.States
                     for (int k = 0; k < Mathf.Max(1, (int)surge.BuffStacks); k++) Buffs.Stack(owner, nb, stackBuff, false);
                 if (nb) from = nb;
             }
-            if (hit.Count > 1) Fx.Sound(surge.Id, "hit", victim.corePosition);
+            // server only: every player hears it through the relay (the arcs themselves are RoR2 orbs, networked by RoR2)
+            if (hit.Count > 1) Relay.Sound(surge.Id, "hit", victim.corePosition);
             MeltyTest.Report("surge-arcs", true, owner.baseNameToken);
         }
     }
@@ -315,11 +318,9 @@ namespace DeadlockOfRain.States
             base.OnEnter();
             Sound("cast");
             if (anim) anim.Gesture("special");
-            if (Server)
-            {
-                var aura = gameObject.GetComponent<PulseAura>() ?? gameObject.AddComponent<PulseAura>();
-                aura.Begin(characterBody, row);
-            }
+            // on every machine: the rings and sound everywhere, the damage on the server
+            var aura = gameObject.GetComponent<PulseAura>() ?? gameObject.AddComponent<PulseAura>();
+            aura.Begin(characterBody, row);
             TimedLoop.Run(gameObject, row, row.Duration, Vfx.Play(row.Vfx, "loop", characterBody.footPosition, row.Radius, transform));
         }
 
@@ -332,8 +333,8 @@ namespace DeadlockOfRain.States
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Any;
     }
 
-    /// <summary>Server side of Torment Pulse: every interval for duration, everything within radius takes damagePct and
-    /// buffStacks of the buff (Afterburn build-up, whose ignition is the usual burn).</summary>
+    /// <summary>Torment Pulse, on every machine: every interval for duration a ring and its sound; on the server everything
+    /// within radius takes damagePct and buffStacks of the buff (Afterburn build-up, whose ignition is the usual burn).</summary>
     public sealed class PulseAura : MonoBehaviour
     {
         CharacterBody owner; SkillRow row; float until, next; string hitVfx;
@@ -358,6 +359,7 @@ namespace DeadlockOfRain.States
             var at = owner.footPosition;
             Vfx.Play(row.Vfx, "hit", at, row.Radius);
             Fx.Sound(row.Id, "hit", at);
+            if (!NetworkServer.active) return;
             foreach (var hb in Fx.Enemies(owner, owner.corePosition, row.Radius))
             {
                 var b = hb.healthComponent.body;
@@ -365,7 +367,8 @@ namespace DeadlockOfRain.States
                 Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, b.corePosition);
                 bool fired = false;
                 for (int k = 0; k < Mathf.Max(1, (int)row.BuffStacks); k++) fired |= Buffs.Stack(owner, b, row.Buff, false);
-                Vfx.Play(hitVfx, fired ? "trigger" : "hit", b.corePosition, 1f, b.transform);
+                // the build-up depends on the stacks, which only the server knows: every player sees it through the relay
+                Relay.Vfx(hitVfx, fired ? "trigger" : "hit", b.corePosition, 1f, b.gameObject);
             }
         }
     }

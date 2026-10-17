@@ -45,14 +45,15 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
 | `Runtime/DeadlockAudio.cs` | waveOut software mixer (RoR2 turns Unity audio off). Plays the decoded Deadlock sound events. |
 | `Runtime/Fx.cs` | Effect prefabs by Addressables key (`effects.json`) and combat helpers: `Enemies`, `Hit`, `Blast`, `Stun`, `KnockAside`, `KnockBack`, `MuzzleFlash`, `Sound`, `Loop`, `Muzzle`, `Impact`, `Ghost`, `Prefab`. |
 | `Runtime/Vfx.cs` | Our own visual effects (effects of kind `custom`, §8.1), built at runtime with RoR2 materials; `Play(id, moment, ...)`, `Stop`, `Bolt`, `Ring`, `Burst`, `Flash`, `EmberFx`. |
-| `Runtime/Projectiles.cs` | Simulated server-side objects: `DlrProjectile` (Sleep Dagger, Lightning Ball), `DlrDelayed` (Static Charge), `DlrLob` (Napalm), `DlrZone` (Thunderhead). |
-| `Runtime/MeltyTest.cs` | Test mode for Melty's `test_release`, plus dev-only screenshot tools. |
+| `Runtime/Projectiles.cs` | Simulated objects, on every machine (only the server's copy deals damage, §7.7): `DlrProjectile` (Sleep Dagger, Lightning Ball), `DlrDelayed` (Static Charge), `DlrLob` (Napalm), `DlrZone` (Thunderhead). |
+| `Runtime/Net.cs` | Co-op (§7.7): `Net` (mod-list entry, the relay `EffectDef`), `Relay` (play a sound or visual on every player's machine once), `RelayFx`, `MeltyJoin` (Melty's join contract), `CoopTestPatches` (two-copy test only). |
+| `Runtime/MeltyTest.cs` | Test mode for Melty's `test_release`, plus dev-only screenshot tools. `MeltyTestCoop.cs`: the two-copy co-op test (§10.2). |
 | `Content/Survivors.cs` | Builds bodies, SurvivorDefs, SkillDefs and families. `HeroRuntime` (ammo/reload). `DeadlockContentProvider`. `LanguagePatch`. `DeadlockHero` tag. `[Kind]` attribute. |
 | `Content/Buffs.cs` | BuffDefs from `buffs.json`, `Stack` (stacking passives and their triggers), `Apply`, `Burn` (Afterburn), `HealBack` (Infernal Resilience), `StatsPatch` (RecalculateStats postfix, slow resist), `DebuffResistPatch`, `DamagePatch` (TakeDamage prefix). |
 | `Content/Equipment.cs` | The ults as RoR2 equipment (Q): `EquipmentDef`s from `equipment.json`, the hero-figure pickup model, `FirePatch`/`ClientFirePatch` (start the ult state when Q fires), starting equipment. |
 | `Content/LoadoutFix.cs` | Gives the empty skins row of the loadout panel a "Default" entry, so it doesn't crash. |
 | `States/DlrState.cs` | Base EntityState for every hero skill: finds its sheet row (`RowOverride` for an ult fired from equipment; the row id is serialized with the state), the runtime, the animator; helpers. |
-| `States/Guns.cs` | `GunState` (magazine, reload, burst, recoil, on-hit passives) → `GunAuto`, `GunBurst`, `GunShotgun`. |
+| `States/Guns.cs` | `GunState` (magazine, reload, burst, recoil, `ShotFx`/`ReloadFx`/`BreakSmoke`) → `GunAuto`, `GunBurst`, `GunShotgun`; `GunHits` (server: the on-hit passives and Power Surge arcs, from the bullets' damage). |
 | `States/Abilities.cs` | `ThrowProjectile`, `SelfBuff`, `MiredUrn`, `DashCharge`, `ThrowOrb`, `DelayedBlast`, `ThrowLob`, `DashTrail`. |
 | `States/Specials.cs` | The R moves: `PhantomStrike`, `HeavyMelee`, `PowerSurgeCast` (+ `Arc`), `AuraPulse` (+ `PulseAura`), and `TimedLoop`. |
 | `States/Ultimates.cs` | `UltState` base plus `UltDance`, `UltLeap`, `UltZone`, `UltSelfBomb` (the Q equipment ults). |
@@ -89,7 +90,7 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
 
 ### 4.2 The body: a Commando clone
 `Instantiate(CommandoBody, holder)`, named `Deadlock<Name>Body`. Then:
-1. **Network id:** `NetworkIdentity.m_AssetId` is set (reflection) to an MD5 of `DeadlockOfRain.<bodyName>`, so the clone gets a stable, unique asset id. Single player only, but it keeps UNet happy.
+1. **Network id:** `NetworkIdentity.m_AssetId` is set (reflection) to an MD5 of `DeadlockOfRain.<bodyName>`, so the clone gets a stable, unique asset id, the same on every player's PC: that is how a joined player's game spawns the host's hero (and the other way round) in co-op.
 2. **Model swap:**
    - Build the hero model (§4.3) and parent it to `ModelLocator.modelBaseTransform`, at the old model's local position.
    - `DestroyImmediate` Commando's model, and set `ModelLocator._modelTransform` (private) to the new one.
@@ -290,8 +291,8 @@ client run the same row. Without either it falls back to the hero's row of that 
 | `dash_trail` | `DashTrail` | Flame Dash | Body machine. Speed ×`moveSpeedMult`. A tap lasts `minDuration` (0.8 s); **holding Shift keeps it going up to `duration`** (3 s). The `flame_dash` buff (50 % slow resistance) is on for the dash. Spawns vanilla `FireTrail` `DamageTrail` (owner = Infernus, `damagePerSecond = damage × damagePct / interval`, trail radius `radius × 0.5`, points live `chainCount` s = 5 s, so `chainCount` is reused as a lifetime here). Enemies he runs into are **knocked aside** once each (`Fx.KnockAside`: `TakeDamageForce` mostly to their side of his path, a little forward and up, at `knockback` m/s × their mass) to clear his path, and take one tick of the trail's damage (`damagePct`) as they go, since the shove throws them out of the flames. `vfx` `infernus_trail`: flames at his legs, and a patch of burning ground every 1.5 m that lasts as long as the trail. |
 | `phantom_strike` | `PhantomStrike` | Phantom Strike (R) | Body machine. A `BullseyeSearch` along the aim (≤ `range`, 15°, line of sight). **No target: no blink, and the stock is given back.** Otherwise she teleports (`TeleportHelper`) just behind the target, facing it, and cuts it `burst` times, `interval / attackSpeed` apart: each cut hits **every enemy within `radius` of the target** (5 m, v0.5.1; the target always) for `Fx.Hit damagePct` and `buffStacks` × `Buffs.Stack(buff)` (5 Fixation, so the 20-stack burst can fire). `special_start` clip on the blink, `special` per cut. `vfx` `haze_phantom`: smoke at both ends, a violet streak with afterimage glows, a slash arc per cut. |
 | `heavy_melee` | `HeavyMelee` | Haymaker (R) | Body machine. **Lock-on** (v0.5.1): `AimTarget(range)` (the same `BullseyeSearch` as Phantom Strike, 20 m); **no target: no punch, and the stock is given back.** Wind-up `interval / attackSpeed` (`special_start`, a glowing fist), then he **flies straight at the target** at `speed` m/s (gravity off through a channeled anti-gravity count, `ForceUnground` if it is above him), steering after it, for at most 1.5 × `range / speed` s. The punch goes **along the line to the target** (never into the floor) on contact or at the time cap: the target and everything within `radius` in front take `damagePct` and `Fx.Stun(stunDuration)`, and are knocked back (`Fx.KnockBack`, `knockback` m/s × mass). Then an 0.08 s **hit-stop** (he and his animator freeze), gravity returns, and he recovers for `duration` s. `effect` `punch_impact` (Loader's fist impact) + `vfx` `abrams_haymaker`. With `extra` = **`shockwave`** every other enemy in a cone along the punch (length 2 × `radius`, half-angle `spreadDeg`) takes the same hit and knockback, each enemy once; `vfx` moment `wave`: dust and sparks racing out in the cone and red arcs sweeping across it. |
-| `power_surge` | `PowerSurgeCast` | Power Surge (R) | Weapon machine, 0.25 s: gives the `power_surge` buff (+40 % move speed) for `duration`. While it is on, **once per burst** `GunState.OnBulletHit` calls `PowerSurgeCast.Arc`: RoR2 **Tesla** `LightningOrb`s (the Unstable Tesla Coil's arcs and sound) hop from the target to up to `chainCount` more enemies, each within `radius` of the last, for `damagePct` each, and each adds `buffStacks` of the gun's buff (Static). `vfx` `seven_surge`: crackle and glow on Seven for the duration (`TimedLoop`). |
-| `aura_pulse` | `AuraPulse` | Torment Pulse (R) | Weapon machine, 0.2 s: puts a `PulseAura` on the body (server). Every `interval` for `duration` it hits everything within `radius` for `damagePct` and adds `buffStacks` of `buff` (Afterburn build-up, so enemies in it ignite), drawing the gun's ember/ignition `vfx` on them. `vfx` `infernus_pulse`: a ring of fire racing out every pulse, embers around him. |
+| `power_surge` | `PowerSurgeCast` | Power Surge (R) | Weapon machine, 0.25 s: gives the `power_surge` buff (+40 % move speed) for `duration`. While it is on, **once per gun interval** (one burst) the server's `GunHits` calls `PowerSurgeCast.Arc`: RoR2 **Tesla** `LightningOrb`s (the Unstable Tesla Coil's arcs and sound) hop from the target to up to `chainCount` more enemies, each within `radius` of the last, for `damagePct` each, and each adds `buffStacks` of the gun's buff (Static). `vfx` `seven_surge`: crackle and glow on Seven for the duration (`TimedLoop`). |
+| `aura_pulse` | `AuraPulse` | Torment Pulse (R) | Weapon machine, 0.2 s: puts a `PulseAura` on the body (every machine; damage on the server, §7.7). Every `interval` for `duration` it hits everything within `radius` for `damagePct` and adds `buffStacks` of `buff` (Afterburn build-up, so enemies in it ignite), drawing the gun's ember/ignition `vfx` on them. `vfx` `infernus_pulse`: a ring of fire racing out every pulse, embers around him. |
 | `ult_dance` | `UltDance` | Bullet Dance (Q) | (113 % per shot, so 5/0.083 × 113 ≈ 6800 % per enemy.) After a 0.4 s intro, every `interval / attackSpeed` one bullet at **every** enemy within `radius` (v0.4.1; it was one random enemy per tick), alternating guns, for `duration`; only the first 3 shots of a tick draw tracers, muzzle and hit effects. `bullet_dance` buff = 30 % evasion (DamagePatch). Slowed by `moveSpeedMult`. `vfx` `haze_dance`: blade ring and ribbons while it runs, a burst at the muzzle and the hit per shot. |
 | `ult_leap` | `UltLeap` | Seismic Impact (Q) | Body machine, 4 phases. **Rise** for `interval` s (`ult_start` clip). **Hover** (`ult_loop`): Abrams hangs in the air (he can be hit) while the `vfx` **reticle** sits on the ground where he aims: the first enemy or ground along the aim (own/allied hurtboxes skipped), at most `range` m away on the flat, dropped to the ground. After `minDuration`, **Left Click** (`justPressed`; v0.4.0, Q started it) starts the dive; at `duration` it starts by itself (in test mode 0.5 s after `minDuration`). **Dive** (`ult_end`) at `speed` onto the reticle with a burning trail. **Slam** on landing: `effect` + `vfx` shockwave, `Fx.Blast(radius, damagePct)` + stun. Fall damage ignored. |
 | `ult_zone` | `UltZone` | Thunderhead (Q) | Weapon machine, 0.6 s. Plants `DlrZone` at Seven's feet for `duration` and gives Seven the `thunderhead` marker buff. Every `interval` the zone strikes up to `chainCount` random enemies within `radius` (`Fx.Hit damagePct`, `vfx` bolt from the cloud; RoR2's small `OmniImpactVFXLightning` (`effect` storm_strike) once per tick: the big `LightningStrikeImpact` drew huge cyan rings across the screen). The `extra` object, RoR2's **Warbanner ward** (`WarbannerWard.prefab`: `BuffWard` with vanilla `bdWarbanner`, +30 % attack and move speed), is spawned on Seven's team with `radius` and `expireDuration = duration`. `vfx` `seven_storm`: the cloud deck and its flashes. |
@@ -306,9 +307,9 @@ client run the same row. Without either it falls back to the hero's row of that 
 | `DashCharge` and every `UltState` | Frozen |
 | `DashTrail`, `PhantomStrike`, `HeavyMelee` | PrioritySkill |
 
-**Server and authority:**
-- Damage, buffs and projectiles run when `NetworkServer.active`. Movement and BulletAttack run on authority.
-- The mod is **single player** (no `recipe.multiplayer`), so both are the local game. The equipment path is written for co-op already (§7.5).
+**Server and authority:** damage, buffs, stuns and knockback run when `NetworkServer.active`; movement and BulletAttack run on
+authority (the hero's owner). In solo both are the local game; in co-op a joined player's hero has its authority on their PC
+and the server is the host's. How each kind copes with that is §7.7.
 
 ### 7.4 Passives and buffs (`buffs.json`, `heroes.json`, `Content/Buffs.cs`)
 - **BuffDefs** are created from the sheet: `name`, `buffColor`, `canStack`, `isDebuff`, `isHidden`, icon from the cache. They are registered in the content pack.
@@ -374,6 +375,62 @@ Since v0.4.0 the Deadlock ults are RoR2 **equipment** (Q). There is no charge me
 - **Equipment ults:** cooldown exactly 120 s and **at least 6000 %** per enemy (dance and zone: duration/interval × damagePct per target; the rest damagePct). That is the Preon Accumulator (8000 % blast plus its lightning on a 140 s cooldown) scaled to 120 s: about 6800 %. There is no upper limit since v0.4.1: the ults are pickups any survivor can carry, so they are left out of balance (creator's decision).
 - **`extra` flags:** besides an effects row, `extra` can be a behaviour flag for one kind: `pierce` (kind `projectile`) or `shockwave` (kind `heavy_melee`). Preflight checks the pairing.
 - **Stats** are anchored to RoR2 analogs (see `stats.json`): Abrams is Loader-like (160 HP +48/lvl, 20 armor, 2.5 regen), Haze and Seven 110 HP +33, Infernus 130 HP +39. Damage is 12 +2.4 for everyone.
+
+### 7.7 Co-op (v0.6.0, `Runtime/Net.cs`)
+Up to 4 players (RoR2's own lobby and Steam invites, plus Melty's Join). Every player needs the mashup at the same version
+and their own Deadlock install (their PC builds the heroes from its own cache; the content is identical because the
+sheets are).
+
+**Who runs what.** RoR2 networks every skill state: it starts on the hero's owner, is sent to the server, and the server
+sends it on to everyone else, so `OnEnter`/`FixedUpdate`/`OnExit` run on every machine. Rules the states follow:
+- Sounds, our visuals and animation are played **in the state**, so every player gets them with no networking.
+- Damage, stuns, buffs, knockback and stacks are **server only** (`Server`, and inside `Fx.Hit/Blast/Stun/Knock*` and `Buffs.*`).
+- Movement, aiming, `BulletAttack`, skill-stock refunds and ending the state are **owner only** (`isAuthority`).
+- **RoR2 does not send a player's aim to the server**: there a joined player's body looks straight ahead. The owner's aim
+  at the start of a skill (`OwnerAim`) travels with the state, and throws (dagger, ball, flask) and Shoulder Charge's
+  start use `ThrowDir` (the live aim on the owner, `OwnerAim` elsewhere). Found when a joined Infernus' Napalm never landed.
+- Anything the owner decides at the start travels **with the state** (`OnSerialize` runs after `OnEnter` on the owner,
+  `OnDeserialize` before `OnEnter` everywhere else): the ult row (`RowOverride`), the lock-on target of Phantom Strike and
+  Haymaker (`LockTarget`, a `HurtBoxReference`, picked by `LockOn()`), Static Charge's point and the body it sticks to.
+- A move steered by the owner (Shoulder Charge, Flame Dash) reads its direction elsewhere from how the body moves (`MotionDir`).
+  Seismic Impact's dive starts on the owner's Left Click; elsewhere it shows as the body dropping fast (`Falling`), and the
+  server slams when it sees him land (or when the owner's state ends). Haymaker punches on each machine when that machine
+  sees him reach the target, so the server's hit lands a moment after the owner sees it.
+- `Projectiles.cs` objects are created by the state on **every** machine with `damage = Server`: each player sees their own
+  copy of the dagger, ball, flask and storm fly the same path; only the server's copy hits. Thunderhead's strikes are picked at
+  random, so the server picks them and relays them. Torment Pulse's `PulseAura` likewise runs everywhere and damages on the server.
+
+**The relay** (`Relay.*`). For code that runs on the server alone (stack triggers' flash and arcs, the gun's per-hit build-up
+visual, Shoulder Charge's hit sparks, Power Surge's sound, Thunderhead's strikes, the Afterburn ignition sound) and for a
+joined player's gun shots and reloads: one `EffectDef` of ours (`DeadlockOfRainRelay`, `VFXAttributes.DoNotPool`,
+priority Always) is spawned with `EffectManager.SpawnEffect(index, data, transmit: true)`. RoR2 delivers a transmitted effect
+to every player exactly once (the host through its local connection, the sender locally), and `RelayFx.Start` plays what the
+`EffectData` encodes, then destroys itself:
+- `genericUInt` = kind (4 bits: Vfx, Sound, Impact, Flash, Bolt, Shot, Reload) | moment (4 bits, an index into
+  `Relay.Moments`) | the row's index in `EffectRow.All` or `SoundRow.All` (same order on every PC);
+- `origin`, `start` (+ `genericBool` "has a target point"), `scale` (radius), `genericFloat` (angle or life), `color`,
+  `rootObject` (the body to follow).
+Never call `Relay` from code that already runs on every machine, or each player gets it twice (or four times).
+
+**Guns.** The owner fires the bullets (RoR2 sends their damage to the server) and plays the shot (`GunState.ShotFx`: sound,
+flash, muzzle visual, recoil), then relays it: other players' machines run `ShotFx` too; the owner skips its own relay.
+The **on-hit passive** (Fixation, Static, Afterburn build-up) and **Power Surge's arcs** run on the server in `GunHits`,
+from `onServerDamageDealt` (damage source `Primary`, inflictor = the hero), the same for every hero whoever owns it. Power
+Surge arcs at most once per gun interval (the old "once per burst" flag lived in the owner's state, which the server
+doesn't have for a joined player). Firing breaks Smoke Bomb on the server (`BreakSmoke`, from the relayed shot for a joined Haze).
+
+**Equipment ults.** Already written for this (§7.5): the server spends the charge; the ult state starts where the body has
+authority and is networked from there.
+
+**Joining.** `Net.Init` adds `melty.deadlockofrain;<version>` to `NetworkModCompatibilityHelper.networkModList`, so RoR2's
+own mod check refuses a player with another version (or without the mashup). `MeltyJoin` is Melty's contract
+(`%LOCALAPPDATA%\DeadlockOfRain\melty.log` and `melty.properties`):
+- the log is emptied at start; whenever this player owns a Steam lobby (Multiplayer, Host), it writes
+  `Melty join address: <lobby id>.steamlobby` (one line per lobby);
+- with `join=<address>` in melty.properties, once the title screen is up it runs `steam_lobby_join <id>` (or `connect ip:port`
+  for an address with a port), then writes `Melty joined: <address>` once connected to the host's game with 2+ players, or
+  `Melty join failed: <why>` after 90 s.
+Steam invites and RoR2's lobby work as in vanilla; the Melty line is an extra way in.
 
 ---
 
@@ -453,7 +510,12 @@ themselves. Effects run where the skill code runs (the host in single player).
 | damage_mods | Harmony prefix | `HealthComponent.TakeDamage(DamageInfo)` | Fixation/Napalm amp from their owner, Bullet Dance evasion |
 | debuff_resist | Harmony prefix | `CharacterBody.AddTimedBuffInternal` (private) | Infernal Resilience: shorter debuffs on Abrams |
 | heal_back | event | `GlobalEventManager.onServerDamageDealt` | Infernal Resilience: heal back part of each hit |
-| stack_triggers | component | `Buffs.Stack` (our guns and projectiles) | Fixation burst, Static discharge, Afterburn ignition |
+| stack_triggers | component | `Buffs.Stack` (our guns and projectiles) | Fixation burst, Static discharge, Afterburn ignition (flash and arcs through the relay) |
+| gun_hits | event | `GlobalEventManager.onServerDamageDealt` | a hero gun's hits: the on-hit passive and Power Surge arcs, for every player's hero (§7.7) |
+| relay_effect | event | `ContentPack.effectDefs` + `EffectManager.SpawnEffect(transmit)` | co-op: server-only sounds and visuals, other players' shots and reloads (§7.7) |
+| mod_list | event | `NetworkModCompatibilityHelper.networkModList` | co-op: only players with the same version can join each other |
+| melty_join | component | `PlatformSystems.lobbyManager` (polled), console `connect` / `steam_lobby_join` | Melty's join address and join= line |
+| coop_test_auth | Harmony postfix/prefix | `NetworkManagerSystemSteam.PlatformAuth`, `SteamworksServerManager.OnAuthDataReceivedFromClient/OnAuthChange` (private) | **two-copy test only**: same Steam account twice |
 | mired_urn | component | RoR2 `SiphonNearbyBodyAttachment` on Abrams | Siphon Life tethers, drain and heal |
 | warbanner_ward | component | RoR2 `WarbannerWard` (BuffWard) | Thunderhead's +30 % attack and move speed |
 | kill_heal | event | `GlobalEventManager.onCharacterDeathGlobal` | Concussive Combustion heals per kill |
@@ -461,7 +523,7 @@ themselves. Effects run where the skill code runs (the host in single player).
 | equipment_fire | Harmony prefix | `EquipmentSlot.PerformEquipmentAction(EquipmentDef)` (private) | spend the charge, start the ult where the server owns the body |
 | equipment_fire_client | Harmony postfix | `EquipmentSlot.RpcOnClientEquipmentActivationRecieved()` (private ClientRpc) | start the ult on a remote client that owns the body |
 | starting_equipment | event | `CharacterBody.onBodyStartGlobal` | a hero's first body of the run gets its ult |
-| torment_pulse | component | `PulseAura` on the body | Torment Pulse's pulses |
+| torment_pulse | component | `PulseAura` on the body (every machine; damage on the server) | Torment Pulse's pulses |
 | loadout_skins | Harmony postfix | `LoadoutPanelController+Row.FromSkin` (public static on a private nested class) | Default skin entry |
 
 Private members we touch by reflection, which **can break on a RoR2 update**:
@@ -475,6 +537,7 @@ Private members we touch by reflection, which **can break on a RoR2 update**:
 - `CameraModeBase.camToRawInstanceData` (test mode only)
 - `CharacterBody.AddTimedBuffInternal` (private method, patched by name for debuff resistance)
 - `EquipmentSlot.PerformEquipmentAction` and `RpcOnClientEquipmentActivationRecieved` (private, patched by name for the equipment ults)
+- `NetworkManagerSystemSteam.PlatformAuth`, `SteamworksServerManager.OnAuthDataReceivedFromClient/OnAuthChange` (co-op test only; patched by name, a missing one is logged and skipped)
 
 ---
 
@@ -570,6 +633,30 @@ a fill and two rim point lights in the hero's colour, framed from the renderers'
 
 Results and every variable:
 doc 05.
+
+### 10.2 Co-op test (`Runtime/MeltyTestCoop.cs`, `tools/run_coop_test.sh`)
+Test mode with `"coop": true` in the test file. The copy whose `melty.properties` has a `join=` address is the **joiner**;
+the other is the **host** (only the host writes checks). How to run it: doc 03 §5.
+- **Host:** hosts with `host 1` (UNet listens on 7777; `NetworkServer.dontListen` false), writes `Melty join address:
+  127.0.0.1:7777`, waits up to 600 s (the second copy loads slowly beside the first) for a second `NetworkUser`, starts the run (`pregame_start_run`), ejects both from their
+  pods and quiets the stage. Its own hero (Abrams) stands aside and fires its gun for 2 s, for the joiner to see. Then for
+  each hero it turns the **joiner's** master into that hero (`TransformBody`, server side), and for each of the 5 slots:
+  `prep` → the joiner walks onto the arena; the host summons two sturdy Lemurians in front of it (and, for the ult, hands
+  it the charged equipment; for a heal, hurts it); `fire` → the joiner fires; the host measures what the skill did to the
+  Lemurians and to the joiner's body, exactly as the solo test (`Effects`, the row's `expect` list, plus the 120 s cooldown).
+- **Joiner:** picks Haze in its profile, joins through `MeltyJoin` (`connect 127.0.0.1:7777`), then answers the steps.
+  It switches its `PlayerCharacterMasterController` off (that re-aims at the camera's crosshair every frame, and in the
+  slow second copy the camera never settled), teleports itself (it owns its body), turns until its aim is within 2° of the
+  living enemy nearest the point the host named (it may not yet have seen the last step's targets die), and fires through its own skill slots (`ExecuteIfReady`;
+  the gun held through `WantsFire`; the ult with `requestEquipmentFire`, as a key press does), and reports at the end how
+  many relayed effects it received and whether it saw the host's shots.
+- **Files:** `%LOCALAPPDATA%\DeadlockOfRain\coop\step.txt` (host: `prep|n|arena|forward`, `fire|n|slot|window|skill|target`,
+  `end|n`) and `ack.txt` (joiner: `ready|n`, `done|n`, `stats|n|relayed|sawHostShots`), each replaced whole. `prep` and `fire`
+  share `n`, so the joiner treats a step as new when either part changes. The second copy runs well behind the host, so
+  the host waits for each answer (ready 120 s, done up to window + 90 s) and measures until `done`, never on its own clock.
+- `"heroes": "haze,abrams"` in the test file (`run_coop_test.sh haze,abrams`) plays only those heroes (about 8 min).
+- A `lock-on <skill> (owner|server): <target>` line is logged on each machine in test mode.
+- Same Steam account twice: `CoopTestPatches` (test only; doc 02 §9).
 
 ## 11. Adding another hero: the RoR2 half
 

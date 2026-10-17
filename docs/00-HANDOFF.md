@@ -33,10 +33,11 @@ Before touching anything:
 
 | Item | State |
 |---|---|
-| Version | **0.5.1** (`plugin/Plugin.cs`; playtest feel pass), extractor **1.2.0** (sound volumes read as dB). Not published on Melty since 0.2.0 |
+| Version | **0.6.0** (`plugin/Plugin.cs`; co-op), extractor **1.2.0** (sound volumes read as dB). Not published on Melty since 0.2.0 |
+| Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
 | Installed build | v0.4.1 + the bench's match/portrait dev code (committed with the page redesign) |
 | Heroes | Haze, Abrams, Seven, Infernus; 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
-| Test | `run_test.sh`: every check passes incl. `voice-lines`, 4/4 heroes (2026-10-17, v0.5.1) |
+| Test | `run_test.sh`: every check passes incl. `voice-lines`, 4/4 heroes (2026-10-17, v0.6.0); `run_coop_test.sh`: every co-op check passes |
 | Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, within **±500 %/s**, comparing **means over every bench run** of the current build (`RUNS` in `tools/kit_pages.py`; doc 05 §3.0) |
 | Balance now | v0.5.1 heroes-only run vs the library (doc 05 §3.1): **Haze 6550 vs Commando 1222 (far above: Phantom Strike's area spreads Fixation)**, Abrams 2460 vs Loader 2951 (inside), **Seven 3164 vs Artificer 4013 (below: the bouncing ball leaves the pack)**, Infernus library 1512 vs Engineer 1611 (inside). Not retuned; the creator decides |
 | Bench rule | **Bench our heroes only** (`run_bench.sh 30 <ids>`, the default); vanilla numbers come from `docs/dps-library.json` (creator, 2026-10-17; CLAUDE.md) |
@@ -178,6 +179,10 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
 - **Deadlock's sound `volume` is in decibels** (0 = as recorded, negative = quieter). Until extractor 1.2.0 it was used as
   a linear gain, so every 0 dB-or-quieter event (most ability sounds, Infernus' gun at −1 dB) played at the mixer's 20 %
   floor. "This sounds weak" is worth checking against the cache's `sounds/sounds.json` volumes first.
+- **Co-op (v0.6.0):** RoR2 runs a skill state on every machine but a player's inputs (aim, buttons) exist only on their own
+  PC; anything the server needs from the owner goes in `OnSerialize`. Code that runs on the server alone must play its
+  sounds/visuals through `Relay`, or the other players never see them. Test with `run_coop_test.sh`; the second copy is slow,
+  so steps wait for answers, and `run_coop_test.sh haze,abrams` keeps a check to ~8 min.
 - `run_test.sh` sometimes lands on a **ledge** (hero ~15 m above where the summoned targets fall): nearly every check
   fails, including moves nobody touched. The stage is random, so run it again; if in doubt, run the previous commit at once.
 
@@ -204,7 +209,18 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: v0.5.1 playtest feel pass (2026-10-17, done; balance open)
+## 9. Last work: v0.6.0 co-op (2026-10-17, done; untested with a real friend)
+
+The creator: "ok now make these character work online!" (answers in doc 07). Built on RoR2's own networking: states run on
+every machine, damage on the server, server-only sounds/visuals through one relay effect, the owner's choices (lock-on
+target, aim, Static Charge's point) sent with the state; Melty's join contract in `MeltyJoin`. The two-copy test
+(`run_coop_test.sh`) passes everything; solo still passes.
+
+**Next:** play with a friend (Steam invite or Melty Join) and watch for lag on Haymaker and Seismic Impact; check Napalm's
+smoke; release 0.6.0 with the recipe's `multiplayer` block (doc 03 §6), `setup_multiplayer` again before `submit_release`.
+Still waiting on the creator from 0.5.1: Haze far above Commando, Seven below Artificer (below).
+
+## 9a. Before: v0.5.1 playtest feel pass (2026-10-17, done; balance open)
 
 The creator's playtest list (verbatim in doc 07): Haymaker lock-on rush and heavier hit, Sleep Dagger always visible,
 Phantom Strike 5 m area, Lightning Ball slower/bouncing/10 m with clear strikes, Thunderhead clouds 35 m, Flame Gun

@@ -104,12 +104,13 @@ namespace DeadlockOfRain
                     if (hit.Count > row.TriggerTargets) break;
                     if (hb.healthComponent.body != victim) hit.Add(hb);
                 }
+            // server only: every player sees the flash and arcs through the relay
             var color = Sheet.Color(row.Color);
-            Vfx.Flash(victim.corePosition, color, 6f, 0.25f);
+            Relay.Flash(victim.corePosition, color, 6f, 0.25f);
             foreach (var hb in hit)
             {
                 var b = hb.healthComponent.body;
-                if (b != victim) Vfx.Bolt(victim.corePosition, b ? b.corePosition : hb.transform.position, color, 0.35f, 0.25f);
+                if (b != victim) Relay.Bolt(victim.corePosition, b ? b.corePosition : hb.transform.position, color, 0.35f, 0.25f);
                 // a trigger is one hit, not a chain of procs
                 if (row.TriggerDamagePct > 0) Fx.Hit(owner, hb, row.TriggerDamagePct / 100f, 0.5f, hb.transform.position, default, DamageColorIndex.WeakPoint);
                 if (row.TriggerStun > 0) Fx.Stun(hb.healthComponent, row.TriggerStun);
@@ -132,7 +133,7 @@ namespace DeadlockOfRain
                 damageMultiplier = pct / 100f * 2f, // vanilla Burn ticks 50%/s per 1.0 multiplier
             };
             DotController.InflictDot(ref dot);
-            Fx.Sound("infernus_gun", "hit", victim.corePosition);
+            Relay.Sound("infernus_gun", "hit", victim.corePosition);
         }
 
         public static void Clear(CharacterBody b, string id)

@@ -5,21 +5,24 @@ using UnityEngine;
 
 namespace DeadlockOfRain
 {
-    /// <summary>Server-side simulated projectile for Sleep Dagger (hit once: damage + sleep) and Lightning Ball
+    // Co-op: each of these flies (or sits) on every machine, launched by the skill state that runs everywhere; only the
+    // server's copy (damage = true) deals damage, stuns and stacks. The other copies are the same flight, drawn and heard.
+
+    /// <summary>Simulated projectile for Sleep Dagger (hit once: damage + sleep) and Lightning Ball
     /// (flies through enemies, bounces off walls and floors, and shocks everything around it until its lifetime ends).</summary>
     public sealed class DlrProjectile : MonoBehaviour
     {
-        CharacterBody owner; SkillRow row; Vector3 dir; float travelled, age, nextTick;
+        CharacterBody owner; SkillRow row; Vector3 dir; float travelled, age, nextTick; bool damage;
         GameObject ghost, vfx; int loop;
         // extra "pierce": the enemies this projectile has already gone through
         HashSet<HealthComponent> pierced;
 
-        public static void Launch(CharacterBody owner, SkillRow row, Vector3 from, Vector3 dir)
+        public static void Launch(CharacterBody owner, SkillRow row, Vector3 from, Vector3 dir, bool damage)
         {
             var go = new GameObject("DlrProjectile_" + row.Id);
             go.transform.position = from;
             var p = go.AddComponent<DlrProjectile>();
-            p.owner = owner; p.row = row; p.dir = dir.normalized;
+            p.owner = owner; p.row = row; p.dir = dir.normalized; p.damage = damage;
             p.ghost = Fx.Ghost(row.Effect, from, Quaternion.LookRotation(dir));
             if (p.ghost) p.ghost.transform.SetParent(go.transform, true);
             if (row.Kind == "projectile_orb") p.loop = Fx.Loop(row.Id, from);
@@ -75,10 +78,13 @@ namespace DeadlockOfRain
                     var enemies = Fx.Enemies(owner, transform.position, row.Radius);
                     foreach (var hb in enemies)
                     {
-                        Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, hb.transform.position);
-                        // every shock builds the row's stacking debuff (Seven's Static)
                         var v = hb.healthComponent.body;
-                        if (row.Buff != "none" && v) Buffs.Stack(owner, v, row.Buff, false);
+                        if (damage)
+                        {
+                            Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, hb.transform.position);
+                            // every shock builds the row's stacking debuff (Seven's Static)
+                            if (row.Buff != "none" && v) Buffs.Stack(owner, v, row.Buff, false);
+                        }
                         Vfx.Play(row.Vfx, "hit", transform.position, row.Radius, null, v ? v.corePosition : hb.transform.position);
                     }
                     if (enemies.Count > 0 && Mathf.Repeat(age, 0.5f) < row.Interval) Fx.Sound(row.Id, "hit", transform.position);
@@ -95,8 +101,11 @@ namespace DeadlockOfRain
 
         void HitEnemy(HurtBox hb, Vector3 at)
         {
-            Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, at);
-            Fx.Stun(hb.healthComponent, row.StunDuration);
+            if (damage)
+            {
+                Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, at);
+                Fx.Stun(hb.healthComponent, row.StunDuration);
+            }
             Fx.Impact("stun", at);
             Fx.Sound(row.Id, "hit", at);
         }
@@ -111,13 +120,13 @@ namespace DeadlockOfRain
     /// <summary>Static Charge: planted on an enemy (follows it) or a spot; discharges after the delay.</summary>
     public sealed class DlrDelayed : MonoBehaviour
     {
-        CharacterBody owner; SkillRow row; Transform follow; float age; int loop; GameObject vfx;
-        public static void Plant(CharacterBody owner, SkillRow row, Vector3 at, Transform follow)
+        CharacterBody owner; SkillRow row; Transform follow; float age; int loop; GameObject vfx; bool damage;
+        public static void Plant(CharacterBody owner, SkillRow row, Vector3 at, Transform follow, bool damage)
         {
             var go = new GameObject("DlrDelayed_" + row.Id);
             go.transform.position = at;
             var d = go.AddComponent<DlrDelayed>();
-            d.owner = owner; d.row = row; d.follow = follow;
+            d.owner = owner; d.row = row; d.follow = follow; d.damage = damage;
             d.loop = Fx.Loop(row.Id, at);
             Fx.Impact("stun", at);
             d.vfx = Vfx.Play(row.Vfx, "cast", at, row.Radius, follow ? follow : go.transform);
@@ -132,8 +141,11 @@ namespace DeadlockOfRain
                 Fx.Impact(row.Effect, transform.position, row.Radius);
                 Vfx.Play(row.Vfx, "hit", transform.position, row.Radius);
                 Fx.Sound(row.Id, "hit", transform.position);
-                Fx.Blast(owner, transform.position, row.Radius, row.DamagePct / 100f, row.ProcCoefficient);
-                foreach (var hb in Fx.Enemies(owner, transform.position, row.Radius)) Fx.Stun(hb.healthComponent, row.StunDuration);
+                if (damage)
+                {
+                    Fx.Blast(owner, transform.position, row.Radius, row.DamagePct / 100f, row.ProcCoefficient);
+                    foreach (var hb in Fx.Enemies(owner, transform.position, row.Radius)) Fx.Stun(hb.healthComponent, row.StunDuration);
+                }
             }
             Destroy(gameObject);
         }
@@ -144,14 +156,14 @@ namespace DeadlockOfRain
     /// touches: damage and the row's debuff to every enemy in the splash.</summary>
     public sealed class DlrLob : MonoBehaviour
     {
-        CharacterBody owner; SkillRow row; Vector3 velocity; float age; GameObject vfx;
+        CharacterBody owner; SkillRow row; Vector3 velocity; float age; GameObject vfx; bool damage;
 
-        public static void Launch(CharacterBody owner, SkillRow row, Vector3 from, Vector3 dir)
+        public static void Launch(CharacterBody owner, SkillRow row, Vector3 from, Vector3 dir, bool damage)
         {
             var go = new GameObject("DlrLob_" + row.Id);
             go.transform.position = from;
             var l = go.AddComponent<DlrLob>();
-            l.owner = owner; l.row = row; l.velocity = dir.normalized * row.Speed;
+            l.owner = owner; l.row = row; l.velocity = dir.normalized * row.Speed; l.damage = damage;
             l.vfx = Vfx.Play(row.Vfx, "loop", from, row.Radius, go.transform);
         }
 
@@ -182,10 +194,13 @@ namespace DeadlockOfRain
             Fx.Impact(row.Effect, at, row.Radius);
             Vfx.Play(row.Vfx, "hit", at, row.Radius);
             Fx.Sound(row.Id, "hit", at);
-            foreach (var hb in Fx.Enemies(owner, at, row.Radius))
+            if (damage)
             {
-                Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, hb.transform.position);
-                if (row.Buff != "none" && hb.healthComponent.body) Buffs.Apply(owner, hb.healthComponent.body, row.Buff);
+                foreach (var hb in Fx.Enemies(owner, at, row.Radius))
+                {
+                    Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, hb.transform.position);
+                    if (row.Buff != "none" && hb.healthComponent.body) Buffs.Apply(owner, hb.healthComponent.body, row.Buff);
+                }
             }
             Destroy(gameObject);
         }
@@ -194,21 +209,22 @@ namespace DeadlockOfRain
     }
 
     /// <summary>Thunderhead: a storm planted on the ground for duration. Every interval lightning strikes up to chainCount
-    /// enemies inside radius; the extra object (RoR2's Warbanner ward) gives allies inside its buff.</summary>
+    /// enemies inside radius; the extra object (RoR2's Warbanner ward) gives allies inside its buff. The strikes are picked
+    /// at random by the server, so every player sees them through the relay; the clouds and sound are local.</summary>
     public sealed class DlrZone : MonoBehaviour
     {
-        CharacterBody owner; SkillRow row; float age, next; int loop; GameObject vfx, ward;
+        CharacterBody owner; SkillRow row; float age, next; int loop; GameObject vfx, ward; bool damage;
         static readonly System.Random rng = new System.Random();
 
-        public static void Plant(CharacterBody owner, SkillRow row, Vector3 at)
+        public static void Plant(CharacterBody owner, SkillRow row, Vector3 at, bool damage)
         {
             var go = new GameObject("DlrZone_" + row.Id);
             go.transform.position = at;
             var z = go.AddComponent<DlrZone>();
-            z.owner = owner; z.row = row;
+            z.owner = owner; z.row = row; z.damage = damage;
             z.loop = Fx.Loop(row.Id, at);
             z.vfx = Vfx.Play(row.Vfx, "loop", at, row.Radius);
-            var p = Fx.Prefab(row.Extra);
+            var p = damage ? Fx.Prefab(row.Extra) : null;
             if (p)
             {
                 z.ward = Object.Instantiate(p, at, Quaternion.identity);
@@ -224,7 +240,7 @@ namespace DeadlockOfRain
         {
             age += Time.fixedDeltaTime;
             if (!owner || age >= row.Duration) { Destroy(gameObject); return; }
-            if (age < next) return;
+            if (!damage || age < next) return;
             next = age + row.Interval;
             var enemies = Fx.Enemies(owner, transform.position, row.Radius);
             if (enemies.Count == 0) return;
@@ -235,10 +251,10 @@ namespace DeadlockOfRain
                 var at = hb.healthComponent.body ? hb.healthComponent.body.corePosition : hb.transform.position;
                 Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, at);
                 // RoR2's own strike effect once per tick (it is bright; one per enemy washed the screen out)
-                if (i == 0) Fx.Impact(row.Effect, at);
-                Vfx.Play(row.Vfx, "hit", transform.position, row.Radius, null, at);
+                if (i == 0) Relay.Impact(row.Effect, at);
+                Relay.Vfx(row.Vfx, "hit", transform.position, row.Radius, null, at);
             }
-            Fx.Sound(row.Id, "hit", transform.position);
+            Relay.Sound(row.Id, "hit", transform.position);
         }
 
         void OnDestroy()

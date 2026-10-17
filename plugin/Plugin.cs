@@ -12,7 +12,7 @@ namespace DeadlockOfRain
     public sealed class Plugin : BaseUnityPlugin
     {
         public const string Guid = "melty.deadlockofrain";
-        public const string Version = "0.5.1";
+        public const string Version = "0.6.0";
         public static Plugin Instance;
         public static ConfigEntry<float> Volume;
         public static string PluginDir;
@@ -31,6 +31,8 @@ namespace DeadlockOfRain
             ContentManager.collectContentPackProviders += add => add(new DeadlockContentProvider());
             Equipment.Init();
             Buffs.InitHooks();
+            States.GunHits.Init();
+            Net.Init();
             DeadlockAudio.Init();
             Voice.Init();
             MeltyTest.Init();

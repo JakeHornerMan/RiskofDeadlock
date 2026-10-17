@@ -34,7 +34,8 @@ namespace DeadlockOfRain.States
             // from the aim origin, not the hand: a hand inside a wall or the floor (aiming down, hugging cover) made the
             // dagger hit the world on its first frame and vanish unseen
             var aim = GetAimRay();
-            if (Server) DlrProjectile.Launch(characterBody, row, aim.origin, aim.direction);
+            // every machine flies its own dagger from the aim it sees; only the server's deals damage
+            DlrProjectile.Launch(characterBody, row, aim.origin, ThrowDir, Server);
         }
 
         public override void OnExit()
@@ -80,6 +81,8 @@ namespace DeadlockOfRain.States
             base.OnEnter();
             Sound("cast");
             if (anim) anim.Gesture("secondary");
+            // the drain's loop sound for every player; the urn itself is RoR2's networked attachment, spawned by the server
+            TimedLoop.Run(gameObject, row, row.Duration, null);
             if (!Server) return;
             Buffs.AddTimed(characterBody, row.Buff, row.Duration);
             // RoR2's own Mired Urn attachment: tar tethers to the nearest enemies, drains them and heals Abrams for all of it
@@ -96,7 +99,6 @@ namespace DeadlockOfRain.States
                 urn.allowSiphonOutOfCombat = true;
             }
             go.GetComponent<NetworkedBodyAttachment>().AttachToGameObjectAndSpawn(gameObject);
-            go.AddComponent<StopSoundOnDestroy>().Loop = Fx.Loop(row.Id, transform.position);
             Object.Destroy(go, row.Duration);
         }
         public override void FixedUpdate()
@@ -129,7 +131,7 @@ namespace DeadlockOfRain.States
         {
             base.OnEnter();
             Sound("cast");
-            dir = GetAimRay().direction; dir.y = 0; dir.Normalize();
+            dir = ThrowDir; dir.y = 0; dir.Normalize();
             if (characterDirection) characterDirection.forward = dir;
             if (anim) anim.Override("utility_loop", row.Duration, true);
             lastPos = transform.position;
@@ -145,6 +147,8 @@ namespace DeadlockOfRain.States
                 characterMotor.rootMotion += dir * row.Speed * Time.fixedDeltaTime;
                 if (characterDirection) characterDirection.forward = dir;
             }
+            // the owner steers; the server and the other players follow the way the body really moves
+            dir = MotionDir(dir);
             if (Server)
             {
                 foreach (var hb in Fx.Enemies(characterBody, transform.position + dir * 1.2f, row.Radius))
@@ -154,25 +158,29 @@ namespace DeadlockOfRain.States
                     Fx.Stun(hb.healthComponent, row.StunDuration);
                     // knocked to the side of his path, out of his way
                     Fx.KnockAside(characterBody, hb.healthComponent, dir, row.Knockback);
-                    Fx.Impact(row.Effect, hb.transform.position);
-                    Fx.Sound(row.Id, "hit", hb.transform.position);
+                    Relay.Impact(row.Effect, hb.transform.position);
+                    Relay.Sound(row.Id, "hit", hb.transform.position);
                 }
             }
-            // wall: we stopped moving although we push forward; the charge ends there
+            // wall (the owner judges it): we stopped moving although we push forward; the charge ends there
             float moved = Vector3.Distance(transform.position, lastPos);
             lastPos = transform.position;
             if (fixedAge > 0.25f && moved < row.Speed * Time.fixedDeltaTime * 0.15f) stuckTime += Time.fixedDeltaTime; else stuckTime = 0;
-            if (stuckTime > 0.08f)
+            if (stuckTime > 0.08f && isAuthority)
             {
-                Sound("end");
-                Fx.Impact(row.Effect, transform.position + dir);
-                if (isAuthority) outer.SetNextStateToMain();
+                outer.SetNextStateToMain();
                 return;
             }
             if (fixedAge >= row.Duration && isAuthority) outer.SetNextStateToMain();
         }
         public override void OnExit()
         {
+            // ended early (a wall, a stun): the thud, on every player's machine
+            if (row != null && fixedAge < row.Duration - 0.05f)
+            {
+                Sound("end");
+                Fx.Impact(row.Effect, transform.position + dir);
+            }
             if (anim) anim.StopOverride();
             base.OnExit();
         }
@@ -198,7 +206,7 @@ namespace DeadlockOfRain.States
             if (!thrown && fixedAge >= dur * 0.5f)
             {
                 thrown = true;
-                if (Server) DlrProjectile.Launch(characterBody, row, MuzzlePos(), GetAimRay().direction);
+                DlrProjectile.Launch(characterBody, row, MuzzlePos(), ThrowDir, Server);
             }
             if (fixedAge >= dur && isAuthority) outer.SetNextStateToMain();
         }
@@ -208,17 +216,20 @@ namespace DeadlockOfRain.States
     [Kind("delayed_blast")]
     public sealed class DelayedBlast : DlrState
     {
+        // picked by the owner from its aim and sent with the state, so every machine plants it in the same place
+        Vector3 point; GameObject stuckTo;
+
         public override void OnEnter()
         {
             base.OnEnter();
             if (anim) anim.Gesture("utility");
             Sound("cast");
             characterBody.SetAimTimer(2f);
-            if (Server)
+            if (isAuthority)
             {
                 // first world or enemy hit along the aim; Seven's own hurtboxes (and allies') are skipped
                 var aim = GetAimRay();
-                Transform follow = null; Vector3 point = aim.origin + aim.direction * row.Range;
+                point = aim.origin + aim.direction * row.Range;
                 var hits = Physics.SphereCastAll(aim, 0.5f, row.Range, LayerIndex.world.mask | LayerIndex.entityPrecise.mask, QueryTriggerInteraction.Ignore);
                 System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
                 foreach (var hit in hits)
@@ -226,11 +237,28 @@ namespace DeadlockOfRain.States
                     var hb = hit.collider.GetComponent<HurtBox>();
                     if (hb && (!hb.healthComponent || !hb.healthComponent.body || hb.healthComponent.body.teamComponent.teamIndex == teamComponent.teamIndex)) continue;
                     point = hit.distance > 0 ? hit.point : hit.collider.ClosestPoint(aim.origin);
-                    if (hb) follow = hb.healthComponent.body.coreTransform ? hb.healthComponent.body.coreTransform : hb.healthComponent.transform;
+                    if (hb) stuckTo = hb.healthComponent.body.gameObject;
                     break;
                 }
-                DlrDelayed.Plant(characterBody, row, point, follow);
             }
+            Transform follow = null;
+            var sb = stuckTo ? stuckTo.GetComponent<CharacterBody>() : null;
+            if (sb) follow = sb.coreTransform ? sb.coreTransform : sb.transform;
+            DlrDelayed.Plant(characterBody, row, point, follow, Server);
+        }
+
+        public override void OnSerialize(NetworkWriter writer)
+        {
+            base.OnSerialize(writer);
+            writer.Write(point);
+            writer.Write(stuckTo);
+        }
+
+        public override void OnDeserialize(NetworkReader reader)
+        {
+            base.OnDeserialize(reader);
+            point = reader.ReadVector3();
+            stuckTo = reader.ReadGameObject();
         }
         public override void FixedUpdate()
         {
@@ -258,7 +286,7 @@ namespace DeadlockOfRain.States
             if (!thrown && fixedAge >= dur * 0.3f)
             {
                 thrown = true;
-                if (Server) DlrLob.Launch(characterBody, row, MuzzlePos(), GetAimRay().direction);
+                DlrLob.Launch(characterBody, row, MuzzlePos(), ThrowDir, Server);
             }
             if (fixedAge >= dur && isAuthority) outer.SetNextStateToMain();
         }
@@ -268,7 +296,7 @@ namespace DeadlockOfRain.States
     [Kind("dash_trail")]
     public sealed class DashTrail : DlrState
     {
-        DamageTrail trail; int loop; GameObject flames; Vector3 lastPatch; float nextPatch;
+        DamageTrail trail; int loop; GameObject flames; Vector3 lastPatch, heading = Vector3.forward; float nextPatch;
         readonly HashSet<HealthComponent> shoved = new HashSet<HealthComponent>();
         public override void OnEnter()
         {
@@ -316,16 +344,18 @@ namespace DeadlockOfRain.States
                 Vfx.Play(row.Vfx, "hit", lastPatch, row.ChainCount);
             }
             // enemies Infernus runs into are knocked aside to clear his path, once each
+            var face = characterDirection ? characterDirection.forward : transform.forward; face.y = 0;
+            heading = MotionDir(face.sqrMagnitude > 0.01f ? face.normalized : heading);
             if (Server && row.Knockback > 0)
             {
-                var fwd = characterDirection ? characterDirection.forward : transform.forward; fwd.y = 0; fwd.Normalize();
+                var fwd = heading;
                 foreach (var hb in Fx.Enemies(characterBody, transform.position + fwd * 1.2f, characterBody.radius + 1.5f))
                 {
                     if (!shoved.Add(hb.healthComponent)) continue;
                     // scorched on the way past (one tick of the trail), since the shove throws them out of the flames
                     Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, hb.transform.position);
                     Fx.KnockAside(characterBody, hb.healthComponent, fwd, row.Knockback);
-                    Fx.Sound(row.Id, "hit", hb.transform.position);
+                    Relay.Sound(row.Id, "hit", hb.transform.position);
                 }
             }
             // a tap dashes for minDuration; holding Shift keeps going up to duration

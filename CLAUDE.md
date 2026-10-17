@@ -10,7 +10,7 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 ## Origin and goals (from Melty's original setup brief, as summarised by the creator)
 - A real mashup: you play inside RoR2, and Deadlock supplies its real heroes, read from the player's own install. Nothing is copied out of either game.
 - The creator picked "Deadlock heroes drop into RoR2": pick Haze, Seven or Abrams (Infernus was added later) from the
-  survivor menu, each with their real model, gun sounds and Deadlock abilities. Solo first; **co-op with friends planned for later**.
+  survivor menu, each with their real model, gun sounds and Deadlock abilities. Solo first; **co-op (up to 4) since v0.6.0** (doc 02 §7.7).
 - Options not chosen, kept as possible future ideas: a Deadlock Soul shop between teleporters (real Deadlock items stacking
   with RoR2's), both combined, or RoR2 music and sounds inside Deadlock (look-and-sound only, because of Deadlock's limits).
 - Working agreement: the agent does all technical work (tools, loaders, build, package, test) and talks to the creator
@@ -86,13 +86,18 @@ Three pieces, linked by generated data:
   them for the local hero (an ult item speaks with its own hero's voice). Never list the lines on the pages.
 - **Test mode** (`Runtime/MeltyTest.cs`) activates only when `%LOCALAPPDATA%\Melty\test\deadlock-of-rain.json` exists;
   it runs each hero's skills on a fixed test spot and checks them against their `expect` lists.
+- **Co-op** (`Runtime/Net.cs`, doc 02 §7.7): skill states run on every machine, so play sounds and visuals in the state; damage,
+  buffs and stuns only on the server; movement and bullets only on the owner (`isAuthority`). Code that runs on the server
+  alone plays its sounds and visuals through `Relay.*` (never from a state, or players get them twice). Anything the owner
+  picks at the start (a lock-on target, a point) goes in the state's `OnSerialize`. Check co-op with `run_coop_test.sh`.
 
 ## Commands
 ```
 python tools/gen.py                      # preflight + generate code/manifest (python tools/preflight.py to check only)
 dotnet build plugin -c Release           # plugin DLL (other PC: -p:RoR2Dir="<RoR2 folder>")
 bash tools/run_test.sh [checks-file]     # full in-game test on this PC (Steam must be signed in; ~6-7 min)
-bash tools/lab_restore.sh                # restore the PC the way Melty set it up (closes the game)
+bash tools/run_coop_test.sh              # co-op test: two copies on this PC, the second joins and plays every hero (~12-15 min)
+bash tools/lab_restore.sh                # restore the PC the way Melty set it up (closes every copy of the game)
 bash tools/run_bench.sh [seconds] [heroes]  # DPS bench of our heroes only (vanilla numbers come from docs/dps-library.json); closes the game itself
 python tools/package.py <version>        # release zip in build/
 python tools/dlm_pose.py <hero> [frame] [clip-substring]   # where each clip points the gun

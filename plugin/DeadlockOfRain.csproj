@@ -28,6 +28,7 @@
     <Reference Include="$(Managed)\Unity.ResourceManager.dll" Private="false" />
     <Reference Include="$(Managed)\Unity.TextMeshPro.dll" Private="false" />
     <Reference Include="$(Managed)\com.unity.multiplayer-hlapi.Runtime.dll" Private="false" />
+    <Reference Include="$(Managed)\EOS.dll" Private="false" />
     <Reference Include="$(Managed)\UnityEngine.dll" Private="false" />
     <Reference Include="$(Managed)\UnityEngine.CoreModule.dll" Private="false" />
     <Reference Include="$(Managed)\UnityEngine.AnimationModule.dll" Private="false" />
