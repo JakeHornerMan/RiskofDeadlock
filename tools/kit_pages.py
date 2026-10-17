@@ -109,16 +109,24 @@ for line in (open(bench_path, encoding='utf-8') if os.path.exists(bench_path) el
         BSTATS[g[0]] = dict(name=g[1], health=float(g[2]), lhealth=float(g[3]), regen=float(g[4]), lregen=float(g[5]), armor=float(g[6]),
                            damage=float(g[7]), ldamage=float(g[8]), speed=float(g[9]), jumps=int(g[10]), crit=float(g[11]))
 
+LIB_PATH = os.path.join(ROOT, 'docs', 'dps-library.json')
+LIBRARY = json.load(open(LIB_PATH, encoding='utf-8')) if os.path.exists(LIB_PATH) else None
+
 def dps(who, mode):
     return BENCH.get(who, {}).get(mode, {}).get('dps')
 
+def all_runs(who):
+    """Every "all" run of the current build: the hand-kept RUNS plus the stored library's runs."""
+    lib = (LIBRARY or {}).get('survivors', {}).get(who, {}).get('dps', {}).get('all', {}).get('runs', [])
+    return list(RUNS.get(who, [])) + list(lib)
+
 def avg_all(who):
-    """Main moves together, %/s: the mean over RUNS when known, else this bench file's run."""
-    r = RUNS.get(who)
+    """Main moves together, %/s: the mean over every run of this build, else this bench file's run."""
+    r = all_runs(who)
     return round(sum(r) / len(r)) if r else dps(who, 'all')
 
 def runs_of(who):
-    return len(RUNS.get(who, [])) or 1
+    return len(all_runs(who)) or 1
 
 def per_use(who):
     return BENCH.get(who, {}).get('equipment')
@@ -330,6 +338,30 @@ th {{ font: 600 12px/1.3 var(--cond); letter-spacing: .14em; text-transform: upp
 td.n, th.n {{ font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }}
 .who-cell {{ display: flex; align-items: center; gap: 10px; }}
 .badge {{ display: inline-grid; place-items: center; width: 44px; height: 50px; font: 700 15px/1 var(--cond); letter-spacing: .08em; color: var(--ink); background: var(--muted); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }}
+.lchart {{ display: grid; gap: 6px; background: var(--panel); border: 1px solid var(--rule); padding: 16px; }}
+.lrow {{ display: grid; grid-template-columns: minmax(0, 240px) minmax(0, 1fr) 60px; gap: 10px; align-items: center; }}
+.lname {{ font: 600 14px/1.2 var(--cond); letter-spacing: .06em; text-transform: uppercase; }}
+.libtag {{ font: 600 10px/1 var(--cond); letter-spacing: .12em; color: var(--ink); background: var(--brass); padding: 2px 5px; margin-left: 6px; vertical-align: 2px; white-space: nowrap; }}
+.libtag.match {{ background: var(--muted); }}
+.ltrack {{ position: relative; height: 16px; background: var(--ink); border: 1px solid var(--rule); }}
+.lspread {{ position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--cream) 14%, transparent); }}
+.lbar {{ position: absolute; left: 0; top: 4px; bottom: 4px; }}
+.lval {{ font: 500 13px/1 var(--mono); text-align: right; font-variant-numeric: tabular-nums; }}
+.lgrid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; }}
+.lcard {{ background: var(--panel); border: 1px solid var(--rule); border-top: 3px solid var(--brass); padding: 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }}
+.lhead {{ display: flex; align-items: center; gap: 12px; }}
+.lhead h3 {{ font-size: 22px; }}
+.lall {{ margin-left: auto; text-align: right; display: grid; }}
+.lall b {{ font: 600 22px/1 var(--mono); font-variant-numeric: tabular-nums; }}
+.lall span {{ font: 500 11px/1.3 var(--mono); color: var(--muted); }}
+.moves {{ display: grid; gap: 5px; }}
+.mv {{ display: grid; grid-template-columns: 40px minmax(0, 1fr) 70px 48px; gap: 8px; align-items: center; font-size: 13px; }}
+.mk {{ font: 700 11px/1 var(--cond); letter-spacing: .1em; color: var(--brass); }}
+.mn {{ color: var(--cream2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+.mb {{ height: 8px; background: var(--ink); border: 1px solid var(--rule); position: relative; }}
+.mb i {{ position: absolute; inset: 0 auto 0 0; }}
+.mvv {{ font: 500 12px/1 var(--mono); text-align: right; font-variant-numeric: tabular-nums; }}
+@media (max-width: 760px) {{ .lrow {{ grid-template-columns: minmax(0, 120px) minmax(0, 1fr) 50px; }} }}
 .grid2 {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }}
 @media (max-width: 760px) {{
   .dossier, .ab, .ult, .cols, .grid2 {{ grid-template-columns: minmax(0, 1fr); }}
@@ -520,6 +552,55 @@ def hero_page(h):
 </main>
 '''
 
+SLOT_NAMES = [('primary', 'M1'), ('secondary', 'M2'), ('utility', 'Shift'), ('special', 'R')]
+
+def library_section():
+    """Every survivor's stored main-move DPS (docs/dps-library.json): a ranked chart with each survivor's spread, then
+    a card per survivor with its four moves."""
+    if not LIBRARY: return ''
+    hero_color = {hero_who(h['id']): h['primaryColor'] for h in HEROES}
+    hero_id = {hero_who(h['id']): h['id'] for h in HEROES}
+    match_for = {match_of(h['id'])[1]['who']: h['displayName'] for h in HEROES}
+    rows = sorted(((e['dps']['all']['mean'], who, e) for who, e in LIBRARY['survivors'].items() if 'all' in e.get('dps', {})), key=lambda x: -x[0])
+    if not rows: return ''
+    top = max(e['dps']['all']['max'] for _, _, e in rows) * 1.05
+    chart = []
+    for mean, who, e in rows:
+        d = e['dps']['all']; c = hero_color.get(who, 'var(--muted)')
+        if who in hero_color: tag = ' <span class="libtag">Deadlock</span>'
+        elif who in match_for: tag = f' <span class="libtag match">match for {E(match_for[who])}</span>'
+        else: tag = ''
+        label = f'{E(e["name"])}: mean {mean} percent per second, runs {d["min"]} to {d["max"]}'
+        chart.append(f'<div class="lrow"><span class="lname">{E(e["name"])}{tag}</span>'
+                     f'<div class="ltrack" role="img" aria-label="{label}">'
+                     f'<div class="lspread" style="left:{d["min"] / top * 100:.1f}%;width:{max(0.5, (d["max"] - d["min"]) / top * 100):.1f}%"></div>'
+                     f'<div class="lbar" style="width:{mean / top * 100:.1f}%;background:{c}"></div></div>'
+                     f'<span class="lval">{mean:,}</span></div>')
+    cards = []
+    for mean, who, e in rows:
+        c = hero_color.get(who, 'var(--brass)')
+        sk = e.get('skills', {}); st = e.get('stats', {})
+        smax = max([e['dps'].get(sl, {}).get('mean', 0) for sl, _ in SLOT_NAMES] + [1])
+        moves = []
+        for sl, key in SLOT_NAMES:
+            v = e['dps'].get(sl, {}).get('mean')
+            w = (v or 0) / smax * 100
+            moves.append(f'<div class="mv"><span class="mk">{key}</span><span class="mn">{E(sk.get(sl, "–"))}</span>'
+                         f'<span class="mb"><i style="width:{w:.0f}%;background:{c}"></i></span><span class="mvv">{fmt(v)}</span></div>')
+        pic = img_tag(hero_id[who], '', 64) if who in hero_id else ''
+        stats = f'{st["health"]:g} HP · {st["armor"]:g} armor · {st["damage"]:g} dmg · {st["moveSpeed"]:g} m/s' if st else ''
+        d = e['dps']['all']
+        cards.append(f'<article class="lcard" style="border-top-color:{c}">'
+                     f'<div class="lhead">{pic}<div><h3>{E(e["name"])}</h3><div class="eyebrow">{E(stats)}</div></div>'
+                     f'<div class="lall"><b>{mean:,}</b><span>%/s all · {len(d["runs"])} runs · {d["min"]:,}–{d["max"]:,}</span></div></div>'
+                     f'<div class="moves">{"".join(moves)}</div></article>')
+    n_runs = LIBRARY.get('runsPerSurvivor', 0)
+    intro = (f'Every survivor measured with the same test ({n_runs} runs each, updated {E(LIBRARY.get("updated", ""))}): all main moves '
+             'together, then each move alone, % of damage per second. The bar is the mean; the pale band behind it is the spread '
+             'between runs. Stored in docs/dps-library.json, so a new hero only needs its own run and is compared with these numbers.')
+    return ('<section class="section" aria-labelledby="lib"><h2 id="lib">Survivor DPS library</h2>'
+            f'<p class="muted">{intro}</p><div class="lchart">{"".join(chart)}</div><div class="lgrid">{"".join(cards)}</div></section>')
+
 def overview_page():
     def badge(name):
         return f'<span class="badge" aria-hidden="true">{E(name[:2].upper())}</span>'
@@ -580,6 +661,7 @@ def overview_page():
     </table></div>
   </section>
 
+  {library_section()}
   <p class="foot">Benchmark {VERSION}: Monsoon, first stage of a fresh run, level 1, no items, god mode; 12 still enemies (8 Lemurians, 4 Beetles, ×101 health) 10–15 m away; M1 held, every other move pressed the moment it is ready; perfect aim at the nearest enemy; put back on the spot after dashes; no equipment except in the Q pass; turret damage counts for Engineer. Counted: every hit landed, after crits and damage mods, before armor. Hero and match numbers are means over every run of this build; single runs swing ±10 %, Loader and Artificer far more. Commando, the yardstick before 0.4.1: {fmt(avg_all("Commando"))} %/s. Method: docs/05-DAMAGE-COMPARISON.md. Pictures are our own renders of the mod in Risk of Rain 2.</p>
 </main>
 '''

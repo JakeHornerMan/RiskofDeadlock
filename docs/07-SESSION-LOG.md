@@ -199,3 +199,62 @@ Artificer 3605, Infernus 1102 vs Engineer 1488.
 - Seven's chain-reaction cliff below 8 s Lightning Ball.
 
 **Lessons:** see doc 00 §7 (means not single runs, Seven's cliff, the memory reaper).
+
+### 2026-10-17 · Stored DPS library for every survivor
+**Request (verbatim):** "can you do a dps anaysis on all characters so we never need to retest this again. keep the data for
+memory and use in the furture... obvious we will need to test dps again on the new characters but we can just compare to our
+stored data... add this to the artifact at the bottom pls make it look nice with the character names and abilities"
+
+**Questions asked → answers:**
+- Who → every survivor.
+- Runs → 3 each.
+- Tests → pack only.
+- Mid-task the creator asked "how much longer" → about 2¼ h.
+
+**Done:**
+- Bench library mode (`ALL=1`, `REPEAT`, skills lines, Q pass only for heroes and Commando).
+- Arena line-of-sight check, after a bad stage gave Commando 5 hits.
+- Captain releases M1 every 0.6 s.
+- `tools/dps_library.py` → `docs/dps-library.json`, with notes for Acrid, Railgunner and Void Fiend (not comparable).
+- Overview page section "Survivor DPS library": a ranked chart with spreads, then a card per survivor with its moves.
+- Balance verdicts pool every run of the build.
+- Memory note `dps-library`; docs 00/02/03/05.
+
+**Open:** results and Seven's verdict once run 3 is in (see the next entry).
+
+### 2026-10-17 · Deadlock voice lines (started during the library runs)
+**Request (verbatim):** "ok next after you are done with the artifact there is an important task. i want youn to go to the
+deadlock wiki /{character}/Voice_lines. now we can rip out the wav file form dead lock and play them in risk of rain 2. so it
+imporatnt we only grab the correct ones for one under the section 'Abilities' for when abhram uses his moves make sure they
+are relavent... also for the ultimate voice lines and sounds it will alway play the correct one associated with the ultimate
+item not the current character so if the 'Commando' from the base game uses 'Abhrams' item ultimate 'Seismic Impact' it will
+play a line from abhrams! also i want basic voice line... but i dont want them to be annoying so maybe when you do a
+especially good multikill or if it has been like between 2 to 5 mins of silence form the character you are currently
+playing playing. the game will play a voice line from the wiki under the 'Generic Voice lines'. now the final requirement is
+when a cxharacter like abhrams spawns on a new world or stagge level, so when ou start a game but also after every teleport
+when you eneter the new world please play a line fomr the 'Select' section, also when the charctere has fough the boss and
+it getting their cash taken by the teleporter and is about to start spawning out please play a line fomr the 'Unselect'
+section on the wiki... dont aks question i believe you can make the right decisions to amke this happen with my intervention
+so please push foreward with the task as soonn as you have completed the update to the artifact... also do not log what
+voice line each character has in the artifact it can be a surprise to players." Then: "no question just make the best
+decicion you think suit for the next task of voice lines!!!"
+
+**Decisions (no questions, as asked):**
+- **Source:** the wiki's file names (`Atlas_select_01.mp3`) are the VPK's `sounds/vo/<code>/<code>_select_01.vsnd`, so the
+  install listing is the source (the wiki's long pages were partly blocked to automated reading).
+- **Ability lines:** `<code>_use_power1..4`, matched to Deadlock's ability slots.
+  - Haze's R: her Phantom Strike item line.
+  - Seven's R: `use_power3` (his real Power Surge).
+  - Abrams' Haymaker and Infernus' Torment Pulse: an effort grunt (Deadlock has no line for them).
+- **Ult:** the item's own hero speaks, 100 %.
+- **Abilities:** 40 % with an 8 s gap; grunts 60 % with a 3 s gap.
+- **Generic lines:** multikills of 4 / 7 / 10 within 1.5 s → killstreak start / mid / high; idle 2–5 min →
+  `hunt` / `happy`.
+- **Select:** once per stage, 2 s after spawning.
+- **Unselect:** the teleporter finish, when gold becomes experience.
+- Lines never overlap.
+- The pages never list the lines.
+
+**Done so far:** `design/voice.json` (44 rows), preflight checks against the install listing, `gen.py` manifest
+`voiceGroups`, extractor `ExportVoice` + version 1.1.0, `Runtime/Voice.cs`, `DeadlockAudio.IsPlaying`, hooks sheet, test
+check `voice-lines`, docs 01/02/03, README, CLAUDE.md.

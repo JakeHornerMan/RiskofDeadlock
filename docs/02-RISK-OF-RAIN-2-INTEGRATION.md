@@ -382,6 +382,22 @@ Since v0.4.0 the Deadlock ults are RoR2 **equipment** (Q). There is no charge me
 - **`LanguagePatch`** (prefix on `Language.GetLocalizedStringByToken(string)`) answers any `DLR_*` token from `Survivors.Tokens`, in every language: names, subtitles, descriptions, lore, outro/fail, skills, buffs, passive, `DLR_SKIN_DEFAULT`.
 - **Survivor description** (`DLR_DESC_<ID>`): lore + one line per skill (`M1/M2/Shift/R (Ultimate)`) + the "starts locked… press R" note.
 - **`LoadoutSkinRowPatch`** is a postfix on `LoadoutPanelController.Row.FromSkin` (a public static method of the private nested `Row` class). The loadout panel always builds a skins row and its gamepad navigation indexes it. Our heroes have no `SkinDef`s, so an empty row threw `ArgumentOutOfRange`. The patch adds one "Default" button with the hero portrait.
+- **Voice lines (`Runtime/Voice.cs`, rows in `design/voice.json`):** Deadlock dialogue for the **local player's** hero,
+  played 2D through `DeadlockAudio` as the cache events `vo:<group>`.
+  - **select:** once per stage, 2 s after the hero's body starts (`CharacterBody.onBodyStartGlobal`), at run start and on
+    every new world after a teleport; not on respawns.
+  - **unselect:** `TeleporterInteraction.onTeleporterFinishGlobal`, when leftover gold turns into experience and the
+    player is about to leave.
+  - **skill:** `onSkillActivatedAuthority` on the local body; the row's own line plays with its `chance` and after its
+    `gap`.
+  - **ult equipment:** `Equipment.Fire` calls `Voice.SkillLine(row)`, so the **item's hero** speaks, whoever fires it.
+    Commando firing Seismic Impact says an Abrams line.
+  - **multikill:** kills within 1.5 s of each other; the highest `kills` threshold reached (4 / 7 / 10 →
+    killstreak start / mid / high) plays once per burst.
+  - **idle:** after 2–5 min (random) without a line from the hero, a `hunt` or `happy` line.
+  - Lines never overlap (`DeadlockAudio.IsPlaying`). Select, unselect and ult lines cut off a line in progress; others
+    wait their turn.
+  - The pages and README never list the lines (creator: "it can be a surprise to players").
 - **`DeadlockAudio`:** RoR2 uses Wwise and **disables Unity audio**, so `AudioSource` is silent. Instead:
   - A background thread feeds Windows **waveOut** (44.1 kHz stereo, 4 × 20 ms buffers) from a software mixer.
   - Events come from the **cache's** `sounds/sounds.json` (not `design/sounds.json`, which only names the events per skill). One random variant is played.
@@ -539,7 +555,18 @@ line from its body prefab. With `"portraits": "<dir>"` (`PORTRAITS=1 tools/run_b
 a fill and two rim point lights in the hero's colour, framed from the renderers' bounds (the figure's bounds divided by
 `Equipment.FigurePadding`), rendered twice on black and on white so `tools/portraits.py` can cut them out
 (alpha = 1 − (white − black)). Vanilla display prefabs dither themselves out near a camera, so `CharacterModel` is disabled and
-`_Fade` forced to 1 for the shot. `seconds` 0 = portraits only. The script copies the game log to `build/bench_log.txt`. Results and every variable:
+`_Fade` forced to 1 for the shot. `seconds` 0 = portraits only. The script copies the game log to `build/bench_log.txt`.
+**Library mode:**
+- `"survivors": "all"` (`ALL=1`) runs every `SurvivorCatalog` survivor that is not hidden and whose expansion is enabled in
+  the run. `only` then filters by body names.
+- `"repeat"` repeats the whole set in one session.
+- A `skills <body>: primary=…` line gives the default skill names.
+- The Q pass runs only for heroes and Commando.
+- **Arena:** before passes, the arena is chosen from up to 16 spots and directions. All 12 pack spots must be on ground
+  within 2 m of the arena's height and in clear line of sight; otherwise the bench writes `FAILED`.
+- **Fire-on-release primaries** (`ReleasePrimary`: Captain) get M1 released for one frame every 0.6 s.
+
+Results and every variable:
 doc 05.
 
 ## 11. Adding another hero: the RoR2 half

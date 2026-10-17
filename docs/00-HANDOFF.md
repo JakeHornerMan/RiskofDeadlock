@@ -38,7 +38,7 @@ Before touching anything:
 | Heroes | Haze, Abrams, Seven, Infernus; 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
 | Test | `run_test.sh`: every check passes, 4/4 heroes (2026-10-16, v0.4.1) |
 | Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, within **±500 %/s**, comparing **means over every bench run** of the current build (`RUNS` in `tools/kit_pages.py`; doc 05 §3.0) |
-| Balance now | **All four inside** (means): Haze 1271 vs Commando 1224, Abrams 2508 vs Loader 2973, Seven 3999 vs Artificer 3605, Infernus 1102 vs Engineer 1488 |
+| Balance now | Pooled over every run incl. the library (doc 05 §6): Haze +169 and Infernus −242 inside; **Abrams −520 (just below Loader) and Seven +631 (above Artificer)**, not retuned yet, the creator decides |
 | Pages | Five claude.ai Artifacts, redesigned (links at the top of doc 06); the overview is shared "anyone with the link" |
 | Open | RoR2 survivor portraits fail to render (§9); pickup figure size and Haymaker wave vfx not seen in game; the bench is noisy for Loader/Artificer (a steadier multi-run bench would help) |
 
@@ -117,6 +117,10 @@ driven by `tools/run_bench.sh [seconds] [hero]`. Method and every variable: doc 
 means over every run of the current build. (Earlier the same day: ±20 % of Commando.) Until §9 lands the baseline is
 Commando (1255 %/s → band 1004–1506). **Decided next:** each hero is compared with **its own RoR2 match** (§2), measured
 the same way, ability by ability ("Their own RoR2 match" was the creator's pick).
+
+**Stored DPS library:** `docs/dps-library.json` holds every survivor's numbers (3 runs each, doc 05 §6). For a **new hero**, run
+`bash tools/run_bench.sh 30 <hero>` and compare with the stored means instead of re-measuring everyone; merge its run with
+`python tools/dps_library.py --add build/bench_results.txt`. Acrid, Railgunner and Void Fiend are flagged not comparable.
 
 **Pipeline after a bench run (standing rule):** refresh doc 05 §3 and doc 06's DPS, clear doc 05 §0 flags the run
 covered, update `tools/kit_pages.py`, run it, republish the five pages to their existing links (doc 06 top).

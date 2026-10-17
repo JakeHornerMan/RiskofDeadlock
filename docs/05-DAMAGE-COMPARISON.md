@@ -207,7 +207,46 @@ reloaded again (62 %/s alone in v0.4.0). Fixed; it measures 552 now.
 **Suggestions (not applied):** Napalm splash 5 → **6 m** (about +100), or Torment Pulse 50 → **60 %** (about +100). Either
 brings him inside; he is already within the test's noise.
 
-## 6. How to rerun
+## 6. The stored DPS library (`docs/dps-library.json`)
+Creator's request (2026-10-17): "do a dps analysis on all characters so we never need to retest this again. keep the data
+for memory and use in the future... obviously we will need to test dps again on the new characters but we can just
+compare to our stored data". Answers: every survivor, 3 runs each, the pack test only.
+
+- **What it holds:** for every playable survivor (base game and SotV DLC on this PC; the Seekers of the Storm and later
+  survivors were skipped because their expansion is not enabled in the bench's run) and our heroes:
+  - each run's %/s for "all" and each move alone, with the mean, min and max;
+  - base stats and default skill names;
+  - a `note` where the test can't show a survivor fairly.
+- **Built by** `python tools/dps_library.py build/library/run1.txt run2.txt run3.txt`. One more run can be merged with
+  `--add`.
+- **Measured by** `ALL=1 bash tools/run_bench.sh 30` (every survivor, about 1 hour per run). The runs' files are not in
+  git; the JSON is.
+- **New hero:** run `bash tools/run_bench.sh 30 <hero>` (Commando, the hero and its match). Compare its "all" with the
+  stored means. Add its entry with `--add` once its kit is final. Vanilla survivors never need re-measuring.
+- **Changed hero:** re-measure it and replace its runs; its entry is tagged `measuredOn`.
+- **Not comparable** (see their notes):
+  - **Acrid:** Poison and Blight deal a share of max health, and the ×101-health pack inflates him enormously.
+  - **Railgunner:** the bench doesn't scope.
+  - **Void Fiend:** never corrupts in 30 s.
+- **Bench fixes made for the library:**
+  - **Clear view:** the arena now needs a flat spot with a clear view of all 12 pack spots. One stage left Commando
+    with 5 hits.
+  - **Captain:** M1 is released every 0.6 s, because his Vulcan Shotgun fires on release.
+  - **Seekers of the Storm survivors:** a DLC survivor whose expansion is off is skipped.
+- **Library means (3 runs each, 2026-10-17):**
+  - Mercenary 5112, Seven 4621, Artificer 4013, Captain 3490, Loader 2951, Abrams 2402;
+  - Huntress 1921, Bandit 1919, REX 1738, Engineer 1611, Haze 1556, Infernus 1512, MUL-T 1450, Commando 1222;
+  - not comparable: Acrid 11206, Railgunner 592, Void Fiend 380.
+- **Pooled verdicts** (every run of this build, §3.0 lists plus the library):
+  - inside: Haze 1393 vs Commando 1224 (+169); Infernus 1307 vs Engineer 1549 (−242);
+  - **outside:** Abrams 2444 vs Loader 2964 (**−520, just below**); Seven 4372 vs Artificer 3741 (**+631, above**).
+  - Not retuned; the creator decides. Options: Abrams Haymaker 2400 → 2700 %; Seven's Power Surge 10 → 12 s or Static
+    Charge 6 → 7 s (Lightning Ball must stay ≥ 8 s).
+- The overview page's "Survivor DPS library" section shows it: a ranked chart with each survivor's spread, then a card
+  per survivor with its four moves.
+- **Balance verdicts** (§3.0) now pool every run of the current build: the earlier ones plus the library's.
+
+## 7. How to rerun
 `bash tools/run_bench.sh [seconds] [hero]` builds nothing, so build first (`dotnet build plugin -c Release`). The script:
 1. deploys the plugin
 2. starts the game with `%LOCALAPPDATA%\DeadlockOfRain\bench.json`
@@ -215,5 +254,5 @@ brings him inside; he is already within the test's noise.
 4. prints `build/bench_results.txt`
 5. deletes the bench file and **closes the game** (`lab_restore.sh`)
 
-The code is `plugin/Runtime/DpsBench.cs` (doc 02 §10.1). A full run takes about 20 minutes (5 survivors × 6 passes of
-30 s); with a hero id, about 7.
+The code is `plugin/Runtime/DpsBench.cs` (doc 02 §10.1). A full run takes about 30 minutes (8 survivors × 6 passes of
+30 s); with a hero id, about 10; `ALL=1` (every survivor) about an hour.

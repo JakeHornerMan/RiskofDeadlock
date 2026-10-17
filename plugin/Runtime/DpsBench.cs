@@ -24,6 +24,11 @@ namespace DeadlockOfRain
         static float seconds = 30f;
         // optional "only": one hero id; the bench then runs Commando, that hero and its RoR2 match only (for quick tuning)
         static string only = "";
+        static readonly HashSet<string> ReleasePrimary = new HashSet<string> { "CaptainBody" };
+        // optional "survivors": "all" = every playable survivor (the DPS library, docs/dps-library.json), else Commando + heroes + matches
+        static string survivorsMode = "";
+        // optional "repeat": how many times the whole set of passes runs in this session (each run is headed "run <k>")
+        static int repeat = 1;
         // optional "portraits": a folder; studio renders of every hero, its RoR2 match and its ult figure go there first
         static string portraits = "";
         public static bool Active => outFile != null;
@@ -38,6 +43,8 @@ namespace DeadlockOfRain
                 outFile = Value(text, "out") ?? System.IO.Path.Combine(System.IO.Path.GetDirectoryName(f), "bench_results.txt");
                 only = Value(text, "only") ?? "";
                 portraits = Value(text, "portraits") ?? "";
+                survivorsMode = Value(text, "survivors") ?? "";
+                if (int.TryParse(Value(text, "repeat"), out var rp) && rp > 0) repeat = rp;
                 // seconds 0: portraits only, no passes
                 if (float.TryParse(Value(text, "seconds"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s) && s >= 0) seconds = s;
                 Log.Info($"DPS bench: {seconds}s passes, writing to {outFile}");
@@ -159,46 +166,90 @@ namespace DeadlockOfRain
             if (portraits != "") yield return Portraits(user.cachedBody);
             if (seconds <= 0f) { Write("DPS bench finished"); yield break; }
 
-            // one fixed flat spot, a pack 10 m in front: three rows of four, 2.5 m apart
+            // one fixed flat spot, a pack 10 m in front: three rows of four, 2.5 m apart. The spot must see the whole pack: a rock
+            // or a slope between them once left a run with almost no hits, so up to 16 spot/direction pairs are tried and the
+            // first where every pack spot is on ground within 2 m of the arena's height and in clear line of sight wins.
             var body = user.cachedBody;
-            var away = body.footPosition + body.inputBank.aimDirection.normalized * 14f;
-            if (Physics.Raycast(away + Vector3.up * 30f, Vector3.down, out var gh, 80f, LayerIndex.world.mask)) TeleportHelper.TeleportBody(body, gh.point + Vector3.up * 0.5f, false);
+            var start = body.footPosition;
+            var aim0 = body.inputBank.aimDirection; aim0.y = 0; aim0.Normalize();
+            List<Vector3> spots = null;
+            int tries = 0, seen = 0;
+            for (int t = 0; t < 16 && spots == null; t++)
+            {
+                tries = t + 1;
+                var dir = Quaternion.Euler(0f, 45f * (t % 8), 0f) * aim0;
+                var from = start + dir * (t < 8 ? 14f : 30f);
+                if (!Physics.Raycast(from + Vector3.up * 30f, Vector3.down, out var gh, 80f, LayerIndex.world.mask)) continue;
+                var centre = gh.point;
+                var fwd = Quaternion.Euler(0f, 45f * (t % 8), 0f) * aim0;
+                var rgt = Vector3.Cross(Vector3.up, fwd);
+                var cand = new List<Vector3>(); seen = 0;
+                for (int row = 0; row < 3; row++)
+                    for (int col = 0; col < 4; col++)
+                    {
+                        var p = centre + fwd * (10f + row * 2.5f) + rgt * ((col - 1.5f) * 2.5f);
+                        if (!Physics.Raycast(p + Vector3.up * 5f, Vector3.down, out var g, 15f, LayerIndex.world.mask)) continue;
+                        if (Mathf.Abs(g.point.y - centre.y) > 2f) continue;
+                        if (Physics.Linecast(centre + Vector3.up * 1.5f, g.point + Vector3.up * 1f, LayerIndex.world.mask)) continue;
+                        cand.Add(g.point); seen++;
+                    }
+                if (cand.Count == 12) { spots = cand; arena = centre; forward = fwd; }
+            }
+            if (spots == null) { Write("FAILED: no flat spot with a clear view of the pack on this stage"); yield break; }
+            TeleportHelper.TeleportBody(body, arena + Vector3.up * 0.5f, false);
             yield return new WaitForSeconds(0.5f);
-            arena = body.footPosition;
-            forward = body.inputBank.aimDirection; forward.y = 0; forward.Normalize();
-            var right = Vector3.Cross(Vector3.up, forward);
-            for (int row = 0; row < 3; row++)
-                for (int col = 0; col < 4; col++)
-                {
-                    var p = arena + forward * (10f + row * 2.5f) + right * ((col - 1.5f) * 2.5f);
-                    if (Physics.Raycast(p + Vector3.up * 5f, Vector3.down, out var g, 15f, LayerIndex.world.mask)) p = g.point;
-                    packSpots.Add(p + Vector3.up * 0.5f);
-                    packMasters.Add(row == 1 && (col == 0 || col == 3) || row == 2 && (col == 1 || col == 2) ? "BeetleMaster" : "LemurianMaster");
-                }
+            for (int i = 0; i < 12; i++)
+            {
+                int row = i / 4, col = i % 4;
+                packSpots.Add(spots[i] + Vector3.up * 0.5f);
+                packMasters.Add(row == 1 && (col == 0 || col == 3) || row == 2 && (col == 1 || col == 2) ? "BeetleMaster" : "LemurianMaster");
+            }
+            Write($"arena: spot {tries} of 16 tried, all 12 pack spots flat and in clear view");
             Write($"setup: difficulty {Run.instance.selectedDifficulty}, pack {packSpots.Count} ({packMasters.Count(m => m == "LemurianMaster")} Lemurians, {packMasters.Count(m => m == "BeetleMaster")} Beetles) at 10-15 m, {seconds}s per pass");
 
             GlobalEventManager.onServerDamageDealt += OnDamage;
             var master = user.cachedMaster;
             var pcmc = master.GetComponent<PlayerCharacterMasterController>();
             var survivors = new List<string> { "CommandoBody" };
-            foreach (var h in HeroRow.All)
+            if (survivorsMode == "all")
             {
-                if (!Survivors.Bodies.ContainsKey(h.Id) || only != "" && only != h.Id) continue;
-                var match = StatRow.All.FirstOrDefault(r => r.Hero == h.Id)?.Analog;
-                if (!string.IsNullOrEmpty(match) && match != "none" && !survivors.Contains(match) && BodyCatalog.FindBodyPrefab(match)) survivors.Add(match);
-                survivors.Add(Survivors.Bodies[h.Id].name);
-            }
-            foreach (var bodyName in survivors)
-            {
-                if (master.GetBody() == null || master.GetBody().name.Replace("(Clone)", "") != bodyName)
+                // every survivor this run can use: not hidden, and its expansion (DLC) enabled in this run
+                foreach (var sd in SurvivorCatalog.orderedSurvivorDefs)
                 {
-                    master.TransformBody(bodyName);
-                    yield return new WaitForSeconds(1.5f);
+                    if (!sd || sd.hidden || !sd.bodyPrefab) continue;
+                    var req = sd.bodyPrefab.GetComponent<RoR2.ExpansionManagement.ExpansionRequirementComponent>();
+                    if (req && req.requiredExpansion && !Run.instance.IsExpansionEnabled(req.requiredExpansion)) { Write($"skipped {sd.bodyPrefab.name}: its expansion is not enabled"); continue; }
+                    // "only" in this mode: a comma-separated list of body names to measure (Commando always runs as the baseline)
+                    if (only != "" && !only.Split(',').Contains(sd.bodyPrefab.name)) continue;
+                    if (!survivors.Contains(sd.bodyPrefab.name)) survivors.Add(sd.bodyPrefab.name);
                 }
-                WriteStats(bodyName);
-                foreach (var mode in new[] { "all", "primary", "secondary", "utility", "special", "equipment" })
+            }
+            else
+                foreach (var h in HeroRow.All)
                 {
-                    yield return Pass(master, pcmc, bodyName.Replace("Body", ""), mode);
+                    if (!Survivors.Bodies.ContainsKey(h.Id) || only != "" && only != h.Id) continue;
+                    var match = StatRow.All.FirstOrDefault(r => r.Hero == h.Id)?.Analog;
+                    if (!string.IsNullOrEmpty(match) && match != "none" && !survivors.Contains(match) && BodyCatalog.FindBodyPrefab(match)) survivors.Add(match);
+                    survivors.Add(Survivors.Bodies[h.Id].name);
+                }
+            for (int run = 1; run <= repeat; run++)
+            {
+                if (repeat > 1) Write($"run {run}");
+                foreach (var bodyName in survivors)
+                {
+                    if (master.GetBody() == null || master.GetBody().name.Replace("(Clone)", "") != bodyName)
+                    {
+                        master.TransformBody(bodyName);
+                        yield return new WaitForSeconds(1.5f);
+                    }
+                    if (run == 1) { WriteStats(bodyName); WriteSkills(master.GetBody(), bodyName); }
+                    // the Q pass only where it is shown: the heroes' ults and Commando's Preon Accumulator
+                    bool equip = survivorsMode != "all" || bodyName == "CommandoBody" || Survivors.HeroOf(master.GetBody()) != null;
+                    foreach (var mode in new[] { "all", "primary", "secondary", "utility", "special", "equipment" })
+                    {
+                        if (mode == "equipment" && !equip) continue;
+                        yield return Pass(master, pcmc, bodyName.Replace("Body", ""), mode);
+                    }
                 }
             }
             GlobalEventManager.onServerDamageDealt -= OnDamage;
@@ -216,6 +267,15 @@ namespace DeadlockOfRain
             Write(string.Format(inv, "stats {0}: name {1}, health {2} +{3}, regen {4} +{5}, armor {6}, damage {7} +{8}, speed {9}, jumps {10}, crit {11}",
                 bodyName.Replace("Body", ""), Language.GetString(b.baseNameToken), b.baseMaxHealth, b.levelMaxHealth, b.baseRegen, b.levelRegen,
                 b.baseArmor, b.baseDamage, b.levelDamage, b.baseMoveSpeed, b.baseJumpCount, b.baseCrit));
+        }
+
+        /// <summary>The survivor's default skill names per slot, in the game's language (for the DPS library page).</summary>
+        void WriteSkills(CharacterBody body, string bodyName)
+        {
+            if (!body || !body.skillLocator) return;
+            var sl = body.skillLocator;
+            string N(GenericSkill g) => g && g.skillDef ? Language.GetString(g.skillDef.skillNameToken).Replace(";", ",").Replace("=", "-") : "none";
+            Write($"skills {bodyName.Replace("Body", "")}: primary={N(sl.primary)}; secondary={N(sl.secondary)}; utility={N(sl.utility)}; special={N(sl.special)}");
         }
 
         static void KillMinions(CharacterMaster owner)
@@ -380,7 +440,10 @@ namespace DeadlockOfRain
                 bool tap = frame % 2 == 0;
                 if (ib)
                 {
-                    ib.skill1.PushState(mode == "all" || mode == "primary");
+                    // a primary that fires on release (Captain's Vulcan Shotgun charges while held) is let go for one frame every 0.6 s
+                    bool hold = mode == "all" || mode == "primary";
+                    if (ReleasePrimary.Contains(body.name.Replace("(Clone)", "")) && frame % 36 == 0) hold = false;
+                    ib.skill1.PushState(hold);
                     ib.skill2.PushState((mode == "all" || mode == "secondary") && tap);
                     ib.skill3.PushState((mode == "all" || mode == "utility") && tap);
                     ib.skill4.PushState((mode == "all" || mode == "special") && tap);

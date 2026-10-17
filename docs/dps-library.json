@@ -1,0 +1,1321 @@
+{
+ "survivors": {
+  "Commando": {
+   "name": "Commando",
+   "stats": {
+    "health": 110.0,
+    "healthPerLevel": 33.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Double Tap",
+    "secondary": "Phase Round",
+    "utility": "Tactical Slide",
+    "special": "Suppressive Fire"
+   },
+   "hero": false,
+   "dps": {
+    "all": {
+     "runs": [
+      1104,
+      1384,
+      1178
+     ],
+     "mean": 1222,
+     "min": 1104,
+     "max": 1384
+    },
+    "primary": {
+     "runs": [
+      603,
+      603,
+      603
+     ],
+     "mean": 603,
+     "min": 603,
+     "max": 603
+    },
+    "secondary": {
+     "runs": [
+      574,
+      922,
+      654
+     ],
+     "mean": 717,
+     "min": 574,
+     "max": 922
+    },
+    "utility": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "special": {
+     "runs": [
+      80,
+      80,
+      80
+     ],
+     "mean": 80,
+     "min": 80,
+     "max": 80
+    },
+    "equipment": {
+     "runs": [
+      1280,
+      2413,
+      2013
+     ],
+     "mean": 1902,
+     "min": 1280,
+     "max": 2413
+    }
+   }
+  },
+  "Huntress": {
+   "name": "Huntress",
+   "stats": {
+    "health": 90.0,
+    "healthPerLevel": 27.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Flurry",
+    "secondary": "Laser Glaive",
+    "utility": "Blink",
+    "special": "Arrow Rain"
+   },
+   "hero": false,
+   "dps": {
+    "all": {
+     "runs": [
+      1098,
+      2300,
+      2364
+     ],
+     "mean": 1921,
+     "min": 1098,
+     "max": 2364
+    },
+    "primary": {
+     "runs": [
+      180,
+      207,
+      170
+     ],
+     "mean": 186,
+     "min": 170,
+     "max": 207
+    },
+    "secondary": {
+     "runs": [
+      316,
+      395,
+      395
+     ],
+     "mean": 369,
+     "min": 316,
+     "max": 395
+    },
+    "utility": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "special": {
+     "runs": [
+      1118,
+      1947,
+      1782
+     ],
+     "mean": 1616,
+     "min": 1118,
+     "max": 1947
+    }
+   }
+  },
+  "Bandit2": {
+   "name": "Bandit",
+   "stats": {
+    "health": 110.0,
+    "healthPerLevel": 33.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Blast",
+    "secondary": "Serrated Dagger",
+    "utility": "Smoke Bomb",
+    "special": "Lights Out"
+   },
+   "hero": false,
+   "dps": {
+    "all": {
+     "runs": [
+      1829,
+      2095,
+      1833
+     ],
+     "mean": 1919,
+     "min": 1829,
+     "max": 2095
+    },
+    "primary": {
+     "runs": [
+      11,
+      11,
+      11
+     ],
+     "mean": 11,
+     "min": 11,
+     "max": 11
+    },
+    "secondary": {
+     "runs": [
+      1268,
+      1811,
+      1355
+     ],
+     "mean": 1478,
+     "min": 1268,
+     "max": 1811
+    },
+    "utility": {
+     "runs": [
+      620,
+      760,
+      747
+     ],
+     "mean": 709,
+     "min": 620,
+     "max": 760
+    },
+    "special": {
+     "runs": [
+      140,
+      140,
+      140
+     ],
+     "mean": 140,
+     "min": 140,
+     "max": 140
+    }
+   }
+  },
+  "Toolbot": {
+   "name": "MUL-T",
+   "stats": {
+    "health": 200.0,
+    "healthPerLevel": 60.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 12.0,
+    "damage": 11.0,
+    "damagePerLevel": 2.2,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Auto-Nailgun",
+    "secondary": "Blast Canister",
+    "utility": "Transport Mode",
+    "special": "Power Mode"
+   },
+   "hero": false,
+   "dps": {
+    "all": {
+     "runs": [
+      1341,
+      1297,
+      1713
+     ],
+     "mean": 1450,
+     "min": 1297,
+     "max": 1713
+    },
+    "primary": {
+     "runs": [
+      875,
+      877,
+      877
+     ],
+     "mean": 876,
+     "min": 875,
+     "max": 877
+    },
+    "secondary": {
+     "runs": [
+      644,
+      833,
+      785
+     ],
+     "mean": 754,
+     "min": 644,
+     "max": 833
+    },
+    "utility": {
+     "runs": [
+      411,
+      447,
+      447
+     ],
+     "mean": 435,
+     "min": 411,
+     "max": 447
+    },
+    "special": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    }
+   }
+  },
+  "Engi": {
+   "name": "Engineer",
+   "stats": {
+    "health": 130.0,
+    "healthPerLevel": 39.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 14.0,
+    "damagePerLevel": 2.8,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Bouncing Grenades",
+    "secondary": "Pressure Mines",
+    "utility": "Bubble Shield",
+    "special": "TR12 Gauss Auto-Turret"
+   },
+   "hero": false,
+   "dps": {
+    "all": {
+     "runs": [
+      1502,
+      1639,
+      1691
+     ],
+     "mean": 1611,
+     "min": 1502,
+     "max": 1691
+    },
+    "primary": {
+     "runs": [
+      1853,
+      2387,
+      2100
+     ],
+     "mean": 2113,
+     "min": 1853,
+     "max": 2387
+    },
+    "secondary": {
+     "runs": [
+      240,
+      120,
+      200
+     ],
+     "mean": 187,
+     "min": 120,
+     "max": 240
+    },
+    "utility": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "special": {
+     "runs": [
+      75,
+      8,
+      35
+     ],
+     "mean": 39,
+     "min": 8,
+     "max": 75
+    }
+   },
+   "note": "Turret damage counts as his. Damage stat 14 (most survivors 12)."
+  },
+  "Mage": {
+   "name": "Artificer",
+   "stats": {
+    "health": 110.0,
+    "healthPerLevel": 33.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Flame Bolt",
+    "secondary": "Charged Nano-Bomb",
+    "utility": "Snapfreeze",
+    "special": "Ion Surge"
+   },
+   "hero": false,
+   "dps": {
+    "all": {
+     "runs": [
+      3904,
+      3142,
+      4994
+     ],
+     "mean": 4013,
+     "min": 3142,
+     "max": 4994
+    },
+    "primary": {
+     "runs": [
+      2429,
+      3532,
+      3195
+     ],
+     "mean": 3052,
+     "min": 2429,
+     "max": 3532
+    },
+    "secondary": {
+     "runs": [
+      1659,
+      1785,
+      1779
+     ],
+     "mean": 1741,
+     "min": 1659,
+     "max": 1785
+    },
+    "utility": {
+     "runs": [
+      90,
+      130,
+      13
+     ],
+     "mean": 78,
+     "min": 13,
+     "max": 130
+    },
+    "special": {
+     "runs": [
+      1173,
+      880,
+      1120
+     ],
+     "mean": 1058,
+     "min": 880,
+     "max": 1173
+    }
+   },
+   "note": "Noisy between runs (Flame Bolt burns)."
+  },
+  "Merc": {
+   "name": "Mercenary",
+   "stats": {
+    "health": 110.0,
+    "healthPerLevel": 33.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 20.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 2,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Laser Sword",
+    "secondary": "Whirlwind",
+    "utility": "Blinding Assault",
+    "special": "Eviscerate"
+   },
+   "hero": false,
+   "dps": {
+    "all": {
+     "runs": [
+      5626,
+      4977,
+      4734
+     ],
+     "mean": 5112,
+     "min": 4734,
+     "max": 5626
+    },
+    "primary": {
+     "runs": [
+      2502,
+      3157,
+      2892
+     ],
+     "mean": 2850,
+     "min": 2502,
+     "max": 3157
+    },
+    "secondary": {
+     "runs": [
+      1247,
+      1440,
+      1367
+     ],
+     "mean": 1351,
+     "min": 1247,
+     "max": 1440
+    },
+    "utility": {
+     "runs": [
+      1000,
+      1150,
+      1210
+     ],
+     "mean": 1120,
+     "min": 1000,
+     "max": 1210
+    },
+    "special": {
+     "runs": [
+      128,
+      128,
+      128
+     ],
+     "mean": 128,
+     "min": 128,
+     "max": 128
+    }
+   }
+  },
+  "Treebot": {
+   "name": "REX",
+   "stats": {
+    "health": 130.0,
+    "healthPerLevel": 39.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 20.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "DIRECTIVE: Inject",
+    "secondary": "Seed Barrage",
+    "utility": "DIRECTIVE: Disperse",
+    "special": "Tangling Growth"
+   },
+   "hero": false,
+   "dps": {
+    "all": {
+     "runs": [
+      2050,
+      1166,
+      1999
+     ],
+     "mean": 1738,
+     "min": 1166,
+     "max": 2050
+    },
+    "primary": {
+     "runs": [
+      392,
+      392,
+      392
+     ],
+     "mean": 392,
+     "min": 392,
+     "max": 392
+    },
+    "secondary": {
+     "runs": [
+      6615,
+      8190,
+      7590
+     ],
+     "mean": 7465,
+     "min": 6615,
+     "max": 8190
+    },
+    "utility": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "special": {
+     "runs": [
+      373,
+      420,
+      387
+     ],
+     "mean": 393,
+     "min": 373,
+     "max": 420
+    }
+   }
+  },
+  "Loader": {
+   "name": "Loader",
+   "stats": {
+    "health": 160.0,
+    "healthPerLevel": 48.0,
+    "regen": 2.5,
+    "regenPerLevel": 0.5,
+    "armor": 20.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Knuckleboom",
+    "secondary": "Spiked Fist",
+    "utility": "Thunder Gauntlet",
+    "special": "Thunderslam"
+   },
+   "hero": false,
+   "dps": {
+    "all": {
+     "runs": [
+      2957,
+      2059,
+      3837
+     ],
+     "mean": 2951,
+     "min": 2059,
+     "max": 3837
+    },
+    "primary": {
+     "runs": [
+      2027,
+      2379,
+      2592
+     ],
+     "mean": 2333,
+     "min": 2027,
+     "max": 2592
+    },
+    "secondary": {
+     "runs": [
+      11,
+      11,
+      21
+     ],
+     "mean": 14,
+     "min": 11,
+     "max": 21
+    },
+    "utility": {
+     "runs": [
+      2549,
+      2329,
+      2579
+     ],
+     "mean": 2486,
+     "min": 2329,
+     "max": 2579
+    },
+    "special": {
+     "runs": [
+      1733,
+      1867,
+      2200
+     ],
+     "mean": 1933,
+     "min": 1733,
+     "max": 2200
+    }
+   },
+   "note": "Very noisy between runs: Charged Gauntlet and Pylon sometimes kill pack members, which the bench refills."
+  },
+  "Croco": {
+   "name": "Acrid",
+   "stats": {
+    "health": 160.0,
+    "healthPerLevel": 48.0,
+    "regen": 2.5,
+    "regenPerLevel": 0.5,
+    "armor": 20.0,
+    "damage": 15.0,
+    "damagePerLevel": 3.0,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Vicious Wounds",
+    "secondary": "Neurotoxin",
+    "utility": "Caustic Leap",
+    "special": "Epidemic"
+   },
+   "hero": false,
+   "dps": {
+    "all": {
+     "runs": [
+      11267,
+      11309,
+      11042
+     ],
+     "mean": 11206,
+     "min": 11042,
+     "max": 11309
+    },
+    "primary": {
+     "runs": [
+      2484,
+      2534,
+      2222
+     ],
+     "mean": 2413,
+     "min": 2222,
+     "max": 2534
+    },
+    "secondary": {
+     "runs": [
+      5145,
+      6577,
+      6348
+     ],
+     "mean": 6023,
+     "min": 5145,
+     "max": 6577
+    },
+    "utility": {
+     "runs": [
+      6763,
+      7863,
+      7242
+     ],
+     "mean": 7289,
+     "min": 6763,
+     "max": 7863
+    },
+    "special": {
+     "runs": [
+      5727,
+      6098,
+      6123
+     ],
+     "mean": 5983,
+     "min": 5727,
+     "max": 6123
+    }
+   },
+   "note": "Acrid's Poison and Blight deal a share of the target's max health; the test enemies have x101 health to survive, so his number is hugely inflated. Not comparable."
+  },
+  "Captain": {
+   "name": "Captain",
+   "stats": {
+    "health": 110.0,
+    "healthPerLevel": 33.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Vulcan Shotgun",
+    "secondary": "Power Tazer",
+    "utility": "Orbital Probe",
+    "special": "Orbital Supply Beacon"
+   },
+   "hero": false,
+   "dps": {
+    "all": {
+     "runs": [
+      3640,
+      3341
+     ],
+     "mean": 3490,
+     "min": 3341,
+     "max": 3640
+    },
+    "primary": {
+     "runs": [
+      800,
+      800
+     ],
+     "mean": 800,
+     "min": 800,
+     "max": 800
+    },
+    "secondary": {
+     "runs": [
+      7,
+      7
+     ],
+     "mean": 7,
+     "min": 7,
+     "max": 7
+    },
+    "utility": {
+     "runs": [
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "special": {
+     "runs": [
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    }
+   },
+   "note": "His Vulcan Shotgun fires on release; the bench lets go of M1 every 0.6 s. Orbital strikes and beacons are aimed at the pack."
+  },
+  "Railgunner": {
+   "name": "Railgunner",
+   "stats": {
+    "health": 110.0,
+    "healthPerLevel": 33.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "XQR Smart Round System",
+    "secondary": "M99 Sniper",
+    "utility": "Concussion Device",
+    "special": "Supercharge"
+   },
+   "hero": false,
+   "dps": {
+    "all": {
+     "runs": [
+      587,
+      270,
+      920
+     ],
+     "mean": 592,
+     "min": 270,
+     "max": 920
+    },
+    "primary": {
+     "runs": [
+      387,
+      383,
+      400
+     ],
+     "mean": 390,
+     "min": 383,
+     "max": 400
+    },
+    "secondary": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "utility": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "special": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    }
+   },
+   "note": "Her damage is scoped railgun shots (hold M2, fire M1); the bench taps M2, so she is badly under-measured. Not comparable."
+  },
+  "VoidSurvivor": {
+   "name": "Void Fiend",
+   "stats": {
+    "health": 110.0,
+    "healthPerLevel": 33.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "【D??row?n」",
+    "secondary": "『Floo?d」",
+    "utility": "「?Tr?espass】",
+    "special": "【Sup??ress』"
+   },
+   "hero": false,
+   "dps": {
+    "all": {
+     "runs": [
+      380,
+      380,
+      380
+     ],
+     "mean": 380,
+     "min": 380,
+     "max": 380
+    },
+    "primary": {
+     "runs": [
+      2445,
+      1823,
+      1607
+     ],
+     "mean": 1958,
+     "min": 1607,
+     "max": 2445
+    },
+    "secondary": {
+     "runs": [
+      587,
+      1310,
+      1200
+     ],
+     "mean": 1032,
+     "min": 587,
+     "max": 1310
+    },
+    "utility": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "special": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    }
+   },
+   "note": "Void Fiend's corrupted form is never reached in 30 s and his beam hits few of the pack; under-measured."
+  },
+  "DeadlockHaze": {
+   "name": "Haze",
+   "stats": {
+    "health": 110.0,
+    "healthPerLevel": 33.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.5,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Twin SMGs",
+    "secondary": "Sleep Dagger",
+    "utility": "Smoke Bomb",
+    "special": "Phantom Strike"
+   },
+   "hero": true,
+   "measuredOn": "v0.4.2",
+   "dps": {
+    "all": {
+     "runs": [
+      1683,
+      1240,
+      1745
+     ],
+     "mean": 1556,
+     "min": 1240,
+     "max": 1745
+    },
+    "primary": {
+     "runs": [
+      1439,
+      505,
+      584
+     ],
+     "mean": 843,
+     "min": 505,
+     "max": 1439
+    },
+    "secondary": {
+     "runs": [
+      117,
+      100,
+      100
+     ],
+     "mean": 106,
+     "min": 100,
+     "max": 117
+    },
+    "utility": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "special": {
+     "runs": [
+      362,
+      412,
+      352
+     ],
+     "mean": 375,
+     "min": 352,
+     "max": 412
+    },
+    "equipment": {
+     "runs": [
+      1435,
+      1341,
+      1277
+     ],
+     "mean": 1351,
+     "min": 1277,
+     "max": 1435
+    }
+   }
+  },
+  "DeadlockAbrams": {
+   "name": "Abrams",
+   "stats": {
+    "health": 160.0,
+    "healthPerLevel": 48.0,
+    "regen": 2.5,
+    "regenPerLevel": 0.5,
+    "armor": 20.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Shotgun",
+    "secondary": "Siphon Life",
+    "utility": "Shoulder Charge",
+    "special": "Haymaker"
+   },
+   "hero": true,
+   "measuredOn": "v0.4.2",
+   "dps": {
+    "all": {
+     "runs": [
+      2101,
+      2073,
+      3032
+     ],
+     "mean": 2402,
+     "min": 2073,
+     "max": 3032
+    },
+    "primary": {
+     "runs": [
+      591,
+      593,
+      591
+     ],
+     "mean": 592,
+     "min": 591,
+     "max": 593
+    },
+    "secondary": {
+     "runs": [
+      720,
+      720,
+      720
+     ],
+     "mean": 720,
+     "min": 720,
+     "max": 720
+    },
+    "utility": {
+     "runs": [
+      1013,
+      1227,
+      1600
+     ],
+     "mean": 1280,
+     "min": 1013,
+     "max": 1600
+    },
+    "special": {
+     "runs": [
+      1600,
+      1600,
+      1840
+     ],
+     "mean": 1680,
+     "min": 1600,
+     "max": 1840
+    },
+    "equipment": {
+     "runs": [
+      1813,
+      2720,
+      2493
+     ],
+     "mean": 2342,
+     "min": 1813,
+     "max": 2720
+    }
+   }
+  },
+  "DeadlockSeven": {
+   "name": "Seven",
+   "stats": {
+    "health": 110.0,
+    "healthPerLevel": 33.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Shock Rifle",
+    "secondary": "Lightning Ball",
+    "utility": "Static Charge",
+    "special": "Power Surge"
+   },
+   "hero": true,
+   "measuredOn": "v0.4.2",
+   "dps": {
+    "all": {
+     "runs": [
+      4242,
+      4822,
+      4799
+     ],
+     "mean": 4621,
+     "min": 4242,
+     "max": 4822
+    },
+    "primary": {
+     "runs": [
+      584,
+      584,
+      524
+     ],
+     "mean": 564,
+     "min": 524,
+     "max": 584
+    },
+    "secondary": {
+     "runs": [
+      186,
+      2806,
+      1964
+     ],
+     "mean": 1652,
+     "min": 186,
+     "max": 2806
+    },
+    "utility": {
+     "runs": [
+      795,
+      855,
+      825
+     ],
+     "mean": 825,
+     "min": 795,
+     "max": 855
+    },
+    "special": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "equipment": {
+     "runs": [
+      907,
+      907,
+      907
+     ],
+     "mean": 907,
+     "min": 907,
+     "max": 907
+    }
+   }
+  },
+  "DeadlockInfernus": {
+   "name": "Infernus",
+   "stats": {
+    "health": 130.0,
+    "healthPerLevel": 39.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Flame Gun",
+    "secondary": "Napalm",
+    "utility": "Flame Dash",
+    "special": "Torment Pulse"
+   },
+   "hero": true,
+   "measuredOn": "v0.4.2",
+   "dps": {
+    "all": {
+     "runs": [
+      1365,
+      1436,
+      1736
+     ],
+     "mean": 1512,
+     "min": 1365,
+     "max": 1736
+    },
+    "primary": {
+     "runs": [
+      327,
+      317,
+      317
+     ],
+     "mean": 320,
+     "min": 317,
+     "max": 327
+    },
+    "secondary": {
+     "runs": [
+      528,
+      647,
+      589
+     ],
+     "mean": 588,
+     "min": 528,
+     "max": 647
+    },
+    "utility": {
+     "runs": [
+      404,
+      485,
+      433
+     ],
+     "mean": 441,
+     "min": 404,
+     "max": 485
+    },
+    "special": {
+     "runs": [
+      709,
+      1050,
+      943
+     ],
+     "mean": 901,
+     "min": 709,
+     "max": 1050
+    },
+    "equipment": {
+     "runs": [
+      2040,
+      2720,
+      2720
+     ],
+     "mean": 2493,
+     "min": 2040,
+     "max": 2720
+    }
+   }
+  }
+ },
+ "about": "Stored DPS library (Deadlock of Rain). Main moves and each move alone, % of damage stat per second, measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, 30 s per pass, perfect aim, every move used when ready, no equipment except the \"equipment\" pass). \"all\" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are tagged with the build they were measured on. Built by tools/dps_library.py.",
+ "updated": "2026-10-17",
+ "runsPerSurvivor": 3
+}
