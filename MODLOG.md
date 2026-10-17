@@ -22,6 +22,7 @@
 
 ## Balance
 - 0.4.2: each hero within ±500 %/s of its RoR2 match (means over bench runs; doc 05 §3.0).
+- 0.5.1: playtest feel pass (Haymaker lock-on rush, Phantom Strike 5 m area, bouncing 10 m Lightning Ball); benched once and reported, not retuned.
 
 ## Gotchas found
 1. RoR2's CharacterModel keeps ONE material per renderer (it re-applies defaultMaterial), so a multi-material
@@ -40,4 +41,6 @@
 11. Burst guns (v0.4.1): when the magazine ran dry mid-burst, FireOne ended the burst (burstLeft = 0) and the caller
    then decremented it to -1, so the gun never fired, reloaded or let go again. Seven's 29-round magazine in bursts of 3
    hit it every magazine; other skills interrupting the state hid it in play and in the test.
+12. Sound volume (v0.5.1, extractor 1.2.0): Deadlock's vsndevts `volume` is in dB, not a gain. Read as a gain, every event
+   at 0 dB or below fell to the mixer's 0.2 floor (Infernus' gun, -1 dB, sounded thin). Now written as 10^(dB/20).
 lab restored Tue Oct 13 01:42:10 GMTST 2026

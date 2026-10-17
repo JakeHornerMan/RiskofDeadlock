@@ -47,18 +47,18 @@ of the hero.
 
 ---
 
-## Haze: the smoke-shrouded assassin (main moves at once: **1271 %/s** mean of 4 runs; match Commando 1224: inside ±500)
+## Haze: the smoke-shrouded assassin (main moves at once: **6550 %/s**, one v0.5.1 run; match Commando 1222 (library): **far above** ±500, doc 05 §3.1)
 
 | Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
 |---|---|---|---|---|---|
 | Passive | **Fixation** | Each SMG hit stacks Fixation on the target; each stack = +2.5 % damage from Haze. Crits add 3 stacks. Every 10 stacks: a 300 % burst that splashes every enemy within 6 m, and a 12 % slow for 2 s. | max 40 stacks, 6 s | – | in M1 |
 | M1 | **Twin SMGs** | Two SMGs, alternating, firing from the end of each gun. Firing breaks Smoke Bomb. | 55 % per bullet, 9.5 shots/s, 25-round magazine, 1.4 s reload, proc 0.5 | – | **1020** · 122 (Fixation bursts included) |
-| M2 | **Sleep Dagger** | A thrown dagger that pierces every enemy in its line; each takes the damage and is put to sleep (stunned). | 500 % each, stun 4 s, 120 m/s, proc 1.0 | 6 s | **100** · 12 |
+| M2 | **Sleep Dagger** | A thrown dagger (from the aim, with a violet glow and trail so it always shows) that pierces every enemy in its line; each takes the damage and is put to sleep (stunned). | 500 % each, stun 4 s, 120 m/s, proc 1.0 | 6 s | **100** · 12 |
 | Shift | **Smoke Bomb** | Invisible (vanilla Cloak) and faster; enemies lose her as a target and can't pick her again. Firing the guns reveals her. | +50 % move speed, 5 s | 12 s | 0 |
-| R | **Phantom Strike** (Deadlock item) | Blinks behind the enemy under the crosshair (≤ 30 m) and cuts it 3 times; each cut adds 5 Fixation. No target: no blink, and R stays ready. Violet streak, smoke and slash effects. | 3 × 250 %, proc 1.0 | 10 s | **352** · 42 |
+| R | **Phantom Strike** (Deadlock item) | Blinks behind the enemy under the crosshair (≤ 30 m) and cuts 3 times; each cut hits every enemy within 5 m of the target and adds 5 Fixation to each. No target: no blink, and R stays ready. Violet streak, smoke and slash effects. | 3 × 250 % to each enemy within 5 m, proc 1.0 | 10 s | **4139** · 497 (the area spreads Fixation: the pack bursts together) |
 | Q | **Bullet Dance** (equipment) | Spins and fires at every enemy within 25 m at once, 30 % chance to evade attacks, slowed to 60 %. Blade-ring and spark effects. | 113 % per shot to each enemy, ~12 shots/s for 5 s (≈6800 % per enemy) | 120 s | 1567 · 188 (not balanced; one use: 47008 %, 8 enemies) |
 
-## Abrams: the unstoppable detective (main moves at once: **2508 %/s** mean of 2 runs; match Loader 2973: inside ±500)
+## Abrams: the unstoppable detective (main moves at once: **2460 %/s**, one v0.5.1 run; match Loader 2951 (library): inside ±500)
 
 | Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
 |---|---|---|---|---|---|
@@ -66,27 +66,27 @@ of the hero.
 | M1 | **Shotgun** | Nine pellets with spread, from the end of the gun. | 9 × 52 %, 1.6 shots/s, 9 shells, 1.5 s reload, proc 0.4 | – | **581** · 70 |
 | M2 | **Siphon Life** | RoR2's Mired Urn tethers: drains the nearest enemies and heals him for all of it. | up to 3 enemies within 25 m, 450 %/s each, 8 s, heals 100 % of damage dealt | 15 s | **720** · 86 |
 | Shift | **Shoulder Charge** | Charges along his aim (steerable), running like his sprint, faster. Every enemy he runs into is hit, stunned and knocked aside. A wall stops him. | 1600 % per enemy, stun 1 s, knockback 22 m/s, 28 m/s for up to 3 s | 8 s | **1120** · 134 |
-| R | **Haymaker** (Deadlock heavy melee) | A 0.4 s wind-up with a glowing fist, a 6 m lunge, then a heavy punch whose shockwave hits every enemy in a cone in front and knocks them flying. | 2400 % each; cone 6 m long, 30° each side; knockback 30 m/s, proc 1.0 | 5 s | **1520** · 182 |
+| R | **Haymaker** (Deadlock heavy melee) | Locks onto the enemy under the crosshair (≤ 20 m, even one in the air); no target, no punch, and R stays ready. A 0.2 s wind-up with a glowing fist, a rush straight at it at 45 m/s, then a heavy punch along that line with a hit-stop, Loader's impact and a strong shake; its shockwave hits every enemy in a cone behind the target and knocks them flying. | 2400 % each; cone 6 m long, 30° each side; knockback 30 m/s, proc 1.0 | 5 s | **1760** · 211 |
 | Q | **Seismic Impact** (equipment) | Rises, hovers up to 3 s while a ground reticle follows the aim (≤ 40 m); **Left Click** slams there (or it slams by itself after 3 s). He can be hit while hovering. | 6800 % in 18 m, stun 1.6 s | 120 s | 2493 · 299 (not balanced; one use: 74800 % on 11 enemies) |
 
-## Seven: the living storm (main moves at once: **3999 %/s** mean of 2 runs; match Artificer 3605: inside ±500)
+## Seven: the living storm (main moves at once: **3164 %/s**, one v0.5.1 run; match Artificer 4013 (library): **below** ±500, doc 05 §3.1)
 
 | Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
 |---|---|---|---|---|---|
 | Passive | **Capacitor** | Gun hits, Lightning Ball shocks and Power Surge arcs build Static. At 10 stacks the target discharges, arcing to 2 nearby enemies, and everything hit is stunned. | 300 % to each, 12 m, stun 1 s; Static max 10, 5 s | – | in M1, M2, R |
 | M1 | **Shock Rifle** | 3-round bursts from the end of the gun; hits build Static. | 3 × 60 %, burst every 0.26 s, 29 rounds, 1.4 s reload, proc 0.7 | – | **704** · 84 |
-| M2 | **Lightning Ball** | A slow ball that flies through enemies (stops only on walls), shocking everything near it; every shock builds Static. | 60 % every 0.25 s to all within 6 m (240 %/s), 14 m/s, 5 s, proc 0.3 | 8 s (below ~8 s the balls overlap and Capacitor discharges chain: 5300+ in the bench) | **904** · 108 |
+| M2 | **Lightning Ball** | A slow ball that flies through enemies and bounces off walls and floors, shocking everything near it with a clear lightning strike to each; every shock builds Static. | 60 % every 0.25 s to all within 10 m (240 %/s), 10.5 m/s, 5 s, proc 0.3 | 8 s (below ~8 s the balls overlap and Capacitor discharges chain: 5300+ in the bench) | **390** · 47 (it bounces on past the pack now) |
 | Shift | **Static Charge** | Plants a charge on the aimed enemy or spot; after a countdown, a thunderbolt from the sky. | 450 % in 8 m, stun 0.9 s, 1.5 s fuse | 6 s | **765** · 92 |
 | R | **Power Surge** (his Deadlock ability) | For 8 s he crackles with lightning: every Shock Rifle burst arcs RoR2 Tesla lightning (like the Unstable Tesla Coil) from the target to up to 4 more enemies within 10 m, each arc building Static. +40 % move speed. | 60 % per arc, proc 0.2 | 10 s | 0 alone (it powers the gun; counted in "all") |
-| Q | **Thunderhead** (equipment) | Dark storm clouds over the spot he stands on, darkening it; lightning strikes enemies from the clouds; allies inside get RoR2's Warbanner. | up to 4 enemies every 0.4 s, 272 % each, 20 m, 10 s (6800 % per enemy); Warbanner +30 % attack and move speed | 120 s | 907 · 109 (not balanced; one use: 27200 %) |
+| Q | **Thunderhead** (equipment) | Dark storm clouds 35 m over the spot he stands on, darkening it; lightning strikes enemies from the clouds; allies inside get RoR2's Warbanner. | up to 4 enemies every 0.4 s, 272 % each, 20 m, 10 s (6800 % per enemy); Warbanner +30 % attack and move speed | 120 s | 907 · 109 (not balanced; one use: 27200 %) |
 
 ## Infernus: the burning man (main moves at once: **1102 %/s** mean of 3 runs; match Engineer 1488: inside ±500)
 
 | Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
 |---|---|---|---|---|---|
 | Passive | **Afterburn** | Gun hits build Afterburn; at 12 stacks the target burns. Embers show the build-up; RoR2's Helfire flare and big flames show the burn. | burn 100 %/s for 3 s; build-up max 12, 4 s | – | in M1 and R |
-| M1 | **Flame Gun** | Automatic, from the end of the gun; hits build Afterburn. | 50 % per bullet, 9.5 shots/s, 27 rounds, 1.4 s reload, proc 0.5 | – | **317** · 38 |
-| M2 | **Napalm** | A lobbed flask that bursts in a ring of fire and leaves a burning puddle: damage, a slow, and the target takes more damage from him. | 300 % in 5 m, slow 28 % for 4 s, +16 % damage taken from Infernus for 8 s, 2 charges | 5 s | **538** · 65 |
+| M1 | **Flame Gun** | Automatic, from the end of the gun, with a heavier shot sound (Warden's shot layered under his own, louder) and a flash and puff of smoke at the muzzle; hits build Afterburn. | 50 % per bullet, 9.5 shots/s, 27 rounds, 1.4 s reload, proc 0.5 | – | **317** · 38 |
+| M2 | **Napalm** | A lobbed flask (Molotov's bottle, glowing and trailing fire, flies from him to the target) that bursts in a ring of fire and leaves a burning puddle: damage, a slow, and the target takes more damage from him. | 300 % in 5 m, slow 28 % for 4 s, +16 % damage taken from Infernus for 8 s, 2 charges | 5 s | **538** · 65 |
 | Shift | **Flame Dash** | Dash at ×2.2 speed; hold to keep going. Leaves burning ground behind him; enemies he runs into are knocked aside and scorched. 50 % slow resistance while dashing. | trail 150 %/s for 5 s; shove 75 % + knockback 22 m/s; 0.8 s on a tap, up to 3 s held | 8 s | **311** · 37 |
 | R | **Torment Pulse** (Deadlock item) | For 6 s, rings of fire race out of him every 0.5 s, burning everything within 10 m and building Afterburn. | 50 % per pulse, +2 Afterburn build-up, proc 0.5 | 12 s | **768** · 92 (burns included) |
 | Q | **Concussive Combustion** (equipment) | Becomes a bomb, fire gathering on him; can move while it builds; the blast stuns and leaves burning ground. | 6800 % in 18 m after a 3 s fuse, stun 2 s, each kill heals 10 % of max health | 120 s | 2493 · 299 (not balanced; one use: 74800 % on 11 enemies) |

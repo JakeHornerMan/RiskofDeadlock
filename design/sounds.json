@@ -1,13 +1,16 @@
 {
   "sheet": "sounds",
-  "about": "Deadlock sound events (as referenced by the hero's abilities in scripts/abilities.vdata) played for each skill moment. The extractor resolves each event through the player's soundevents/*.vsndevts (following 'base' inheritance) to its vsnd files and decodes them to WAV in the local cache. 'none' = silent on purpose. RoR2 disables Unity audio, so the plugin plays these through its own small Windows audio mixer at the game's SFX volume.",
+  "about": "Deadlock sound events (as referenced by the hero's abilities in scripts/abilities.vdata) played for each skill moment. The extractor resolves each event through the player's soundevents/*.vsndevts (following 'base' inheritance) to its vsnd files and decodes them to WAV in the local cache. 'none' = silent on purpose. RoR2 disables Unity audio, so the plugin plays these through its own small Windows audio mixer at the game's SFX volume. castLayer / hitLayer: a second event played together with cast / hit to make it heavier (another hero's or a generic Deadlock sound), or none. gain: loudness multiplier for every event of the row (1 = as Deadlock mixes it).",
   "columns": [
     "skill",
     "cast",
     "loop",
     "hit",
     "end",
-    "reload"
+    "reload",
+    "castLayer",
+    "hitLayer",
+    "gain"
   ],
   "rows": [
     {
@@ -16,7 +19,10 @@
       "loop": "none",
       "hit": "none",
       "end": "none",
-      "reload": "Haze.Wpn.Reload.Start"
+      "reload": "Haze.Wpn.Reload.Start",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "haze_sleep_dagger",
@@ -24,7 +30,10 @@
       "loop": "none",
       "hit": "Haze.Finesse.Dagger.Projectile.Hit",
       "end": "none",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "haze_smoke_bomb",
@@ -32,7 +41,10 @@
       "loop": "none",
       "hit": "none",
       "end": "Haze.Smoke.Bomb.End",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "haze_phantom_strike",
@@ -40,7 +52,10 @@
       "loop": "none",
       "hit": "Mods.Armor.Phantom.Strike.Hit",
       "end": "none",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "haze_bullet_dance",
@@ -48,7 +63,10 @@
       "loop": "Haze.BulletFlurry.Modifier.Lp",
       "hit": "Haze.Wpn.Fire.Main",
       "end": "Haze.BulletFlurry.Modifier.End",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "abrams_gun",
@@ -56,7 +74,10 @@
       "loop": "none",
       "hit": "Abrams.Wpn.Impact",
       "end": "none",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "abrams_siphon",
@@ -64,7 +85,10 @@
       "loop": "Abrams.A1.SiphonLife.Loop",
       "hit": "none",
       "end": "Abrams.A1.SiphonLife.End",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "abrams_charge",
@@ -72,7 +96,10 @@
       "loop": "none",
       "hit": "Abrams.Charge.HitEnemy",
       "end": "Abrams.Charge.Wall.Impact",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "abrams_haymaker",
@@ -80,7 +107,10 @@
       "loop": "none",
       "hit": "Ability.Melee.Impact.Heavy.NPC",
       "end": "none",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "Abrams.Charge.Wall.Impact",
+      "gain": 1.3
     },
     {
       "skill": "abrams_seismic",
@@ -88,7 +118,10 @@
       "loop": "Abrams.A4.Leap.Float.Lp",
       "hit": "Abrams.A4.Leap.Descend",
       "end": "Abrams.A4.Leap.Impact",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "seven_gun",
@@ -96,7 +129,10 @@
       "loop": "none",
       "hit": "Seven.Wpn.Impact",
       "end": "none",
-      "reload": "Seven.Wpn.Reload.Start"
+      "reload": "Seven.Wpn.Reload.Start",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "seven_lightning_ball",
@@ -104,7 +140,10 @@
       "loop": "Gigawatt.LightningBall.Proj.Lp",
       "hit": "Gigawatt.LightningBall.Damage",
       "end": "Gigawatt.LightningBall.Proj.Explo",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "seven_static_charge",
@@ -112,7 +151,10 @@
       "loop": "Gigawatt.StaticCharge.Lp",
       "hit": "Gigawatt.StaticCharge.Proc",
       "end": "none",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "seven_power_surge",
@@ -120,7 +162,10 @@
       "loop": "Gigawatt.PowerSurge.Lp",
       "hit": "Gigawatt.PowerSurge.ChainMod.Proc",
       "end": "Gigawatt.PowerSurge.End",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "seven_thunderhead",
@@ -128,7 +173,10 @@
       "loop": "Gigawatt.StormCloud.Lp",
       "hit": "Gigawatt.StormCloud.Bolt.Detonate",
       "end": "Gigawatt.StormCloud.End",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "infernus_gun",
@@ -136,7 +184,10 @@
       "loop": "none",
       "hit": "Infernus.Wpn.Impact",
       "end": "none",
-      "reload": "Infernus.Wpn.Reload.Start"
+      "reload": "Infernus.Wpn.Reload.Start",
+      "castLayer": "Warden.Wpn.Fire",
+      "hitLayer": "none",
+      "gain": 1.2
     },
     {
       "skill": "infernus_napalm",
@@ -144,7 +195,10 @@
       "loop": "none",
       "hit": "Inferno.Incend.Hit",
       "end": "none",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "infernus_flame_dash",
@@ -152,7 +206,10 @@
       "loop": "Inferno.FlameDash.Modifier.Lp",
       "hit": "Infernus.FlameDash.Hit",
       "end": "Inferno.FlameDash.Modifier.Stop",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "infernus_torment_pulse",
@@ -160,7 +217,10 @@
       "loop": "none",
       "hit": "Mods.Tech.TormentPulse.Proc",
       "end": "none",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     },
     {
       "skill": "infernus_combustion",
@@ -168,7 +228,10 @@
       "loop": "none",
       "hit": "none",
       "end": "Inferno.FireBomb.Explode",
-      "reload": "none"
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "gain": 1.0
     }
   ]
 }

@@ -16,7 +16,7 @@ import json, os, re, sys, datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LIB = os.path.join(ROOT, 'docs', 'dps-library.json')
 MODES = ['all', 'primary', 'secondary', 'utility', 'special', 'equipment']
-VERSION = 'v0.4.2'
+VERSION = 'v0.5.1'  # the build heroes are measured on; bump it when a hero's kit changes
 
 def parse(path):
     """-> list of runs; each run = {who: {mode: {'dps', 'total', 'hits', 'enemies'}}}, plus stats and skills per who."""
@@ -64,6 +64,10 @@ def build(paths, base=None):
             if mode in e.get('dps', {}): raw.setdefault(who, {})[mode] = list(e['dps'][mode]['runs'])
     for path in paths:
         runs, stats, skills = parse(path)
+        # a hero measured on an older build had a different kit: its old runs are dropped, the new ones replace them
+        for who in {w for run in runs for w in run}:
+            e = lib['survivors'].get(who, {})
+            if who.startswith('Deadlock') and e.get('measuredOn') != VERSION: raw.pop(who, None)
         for run in runs:
             for who, modes in run.items():
                 # a run where the survivor dealt nothing at all is a bench fault (Captain's shotgun before the bench released

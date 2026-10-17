@@ -995,42 +995,34 @@
     "special": "Phantom Strike"
    },
    "hero": true,
-   "measuredOn": "v0.4.2",
+   "measuredOn": "v0.5.1",
    "dps": {
     "all": {
      "runs": [
-      1683,
-      1240,
-      1745
+      6550
      ],
-     "mean": 1556,
-     "min": 1240,
-     "max": 1745
+     "mean": 6550,
+     "min": 6550,
+     "max": 6550
     },
     "primary": {
      "runs": [
-      1439,
-      505,
-      584
+      554
      ],
-     "mean": 843,
-     "min": 505,
-     "max": 1439
+     "mean": 554,
+     "min": 554,
+     "max": 554
     },
     "secondary": {
      "runs": [
-      117,
-      100,
       100
      ],
-     "mean": 106,
+     "mean": 100,
      "min": 100,
-     "max": 117
+     "max": 100
     },
     "utility": {
      "runs": [
-      0,
-      0,
       0
      ],
      "mean": 0,
@@ -1039,23 +1031,19 @@
     },
     "special": {
      "runs": [
-      362,
-      412,
-      352
+      4139
      ],
-     "mean": 375,
-     "min": 352,
-     "max": 412
+     "mean": 4139,
+     "min": 4139,
+     "max": 4139
     },
     "equipment": {
      "runs": [
-      1435,
-      1341,
-      1277
+      1552
      ],
-     "mean": 1351,
-     "min": 1277,
-     "max": 1435
+     "mean": 1552,
+     "min": 1552,
+     "max": 1552
     }
    }
   },
@@ -1080,32 +1068,26 @@
     "special": "Haymaker"
    },
    "hero": true,
-   "measuredOn": "v0.4.2",
+   "measuredOn": "v0.5.1",
    "dps": {
     "all": {
      "runs": [
-      2101,
-      2073,
-      3032
+      2460
      ],
-     "mean": 2402,
-     "min": 2073,
-     "max": 3032
+     "mean": 2460,
+     "min": 2460,
+     "max": 2460
     },
     "primary": {
      "runs": [
-      591,
-      593,
-      591
+      593
      ],
-     "mean": 592,
-     "min": 591,
+     "mean": 593,
+     "min": 593,
      "max": 593
     },
     "secondary": {
      "runs": [
-      720,
-      720,
       720
      ],
      "mean": 720,
@@ -1114,33 +1096,27 @@
     },
     "utility": {
      "runs": [
-      1013,
-      1227,
-      1600
+      1120
      ],
-     "mean": 1280,
-     "min": 1013,
-     "max": 1600
+     "mean": 1120,
+     "min": 1120,
+     "max": 1120
     },
     "special": {
      "runs": [
-      1600,
-      1600,
-      1840
+      1760
      ],
-     "mean": 1680,
-     "min": 1600,
-     "max": 1840
+     "mean": 1760,
+     "min": 1760,
+     "max": 1760
     },
     "equipment": {
      "runs": [
-      1813,
-      2720,
       2493
      ],
-     "mean": 2342,
-     "min": 1813,
-     "max": 2720
+     "mean": 2493,
+     "min": 2493,
+     "max": 2493
     }
    }
   },
@@ -1165,52 +1141,42 @@
     "special": "Power Surge"
    },
    "hero": true,
-   "measuredOn": "v0.4.2",
+   "measuredOn": "v0.5.1",
    "dps": {
     "all": {
      "runs": [
-      4242,
-      4822,
-      4799
+      3164
      ],
-     "mean": 4621,
-     "min": 4242,
-     "max": 4822
+     "mean": 3164,
+     "min": 3164,
+     "max": 3164
     },
     "primary": {
      "runs": [
-      584,
-      584,
-      524
+      554
      ],
-     "mean": 564,
-     "min": 524,
-     "max": 584
+     "mean": 554,
+     "min": 554,
+     "max": 554
     },
     "secondary": {
      "runs": [
-      186,
-      2806,
-      1964
+      390
      ],
-     "mean": 1652,
-     "min": 186,
-     "max": 2806
+     "mean": 390,
+     "min": 390,
+     "max": 390
     },
     "utility": {
      "runs": [
-      795,
-      855,
-      825
+      705
      ],
-     "mean": 825,
-     "min": 795,
-     "max": 855
+     "mean": 705,
+     "min": 705,
+     "max": 705
     },
     "special": {
      "runs": [
-      0,
-      0,
       0
      ],
      "mean": 0,
@@ -1219,8 +1185,6 @@
     },
     "equipment": {
      "runs": [
-      907,
-      907,
       907
      ],
      "mean": 907,
@@ -1250,7 +1214,7 @@
     "special": "Torment Pulse"
    },
    "hero": true,
-   "measuredOn": "v0.4.2",
+   "measuredOn": "v0.5.1",
    "dps": {
     "all": {
      "runs": [

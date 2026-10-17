@@ -59,6 +59,13 @@
       "notes": "Sleep Dagger flying model"
     },
     {
+      "id": "flask",
+      "kind": "ghost",
+      "addressable": "RoR2/DLC1/Molotov/MolotovGhost.prefab",
+      "scaleWithRadius": false,
+      "notes": "Napalm flask in flight (Molotov's bottle; a glowing sphere if it can't load)"
+    },
+    {
       "id": "smoke_puff",
       "kind": "impact",
       "addressable": "RoR2/Base/Bandit2/Bandit2SmokeBomb.prefab",
@@ -78,6 +85,13 @@
       "addressable": "RoR2/Base/Toolbot/ImpactToolbotDashLarge.prefab",
       "scaleWithRadius": false,
       "notes": "Shoulder Charge hit"
+    },
+    {
+      "id": "punch_impact",
+      "kind": "impact",
+      "addressable": "RoR2/Base/Loader/OmniImpactVFXLoader.prefab",
+      "scaleWithRadius": false,
+      "notes": "Haymaker: Loader's big fist impact on the punch"
     },
     {
       "id": "heal_pulse",
@@ -266,7 +280,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
-      "notes": "Afterburn: embers on enemies that grow with build-up; on ignition RoR2's Helfire flare and a burst of large flames; big licking flames and a glow while they burn"
+      "notes": "Afterburn: embers on enemies that grow with build-up; on ignition RoR2's Helfire flare and a burst of large flames; big licking flames and a glow while they burn; muzzle smoke and a flash on every Flame Gun shot"
     },
     {
       "id": "infernus_napalm",
@@ -351,6 +365,13 @@
       "addressable": "none",
       "scaleWithRadius": true,
       "notes": "Concussive Combustion: a fire glow and embers building on Infernus through the fuse, then a fireball, a racing ring of flame, smoke and a burning ground"
+    },
+    {
+      "id": "haze_dagger",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "Sleep Dagger in flight: a violet glow and trail that always shows, with or without the knife model"
     }
   ]
 }

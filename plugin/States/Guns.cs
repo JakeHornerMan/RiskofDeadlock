@@ -82,6 +82,9 @@ namespace DeadlockOfRain.States
             var aim = GetAimRay();
             // the flash rides on the end of the gun (the sheet's muzzle bone)
             Fx.MuzzleFlash(characterBody, left);
+            // the hero's own per-shot muzzle visual, if its gun visual has one (Infernus' smoke)
+            var muzzle = Fx.Muzzle(characterBody, left);
+            if (muzzle) Vfx.Play(row.Vfx, "muzzle", muzzle.position, 1f, muzzle);
             if (isAuthority)
             {
                 var ba = new BulletAttack

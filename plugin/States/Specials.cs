@@ -20,11 +20,11 @@ namespace DeadlockOfRain.States
         public override void OnEnter()
         {
             base.OnEnter();
-            target = FindTarget();
+            target = AimTarget(row.Range);
             if (!target)
             {
                 // nothing under the crosshair in range: no blink, and R stays ready
-                if (isAuthority && activatorSkillSlot) activatorSkillSlot.AddOneStock();
+                RefundStock();
                 return;
             }
             started = true;
@@ -48,24 +48,6 @@ namespace DeadlockOfRain.States
             nextCut = 0.1f;
         }
 
-        HurtBox FindTarget()
-        {
-            var aim = GetAimRay();
-            var search = new BullseyeSearch
-            {
-                teamMaskFilter = TeamMask.GetEnemyTeams(teamComponent.teamIndex),
-                filterByLoS = true,
-                searchOrigin = aim.origin,
-                searchDirection = aim.direction,
-                maxDistanceFilter = row.Range,
-                maxAngleFilter = 15f,
-                sortMode = BullseyeSearch.SortMode.Angle,
-            };
-            search.RefreshCandidates();
-            search.FilterOutGameObject(gameObject);
-            return search.GetResults().FirstOrDefault(h => h && h.healthComponent && h.healthComponent.alive && h.healthComponent.body);
-        }
-
         public override void FixedUpdate()
         {
             base.FixedUpdate();
@@ -82,9 +64,18 @@ namespace DeadlockOfRain.States
                 Fx.Sound(row.Id, "hit", at);
                 if (Server && victim)
                 {
-                    Fx.Hit(characterBody, target, Coef, row.ProcCoefficient, at);
-                    // each cut adds buffStacks of Haze's Fixation (its 20-stack burst can fire from here)
-                    for (int i = 0; i < Mathf.Max(1, (int)row.BuffStacks); i++) Buffs.Stack(characterBody, victim, row.Buff, false);
+                    // each cut sweeps every enemy within radius of the target, not just the target
+                    var swept = Fx.Enemies(characterBody, at, row.Radius);
+                    if (!swept.Exists(h => h.healthComponent == target.healthComponent)) swept.Insert(0, target);
+                    foreach (var hb in swept)
+                    {
+                        var b = hb.healthComponent.body;
+                        if (!b) continue;
+                        if (hb.healthComponent != target.healthComponent) Vfx.Play(row.Vfx, "hit", b.corePosition, cuts);
+                        Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, b.corePosition);
+                        // each cut adds buffStacks of Haze's Fixation (its 20-stack burst can fire from here)
+                        for (int i = 0; i < Mathf.Max(1, (int)row.BuffStacks); i++) Buffs.Stack(characterBody, b, row.Buff, false);
+                    }
                 }
             }
             if (fixedAge >= row.Duration && isAuthority) outer.SetNextStateToMain();
@@ -94,89 +85,151 @@ namespace DeadlockOfRain.States
     }
 
     // ---------------- Abrams: Haymaker (Deadlock heavy melee) ----------------
+    // Locks onto the enemy under the crosshair within range (no target: no punch, and R stays ready), winds up (interval),
+    // then flies straight at it at speed m/s, even up to one in the air, and punches along that line, so the fist never
+    // lands in the floor. On contact a short hit-stop freezes him, then he recovers for duration seconds.
     [Kind("heavy_melee")]
     public sealed class HeavyMelee : DlrState
     {
-        Vector3 dir; bool punched; float windup, lungeEnd; GameObject glow;
+        const float HitStop = 0.08f;
+        HurtBox target; Vector3 dir, aimPoint; bool started, punched, floating; float windup, rushEnd, punchAt; GameObject glow;
 
         public override void OnEnter()
         {
             base.OnEnter();
+            target = AimTarget(row.Range);
+            if (!target)
+            {
+                RefundStock();
+                return;
+            }
+            started = true;
             Sound("cast");
-            dir = GetAimRay().direction; dir.y = 0;
-            if (dir.sqrMagnitude < 0.01f) dir = transform.forward;
-            dir.Normalize();
-            if (characterDirection) characterDirection.forward = dir;
+            aimPoint = target.healthComponent.body.corePosition;
+            dir = (aimPoint - characterBody.corePosition).normalized;
+            Face();
             windup = row.Interval / attackSpeedStat;
-            lungeEnd = windup + row.Range / Mathf.Max(1f, row.Speed);
+            // time to cover the whole lock range, with slack for a target that moves
+            rushEnd = windup + 1.5f * row.Range / Mathf.Max(1f, row.Speed);
             if (anim) anim.Gesture("special_start", anim.HasClip("special_start") ? 1.5f : 1f);
             var loc = characterBody.modelLocator && characterBody.modelLocator.modelTransform ? characterBody.modelLocator.modelTransform.GetComponent<ChildLocator>() : null;
             var hand = loc ? loc.FindChild("HandL") : null;
             glow = Vfx.Play(row.Vfx, "cast", hand ? hand.position : characterBody.corePosition, 1f, hand ? hand : transform);
             characterBody.SetAimTimer(2f);
+            // no gravity while he winds up and flies at the target
+            if (characterMotor)
+            {
+                var gp = characterMotor.gravityParameters; gp.channeledAntiGravityGranterCount++; characterMotor.gravityParameters = gp;
+                floating = true;
+            }
+        }
+
+        void Face()
+        {
+            var flat = dir; flat.y = 0;
+            if (flat.sqrMagnitude > 0.01f && characterDirection) characterDirection.forward = flat.normalized;
+        }
+
+        void Land()
+        {
+            if (!floating || !characterMotor) return;
+            floating = false;
+            var gp = characterMotor.gravityParameters; gp.channeledAntiGravityGranterCount--; characterMotor.gravityParameters = gp;
         }
 
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (isAuthority && characterMotor)
+            if (!started) { if (isAuthority) outer.SetNextStateToMain(); return; }
+            var victim = target && target.healthComponent && target.healthComponent.alive ? target.healthComponent.body : null;
+            if (!punched)
             {
-                characterMotor.moveDirection = Vector3.zero;
-                if (!punched && fixedAge >= windup && fixedAge < lungeEnd) characterMotor.rootMotion += dir * row.Speed * Time.fixedDeltaTime;
-                if (characterDirection) characterDirection.forward = dir;
+                if (victim) aimPoint = victim.corePosition;
+                var to = aimPoint - characterBody.corePosition;
+                if (to.sqrMagnitude > 0.01f) dir = to.normalized;
+                Face();
+                if (isAuthority && characterMotor)
+                {
+                    characterMotor.moveDirection = Vector3.zero;
+                    if (fixedAge < windup) characterMotor.velocity = Vector3.zero;
+                    else
+                    {
+                        if (characterMotor.isGrounded && dir.y > 0.05f) characterMotor.Motor.ForceUnground();
+                        characterMotor.velocity = dir * row.Speed;
+                    }
+                }
+                float reach = characterBody.radius + (victim ? victim.radius : 0f) + 1f;
+                if (fixedAge >= windup && (to.magnitude <= reach || fixedAge >= rushEnd)) Punch();
             }
-            if (!punched && fixedAge >= windup)
+            else
             {
-                // the fist lands on the first enemy in reach, or at the end of the lunge
-                var front = characterBody.corePosition + dir * (characterBody.radius + 1f);
-                bool contact = Fx.Enemies(characterBody, front, row.Radius * 0.6f, 1).Count > 0;
-                if (contact || fixedAge >= lungeEnd) Punch(front);
+                bool stopped = fixedAge < punchAt + HitStop;
+                if (isAuthority && characterMotor)
+                {
+                    characterMotor.moveDirection = Vector3.zero;
+                    if (stopped) characterMotor.velocity = Vector3.zero;
+                }
+                if (anim) anim.enabled = !stopped;
+                if (!stopped) Land();
+                if (fixedAge >= punchAt + HitStop + row.Duration && isAuthority) outer.SetNextStateToMain();
             }
-            if (fixedAge >= row.Duration && isAuthority) outer.SetNextStateToMain();
         }
 
-        void Punch(Vector3 front)
+        void Punch()
         {
             punched = true;
+            punchAt = fixedAge;
             Vfx.Stop(glow, 0.2f);
             if (anim) anim.Gesture("special", 1.4f);
-            var at = front + dir * row.Radius * 0.4f;
+            // the fist lands along the line to the target (up, down or level)
+            var at = characterBody.corePosition + dir * (characterBody.radius + 1f + row.Radius * 0.4f);
             Fx.Sound(row.Id, "hit", at);
-            Fx.Impact(row.Effect, at);
+            Fx.Impact(row.Effect, at, row.Radius, -dir);
             Vfx.Play(row.Vfx, "hit", at, row.Radius, null, at + dir);
             bool wave = row.Extra == "shockwave";
-            if (wave) Vfx.Play(row.Vfx, "wave", at, row.Range, null, at + dir, row.SpreadDeg);
+            // the shockwave cone is twice the fist's radius long (range is the lock-on reach)
+            float waveLength = row.Radius * 2f;
+            if (wave) Vfx.Play(row.Vfx, "wave", at, waveLength, null, at + dir, row.SpreadDeg);
             if (!Server) return;
             var punchedBodies = new HashSet<CharacterBody>();
+            void Smash(HurtBox hb)
+            {
+                var b = hb.healthComponent.body;
+                if (!b || !punchedBodies.Add(b)) return;
+                Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, b.corePosition);
+                Fx.Stun(hb.healthComponent, row.StunDuration);
+                Fx.KnockBack(characterBody, hb.healthComponent, dir, row.Knockback);
+            }
+            // the locked target always takes the fist if it is still in reach
+            if (target && target.healthComponent && target.healthComponent.alive && target.healthComponent.body
+                && Vector3.Distance(target.healthComponent.body.corePosition, at) <= row.Radius + target.healthComponent.body.radius + 1f) Smash(target);
             foreach (var hb in Fx.Enemies(characterBody, at, row.Radius))
             {
                 var b = hb.healthComponent.body;
                 if (!b) continue;
                 // only what is in front of him: a punch, not a stomp
-                var to = b.corePosition - characterBody.corePosition; to.y = 0;
+                var to = b.corePosition - characterBody.corePosition;
                 if (to.sqrMagnitude > 1f && Vector3.Dot(to.normalized, dir) < 0.2f) continue;
-                punchedBodies.Add(b);
-                Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, b.corePosition);
-                Fx.KnockBack(characterBody, hb.healthComponent, dir, row.Knockback);
+                Smash(hb);
             }
             if (!wave) return;
-            // the shockwave: every other enemy in a cone in front (length range, half-angle spreadDeg) takes the same hit
+            // the shockwave: every other enemy in a cone along the punch (half-angle spreadDeg) takes the same hit
             float cos = Mathf.Cos(row.SpreadDeg * Mathf.Deg2Rad);
-            foreach (var hb in Fx.Enemies(characterBody, at, row.Range))
+            foreach (var hb in Fx.Enemies(characterBody, at, waveLength))
             {
                 var b = hb.healthComponent.body;
-                if (!b || punchedBodies.Contains(b)) continue;
-                var to = b.corePosition - at; to.y = 0;
+                if (!b) continue;
+                var to = b.corePosition - at;
                 if (to.sqrMagnitude > 0.25f && Vector3.Dot(to.normalized, dir) < cos) continue;
-                punchedBodies.Add(b);
-                Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, b.corePosition);
-                Fx.KnockBack(characterBody, hb.healthComponent, dir, row.Knockback);
+                Smash(hb);
             }
         }
 
         public override void OnExit()
         {
             Vfx.Stop(glow, 0.2f);
+            Land();
+            if (anim) anim.enabled = true;
             base.OnExit();
         }
 

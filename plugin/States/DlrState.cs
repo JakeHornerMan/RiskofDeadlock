@@ -1,3 +1,4 @@
+using System.Linq;
 using DeadlockOfRain.Sheets;
 using EntityStates;
 using RoR2;
@@ -69,6 +70,32 @@ namespace DeadlockOfRain.States
         {
             var m = Fx.Muzzle(characterBody, left);
             return m ? m.position : GetAimRay().origin;
+        }
+
+        /// <summary>The living enemy closest to the crosshair within range (and angle degrees of the aim), in line of sight; null if none.
+        /// Lock-on moves (Phantom Strike, Haymaker) cast only on a target.</summary>
+        protected HurtBox AimTarget(float range, float angle = 15f)
+        {
+            var aim = GetAimRay();
+            var search = new BullseyeSearch
+            {
+                teamMaskFilter = TeamMask.GetEnemyTeams(teamComponent.teamIndex),
+                filterByLoS = true,
+                searchOrigin = aim.origin,
+                searchDirection = aim.direction,
+                maxDistanceFilter = range,
+                maxAngleFilter = angle,
+                sortMode = BullseyeSearch.SortMode.Angle,
+            };
+            search.RefreshCandidates();
+            search.FilterOutGameObject(gameObject);
+            return search.GetResults().FirstOrDefault(h => h && h.healthComponent && h.healthComponent.alive && h.healthComponent.body);
+        }
+
+        /// <summary>A lock-on move found no target: give the charge back so the key stays ready.</summary>
+        protected void RefundStock()
+        {
+            if (isAuthority && activatorSkillSlot) activatorSkillSlot.AddOneStock();
         }
 
         protected void Sound(string moment) => Fx.Sound(row?.Id, moment, transform.position);

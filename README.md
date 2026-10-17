@@ -10,8 +10,8 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven or Infernus** from Deadlock, using 
   - **Right Click and Shift:** two Deadlock abilities.
   - **R:** a new move from a Deadlock item, melee attack or ability.
   - **Q (equipment):** their Deadlock ultimate. Every hero starts the run holding their own (120 s cooldown, about as strong as the Preon Accumulator). Swap it for another equipment and it stays on the ground; anyone, Commando included, can find the four ults in chests. The pickup is a little figure of the hero.
-  - **Haze:** Twin SMGs, Sleep Dagger, Smoke Bomb, Phantom Strike (blink behind a target, three dagger slashes); Q Bullet Dance. Passive: Fixation (every hit stacks it, crits stack 3, every 10 stacks bursts and splashes nearby enemies).
-  - **Abrams:** Shotgun, Siphon Life (works like a Mired Urn), Shoulder Charge, Haymaker (a lunging heavy punch); Q Seismic Impact (hover, aim the slam, crash down). Passive: Infernal Resilience.
+  - **Haze:** Twin SMGs, Sleep Dagger, Smoke Bomb, Phantom Strike (blink behind a target, three dagger slashes that cut everything around it); Q Bullet Dance. Passive: Fixation (every hit stacks it, crits stack 3, every 10 stacks bursts and splashes nearby enemies).
+  - **Abrams:** Shotgun, Siphon Life (works like a Mired Urn), Shoulder Charge, Haymaker (locks onto an enemy, even one in the air, and rushes into a heavy punch); Q Seismic Impact (hover, aim the slam, crash down). Passive: Infernal Resilience.
   - **Seven:** Shock Rifle, Lightning Ball, Static Charge, Power Surge (his shots arc Tesla lightning); Q Thunderhead (a storm with a Warbanner). Passive: Capacitor (hits build Static that discharges).
   - **Infernus:** Flame Gun, Napalm, Flame Dash (hold to keep going), Torment Pulse (rings of fire); Q Concussive Combustion. Passive: hits build Afterburn and set enemies on fire.
 - The heroes speak: Deadlock voice lines play at the right moments (read from your Deadlock install, like the other sounds).

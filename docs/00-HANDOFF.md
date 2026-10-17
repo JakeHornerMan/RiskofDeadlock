@@ -33,12 +33,13 @@ Before touching anything:
 
 | Item | State |
 |---|---|
-| Version | **0.5.0** (`plugin/Plugin.cs`; voice lines), extractor **1.1.0**. Not published on Melty since 0.2.0 |
+| Version | **0.5.1** (`plugin/Plugin.cs`; playtest feel pass), extractor **1.2.0** (sound volumes read as dB). Not published on Melty since 0.2.0 |
 | Installed build | v0.4.1 + the bench's match/portrait dev code (committed with the page redesign) |
 | Heroes | Haze, Abrams, Seven, Infernus; 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
-| Test | `run_test.sh`: every check passes incl. `voice-lines`, 4/4 heroes (2026-10-17, v0.5.0) |
+| Test | `run_test.sh`: every check passes incl. `voice-lines`, 4/4 heroes (2026-10-17, v0.5.1) |
 | Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, within **±500 %/s**, comparing **means over every bench run** of the current build (`RUNS` in `tools/kit_pages.py`; doc 05 §3.0) |
-| Balance now | Pooled over every run incl. the library (doc 05 §6): Haze +169 and Infernus −242 inside; **Abrams −520 (just below Loader) and Seven +631 (above Artificer)**, not retuned yet, the creator decides |
+| Balance now | v0.5.1 heroes-only run vs the library (doc 05 §3.1): **Haze 6550 vs Commando 1222 (far above: Phantom Strike's area spreads Fixation)**, Abrams 2460 vs Loader 2951 (inside), **Seven 3164 vs Artificer 4013 (below: the bouncing ball leaves the pack)**, Infernus library 1512 vs Engineer 1611 (inside). Not retuned; the creator decides |
+| Bench rule | **Bench our heroes only** (`run_bench.sh 30 <ids>`, the default); vanilla numbers come from `docs/dps-library.json` (creator, 2026-10-17; CLAUDE.md) |
 | Pages | Five claude.ai Artifacts, redesigned (links at the top of doc 06); the overview is shared "anyone with the link" |
 | Voice lines | `design/voice.json` + `Runtime/Voice.cs` (doc 02 §8). Not yet heard in a real run: unselect (teleporter finish), multikill and idle lines; the test only proves select/skill lines play. Release needs a forced re-extract (new voice files) and the recipe check `voice-lines` |
 | Open | RoR2 survivor portraits fail to render (§9); pickup figure size and Haymaker wave vfx not seen in game; the bench is noisy for Loader/Artificer (a steadier multi-run bench would help) |
@@ -174,6 +175,11 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
 - Python 3.11 (this PC) rejects backslashes inside f-string expressions; build such strings in a variable first.
 - The browser tool cannot open `file://` pages, so a local page preview is not possible; check the published page instead.
 - Melty MCP: `consult_melty` once per turn when doing Melty work; never claim an awaiting-review release is live.
+- **Deadlock's sound `volume` is in decibels** (0 = as recorded, negative = quieter). Until extractor 1.2.0 it was used as
+  a linear gain, so every 0 dB-or-quieter event (most ability sounds, Infernus' gun at −1 dB) played at the mixer's 20 %
+  floor. "This sounds weak" is worth checking against the cache's `sounds/sounds.json` volumes first.
+- `run_test.sh` sometimes lands on a **ledge** (hero ~15 m above where the summoned targets fall): nearly every check
+  fails, including moves nobody touched. The stage is random, so run it again; if in doubt, run the previous commit at once.
 
 ---
 
@@ -198,7 +204,18 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: kit-page redesign + per-hero RoR2 match (2026-10-16, done)
+## 9. Last work: v0.5.1 playtest feel pass (2026-10-17, done; balance open)
+
+The creator's playtest list (verbatim in doc 07): Haymaker lock-on rush and heavier hit, Sleep Dagger always visible,
+Phantom Strike 5 m area, Lightning Ball slower/bouncing/10 m with clear strikes, Thunderhead clouds 35 m, Flame Gun
+heavier sound and smoke, Napalm visible bottle. All built and tested (4/4). Found on the way: Deadlock sound volumes are dB
+(extractor 1.2.0 fix; players need a forced re-extract).
+
+**Waiting on the creator:** Haze far above Commando (Phantom Strike's area spreads Fixation; fix idea: Fixation on the
+target only) and Seven below Artificer (the ball bounces on past the pack; idea: bounce only off walls, or slow per bounce).
+Unseen in a real run: the bottle in flight, the 35 m clouds, the new loudness.
+
+## 9b. Earlier: kit-page redesign + per-hero RoR2 match (2026-10-16, done)
 
 **The creator's request (verbatim):** "the structure of the artifact is not good you need to have the top section be a
 profile picture of the character and then stats like health etc (ror stats of character) the list of the ability what

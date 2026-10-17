@@ -2,14 +2,15 @@
 # DPS benchmark (this PC only, dev only): deploy the freshly built plugin, start Risk of Rain 2 with the bench file, wait
 # until every survivor's passes are done, print the results, then close the game and restore the lab (tools/lab_restore.sh).
 #
-# usage: tools/run_bench.sh [seconds-per-pass] [hero-id]
-#   Needs Steam signed in. Writes %LOCALAPPDATA%\DeadlockOfRain\bench.json (removed again at the end) and the results to
+# usage: tools/run_bench.sh [seconds-per-pass] [hero-ids]
+#   Needs Steam signed in. Writes %LOCALAPPDATA%\DeadlockOfRainench.json (removed again at the end) and the results to
 #   build/bench_results.txt. Gives up after 40 minutes.
-#   Each hero is preceded by its RoR2 match (design/stats.json analog: Loader, Artificer, Engineer), measured the same way.
-#   5 + 3 survivors x 6 passes: about 30 minutes with 30 s passes.
-#   With a hero id (haze, abrams, seven, infernus) only Commando, that hero and its match run: about 10 minutes.
-#   ALL=1 benches every playable survivor (the DPS library; ~1 hour per run); REPEAT=n repeats the whole set n times in
-#   one session. tools/dps_library.py turns the results into docs/dps-library.json.
+#   By default ONLY OUR HEROES run (no Commando, no RoR2 matches): the vanilla survivors are stored in docs/dps-library.json
+#   and never re-measured. Compare with the library, then merge: python tools/dps_library.py --add build/bench_results.txt.
+#   hero-ids: comma-separated (e.g. haze,abrams); bench only the heroes whose kit changed. 4 heroes x 6 passes: ~15 minutes.
+#   BASE=1 also runs Commando and each hero's RoR2 match (old behaviour; only if the bench method itself changed).
+#   ALL=1 benches every playable survivor (rebuilds the DPS library; ~1 hour per run); REPEAT=n repeats the whole set n
+#   times in one session. tools/dps_library.py turns the results into docs/dps-library.json.
 #   PORTRAITS=1 also writes studio renders to build/portraits first (tools/portraits.py cuts them out for the kit pages);
 #   PORTRAITS=1 tools/run_bench.sh 0 renders only (about 2 minutes).
 R="/c/Program Files (x86)/Steam/steamapps/common/Risk of Rain 2"
@@ -24,7 +25,8 @@ G=$(powershell -NoProfile -Command "(Get-Process -Name \"Risk of Rain 2\" -Error
 for i in $(seq 1 20); do tasklist | grep -qi "Risk of Rain" || break; sleep 1; done
 rm -f "$L" "$(cygpath -u "$OUT")"
 mkdir -p "$LOCALAPPDATA/DeadlockOfRain"
-printf '{ "out": "%s", "seconds": %s, "only": "%s", "portraits": "%s", "survivors": "%s", "repeat": %s }\n' "${OUT//\\/\\\\}" "$SECS" "$ONLY" "${PDIR//\\/\\\\}" "${ALL:+all}" "${REPEAT:-1}" >"$B"
+MODE=heroes; [ -n "$BASE" ] && MODE=""; [ -n "$ALL" ] && MODE=all
+printf '{ "out": "%s", "seconds": %s, "only": "%s", "portraits": "%s", "survivors": "%s", "repeat": %s }\n' "${OUT//\\/\\\\}" "$SECS" "$ONLY" "${PDIR//\\/\\\\}" "$MODE" "${REPEAT:-1}" >"$B"
 bash "$(dirname "$0")/dev_run.sh" /nonexistent 3 || { rm -f "$B"; exit 1; }
 for i in $(seq 1 40); do tasklist | grep -qi "Risk of Rain" && break; sleep 3; done
 tasklist | grep -qi "Risk of Rain" || { echo "NOT_STARTED (is Steam signed in?)"; rm -f "$B"; bash "$(dirname "$0")/lab_restore.sh" >/dev/null 2>&1; exit 1; }

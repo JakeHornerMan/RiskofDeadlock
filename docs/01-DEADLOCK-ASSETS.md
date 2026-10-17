@@ -36,7 +36,7 @@ Related documents:
 | NLayer (MP3 decoder) | 1.16.0 | `extractor/DeadlockExtract.csproj` |
 | .NET SDK for the extractor | **net10.0**. VRF 20 needs it; net8 does not compile against it. | csproj `TargetFramework` |
 | SharpGLTF, SkiaSharp, ValvePak, ValveKeyValue | transitive deps of VRF | `THIRD-PARTY-NOTICES.txt` |
-| Extractor version | `1.1.0` (`Program.Version`; 1.1.0 added voice lines) | `extractor/Program.cs`; also part of the cache stamp |
+| Extractor version | `1.2.0` (`Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels) | `extractor/Program.cs`; also part of the cache stamp |
 
 A Deadlock update can change asset paths, clip names, mesh names or sound event names. **Section 9** explains how to
 re-validate everything after an update.
@@ -131,7 +131,7 @@ Where every entry comes from:
 | `heroes[].meshes` | `heroes.json` → `meshInclude` | VRF **MeshFilter**: only these mesh names are exported. This drops LODs, alternate costumes, ability props and effect meshes. Mesh names are glTF mesh names (the part after the last `.`). |
 | `heroes[].clips` | `animations.json`: every column **except** `ANIM_RIG_COLUMNS` = {`hero`, `upperBodyBone`, `gunArms`, `gunBone`, `gunHand`, `muzzle`, `muzzleLeft`, `clothParents`}, de-duplicated, `none` dropped | VRF **AnimationFilter**. `aimPose` *is* a clip column (it names a clip). |
 | `images` | `heroes.imageSmall`, `heroes.imageCard`, `heroes.passiveIcon` (unless `none`), `skills.icon` (the equipment ults use their skill's icon), `buffs.icon` (unless `none`) | sorted, unique |
-| `soundEvents` | `sounds.json` columns `cast`, `loop`, `hit`, `end`, `reload` (unless `none`) | sorted, unique |
+| `soundEvents` | `sounds.json` columns `cast`, `loop`, `hit`, `end`, `reload`, `castLayer`, `hitLayer` (unless `none`; the layers, v0.5.1, may be any hero's event, e.g. `Warden.Wpn.Fire` under Infernus' gun) | sorted, unique |
 | `soundEventFiles` | `heroes.soundevents` | **informational only.** The extractor indexes *every* `soundevents/*.vsndevts_c` in the VPK, so cross-file `base` inheritance resolves. |
 
 Counts at v0.4.0: 4 heroes, 32 images, 55 sound events. (0.3.0 **added** two images, the passive icons
@@ -242,7 +242,7 @@ is the vtex path with `.vtex` removed and `/` replaced by `_`, plus `.png`. For 
    `KeyValuesOrNTRO`, and its top-level children are events (`name → KVObject`). Build 6774 has **81 263** events (`extract.log`: "81263 sound events indexed").
 2. For each wanted event:
    - Resolve `vsnd_files` (string or array), following `base` inheritance up to 8 levels.
-   - Resolve `volume` the same way (default 1, clamped 0–4).
+   - Resolve `volume` the same way. It is in **decibels** (0 = as recorded; Infernus' gun is −1, some quiet layers −16), so it is written as the linear gain `10^(dB/20)` (default 0 dB = 1, clamped 0–4). Before extractor 1.2.0 (v0.5.1) the dB number itself was used as the gain, so every event at 0 dB or below played at the plugin's 20 % floor and +2…+4 dB events at 2×.
 3. Decode up to **4 variants** per event:
    - `.vsnd_c` → `Sound.GetSoundStream()`
    - MP3 → WAV with NLayer (16-bit PCM, original rate and channels)

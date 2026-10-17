@@ -29,11 +29,12 @@ namespace DeadlockOfRain
                     case "seven_static": return SevenStatic(moment, at, radius, follow);
                     case "seven_storm": return SevenStorm(moment, at, radius, to);
                     case "infernus_afterburn": return InfernusAfterburn(moment, at, follow);
-                    case "infernus_napalm": return InfernusNapalm(moment, at, radius);
+                    case "infernus_napalm": return InfernusNapalm(moment, at, radius, follow);
                     case "infernus_trail": return InfernusTrail(moment, at, radius, follow);
                     case "infernus_bomb": return InfernusBomb(moment, at, radius, follow);
                     case "infernus_pulse": return InfernusPulse(moment, at, radius, follow);
                     case "haze_phantom": return HazePhantom(moment, at, radius, to);
+                    case "haze_dagger": return HazeDagger(moment, at, follow);
                     case "abrams_haymaker": return AbramsHaymaker(moment, at, radius, follow, to, angle);
                     case "seven_surge": return SevenSurge(moment, at, follow);
                 }
@@ -138,6 +139,8 @@ namespace DeadlockOfRain
         // ------------------------------------------------------------------ Seven: Lightning Ball, Static Charge, Thunderhead
         static readonly Color sevenBlue = new Color(0.5f, 0.83f, 1f), sevenWhite = new Color(0.85f, 0.95f, 1f);
 
+        static float nextBallImpact;
+
         static GameObject SevenBall(string moment, Vector3 at, Transform follow, Vector3? to)
         {
             switch (moment)
@@ -154,8 +157,17 @@ namespace DeadlockOfRain
                     return root;
                 }
                 case "hit":
-                    if (to.HasValue) Bolt(at, to.Value, sevenBlue, 0.3f, 0.12f);
+                {
+                    if (!to.HasValue) return null;
+                    // a clear lightning strike from the ball to the enemy: white core, blue glow, sparks and a flash on it,
+                    // and RoR2's lightning impact (rate-limited, it is bright)
+                    Bolt(at, to.Value, sevenWhite, 0.25f, 0.16f, 10, 0.6f);
+                    Bolt(at, to.Value, sevenBlue, 0.7f, 0.12f, 8, 0.9f);
+                    Burst(to.Value, "mat_spark", sevenWhite, 8, 0.3f, 7f, 0.07f);
+                    Flash(to.Value, sevenBlue, 5f, 0.12f, 2f);
+                    if (Time.time >= nextBallImpact) { nextBallImpact = Time.time + 0.1f; Fx.Impact("storm_strike", to.Value); }
                     return null;
+                }
                 case "end":
                     Burst(at, "mat_glow", sevenWhite, 3, 0.3f, 0f, 5f);
                     Burst(at, "mat_spark", sevenBlue, 40, 0.5f, 14f, 0.1f);
@@ -203,7 +215,7 @@ namespace DeadlockOfRain
 
         static GameObject SevenStorm(string moment, Vector3 at, float radius, Vector3? to)
         {
-            const float cloudHeight = 15f;
+            const float cloudHeight = 35f;
             var stormDark = new Color(0.07f, 0.08f, 0.12f, 0.95f);
             switch (moment)
             {
@@ -279,6 +291,15 @@ namespace DeadlockOfRain
 
         static GameObject InfernusAfterburn(string moment, Vector3 at, Transform follow)
         {
+            if (moment == "muzzle")
+            {
+                // every Flame Gun shot: a hot flash and a puff of smoke rolling off the muzzle
+                Burst(at, "mat_glow", fireYellow, 1, 0.06f, 0f, 0.9f);
+                Burst(at, "mat_fire_puff", fireOrange, 3, 0.15f, 3f, 0.35f, shapeRadius: 0.05f);
+                Burst(at, "mat_dust", new Color(0.32f, 0.28f, 0.25f, 0.45f), 2, 0.9f, 1.2f, 0.6f, shapeRadius: 0.1f, upward: true);
+                Flash(at, fireOrange, 4f, 0.06f, 2f);
+                return null;
+            }
             var body = follow ? follow.GetComponent<CharacterBody>() : null;
             if (!body) return null;
             switch (moment)
@@ -299,14 +320,26 @@ namespace DeadlockOfRain
             return null;
         }
 
-        static GameObject InfernusNapalm(string moment, Vector3 at, float radius)
+        static GameObject InfernusNapalm(string moment, Vector3 at, float radius, Transform follow)
         {
             switch (moment)
             {
                 case "loop":
                 {
-                    // the flask in flight: a hot glowing core, a fire trail and drips
-                    var root = Root(at, 0f, null);
+                    // the flask in flight, riding on the lob: Molotov's bottle (a glowing ball if it can't load), a hot core,
+                    // a fire trail and drips
+                    var root = Root(at, 0f, follow);
+                    var bottle = Fx.Ghost("flask", at, Quaternion.identity);
+                    if (!bottle)
+                    {
+                        bottle = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        Object.Destroy(bottle.GetComponent<Collider>());
+                        bottle.transform.localScale = Vector3.one * 0.45f;
+                        bottle.GetComponent<Renderer>().sharedMaterial = Mat("mat_glow", fireOrange);
+                    }
+                    bottle.transform.SetParent(root.transform, false);
+                    bottle.transform.localPosition = Vector3.zero;
+                    bottle.AddComponent<Spin>().DegPerSec = 540f;
                     Particles(root, "mat_glow", fireYellow, rate: 30, life: 0.15f, speed: 0f, size: 0.9f);
                     Particles(root, "mat_fire_large", fireOrange, rate: 50, life: 0.45f, speed: 0.5f, size: 0.9f, world: true);
                     Trail(root, fireOrange, 0.5f, 0.3f);
@@ -451,6 +484,18 @@ namespace DeadlockOfRain
             return null;
         }
 
+        /// <summary>Sleep Dagger in flight: a violet glow and a pink trail that always show, so the throw is seen even when the
+        /// knife model is small or fails to load.</summary>
+        static GameObject HazeDagger(string moment, Vector3 at, Transform follow)
+        {
+            if (moment != "loop") return null;
+            var root = Root(at, 0f, follow);
+            Particles(root, "mat_glow", hazeViolet, rate: 40, life: 0.12f, speed: 0f, size: 0.8f);
+            Trail(root, hazePink, 0.35f, 0.25f);
+            Light(root, hazeViolet, 6f, 2.5f, Vector3.zero);
+            return root;
+        }
+
         /// <summary>A bright curved cut facing the camera that fades fast.</summary>
         static void Slash(Vector3 at, Color c, float size, float rollDeg)
         {
@@ -500,7 +545,10 @@ namespace DeadlockOfRain
                     Burst(at, "mat_glow", abramsRed, 3, 0.2f, 0f, radius);
                     Burst(at + Vector3.down * 0.8f, "mat_dust", abramsDust, 10, 1.2f, 4f, 2f, shapeRadius: 1f, flat: true);
                     Flash(at, abramsRed, radius * 3f, 0.3f, 7f);
-                    Shake(at, radius * 4f, 2.5f, 0.35f);
+                    Flash(at, new Color(1f, 0.85f, 0.6f), radius * 2f, 0.1f, 12f);
+                    Ring(at, new Color(1f, 0.8f, 0.5f), 0.3f, radius * 2f, 0.22f, 0.3f, true);
+                    Burst(at, "mat_fire_puff", abramsRed, 10, 0.4f, 10f, 0.8f, shapeRadius: 0.3f);
+                    Shake(at, radius * 6f, 4.5f, 0.45f);
                     return null;
                 }
                 case "wave":
@@ -771,6 +819,8 @@ namespace DeadlockOfRain
             foreach (var ps in go.GetComponentsInChildren<ParticleSystem>()) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             foreach (var l in go.GetComponentsInChildren<Light>()) { var f = l.gameObject.AddComponent<FadeLight>(); f.Life = 0.3f; f.From = l.intensity; }
             foreach (var lr in go.GetComponentsInChildren<LineRenderer>()) lr.enabled = false;
+            // solid models riding on the visual (Napalm's bottle) vanish with the thing they belong to
+            foreach (var mr in go.GetComponentsInChildren<MeshRenderer>()) mr.enabled = false;
             var life = go.GetComponent<VfxLife>();
             if (life) { life.Following = false; }
             Object.Destroy(go, linger);

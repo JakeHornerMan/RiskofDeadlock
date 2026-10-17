@@ -273,3 +273,44 @@ check `voice-lines`, docs 01/02/03, README, CLAUDE.md.
 - Players' caches must re-extract: the extractor version is in the cache stamp, but Melty skips setup when `ready.json` exists
   (doc 03 §10).
 - Add `voice-lines` to the recipe's checks.
+
+### 2026-10-17 · playtest feel pass, sound volume fix, heroes-only bench · v0.5.1
+**Request (verbatim):** "the punch on abhrams is a biut weird can it take the direction and make sure it doesnt hit into
+the floor. have there abe a really quick run and snap to the enemy when a punch is selected on, even if the enemy is in the
+air pls just have them fly up oto around let say 15ish meters... the main problem was them slaping into the floor and
+wasting the move. also make the hit more impact ful maybe take some aniimation and add more vfx / for haze please make sure
+the sleep dagger is consistant, I notices I didn't see a projectile a few times / also for phantom strike plase keep the
+logic the sam I love the snap, but maybe make it a 5 meter aoe attackso it will kill multiple / ok for seven we need work on
+the m2 lightning ball may make the speed 75% and let the ball bounce off surfaces but travel through enemys, no also maybe
+increase it range of effective ness to like 10 meteres sphere around it and clear lighting strikes hitting the enemys close
+by. for the ult make the clouds go a lot highter / Infernum I want =the m1 gun to come across more impact ful it mostly the
+sound add some smokey effect or something! ffor the m2 bottle throw I want to see a projectile fly fomr the infernum
+character and go toward the targeted  area, just reuse a simple object doesn't need to be accurate" + "aks questions".
+Mid-work: "why are u running a teston base characters we already collected this data, justrun tests on new characters and
+compare to our collected data. add thisnto claude .md"
+**Questions asked → answers:** Haymaker target → "Lock only; no target, no punch"; lock range → 20 m; ball speed
+"75%" → 75 % of now (slower); impact → hit-stop + shake, bigger impact VFX, heavier hit sound (no faster animation);
+cloud height → 35 m; Flame Gun → louder + heavier layer; balance → bench once and report only.
+**Done:**
+- Haymaker (`HeavyMelee`): lock-on via shared `DlrState.AimTarget` (Phantom Strike uses it too), stock refunded without a
+  target, 0.2 s wind-up, gravity-free rush at 45 m/s steering at the target, punch along the 3D line, 0.08 s hit-stop,
+  Loader's fist impact (`punch_impact`), bigger shake and flashes, `hitLayer` Abrams.Charge.Wall.Impact.
+- Sleep Dagger thrown from the aim origin (the hand inside a wall/floor killed it unseen), thrown on exit if cut short,
+  new `haze_dagger` glow and trail. Phantom Strike cuts hit every enemy within 5 m.
+- Lightning Ball 10.5 m/s, radius 10, bounces (`Vector3.Reflect`), clear strikes to each enemy. Thunderhead clouds 35 m.
+- Flame Gun: `castLayer` Warden.Wpn.Fire, `gain` 1.2, muzzle flash and smoke (`muzzle` vfx moment). Napalm: Molotov's
+  bottle (`flask`) rides on the lob (the old flask visual never followed the lob: `Root(at, 0, null)`).
+- Sound sheet columns `castLayer`, `hitLayer`, `gain`. **Extractor 1.2.0:** Deadlock's `volume` is dB; it was used as a
+  gain, so every 0 dB-or-quieter sound (Infernus' gun at −1 dB) played at the 20 % floor — the real cause of the weak gun.
+- `run_bench.sh` benches our heroes only by default (`survivors: heroes`, comma-separated ids); pages and
+  `dps_library.py` take vanilla numbers from `docs/dps-library.json`; CLAUDE.md rule "Never re-bench the base characters".
+**Results:** `run_test.sh` every check passes, 4/4 heroes (two earlier runs landed on a ledge spot and failed everything;
+v0.5.0 on the same day passed, then v0.5.1 passed). Heroes-only bench (doc 05 §3.1): Haze 6550 vs Commando 1222 (Phantom
+Strike alone 4139: the area spreads Fixation and the bursts chain), Abrams 2460 vs Loader 2951 (inside), Seven 3164 vs
+Artificer 4013 (ball 1652 → 390: it bounces past the pack). Not retuned, per the creator.
+**Not done / open:** Haze far above and Seven below the band: the creator chooses fixes (Fixation on the target only;
+ball bounces only off walls or slows). Not seen in play: the flask in flight, the clouds at 35 m, how loud the new sound
+levels sit. Players need a forced re-extract (extractor 1.2.0).
+**Lessons:** Deadlock sound volumes are dB; a full bench re-measured stored vanilla numbers (stopped at the creator's
+word); `run_test.sh` can land on a ledge spot.
+

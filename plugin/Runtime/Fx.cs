@@ -84,13 +84,16 @@ namespace DeadlockOfRain
             var row = Sheet.Sound(skillId);
             if (row == null) return;
             string ev = moment == "cast" ? row.Cast : moment == "loop" ? row.Loop : moment == "hit" ? row.Hit : moment == "end" ? row.End : row.Reload;
-            DeadlockAudio.Play(ev, at);
+            DeadlockAudio.Play(ev, at, false, row.Gain);
+            // the heavier layer under the cast or hit (castLayer / hitLayer)
+            string layer = moment == "cast" ? row.CastLayer : moment == "hit" ? row.HitLayer : "none";
+            if (layer != "none") DeadlockAudio.Play(layer, at, false, row.Gain);
         }
 
         public static int Loop(string skillId, Vector3? at = null)
         {
             var row = Sheet.Sound(skillId);
-            return row == null ? 0 : DeadlockAudio.Play(row.Loop, at, true);
+            return row == null ? 0 : DeadlockAudio.Play(row.Loop, at, true, row.Gain);
         }
 
         /// <summary>Enemies (alive, other team) within radius, closest first.</summary>

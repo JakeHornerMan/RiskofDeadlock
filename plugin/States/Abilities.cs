@@ -24,12 +24,24 @@ namespace DeadlockOfRain.States
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (!thrown && fixedAge >= dur * 0.4f)
-            {
-                thrown = true;
-                if (Server) DlrProjectile.Launch(characterBody, row, MuzzlePos(), GetAimRay().direction);
-            }
+            if (!thrown && fixedAge >= dur * 0.4f) Throw();
             if (fixedAge >= dur && isAuthority) outer.SetNextStateToMain();
+        }
+
+        void Throw()
+        {
+            thrown = true;
+            // from the aim origin, not the hand: a hand inside a wall or the floor (aiming down, hugging cover) made the
+            // dagger hit the world on its first frame and vanish unseen
+            var aim = GetAimRay();
+            if (Server) DlrProjectile.Launch(characterBody, row, aim.origin, aim.direction);
+        }
+
+        public override void OnExit()
+        {
+            // cut short before the throw (another skill, a stun): the dagger still flies, the cooldown is already spent
+            if (!thrown && row != null) Throw();
+            base.OnExit();
         }
     }
 

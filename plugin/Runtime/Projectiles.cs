@@ -6,11 +6,11 @@ using UnityEngine;
 namespace DeadlockOfRain
 {
     /// <summary>Server-side simulated projectile for Sleep Dagger (hit once: damage + sleep) and Lightning Ball
-    /// (flies through enemies, stops on a wall, and shocks everything around it until its lifetime ends).</summary>
+    /// (flies through enemies, bounces off walls and floors, and shocks everything around it until its lifetime ends).</summary>
     public sealed class DlrProjectile : MonoBehaviour
     {
         CharacterBody owner; SkillRow row; Vector3 dir; float travelled, age, nextTick;
-        bool stuck; GameObject ghost, vfx; int loop;
+        GameObject ghost, vfx; int loop;
         // extra "pierce": the enemies this projectile has already gone through
         HashSet<HealthComponent> pierced;
 
@@ -32,7 +32,6 @@ namespace DeadlockOfRain
             float dt = Time.fixedDeltaTime;
             age += dt;
             bool orb = row.Kind == "projectile_orb";
-            if (!stuck)
             {
                 float step = row.Speed * dt;
                 var pos = transform.position;
@@ -50,16 +49,18 @@ namespace DeadlockOfRain
                         if (pierced.Add(hb.healthComponent)) HitEnemy(hb, hit.point);
                         transform.position += dir * step;
                     }
+                    else if (orb)
+                    {
+                        // the orb bounces off the world: stop where the sphere touched, fly on along the reflection
+                        transform.position = pos + dir * hit.distance + hit.normal * 0.05f;
+                        dir = Vector3.Reflect(dir, hit.normal).normalized;
+                    }
                     else
                     {
                         transform.position = hit.point;
-                        if (!orb)
-                        {
-                            if (enemy) HitEnemy(hb, hit.point);
-                            Destroy(gameObject);
-                            return;
-                        }
-                        stuck = true;
+                        if (enemy) HitEnemy(hb, hit.point);
+                        Destroy(gameObject);
+                        return;
                     }
                 }
                 else transform.position += dir * step;

@@ -198,7 +198,8 @@
     "Mods.Tech.TormentPulse.Proc",
     "Seven.Wpn.Fire",
     "Seven.Wpn.Impact",
-    "Seven.Wpn.Reload.Start"
+    "Seven.Wpn.Reload.Start",
+    "Warden.Wpn.Fire"
   ],
   "soundEventFiles": [
     "soundevents/hero/abrams.vsndevts",

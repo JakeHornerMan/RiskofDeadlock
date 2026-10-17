@@ -15,7 +15,7 @@ OUT = os.path.join(ROOT, 'build', 'pages')
 IMG = os.path.join(OUT, 'img')
 os.makedirs(OUT, exist_ok=True)
 E = html.escape
-VERSION = 'v0.4.2'
+VERSION = 'v0.5.1'
 BAND = 500  # balanced = within ±500 %/s of the RoR2 match (creator, 2026-10-16)
 
 def sheet(name):
@@ -57,18 +57,22 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
- 'haze': [('v0.4.1', ['Twin SMGs 45 → 55 % per bullet', 'Fixation bursts every 10 stacks (was 20) for 300 % (was 200), splashing every enemy within 6 m',
+ 'haze': [('v0.5.1', ['Phantom Strike: every cut hits every enemy within 5 m of the target', 'Sleep Dagger always shows: thrown from the aim with a violet glow and trail']),
+          ('v0.4.1', ['Twin SMGs 45 → 55 % per bullet', 'Fixation bursts every 10 stacks (was 20) for 300 % (was 200), splashing every enemy within 6 m',
                       'Sleep Dagger: 6 s (was 10), 500 % (was 350), pierces every enemy in its line', 'Bullet Dance fires at every enemy in range at once']),
           ('v0.4.0', ['Bullet Dance moves to Q as an equipment; new R: Phantom Strike'])],
- 'abrams': [('v0.4.2', ['Damage only, to match Loader: Shotgun 45 → 52 % per pellet, Siphon Life 250 → 450 %/s, Shoulder Charge 500 → 1600 %, Haymaker 900 → 2400 %']),
+ 'abrams': [('v0.5.1', ['Haymaker locks onto the enemy you aim at (20 m, even in the air) and rushes straight at it; no target, no punch', 'Heavier hit: hit-stop, Loader’s fist impact, a strong shake and a deeper thud']),
+            ('v0.4.2', ['Damage only, to match Loader: Shotgun 45 → 52 % per pellet, Siphon Life 250 → 450 %/s, Shoulder Charge 500 → 1600 %, Haymaker 900 → 2400 %']),
             ('v0.4.1', ['Haymaker: a shockwave cone (6 m, 30° each side) hits everything in front', 'Shoulder Charge 350 → 500 % per enemy',
                         'Seismic Impact radius 12 → 18 m']),
             ('v0.4.0', ['Seismic Impact moves to Q as an equipment and slams on Left Click; new R: Haymaker'])],
- 'seven': [('v0.4.2', ['To match Artificer: Shock Rifle 48 → 60 % per bullet; Lightning Ball 16 → 8 s, Static Charge 16 → 6 s, Power Surge 30 → 10 s']),
+ 'seven': [('v0.5.1', ['Lightning Ball: slower (14 → 10.5 m/s), shocks within 10 m (was 6), bounces off walls and floors, a clear strike to each enemy', 'Thunderhead clouds 15 → 35 m up']),
+           ('v0.4.2', ['To match Artificer: Shock Rifle 48 → 60 % per bullet; Lightning Ball 16 → 8 s, Static Charge 16 → 6 s, Power Surge 30 → 10 s']),
            ('v0.4.1', ['Cooldowns only, no damage cuts: Lightning Ball 6 → 16 s, Static Charge 7 → 16 s, Power Surge 14 → 30 s',
                        'Shock Rifle fix: the gun froze after a magazine (29 rounds in bursts of 3)']),
            ('v0.4.0', ['Thunderhead moves to Q as an equipment; new R: Power Surge with RoR2 Tesla arcs'])],
- 'infernus': [('v0.4.1', ['Torment Pulse 120 → 50 % per pulse', 'Flame Gun 40 → 50 % per bullet']),
+ 'infernus': [('v0.5.1', ['Flame Gun: louder, with a heavier shot layered under his own, and muzzle smoke and a flash', 'Napalm: a visible bottle flies from him to the target']),
+              ('v0.4.1', ['Torment Pulse 120 → 50 % per pulse', 'Flame Gun 40 → 50 % per bullet']),
               ('v0.4.0', ['Concussive Combustion moves to Q as an equipment; new R: Torment Pulse; all his fire rebuilt from RoR2 fire materials'])],
 }
 # "all" (main moves together, %/s) from every bench run of the current build, per survivor; the balance verdict uses the
@@ -76,21 +80,21 @@ CHANGES = {
 # (doc 05 §3.0 lists them); reset a hero's list when its kit changes.
 RUNS = {
  'Commando': [1298, 1304, 1255, 1064, 1144, 1244, 1261],
- 'DeadlockHaze': [1315, 1478, 1056, 1236],
+ 'DeadlockHaze': [],  # v0.5.1 kit change: the 0.4.2 runs no longer count
  'Loader': [2747, 2135, 1769, 5241],
- 'DeadlockAbrams': [1990, 3026],
+ 'DeadlockAbrams': [],
  'Mage': [2790, 4507, 1526, 4028, 4294, 4482],
- 'DeadlockSeven': [3661, 4337],
+ 'DeadlockSeven': [],
  'Engi': [1268, 1555, 1641],
  'DeadlockInfernus': [920, 1226, 1161],
 }
 
 ANALYSIS = {
- 'haze': ['Unchanged in 0.4.2: with the ±500 band she is inside. Her SMGs alone (about 900–1,000) beat Double Tap (603) because Fixation bursts splash the bunched pack; against one target she is closer to Commando.'],
- 'abrams': ['0.4.2 raised his damage only (no cooldown changes): Shotgun 45 → 52 % per pellet, Siphon Life 250 → 450 %/s, Shoulder Charge 500 → 1600 %, Haymaker 900 → 2400 %.',
-            'Loader is the least steady survivor in the test (1,769 to 5,241 across four runs: his Charged Gauntlet and Pylon sometimes kill pack members, and the bench refills them), so the verdict uses the averages.'],
- 'seven': ['0.4.2: Shock Rifle 48 → 60 % per bullet; cooldowns Lightning Ball 16 → 8 s, Static Charge 16 → 6 s, Power Surge 30 → 10 s.',
-           'He is very sensitive to Lightning Ball’s cooldown: below about 8 s the balls overlap (each lives 5 s), every enemy stays charged and Capacitor discharges chain through the pack (5,300–5,650 at 6–7 s, against 1,893 at 8 s). Keep it at 8 s or more.'],
+ 'haze': ['0.5.1 made Phantom Strike cut every enemy within 5 m of the target. Every cut also gives each of them 5 Fixation, so the whole pack reaches the 10-stack burst together and the bursts splash one another: Phantom Strike alone went from 375 to 4,139 %/s, and she is far above Commando. Not retuned yet: the fix is the creator’s call (Fixation on the target only, or fewer stacks to the others).'],
+ 'abrams': ['0.5.1: Haymaker locks onto the enemy you aim at and rushes to it, even in the air. It does about what the old lunge did (1,760 %/s alone), and he stays just inside Loader’s band.',
+            'Loader is the least steady survivor in the test (2,059 to 3,837 across the library’s runs), so the verdict uses the averages.'],
+ 'seven': ['0.5.1: the Lightning Ball now bounces off walls and floors. In the still-pack test it bounces off the floor and flies on past the pack instead of settling in it, so it fell from 1,652 to 390 %/s and he dropped below Artificer. Not retuned yet: bouncing only off walls, or slowing on each bounce, would keep it in the fight.',
+           'Keep Lightning Ball at 8 s or more: below that the balls overlap and Capacitor discharges chain through the pack.'],
  'infernus': ['Unchanged in 0.4.2: inside the ±500 band. Engineer’s grenades carry him; his turrets land few hits in 30 s against a still pack.',
               'Engineer’s damage stat is 14 against Infernus’ 12, so in raw damage per second Engineer is about 17 % further ahead; %/s removes that difference.'],
 }
@@ -111,9 +115,18 @@ for line in (open(bench_path, encoding='utf-8') if os.path.exists(bench_path) el
 
 LIB_PATH = os.path.join(ROOT, 'docs', 'dps-library.json')
 LIBRARY = json.load(open(LIB_PATH, encoding='utf-8')) if os.path.exists(LIB_PATH) else None
+# survivors not in this bench file (the vanilla matches, by default) take their base stats from the library
+for _who, _e in (LIBRARY or {}).get('survivors', {}).items():
+    _s = _e.get('stats')
+    if _who not in BSTATS and _s:
+        BSTATS[_who] = dict(name=_e.get('name', _who), health=_s['health'], lhealth=_s['healthPerLevel'], regen=_s['regen'], lregen=_s['regenPerLevel'],
+                            armor=_s['armor'], damage=_s['damage'], ldamage=_s['damagePerLevel'], speed=_s['moveSpeed'], jumps=_s['jumps'], crit=_s['crit'])
 
 def dps(who, mode):
-    return BENCH.get(who, {}).get(mode, {}).get('dps')
+    """This bench file's number, else the stored library's mean (the vanilla survivors are never re-benched)."""
+    d = BENCH.get(who, {}).get(mode, {}).get('dps')
+    if d is None: d = (LIBRARY or {}).get('survivors', {}).get(who, {}).get('dps', {}).get(mode, {}).get('mean')
+    return d
 
 def all_runs(who):
     """Every "all" run of the current build: the hand-kept RUNS plus the stored library's runs."""

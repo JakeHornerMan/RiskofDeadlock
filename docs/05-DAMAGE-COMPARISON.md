@@ -14,7 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
-| – | – | nothing open | – | – |
+| – | – | nothing open (the v0.5.1 Phantom Strike, Haymaker and Lightning Ball flags were covered by the 2026-10-17 heroes-only run, §3.1) | – | – |
 
 ## 1. The question
 The creator's hypothesis: **Commando, using every ability the moment it is ready while shooting constantly for 30 s
@@ -49,7 +49,7 @@ Since v0.4.1 (creator's decisions):
 | Passes | **all** (main moves together), then **M1 / M2 / Shift / R** each alone, then **equipment** | "all" is the balance number |
 | Runs | one run of each pass | expect roughly ±10 % noise (random stage, random crits, random targets) |
 
-`tools/run_bench.sh [seconds] [hero]` with a hero id runs only Commando and that hero (about 7 minutes), used to tune Seven.
+`tools/run_bench.sh [seconds] [heroes]` runs **our heroes only** by default (comma-separated ids, e.g. `haze,abrams`): Commando and every vanilla survivor are stored in `docs/dps-library.json` and are never re-measured (the creator, 2026-10-17: "we already collected this data, justrun tests on new characters and compare to our collected data"). `BASE=1` adds Commando and the matches, `ALL=1` every survivor; only when the bench method itself changes.
 
 ## 3. Results
 
@@ -87,6 +87,24 @@ Creator's decisions (2026-10-16):
   Below ~8 s Lightning Ball the balls (5 s each) overlap, every enemy stays charged and Capacitor discharges chain through
   the pack. **Keep Lightning Ball at 8 s or more.**
 - **Haze and Infernus:** no changes (inside ±500).
+
+### 3.1 v0.5.1 playtest feel pass (heroes-only run, 2026-10-17; reported, not retuned, by the creator's choice)
+Matches are the stored library means (3 runs each). One run per hero; the 0.4.2 hero runs no longer count.
+
+| Hero | %/s | M1 / M2 / Shift / R alone | RoR2 match (library) | Gap | Verdict (±500) |
+|---|---|---|---|---|---|
+| Haze | **6550** | 554 / 100 / 0 / **4139** (was 375) | Commando 1222 | +5328 | **far above** |
+| Abrams | **2460** | 593 / 720 / 1120 / 1760 | Loader 2951 | −491 | inside (just) |
+| Seven | **3164** | 554 / **390** (was 1652) / 705 / 0 | Artificer 4013 | −849 | **below** |
+| Infernus | not re-run (no damage change) | – | Engineer 1611 | library 1512: −99 | inside |
+
+- **Haze:** Phantom Strike's 5 m area gives every enemy around the target 5 Fixation per cut (15 per cast), so the whole
+  pack reaches the 10-stack burst together and the 300 % bursts splash one another. Options: Fixation on the target only,
+  or fewer stacks to the others.
+- **Seven:** the bouncing ball no longer settles in the pack: it bounces off the floor and flies on past it (it used to
+  stop at the first surface inside the pack and shock it for 5 s). Options: bounce only off walls (roll along the floor),
+  or lose speed on each bounce.
+- **Abrams:** the lock-on Haymaker does about what the lunge did (1760 vs 1680 %/s alone).
 
 Each move alone in the last full run (%/s, hero vs match):
 

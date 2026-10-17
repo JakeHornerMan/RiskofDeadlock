@@ -55,6 +55,11 @@ Deadlock's assets from the player's own install; nothing from either game ships.
   **and** adds a row to the "Retest needed" table in `docs/05-DAMAGE-COMPARISON.md` §0, in the same commit. After
   `bash tools/run_bench.sh`, refresh the DPS in docs 05 and 06 and clear the flags that run covered. Visual-only changes need no flag.
   Then update `tools/kit_pages.py`, run it, and republish the five pages to their existing links (listed at the top of doc 06).
+- **Never re-bench the base characters.** Commando and every vanilla RoR2 survivor (the heroes' matches included) are
+  stored in `docs/dps-library.json` and never change. Bench only the heroes whose kit changed or that are new
+  (`bash tools/run_bench.sh 30 haze,abrams`; heroes-only is the default), compare with the stored numbers, then merge with
+  `python tools/dps_library.py --add build/bench_results.txt` (bump its `VERSION` so the changed heroes' old runs drop).
+  `BASE=1` / `ALL=1` re-measure vanilla survivors only if the bench method itself changes, and only after asking the creator.
 - Every skill row needs an `expect` list. A skill must measurably affect an enemy or the player, and `tools/run_test.sh` checks it in game.
 
 ## Architecture (big picture)
@@ -88,7 +93,7 @@ python tools/gen.py                      # preflight + generate code/manifest (p
 dotnet build plugin -c Release           # plugin DLL (other PC: -p:RoR2Dir="<RoR2 folder>")
 bash tools/run_test.sh [checks-file]     # full in-game test on this PC (Steam must be signed in; ~6-7 min)
 bash tools/lab_restore.sh                # restore the PC the way Melty set it up (closes the game)
-bash tools/run_bench.sh [seconds]        # DPS benchmark vs Commando (docs/05); closes the game itself
+bash tools/run_bench.sh [seconds] [heroes]  # DPS bench of our heroes only (vanilla numbers come from docs/dps-library.json); closes the game itself
 python tools/package.py <version>        # release zip in build/
 python tools/dlm_pose.py <hero> [frame] [clip-substring]   # where each clip points the gun
 ```

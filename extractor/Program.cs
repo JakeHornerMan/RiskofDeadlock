@@ -19,7 +19,7 @@ namespace DeadlockExtract;
 
 public static class Program
 {
-    public const string Version = "1.1.0";
+    public const string Version = "1.2.0";
     static StreamWriter? log;
 
     public static int Main(string[] args)
@@ -229,7 +229,10 @@ public static class Program
         foreach (var name in wanted)
         {
             var files = Resolve(events, name, "vsnd_files", 0);
-            float volume = ResolveFloat(events, name, "volume", 0) ?? 1f;
+            // Deadlock's "volume" is in decibels (0 = as recorded, -1 a touch quieter, +2 louder); the plugin mixes with a
+            // linear gain, so convert (before 1.2.0 the dB number was used as the gain, and every event at 0 dB or below
+            // played at the mixer's 20 % floor)
+            float volume = MathF.Pow(10f, (ResolveFloat(events, name, "volume", 0) ?? 0f) / 20f);
             if (files.Count == 0) { Log($"  sound event {name}: no vsnd files"); continue; }
             var outFiles = new List<string>();
             foreach (var f in files.Take(4))

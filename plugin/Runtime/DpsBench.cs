@@ -22,10 +22,12 @@ namespace DeadlockOfRain
     {
         static string outFile;
         static float seconds = 30f;
-        // optional "only": one hero id; the bench then runs Commando, that hero and its RoR2 match only (for quick tuning)
+        // optional "only": hero ids, comma-separated; the bench then runs those heroes only (plus Commando and their RoR2
+        // matches unless "survivors" is "heroes")
         static string only = "";
         static readonly HashSet<string> ReleasePrimary = new HashSet<string> { "CaptainBody" };
-        // optional "survivors": "all" = every playable survivor (the DPS library, docs/dps-library.json), else Commando + heroes + matches
+        // optional "survivors": "all" = every playable survivor (the DPS library, docs/dps-library.json); "heroes" = our heroes
+        // only, no Commando or matches (they are stored in the library, so they are never re-measured); else Commando + heroes + matches
         static string survivorsMode = "";
         // optional "repeat": how many times the whole set of passes runs in this session (each run is headed "run <k>")
         static int repeat = 1;
@@ -210,7 +212,7 @@ namespace DeadlockOfRain
             GlobalEventManager.onServerDamageDealt += OnDamage;
             var master = user.cachedMaster;
             var pcmc = master.GetComponent<PlayerCharacterMasterController>();
-            var survivors = new List<string> { "CommandoBody" };
+            var survivors = survivorsMode == "heroes" ? new List<string>() : new List<string> { "CommandoBody" };
             if (survivorsMode == "all")
             {
                 // every survivor this run can use: not hidden, and its expansion (DLC) enabled in this run
@@ -227,7 +229,8 @@ namespace DeadlockOfRain
             else
                 foreach (var h in HeroRow.All)
                 {
-                    if (!Survivors.Bodies.ContainsKey(h.Id) || only != "" && only != h.Id) continue;
+                    if (!Survivors.Bodies.ContainsKey(h.Id) || only != "" && !only.Split(',').Contains(h.Id)) continue;
+                    if (survivorsMode == "heroes") { survivors.Add(Survivors.Bodies[h.Id].name); continue; }
                     var match = StatRow.All.FirstOrDefault(r => r.Hero == h.Id)?.Analog;
                     if (!string.IsNullOrEmpty(match) && match != "none" && !survivors.Contains(match) && BodyCatalog.FindBodyPrefab(match)) survivors.Add(match);
                     survivors.Add(Survivors.Bodies[h.Id].name);
