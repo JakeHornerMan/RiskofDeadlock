@@ -88,7 +88,7 @@ Three pieces, linked by generated data:
 - **Voice lines:** `design/voice.json` maps each hero's Deadlock dialogue groups (`sounds/vo/<group>_NN`) to triggers
   (select, unselect, skill, multikill, idle); the extractor exports them as `vo:<group>` events and `Runtime/Voice.cs` plays
   them for the local hero (an ult item speaks with its own hero's voice). Never list the lines on the pages.
-- **Test mode** (`Runtime/MeltyTest.cs`) activates only when `%LOCALAPPDATA%\Melty\test\deadlock-of-rain.json` exists;
+- **Test mode** (`Runtime/MeltyTest.cs`) activates only when `%LOCALAPPDATA%\Melty\test\risk-of-deadlock-2.json` (Melty, slug since the rename) or `deadlock-of-rain.json` (our tools) exists;
   it runs each hero's skills on a fixed test spot and checks them against their `expect` lists.
 - **Co-op** (`Runtime/Net.cs`, doc 02 §7.7): skill states run on every machine, so play sounds and visuals in the state; damage,
   buffs and stuns only on the server; movement and bullets only on the owner (`isAuthority`). Code that runs on the server

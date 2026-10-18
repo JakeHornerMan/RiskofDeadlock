@@ -69,7 +69,7 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
    - `Equipment.Init()` subscribes `CharacterBody.onBodyStartGlobal` (starting equipment) and `Run.onRunStartGlobal`.
    - `Buffs.InitHooks()` subscribes the Infernal Resilience heal-back. The other buff effects live in the Harmony patches.
    - `DeadlockAudio.Init()` loads `sounds.json` and starts the mixer thread.
-   - `MeltyTest.Init()` activates only if `%LOCALAPPDATA%\Melty\test\deadlock-of-rain.json` exists.
+   - `MeltyTest.Init()` activates only if `%LOCALAPPDATA%\Melty\test\risk-of-deadlock-2.json` (Melty's, named after the listing slug) or `deadlock-of-rain.json` (written by our tools) exists.
 2. **`DeadlockContentProvider.LoadStaticContentAsync`**, during RoR2's content loading. If the cache is ready it runs
    `Survivors.Build()` (an IEnumerator, stepped while reporting progress), then adds to the `ContentPack`:
    `bodyPrefabs`, `survivorDefs`, `skillDefs`, `skillFamilies`, `entityStateTypes` (every non-abstract EntityState in our
@@ -561,7 +561,7 @@ Private members we touch by reflection, which **can break on a RoR2 update**:
 
 ## 10. Test mode (`Runtime/MeltyTest.cs`)
 
-Active only while `%LOCALAPPDATA%\Melty\test\deadlock-of-rain.json` exists (Melty writes it during `test_release`; a
+Active only while `%LOCALAPPDATA%\Melty\test\risk-of-deadlock-2.json` or `deadlock-of-rain.json` exists (Melty writes it during `test_release`; a
 hand-written copy works for local runs). The JSON's `"checks"` value is the file to append lines to:
 `pass <name>` or `fail <name>: <why>`.
 An optional `"heroes": "infernus"` (`run_test.sh infernus`, v0.6.3; also the co-op test) plays only those heroes: the run

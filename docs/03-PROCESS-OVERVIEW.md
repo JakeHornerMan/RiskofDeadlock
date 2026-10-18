@@ -211,8 +211,9 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 | Item | Value |
 |---|---|
 | Mod id | `c713920e-6e21-4bfa-ae4a-12c4a50868d9` |
-| Slug | `deadlock-of-rain` |
-| Listing | https://melty.gg/m/deadlock-of-rain |
+| Title | **Risk of Deadlock** (creator, 2026-10-18; was "Deadlock of Rain". The repo, DLL, plugin GUID and `%LOCALAPPDATA%\DeadlockOfRain` keep the old name) |
+| Slug | `risk-of-deadlock-2` (Melty made it on the rename; `risk-of-deadlock` was taken). Melty's test file is `<slug>.json`, so `MeltyTest.Slugs` lists it and the old `deadlock-of-rain` our tools write; **a new slug must be added there** |
+| Listing | https://melty.gg/m/risk-of-deadlock-2 |
 | Studio | https://melty.gg/studio/c713920e-6e21-4bfa-ae4a-12c4a50868d9 |
 | Melty progress-log workId | `3b07563c-694a-493a-9547-d27dfc179c87` (`consult_melty` once per turn, with the full reply) |
 | Licence / remix | All rights reserved / remix allowed |
@@ -244,8 +245,11 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
                    "connect": { "address": {"log":"{localappdata}/DeadlockOfRain/melty.log","after":"Melty join address: "},
                                 "joinFile": {"path":"{localappdata}/DeadlockOfRain/melty.properties","key":"join"} } },
   "test": { "checks": ["deadlock-content","survivors-listed","haze-plays","abrams-plays","seven-plays","infernus-plays",
-                       "ult-equipment","gun-aims","gun-in-hand","voice-lines","level-stats","hero-scale"], "minutes": 8 } }
+                       "ult-any-survivor","ragdoll","guns-fire","abilities-fire","abilities-work","ult-equipment"], "minutes": 8 } }
 ```
+   - **Use the first 12 names the test mode writes**, in that order (as above). The test writes about 20; in the first 0.6.3
+     test Melty read only the first 12, so `gun-aims`, `gun-in-hand`, `voice-lines`, `level-stats` and `hero-scale`
+     (written later) counted as not passing although the mod wrote them as passing.
    - **`setup.done.contains` forces the re-extract** (since 0.6.3). It is the end of the cache stamp in `ready.json`:
      `|<extractor version>|<first 16 hex of SHA-256 of extractor/manifest.json, upper case>` (Program.cs). A player whose
      cache was made from another manifest or extractor lacks that text, so Melty runs setup again; the extractor sees the
@@ -265,7 +269,10 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 
 **Status at the time of writing (2026-10-18):**
 - 0.1.0, 0.2.0 and **0.6.3** are draft releases. 0.2.0's test passed; 0.6.3 (release `5e542898-bfa4-4bad-9f8c-631175af83f1`,
-  upload `55889b47-…`) is submitted and needs its own passing `test_release` before `publish`.
+  upload `55889b47-…`) was tested: every game ran and every check the mod wrote passed, but the recipe listed checks Melty
+  did not read (see above), and the footage had no review. Resubmitted as release `4ed38587-cd16-4083-8437-0e3d0211c194`
+  (upload `df73856a-…`, the slug fix and new checks); its test `40cc813d-8d29-4159-a5c0-5e2033d7d598` runs next, then a
+  `test_footage` + `test_review` per run.
 - **Not yet published.**
 - The listing screenshots are from 0.1.0.
 

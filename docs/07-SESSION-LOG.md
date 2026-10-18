@@ -447,3 +447,21 @@ Mid-work: "does any other risk of rain character work by needing to hold down th
 **Results:** draft submitted; not tested on Melty yet.
 **Not done / open:** test_release, new screenshots (listing still shows 0.1.0), listing text, publish (ask first).
 **Lessons:** the stamp includes the Deadlock build, so `contains` must leave it out, or setup would never count as done after a Deadlock update.
+
+### 2026-10-18 · Melty test, rename to Risk of Deadlock, listing text · v0.6.3
+**Request (verbatim):** after the upload, test now → "Start it now"; screenshots → "just screen shots of the character selector pls! also include our artifact and make them public!!"; then "can we please call it Risk of Deadlock in melty!"
+**Done:**
+- First test (`da6a91e3-…`): 3/3 games ran 8:00, every check the mod wrote passed, but it did not count: the recipe listed `gun-aims`, `gun-in-hand`, `voice-lines`, `level-stats`, `hero-scale`, written after the first 12 lines Melty read; no footage review.
+- Title "Risk of Deadlock" → Melty made slug `risk-of-deadlock-2`. `MeltyTest` now looks for `risk-of-deadlock-2.json` or `deadlock-of-rain.json`; lab_restore/run_bench remove both. Recipe checks = the first 12 written. Resubmitted (release `4ed38587-…`), retest `40cc813d-…` started.
+- Listing: new tagline and description with links to the five kit pages.
+**Not done / open:** the retest and its footage reviews; character select screenshots; the kit pages must be shared publicly by the creator (I can't change who can see a page); publish (ask first).
+**Lessons:** a Melty rename changes the slug, and the test file is named after the slug. Check which check names Melty actually read (`selfChecks.passed`) before trusting a recipe list.
+
+### 2026-10-18 · Melty test, rename to Risk of Deadlock, listing text · v0.6.3
+**Request (verbatim):** after the upload, test now → "Start it now"; screenshots → "just screen shots of the character selector pls! also include our artifact and make them public!!"; then "can we please call it Risk of Deadlock in melty!"
+**Done:**
+- First test (`da6a91e3-…`): 3/3 games ran 8:00, every check the mod wrote passed, but it did not count: the recipe listed `gun-aims`, `gun-in-hand`, `voice-lines`, `level-stats`, `hero-scale`, written after the first 12 lines Melty read; no footage review.
+- Title "Risk of Deadlock" → Melty made slug `risk-of-deadlock-2`. `MeltyTest` now looks for `risk-of-deadlock-2.json` or `deadlock-of-rain.json`; lab_restore/run_bench remove both. Recipe checks = the first 12 written. Resubmitted (release `4ed38587-…`), retest `40cc813d-…` started.
+- Listing: new tagline and description with links to the five kit pages.
+**Not done / open:** the retest and its footage reviews; character select screenshots; the kit pages must be shared publicly by the creator (I can't change who can see a page); publish (ask first).
+**Lessons:** a Melty rename changes the slug, and the test file is named after the slug. Check which check names Melty actually read (`selfChecks.passed`) before trusting a recipe list. Write doc-edit scripts with raw strings (`\t` in a Windows path became a tab).

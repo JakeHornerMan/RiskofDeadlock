@@ -7,7 +7,7 @@ R="/c/Program Files (x86)/Steam/steamapps/common/Risk of Rain 2"
 UM=/c/Users/jakeh/tools/universal-modder/bin/um
 # every copy (the co-op test runs two)
 for P in $(powershell -NoProfile -Command "(Get-Process -Name \"Risk of Rain 2\" -ErrorAction SilentlyContinue).Id"); do $UM win kill $P >/dev/null; done; sleep 3
-rm -f "$LOCALAPPDATA/Melty/test/deadlock-of-rain.json"
+rm -f "$LOCALAPPDATA/Melty/test/deadlock-of-rain.json" "$LOCALAPPDATA/Melty/test/risk-of-deadlock-2.json"
 rm -rf "$LOCALAPPDATA/DeadlockOfRain/devshots" "$LOCALAPPDATA/DeadlockOfRain/coop"
 # no leftover join= from the co-op test: the next start hosts, as a solo player's does
 [ -f "$LOCALAPPDATA/DeadlockOfRain/melty.properties" ] && printf 'join=\n' >"$LOCALAPPDATA/DeadlockOfRain/melty.properties"

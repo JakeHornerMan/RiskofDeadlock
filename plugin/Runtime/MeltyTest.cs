@@ -10,13 +10,14 @@ using UnityEngine.Networking;
 
 namespace DeadlockOfRain
 {
-    /// <summary>Melty test mode (recipe test.checks). Only active while %LOCALAPPDATA%\Melty\test\deadlock-of-rain.json exists:
+    /// <summary>Melty test mode (recipe test.checks). Only active while %LOCALAPPDATA%\Melty\test\risk-of-deadlock-2.json (or deadlock-of-rain.json) exists:
     /// starts a run, plays every hero (gun, three abilities, the ult equipment it starts holding) against summoned Lemurians and
     /// measures what each skill does (damage, stun, burn, buffs, heal, movement: the skills sheet's expect column), checks the
     /// gun rig (gun in hand, aimed where the camera aims), levels up, checks stats and scale, and appends "pass name" / "fail name: why" lines to the checks file Melty gives.</summary>
     public sealed partial class MeltyTest : MonoBehaviour
     {
-        const string Slug = "deadlock-of-rain";
+        /// <summary>Melty names the test file after the listing slug: "risk-of-deadlock-2" since the 0.6.3 rename; the old one stays for the local tools.</summary>
+        static readonly string[] Slugs = { "risk-of-deadlock-2", "deadlock-of-rain" };
         static string checksFile;
         static MeltyTest instance;
         static readonly HashSet<string> seen = new HashSet<string>();
@@ -33,8 +34,9 @@ namespace DeadlockOfRain
         {
             try
             {
-                var f = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Melty", "test", Slug + ".json");
-                if (!File.Exists(f)) return;
+                var dir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Melty", "test");
+                var f = Slugs.Select(s => System.IO.Path.Combine(dir, s + ".json")).FirstOrDefault(File.Exists);
+                if (f == null) return;
                 var text = File.ReadAllText(f);
                 int i = text.IndexOf("\"checks\"", StringComparison.Ordinal);
                 if (i < 0) return;
