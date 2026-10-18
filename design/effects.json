@@ -332,6 +332,13 @@
       "notes": "Phantom Strike: violet afterimage streak along the blink, a smoke puff where she left and arrives, slash arcs and hit flashes on each cut"
     },
     {
+      "id": "abrams_charge",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "Shoulder Charge: Abrams rockets forward: a hot yellow glow and sparks at his front (moment loop, turned to face the charge), thin yellow trails off his shoulders and a core streak behind, dust kicked up at his feet; a launch burst of dust and a yellow ring and flash as he sets off (cast)"
+    },
+    {
       "id": "abrams_haymaker",
       "kind": "custom",
       "addressable": "none",

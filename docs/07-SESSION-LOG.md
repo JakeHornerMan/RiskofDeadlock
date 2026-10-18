@@ -412,3 +412,17 @@ rises to the bang (I had read the sheet's `loop: none` as silence). Asked what t
 as Commando. The test cannot hear, so the tick timing is unheard until the creator plays. lab_restore, `winhttp.dll` back on.
 **Not done / open:** the creator listens in play (tick loudness vs the build-up; `gain` is shared by the row). Infernus balance.
 **Lessons:** a `none` loop is not a silent move; measure the cast's length before calling a gap.
+
+### 2026-10-18 · Flame Gun 75 %, Flame Dash fire pockets, Abrams charge vfx, per-hero tests · v0.6.3
+**Request (verbatim):** "ok infesus gun m1 needs more 50% to 75%, also i told you multiple times i want Flame Dash for 5 second he run and places pockets of fire that last for 5 second ecah and do burndamage and stack on any enemy in the aeas where they were placed."
+Mid-work: "does any other risk of rain character work by needing to hold down the button for a ability???"; "can we have more like cool vfx on abhrams run ability please!!! like he rocketing forward with yellow on the fornt and trail running behind!"; "also why the fuck are you testing all character just test the one being changed add to claude.md"; "how many time do you need to run the game wtf are ya doing and how much longer!"
+**Questions asked → answers:** stacking → "Afterburn only increase the size of the pockets by 2x"; stop early → "Always 5 s". Answered: no RoR2 survivor holds a button to keep a dash going (held buttons there charge or aim: Artificer's Nano-Bomb, Loader's Gauntlet and Grapple, Railgunner's scope).
+**Done:**
+- Flame Gun 50 → 75 % (targetDps 478). Flame Dash: one tap runs 5 s (`minDuration` 0); RoR2's `DamageTrail` replaced by `DlrFirePocket` (radius 3.2, ×2 the old patches, one every 3.2 m, 5 s, +3 Afterburn per 0.5 s, overlapping stack, no direct damage); expect `enemy_debuff:afterburn_buildup`.
+- Abrams Shoulder Charge vfx `abrams_charge`: yellow front glow and sparks, thin shoulder trails and a core streak, dust, a launch burst; the first try's trails were too thick (hid the view), thinned.
+- `run_test.sh <heroes>` (test-mode `"heroes"`, shared with the co-op test); CLAUDE.md rule, memory, docs 00/02/03. `run_bench.sh` now deletes a leftover test-mode file (it had hijacked the first Infernus bench).
+- Docs 02, 03, 05, 06, MODLOG; pages Infernus, Abrams, Balance republished.
+**Results:** four-hero test (started before the rule): 21/21 pass, Flame Dash built Afterburn and burned. Abrams-only test 1/1 pass twice (before/after thinning). Bench Infernus: 1149 vs Engineer 1611, inside (−462); M1 473, M2 644, Shift 423, R 929.
+**Not done / open:** co-op test of the pockets skipped (time). Haze/Seven balance from 0.5.1.
+**Lessons:** read back what the creator asked before (07) when they say "I told you"; my "hold to keep going" was not what they asked. Test only changed heroes. Tell the creator up front how many game runs are needed.
+

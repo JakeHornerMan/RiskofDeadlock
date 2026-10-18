@@ -61,6 +61,7 @@ Deadlock's assets from the player's own install; nothing from either game ships.
   `python tools/dps_library.py --add build/bench_results.txt` (bump its `VERSION` so the changed heroes' old runs drop).
   `BASE=1` / `ALL=1` re-measure vanilla survivors only if the bench method itself changes, and only after asking the creator.
 - Every skill row needs an `expect` list. A skill must measurably affect an enemy or the player, and `tools/run_test.sh` checks it in game.
+- **Test only the heroes you changed** (`bash tools/run_test.sh <hero>`); never run every hero for a one-hero change.
 
 ## Architecture (big picture)
 Three pieces, linked by generated data:
@@ -95,14 +96,17 @@ Three pieces, linked by generated data:
 ```
 python tools/gen.py                      # preflight + generate code/manifest (python tools/preflight.py to check only)
 dotnet build plugin -c Release           # plugin DLL (other PC: -p:RoR2Dir="<RoR2 folder>")
-bash tools/run_test.sh [checks-file]     # full in-game test on this PC (Steam must be signed in; ~6-7 min)
+bash tools/run_test.sh <heroes> [checks-file]  # in-game test of the changed heroes only, e.g. `run_test.sh infernus` (Steam signed in)
 bash tools/run_coop_test.sh              # co-op test: two copies on this PC, the second joins and plays every hero (~12-15 min)
 bash tools/lab_restore.sh                # restore the PC the way Melty set it up (closes every copy of the game)
 bash tools/run_bench.sh [seconds] [heroes]  # DPS bench of our heroes only (vanilla numbers come from docs/dps-library.json); closes the game itself
 python tools/package.py <version>        # release zip in build/
 python tools/dlm_pose.py <hero> [frame] [clip-substring]   # where each clip points the gun
 ```
-- There is no per-skill test: `run_test.sh` runs all heroes; a healthy run ends with every check `pass` and `4/4 heroes`.
+- **Test only the hero(es) being changed** (creator, 2026-10-18: "just test the one being changed"): `run_test.sh infernus`,
+  `run_coop_test.sh infernus`. Run all four (no argument) only when code every hero shares changed (DlrState, ModelBuilder,
+  DeadlockAnimator, Survivors, Net/Relay, test mode itself), and say why before starting. A healthy run ends with every check `pass`
+  and `N/N heroes`.
   Screenshots land in `%LOCALAPPDATA%\DeadlockOfRain\devshots`.
 - If the manifest **adds** Deadlock content, rebuild the cache (~8 min), always passing `--manifest` (the exe otherwise
   reads its stale copy in `build/extract/`):

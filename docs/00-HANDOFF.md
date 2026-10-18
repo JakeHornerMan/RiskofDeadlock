@@ -21,7 +21,7 @@ Before touching anything:
 1. Read `CLAUDE.md` (rules), this file, the newest `docs/07-SESSION-LOG.md` entries, then docs 03, 02, 06, 05 as needed.
 2. The design sheets in `design/*.json` are the source of truth. Edit them, run `python tools/gen.py` (must say
    `PREFLIGHT CLEAN`), then `dotnet build plugin -c Release`.
-3. Test with `bash tools/run_test.sh` (all heroes, ~7 min, must end `4/4 heroes`), then make sure the game is closed
+3. Test with `bash tools/run_test.sh <hero>` (**only the heroes you changed**; the creator was angry at full runs for one-hero changes; must end `N/N heroes`), then make sure the game is closed
    (`bash tools/lab_restore.sh`). Benchmark with `bash tools/run_bench.sh` (closes the game itself).
 4. **Never launch the game for the creator's own playtests**; leave the build installed and say it is ready.
 5. Every change updates its docs in the same commit, and every session ends with a doc 07 entry and a refresh of this
@@ -33,13 +33,13 @@ Before touching anything:
 
 | Item | State |
 |---|---|
-| Version | **0.6.2** (`plugin/Plugin.cs`; Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). Not published on Melty since 0.2.0 |
+| Version | **0.6.3** (`plugin/Plugin.cs`; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). Not published on Melty since 0.2.0 |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
-| Installed build | **v0.6.2** (cache re-extracted 2026-10-18 with the tick sounds); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
+| Installed build | **v0.6.3** (2026-10-18); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
 | Heroes | Haze, Abrams, Seven, Infernus; 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
-| Test | `run_test.sh`: every check passes incl. `ragdoll`, `ult-any-survivor` and the new `sound-events`, 4/4 heroes (2026-10-18, v0.6.2); `run_coop_test.sh infernus` passes (one earlier run missed the joined Combustion, unexplained) |
+| Test | **`run_test.sh <hero>` tests only the given heroes (creator's rule, CLAUDE.md).** v0.6.3: Infernus pass (in a 4-hero run before the filter existed), Abrams 1/1 pass (2026-10-18); the co-op test was skipped for the pockets (creator impatient with game runs); `run_coop_test.sh infernus` passes (one earlier run missed the joined Combustion, unexplained) |
 | Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, within **±500 %/s**, comparing **means over every bench run** of the current build (`RUNS` in `tools/kit_pages.py`; doc 05 §3.0) |
-| Balance now | v0.5.1 heroes-only run vs the library (doc 05 §3.1): **Haze 6550 vs Commando 1222 (far above: Phantom Strike's area spreads Fixation)**, Abrams 2460 vs Loader 2951 (inside), **Seven 3164 vs Artificer 4013 (below: the bouncing ball leaves the pack)**, **Infernus 929 vs Engineer 1611 (below, v0.6.1: the gun waits while he holds the Napalm flask; doc 05 §3.2)**. Not retuned; the creator decides |
+| Balance now | v0.5.1 heroes-only run vs the library (doc 05 §3.1): **Haze 6550 vs Commando 1222 (far above: Phantom Strike's area spreads Fixation)**, Abrams 2460 vs Loader 2951 (inside), **Seven 3164 vs Artificer 4013 (below: the bouncing ball leaves the pack)**, Infernus 1149 vs Engineer 1611 (inside, just; v0.6.3, doc 05 §3.3). Not retuned; the creator decides |
 | Bench rule | **Bench our heroes only** (`run_bench.sh 30 <ids>`, the default); vanilla numbers come from `docs/dps-library.json` (creator, 2026-10-17; CLAUDE.md). Every base-game and Survivors of the Void survivor is stored (3 runs each, also listed in doc 06); the Seekers of the Storm three are not (expansion off) |
 | Sounds | Every move's Deadlock sounds and the voice-line triggers are listed in doc 06 "Sounds" (mirrors `design/sounds.json` / `voice.json`) |
 | Pages | Five claude.ai Artifacts, redesigned (links at the top of doc 06); the overview is shared "anyone with the link" |
@@ -184,6 +184,7 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
   fails, including moves nobody touched. The stage is random, so run it again; if in doubt, run the previous commit at once.
 
 ---
+- **Test only the heroes you changed** (`run_test.sh <hero>`). Every unasked game launch costs the creator's patience; say up front how many runs you need and why, and clear leftover test files before a bench (a stale test-mode file wrecked one bench run).
 
 ## 8. Where everything is recorded (the record-keeping system)
 
@@ -206,7 +207,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: v0.6.1 Infernus requests + ragdolls, v0.6.2 Combustion fuse ticks (2026-10-18, done; balance open)
+## 9. Last work: v0.6.1–0.6.3 Infernus requests, ragdolls, fuse ticks, fire pockets, Abrams charge vfx (2026-10-18, done)
 
 The creator played 0.6.0 from Steam (BepInEx re-enabled by copying `winhttp.dll`; Melty may switch it off again). Napalm
 is now aimed (Right Click readies, marker shows the landing, Left Click throws; same arc ×3 as far), Combustion shows its
@@ -218,7 +219,11 @@ and asked for a docs refresh (this section, §1's stale install row).
 Then v0.6.2: the creator chose "Add a tick each second" for Combustion's fuse: Rat King's scrap-grenade timer at 0 s and 1 s,
 its final timer at 2 s (cut at the blast). Earlier I had called the fuse silent; it is not (the cast is a 3 s build-up).
 
-**Next:** the creator decides Infernus' balance (929 vs Engineer 1611; doc 05 §3.2), plus Haze/Seven from 0.5.1.
+Then v0.6.3: Flame Gun 75 %; Flame Dash always runs 5 s and lays Afterburn fire pockets (2× size, overlapping stack);
+Abrams' Shoulder Charge rockets forward (yellow front, trails). The creator was angry at four-hero test runs for
+one-hero changes: `run_test.sh <hero>` and a CLAUDE.md rule. Infernus 1149 vs Engineer 1611, inside.
+
+**Next:** Haze/Seven balance from 0.5.1. Co-op check of the Flame Dash pockets (`run_coop_test.sh infernus`) when convenient.
 
 ## 9-prev. v0.6.0 co-op (2026-10-17, done; untested with a real friend)
 

@@ -9,10 +9,10 @@
 [Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) · [Balance vs Commando](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3).
 Built by `python tools/kit_pages.py` into `build/pages/`. Republish each page to its link whenever this doc or doc 05 changes.
 
-**Version:** 0.6.2 (2026-10-18; Combustion fuse ticks. 0.6.1: Napalm aimed throw, Flame Dash 5 s / 13 s, Combustion range ring, ragdoll deaths).
+**Version:** 0.6.3 (2026-10-18; Flame Gun 75 %, Flame Dash a 5 s run laying Afterburn fire pockets. 0.6.2: Combustion fuse ticks. 0.6.1: Napalm aimed throw, Flame Dash 5 s / 13 s, Combustion range ring, ragdoll deaths).
 
 **DPS source:** the stored library `docs/dps-library.json` (doc 05 §6): every vanilla survivor measured 3 times on
-2026-10-17 and **never re-measured**; Haze, Abrams and Seven from the v0.5.1 heroes-only run, Infernus from his v0.6.1 run (2026-10-18).
+2026-10-17 and **never re-measured**; Haze, Abrams and Seven from the v0.5.1 heroes-only run, Infernus from his v0.6.3 run (2026-10-18).
 Doc 05 lists every variable. Setup:
 - Monsoon, level 1, no items
 - 12 still enemies 10–15 m away, perfect aim
@@ -90,7 +90,7 @@ bench's run.
 | Passive | **Infernal Resilience** | Heals back part of every hit he takes; debuffs on him are shorter. | 10 % of damage taken over 10 s; debuffs −20 % | – | (no damage) |
 | M1 | **Shotgun** | Nine pellets with spread, from the end of the gun. | 9 × 52 %, 1.6 shots/s, 9 shells, 1.5 s reload, proc 0.4 | – | **581** · 70 |
 | M2 | **Siphon Life** | RoR2's Mired Urn tethers: drains the nearest enemies and heals him for all of it. | up to 3 enemies within 25 m, 450 %/s each, 8 s, heals 100 % of damage dealt | 15 s | **720** · 86 |
-| Shift | **Shoulder Charge** | Charges along his aim (steerable), running like his sprint, faster. Every enemy he runs into is hit, stunned and knocked aside. A wall stops him. | 1600 % per enemy, stun 1 s, knockback 22 m/s, 28 m/s for up to 3 s | 8 s | **1120** · 134 |
+| Shift | **Shoulder Charge** | Charges along his aim (steerable), running like his sprint, faster, **rocketing forward** (v0.6.3): a yellow glow and sparks on his front, thin yellow trails off his shoulders and a streak behind, dust at his feet. Every enemy he runs into is hit, stunned and knocked aside. A wall stops him. | 1600 % per enemy, stun 1 s, knockback 22 m/s, 28 m/s for up to 3 s | 8 s | **1120** · 134 |
 | R | **Haymaker** (Deadlock heavy melee) | Locks onto the enemy under the crosshair (≤ 20 m, even one in the air); no target, no punch, and R stays ready. A 0.2 s wind-up with a glowing fist, a rush straight at it at 45 m/s, then a heavy punch along that line with a hit-stop, Loader's impact and a strong shake; its shockwave hits every enemy in a cone behind the target and knocks them flying. | 2400 % each; cone 6 m long, 30° each side; knockback 30 m/s, proc 1.0 | 5 s | **1760** · 211 |
 | Q | **Seismic Impact** (equipment) | Rises, hovers up to 3 s while a ground reticle follows the aim (≤ 40 m); **Left Click** slams there (or it slams by itself after 3 s). He can be hit while hovering. | 6800 % in 18 m, stun 1.6 s | 120 s | 2493 · 299 (not balanced; one use: 74800 % on 11 enemies) |
 
@@ -105,14 +105,14 @@ bench's run.
 | R | **Power Surge** (his Deadlock ability) | For 8 s he crackles with lightning: every Shock Rifle burst arcs RoR2 Tesla lightning (like the Unstable Tesla Coil) from the target to up to 4 more enemies within 10 m, each arc building Static. +40 % move speed. | 60 % per arc, proc 0.2 | 10 s | 0 alone (it powers the gun; counted in "all") |
 | Q | **Thunderhead** (equipment) | Dark storm clouds 35 m over the spot he stands on, darkening it; lightning strikes enemies from the clouds; allies inside get RoR2's Warbanner. | up to 4 enemies every 0.4 s, 272 % each, 20 m, 10 s (6800 % per enemy); Warbanner +30 % attack and move speed | 120 s | 907 · 109 (not balanced; one use: 27200 %) |
 
-## Infernus: the burning man (main moves at once: **929 %/s**, one v0.6.1 run; match Engineer 1611 (library): **below** ±500, doc 05 §3.2)
+## Infernus: the burning man (main moves at once: **1149 %/s**, one v0.6.3 run; match Engineer 1611 (library): **inside** ±500, just; doc 05 §3.3)
 
 | Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
 |---|---|---|---|---|---|
 | Passive | **Afterburn** | Gun hits build Afterburn; at 12 stacks the target burns. Embers show the build-up; RoR2's Helfire flare and big flames show the burn. | burn 100 %/s for 3 s; build-up max 12, 4 s | – | in M1 and R |
-| M1 | **Flame Gun** | Automatic, from the end of the gun, with a heavier shot sound (Warden's shot layered under his own, louder) and a flash and puff of smoke at the muzzle; hits build Afterburn. | 50 % per bullet, 9.5 shots/s, 27 rounds, 1.4 s reload, proc 0.5 | – | **307** · 37 |
-| M2 | **Napalm** | Right Click readies the flask and shows where it will land (its flight path and a splash-sized circle); **Left Click throws it** (Right Click again puts it away, charge kept). Molotov's bottle, glowing and trailing fire, flies in a high arc (as far again ×3 since v0.6.1) and bursts in a ring of fire and leaves a burning puddle: damage, a slow, and the target takes more damage from him. | 300 % in 5 m, slow 28 % for 4 s, +16 % damage taken from Infernus for 8 s, 2 charges; thrown at 78 m/s | 5 s | **685** · 82 |
-| Shift | **Flame Dash** | Dash at ×2.2 speed; hold to keep going. Leaves burning ground behind him; enemies he runs into are knocked aside and scorched. 50 % slow resistance while dashing. | trail 150 %/s for 5 s; shove 75 % + knockback 22 m/s; 0.8 s on a tap, up to 5 s held | 13 s | **145** · 17 (one run) |
+| M1 | **Flame Gun** | Automatic, from the end of the gun, with a heavier shot sound (Warden's shot layered under his own, louder) and a flash and puff of smoke at the muzzle; hits build Afterburn. | **75 %** per bullet (v0.6.3, was 50), 9.5 shots/s, 27 rounds, 1.4 s reload, proc 0.5 | – | **473** · 57 |
+| M2 | **Napalm** | Right Click readies the flask and shows where it will land (its flight path and a splash-sized circle); **Left Click throws it** (Right Click again puts it away, charge kept). Molotov's bottle, glowing and trailing fire, flies in a high arc (as far again ×3 since v0.6.1) and bursts in a ring of fire and leaves a burning puddle: damage, a slow, and the target takes more damage from him. | 300 % in 5 m, slow 28 % for 4 s, +16 % damage taken from Infernus for 8 s, 2 charges; thrown at 78 m/s | 5 s | **644** · 77 |
+| Shift | **Flame Dash** | One tap: he runs at ×2.2 speed for **5 s** (v0.6.3; no holding), laying **pockets of fire** every 3.2 m that burn for 5 s. Enemies in a pocket build Afterburn (overlapping pockets stack; 12 build-ups ignite). Enemies he runs into are knocked aside and scorched. 50 % slow resistance while dashing. | pocket 3.2 m (×2 the old patches), +3 Afterburn every 0.5 s per pocket, no direct damage; shove 75 % + knockback 22 m/s | 13 s | **423** · 51 (one run; the Afterburn it ignites) |
 | R | **Torment Pulse** (Deadlock item) | For 6 s, rings of fire race out of him every 0.5 s, burning everything within 10 m and building Afterburn. | 50 % per pulse, +2 Afterburn build-up, proc 0.5 | 12 s | **876** · 105 (burns included) |
 | Q | **Concussive Combustion** (equipment) | Becomes a bomb, fire gathering on him; a yellow ring on the ground shows the blast's reach, with a ring sweeping inward each second as a countdown and a timer ticking along (on whoever holds the item); can move while it builds; the blast stuns and leaves burning ground. | 6800 % in 18 m after a 3 s fuse, stun 2 s, each kill heals 10 % of max health | 120 s | 2720 · 326 (not balanced; one use: 81600 % on 12 enemies) |
 

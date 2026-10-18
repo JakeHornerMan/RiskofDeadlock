@@ -1214,47 +1214,47 @@
     "special": "Torment Pulse"
    },
    "hero": true,
-   "measuredOn": "v0.6.1",
+   "measuredOn": "v0.6.3",
    "dps": {
     "all": {
+     "runs": [
+      1149
+     ],
+     "mean": 1149,
+     "min": 1149,
+     "max": 1149
+    },
+    "primary": {
+     "runs": [
+      473
+     ],
+     "mean": 473,
+     "min": 473,
+     "max": 473
+    },
+    "secondary": {
+     "runs": [
+      644
+     ],
+     "mean": 644,
+     "min": 644,
+     "max": 644
+    },
+    "utility": {
+     "runs": [
+      423
+     ],
+     "mean": 423,
+     "min": 423,
+     "max": 423
+    },
+    "special": {
      "runs": [
       929
      ],
      "mean": 929,
      "min": 929,
      "max": 929
-    },
-    "primary": {
-     "runs": [
-      307
-     ],
-     "mean": 307,
-     "min": 307,
-     "max": 307
-    },
-    "secondary": {
-     "runs": [
-      685
-     ],
-     "mean": 685,
-     "min": 685,
-     "max": 685
-    },
-    "utility": {
-     "runs": [
-      145
-     ],
-     "mean": 145,
-     "min": 145,
-     "max": 145
-    },
-    "special": {
-     "runs": [
-      876
-     ],
-     "mean": 876,
-     "min": 876,
-     "max": 876
     },
     "equipment": {
      "runs": [

@@ -1,6 +1,6 @@
 {
   "sheet": "skills",
-  "about": "One row per skill (5 per hero). slot: primary=M1 gun, secondary=M2 (Deadlock ability 1), utility=Shift (ability 2), special=R (a new move from a Deadlock item, melee or ability, on a normal cooldown), equipment=Q (the hero's Deadlock ultimate as a RoR2 equipment: every hero starts holding their own, anyone can find it wherever the Preon Accumulator can drop; design/equipment.json). Numbers are RoR2-scale: damagePct is % of the body's damage stat (RoR2 convention), cooldowns are RoR2 seconds. deadlock* columns hold the source values read from the player's Deadlock scripts/abilities.vdata (ClientVersion 6774) so every conversion is traceable. kind picks the generic EntityState that implements the row. Unused numeric params are 0, unused refs are \"none\" (filled on purpose, not missing). Balance targets: sustained primary DPS 240-600 %/s (Commando Double Tap ~ 400 %/s incl. downtime); secondaries 2-15 s; utilities 4-12 s; specials 4-30 s; equipment ults 120 s cooldown and at least 6000 % per enemy (Preon Accumulator scaled from 140 s to 120 s; no upper limit: the ults are pickups any survivor can carry and are left out of balance). buffStacks: stacks of buff a hit adds (Phantom Strike's Fixation, Torment Pulse's Afterburn build-up), 0 = the usual one. knockback: dashes and punches knock enemies away at this many m/s (0 = none). minDuration: hold skills (Flame Dash, the Seismic Impact hover) last at least this long on a tap and at most duration while held; 0 otherwise. vfx: our own Unity-built visual for the skill (an effects row of kind custom), or none. extra: a second RoR2 object the kind spawns (an effects row: the Warbanner ward of Thunderhead), a behaviour flag (pierce: the projectile flies through every enemy in its line; shockwave: the punch also hits every enemy in a cone of length 2x radius and half-angle spreadDeg), or none. expect: what the skill must measurably do, checked in test mode (enemy_damage, enemy_stun, enemy_burn, enemy_debuff:<buff>, self_buff:<buff>, self_heal, self_move, self_cloak).",
+  "about": "One row per skill (5 per hero). slot: primary=M1 gun, secondary=M2 (Deadlock ability 1), utility=Shift (ability 2), special=R (a new move from a Deadlock item, melee or ability, on a normal cooldown), equipment=Q (the hero's Deadlock ultimate as a RoR2 equipment: every hero starts holding their own, anyone can find it wherever the Preon Accumulator can drop; design/equipment.json). Numbers are RoR2-scale: damagePct is % of the body's damage stat (RoR2 convention), cooldowns are RoR2 seconds. deadlock* columns hold the source values read from the player's Deadlock scripts/abilities.vdata (ClientVersion 6774) so every conversion is traceable. kind picks the generic EntityState that implements the row. Unused numeric params are 0, unused refs are \"none\" (filled on purpose, not missing). Balance targets: sustained primary DPS 240-600 %/s (Commando Double Tap ~ 400 %/s incl. downtime); secondaries 2-15 s; utilities 4-12 s; specials 4-30 s; equipment ults 120 s cooldown and at least 6000 % per enemy (Preon Accumulator scaled from 140 s to 120 s; no upper limit: the ults are pickups any survivor can carry and are left out of balance). buffStacks: stacks of buff a hit adds (Phantom Strike's Fixation, Torment Pulse's Afterburn build-up; Flame Dash: the gun's buff each fire pocket adds every interval), 0 = the usual one. knockback: dashes and punches knock enemies away at this many m/s (0 = none). minDuration: hold skills (the Seismic Impact hover) last at least this long on a tap and at most duration while held; 0 otherwise. vfx: our own Unity-built visual for the skill (an effects row of kind custom), or none. extra: a second RoR2 object the kind spawns (an effects row: the Warbanner ward of Thunderhead), a behaviour flag (pierce: the projectile flies through every enemy in its line; shockwave: the punch also hits every enemy in a cone of length 2x radius and half-angle spreadDeg), or none. expect: what the skill must measurably do, checked in test mode (enemy_damage, enemy_stun, enemy_burn, enemy_debuff:<buff>, self_buff:<buff>, self_heal, self_move, self_cloak).",
   "columns": [
     "id",
     "hero",
@@ -376,7 +376,7 @@
       "buff": "none",
       "dot": "none",
       "effect": "charge_impact",
-      "vfx": "none",
+      "vfx": "abrams_charge",
       "extra": "none",
       "deadlockCooldown": 33,
       "deadlockDamage": 30,
@@ -695,10 +695,10 @@
       "slot": "primary",
       "deadlockAbility": "citadel_weapon_inferno_set",
       "name": "Flame Gun",
-      "description": "Fire for <style=cIsDamage>50% damage</style> per bullet. Hits build <style=cIsDamage>Afterburn</style>; at full build-up the target <style=cIsDamage>burns</style>. 27-round magazine.",
+      "description": "Fire for <style=cIsDamage>75% damage</style> per bullet. Hits build <style=cIsDamage>Afterburn</style>; at full build-up the target <style=cIsDamage>burns</style>. 27-round magazine.",
       "kind": "gun_auto",
       "icon": "panorama/images/heroes/guns/inferno_gun_psd.vtex",
-      "damagePct": 50,
+      "damagePct": 75,
       "procCoefficient": 0.5,
       "cooldown": 0,
       "stocks": 1,
@@ -725,7 +725,7 @@
       "extra": "none",
       "deadlockCooldown": 0,
       "deadlockDamage": 5.5,
-      "targetDps": 319,
+      "targetDps": 478,
       "expect": [
         "enemy_damage",
         "enemy_debuff:afterburn_buildup",
@@ -782,7 +782,7 @@
       "slot": "utility",
       "deadlockAbility": "ability_flame_dash",
       "name": "Flame Dash",
-      "description": "Dash at high speed: <style=cIsUtility>hold to keep going</style> for up to 5s, with <style=cIsUtility>50% slow resistance</style>, <style=cIsUtility>knocking aside</style> enemies you run into. You leave a trail of fire for 5s that deals <style=cIsDamage>150% damage per second</style> to enemies in it.",
+      "description": "Run at high speed for <style=cIsUtility>5s</style> with <style=cIsUtility>50% slow resistance</style>, <style=cIsUtility>knocking aside</style> enemies you run into. You leave <style=cIsDamage>pockets of fire</style> that burn for 5s; every 0.5s each enemy inside builds <style=cIsDamage>3 Afterburn</style>, and overlapping pockets stack.",
       "kind": "dash_trail",
       "icon": "panorama/images/hud/abilities/inferno_dash_psd.vtex",
       "damagePct": 75,
@@ -790,9 +790,9 @@
       "cooldown": 13,
       "stocks": 1,
       "duration": 5,
-      "minDuration": 0.8,
+      "minDuration": 0,
       "interval": 0.5,
-      "radius": 4.5,
+      "radius": 3.2,
       "range": 0,
       "speed": 0,
       "clipSize": 0,
@@ -807,7 +807,7 @@
       "chainCount": 5,
       "buff": "flame_dash",
       "dot": "none",
-      "effect": "fire_trail",
+      "effect": "none",
       "vfx": "infernus_trail",
       "extra": "none",
       "deadlockCooldown": 38,
@@ -815,10 +815,10 @@
       "targetDps": 0,
       "expect": [
         "self_move",
-        "enemy_damage",
-        "self_buff:flame_dash"
+        "self_buff:flame_dash",
+        "enemy_debuff:afterburn_buildup"
       ],
-      "buffStacks": 0
+      "buffStacks": 3
     },
     {
       "id": "infernus_torment_pulse",

@@ -23,6 +23,8 @@
 ## Balance
 - 0.4.2: each hero within ±500 %/s of its RoR2 match (means over bench runs; doc 05 §3.0).
 - 0.5.1: playtest feel pass (Haymaker lock-on rush, Phantom Strike 5 m area, bouncing 10 m Lightning Ball); benched once and reported, not retuned.
+- 0.6.3: Abrams Shoulder Charge vfx abrams_charge (visual). run_test.sh takes heroes (test only the changed ones); run_bench.sh clears a leftover test-mode file. Bench Infernus 1149 vs Engineer 1611 (inside, just).
+- 0.6.3: Flame Gun 50 -> 75 % per bullet (targetDps 319 -> 478). Flame Dash: one tap runs the full 5 s (minDuration 0); RoR2's FireTrail DamageTrail replaced by DlrFirePocket pockets (radius 4.5 -> 3.2, every 3.2 m, 5 s, +3 Afterburn per 0.5 s, no direct damage, effect none, buffStacks 3).
 - 0.6.2: Concussive Combustion ticks once a second through its 3 s fuse (Rat King's scrap-grenade timer; the last tick is its final timer, cut at the blast). Sound only; no numbers changed.
 - 0.6.1: Napalm thrown with Left Click after aiming (speed 45 -> 78, range 80 -> 240: same arc, 3x as far); Flame Dash held up to 5 s (was 3), cooldown 13 s (was 8). Ragdoll deaths and the Combustion range ring are visual. Infernus benched once: 929 %/s vs Engineer 1611 (below; the gun waits while he holds the flask); not retuned.
 - 0.6.0: co-op; no numbers changed. Power Surge's arcs are now limited to once per gun interval on the server (was once per burst in the owner's state).

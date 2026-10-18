@@ -282,4 +282,35 @@ namespace DeadlockOfRain
             if (ward) Destroy(ward);
         }
     }
+
+    /// <summary>Flame Dash: one pocket of fire on the ground (server only). For chainCount seconds, every interval each enemy
+    /// inside radius gets buffStacks of the hero's gun buff (Afterburn build-up), so overlapping pockets stack and 12 ignite.
+    /// The flames are drawn by the dash state on every machine.</summary>
+    public sealed class DlrFirePocket : MonoBehaviour
+    {
+        CharacterBody owner; SkillRow row; string buff; float age, next;
+
+        public static void Plant(CharacterBody owner, SkillRow row, string buff, Vector3 at)
+        {
+            if (!owner || row == null || buff == "none" || !UnityEngine.Networking.NetworkServer.active) return;
+            var go = new GameObject("DlrFirePocket_" + row.Id);
+            go.transform.position = at;
+            var p = go.AddComponent<DlrFirePocket>();
+            p.owner = owner; p.row = row; p.buff = buff;
+        }
+
+        void FixedUpdate()
+        {
+            age += Time.fixedDeltaTime;
+            if (!owner || age >= row.ChainCount) { Destroy(gameObject); return; }
+            if (age < next) return;
+            next = age + row.Interval;
+            foreach (var hb in Fx.Enemies(owner, transform.position, row.Radius))
+            {
+                var b = hb.healthComponent.body;
+                if (!b) continue;
+                for (int k = 0; k < Mathf.Max(1, (int)row.BuffStacks); k++) Buffs.Stack(owner, b, buff, false);
+            }
+        }
+    }
 }

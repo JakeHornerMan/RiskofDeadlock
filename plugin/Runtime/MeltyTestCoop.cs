@@ -18,7 +18,6 @@ namespace DeadlockOfRain
     public sealed partial class MeltyTest
     {
         public static bool Coop, Joiner;
-        static List<string> CoopHeroes;
         static string coopDir => System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DeadlockOfRain", "coop");
         static string StepFile => System.IO.Path.Combine(coopDir, "step.txt");
         static string AckFile => System.IO.Path.Combine(coopDir, "ack.txt");
@@ -123,7 +122,7 @@ namespace DeadlockOfRain
             string why = "";
             foreach (var hero in HeroRow.All)
             {
-                if (!Survivors.Bodies.ContainsKey(hero.Id) || CoopHeroes != null && !CoopHeroes.Contains(hero.Id)) continue;
+                if (!Survivors.Bodies.ContainsKey(hero.Id) || TestHeroes != null && !TestHeroes.Contains(hero.Id)) continue;
                 if (Survivors.HeroOf(master.GetBody()) != hero.Id)
                 {
                     master.TransformBody(Survivors.Bodies[hero.Id].name);
@@ -234,7 +233,7 @@ namespace DeadlockOfRain
             bool sawJoinerShots = seen.Contains("coop-remote-shot");
             Write("coop-shots-seen", sawJoinerShots && sawHostShots, $"host saw the joiner's shots={sawJoinerShots}, joiner saw the host's shots={sawHostShots}");
             Write("coop-effects-seen", relayed > 0, $"the joiner received {relayed} server effects (hit marks, stack bursts, strikes)");
-            Log.Info($"Melty test finished: co-op {heroes}/{(CoopHeroes != null ? CoopHeroes.Count : 4)} heroes played by a joined player; joiner received {relayed} relayed effects");
+            Log.Info($"Melty test finished: co-op {heroes}/{(TestHeroes != null ? TestHeroes.Count : 4)} heroes played by a joined player; joiner received {relayed} relayed effects");
             fireBody = null;
             if (hostBody) hostBody.healthComponent.godMode = false;
         }

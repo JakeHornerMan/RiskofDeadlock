@@ -14,7 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
-| – | – | nothing open (v0.6.1 Napalm and Flame Dash covered by the Infernus-only run of 2026-10-18, §3.2) | – | – |
+| – | – | nothing open (v0.6.3 Flame Gun 75 % and Flame Dash pockets covered by the Infernus-only run of 2026-10-18, §3.3) | – | – |
 
 ## 1. The question
 The creator's hypothesis: **Commando, using every ability the moment it is ready while shooting constantly for 30 s
@@ -119,6 +119,16 @@ mashed Right Clicks don't put it away), 45 → 78 m/s; Flame Dash 5 s held / 13 
   less. Napalm alone rose (faster flight, 8 throws).
 - **Flame Dash alone** fell with the longer cooldown (one run; this pass is noisy: 244–485 before).
 - Options for the creator: a shorter auto-ready (the gun fires while aiming), or Flame Gun 50 → 60 % per bullet.
+
+### 3.3 v0.6.3 Infernus (Infernus-only run, 2026-10-18)
+Flame Gun 50 → 75 % per bullet; Flame Dash always runs 5 s and lays Afterburn fire pockets (no direct damage, the creator's pick).
+
+| Hero | %/s | M1 / M2 / Shift / R alone | RoR2 match (library) | Gap | Verdict (±500) |
+|---|---|---|---|---|---|
+| Infernus | **1149** (was 929) | **473** (was 307) / 644 / **423** (was 145) / 929 | Engineer 1611 | −462 | **inside** (just) |
+
+- Flame Dash's damage is now the Afterburn ignitions its pockets cause (12 enemies, 385 hits in 3 uses).
+- One run each; this bench is noisy for single passes.
 
 Each move alone in the last full run (%/s, hero vs match):
 

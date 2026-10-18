@@ -127,6 +127,7 @@ namespace DeadlockOfRain.States
         readonly HashSet<HealthComponent> hit = new HashSet<HealthComponent>();
         Vector3 lastPos;
         float stuckTime;
+        GameObject fx;
         public override void OnEnter()
         {
             base.OnEnter();
@@ -135,6 +136,10 @@ namespace DeadlockOfRain.States
             if (characterDirection) characterDirection.forward = dir;
             if (anim) anim.Override("utility_loop", row.Duration, true);
             lastPos = transform.position;
+            // rocketing forward: a yellow front and a trail behind (vfx), on every player's machine
+            Vfx.Play(row.Vfx, "cast", characterBody.footPosition);
+            fx = Vfx.Play(row.Vfx, "loop", characterBody.footPosition, 1f, transform);
+            if (fx && dir.sqrMagnitude > 0.01f) fx.transform.rotation = Quaternion.LookRotation(dir);
         }
         public override void FixedUpdate()
         {
@@ -149,6 +154,7 @@ namespace DeadlockOfRain.States
             }
             // the owner steers; the server and the other players follow the way the body really moves
             dir = MotionDir(dir);
+            if (fx && dir.sqrMagnitude > 0.01f) fx.transform.rotation = Quaternion.LookRotation(dir);
             if (Server)
             {
                 foreach (var hb in Fx.Enemies(characterBody, transform.position + dir * 1.2f, row.Radius))
@@ -181,6 +187,7 @@ namespace DeadlockOfRain.States
                 Sound("end");
                 Fx.Impact(row.Effect, transform.position + dir);
             }
+            Vfx.Stop(fx, 0.6f);
             if (anim) anim.StopOverride();
             base.OnExit();
         }
@@ -348,7 +355,7 @@ namespace DeadlockOfRain.States
     [Kind("dash_trail")]
     public sealed class DashTrail : DlrState
     {
-        DamageTrail trail; int loop; GameObject flames; Vector3 lastPatch, heading = Vector3.forward; float nextPatch;
+        int loop; GameObject flames; Vector3 lastPatch, heading = Vector3.forward; string pocketBuff = "none";
         readonly HashSet<HealthComponent> shoved = new HashSet<HealthComponent>();
         public override void OnEnter()
         {
@@ -358,23 +365,9 @@ namespace DeadlockOfRain.States
             flames = Vfx.Play(row.Vfx, "loop", characterBody.footPosition, 1f, transform);
             lastPatch = characterBody.footPosition + Vector3.up * 100f;
             if (anim) anim.Override("utility_loop", row.Duration, true);
-            if (Server)
-            {
-                Buffs.AddTimed(characterBody, row.Buff, row.Duration);
-                var p = Fx.Prefab(row.Effect);
-                if (p)
-                {
-                    var go = Object.Instantiate(p, transform.position, Quaternion.identity);
-                    trail = go.GetComponent<DamageTrail>();
-                    if (trail)
-                    {
-                        trail.owner = gameObject;
-                        trail.damagePerSecond = damageStat * Coef / row.Interval;
-                        trail.radius = row.Radius * 0.5f;
-                        trail.pointLifetime = row.ChainCount; // how long the flames stay on the ground (chainCount column)
-                    }
-                }
-            }
+            if (Server) Buffs.AddTimed(characterBody, row.Buff, row.Duration);
+            // the pockets build the hero's gun buff (Infernus: Afterburn), like Power Surge adds the gun's Static
+            pocketBuff = Sheet.SkillOf(row.Hero, "primary").Buff;
         }
         public override void FixedUpdate()
         {
@@ -387,13 +380,13 @@ namespace DeadlockOfRain.States
                 characterMotor.rootMotion += mv * moveSpeedStat * (row.MoveSpeedMult - 1f) * Time.fixedDeltaTime;
                 if (characterDirection) characterDirection.forward = mv;
             }
-            if (trail) trail.transform.position = transform.position;
-            // burning patches of ground along the path, lasting as long as the trail does (chainCount seconds)
-            if (fixedAge >= nextPatch && Vector3.Distance(characterBody.footPosition, lastPatch) > 1.5f)
+            // a pocket of fire every radius metres of path (so they touch), burning for chainCount seconds: the flames on every
+            // machine, the Afterburn build-up on the server
+            if (Vector3.Distance(characterBody.footPosition, lastPatch) >= row.Radius)
             {
-                nextPatch = fixedAge + 0.12f;
                 lastPatch = characterBody.footPosition;
-                Vfx.Play(row.Vfx, "hit", lastPatch, row.ChainCount);
+                Vfx.Play(row.Vfx, "hit", lastPatch, row.Radius, life: row.ChainCount);
+                if (Server) DlrFirePocket.Plant(characterBody, row, pocketBuff, lastPatch);
             }
             // enemies Infernus runs into are knocked aside to clear his path, once each
             var face = characterDirection ? characterDirection.forward : transform.forward; face.y = 0;
@@ -410,14 +403,12 @@ namespace DeadlockOfRain.States
                     Relay.Sound(row.Id, "hit", hb.transform.position);
                 }
             }
-            // a tap dashes for minDuration; holding Shift keeps going up to duration
-            bool held = inputBank && inputBank.skill3.down;
-            if (isAuthority && (fixedAge >= row.Duration || fixedAge >= row.MinDuration && !held)) outer.SetNextStateToMain();
+            // one tap runs the whole duration (creator: "for 5 second he run")
+            if (isAuthority && fixedAge >= row.Duration) outer.SetNextStateToMain();
         }
         public override void OnExit()
         {
             if (Server) Buffs.Clear(characterBody, row.Buff);
-            if (trail) { trail.active = false; Object.Destroy(trail.gameObject, row.ChainCount + 0.5f); }
             Vfx.Stop(flames, 0.6f);
             DeadlockAudio.Stop(loop);
             Sound("end");

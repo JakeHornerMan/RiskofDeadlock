@@ -16,7 +16,7 @@ namespace DeadlockOfRain
         static readonly Dictionary<string, Material> baseMats = new Dictionary<string, Material>();
         static readonly Dictionary<string, Material> tinted = new Dictionary<string, Material>();
 
-        public static GameObject Play(string id, string moment, Vector3 at, float radius = 1f, Transform follow = null, Vector3? to = null, float angle = 0f)
+        public static GameObject Play(string id, string moment, Vector3 at, float radius = 1f, Transform follow = null, Vector3? to = null, float angle = 0f, float life = 0f)
         {
             if (string.IsNullOrEmpty(id) || id == "none") return null;
             try
@@ -25,12 +25,13 @@ namespace DeadlockOfRain
                 {
                     case "haze_dance": return HazeDance(moment, at, radius, follow);
                     case "abrams_slam": return AbramsSlam(moment, at, radius, follow);
+                    case "abrams_charge": return AbramsCharge(moment, at, follow);
                     case "seven_ball": return SevenBall(moment, at, follow, to);
                     case "seven_static": return SevenStatic(moment, at, radius, follow);
                     case "seven_storm": return SevenStorm(moment, at, radius, to);
                     case "infernus_afterburn": return InfernusAfterburn(moment, at, follow);
                     case "infernus_napalm": return InfernusNapalm(moment, at, radius, follow);
-                    case "infernus_trail": return InfernusTrail(moment, at, radius, follow);
+                    case "infernus_trail": return InfernusTrail(moment, at, radius, follow, life);
                     case "infernus_bomb": return InfernusBomb(moment, at, radius, follow);
                     case "infernus_pulse": return InfernusPulse(moment, at, radius, follow);
                     case "haze_phantom": return HazePhantom(moment, at, radius, to);
@@ -131,6 +132,47 @@ namespace DeadlockOfRain
                     Burst(at, "mat_glow", abramsRed, 4, 0.35f, 0f, radius * 0.8f);
                     Flash(at + Vector3.up * 2f, abramsRed, radius * 2.5f, 0.5f, 8f);
                     Shake(at, radius * 3f, 3f, 0.6f);
+                    return null;
+            }
+            return null;
+        }
+
+        // ------------------------------------------------------------------ Abrams: Shoulder Charge
+        static readonly Color chargeYellow = new Color(1f, 0.8f, 0.2f), chargeHot = new Color(1f, 0.95f, 0.7f);
+
+        static GameObject AbramsCharge(string moment, Vector3 at, Transform follow)
+        {
+            switch (moment)
+            {
+                case "loop":
+                {
+                    // rocketing forward: the state turns this root to face the charge each frame, so +z is his front
+                    var root = Root(at, 0f, follow);
+                    // a hot yellow glow on his front, like a shield pushing the air, throwing sparks that stream back past him
+                    var front = new GameObject("front"); front.transform.SetParent(root.transform, false); front.transform.localPosition = new Vector3(0f, 1.2f, 1.0f);
+                    Particles(front, "mat_glow", chargeYellow, rate: 40, life: 0.18f, speed: 0f, size: 3.2f);
+                    Particles(front, "mat_glow", chargeHot, rate: 30, life: 0.12f, speed: 0f, size: 1.6f);
+                    Particles(front, "mat_spark", chargeYellow, rate: 140, life: 0.35f, speed: 7f, size: 0.09f, shapeRadius: 0.9f, world: true, stretch: 0.15f);
+                    Light(front, chargeYellow, 9f, 4f, Vector3.zero).gameObject.AddComponent<Flicker>();
+                    // the trail running behind: thin yellow streaks off both shoulders and a brighter core (wider ones hid the view from the camera behind him), flame puffs like exhaust
+                    foreach (var x in new[] { -0.55f, 0.55f })
+                    {
+                        var s = new GameObject("shoulder"); s.transform.SetParent(root.transform, false); s.transform.localPosition = new Vector3(x, 1.5f, 0f);
+                        Trail(s, chargeYellow, 0.3f, 0.4f);
+                    }
+                    var core = new GameObject("core"); core.transform.SetParent(root.transform, false); core.transform.localPosition = new Vector3(0f, 1.1f, 0f);
+                    Trail(core, chargeYellow, 0.5f, 0.2f);
+                    var back = new GameObject("back"); back.transform.SetParent(root.transform, false); back.transform.localPosition = new Vector3(0f, 1.1f, -0.5f);
+                    Particles(back, "mat_fire_puff", chargeYellow, rate: 50, life: 0.45f, speed: 0.6f, size: 1.2f, shapeRadius: 0.5f, world: true);
+                    // dust kicked up at his feet
+                    Particles(root, "mat_dust", abramsDust, rate: 45, life: 0.8f, speed: 1.5f, size: 1.6f, shapeRadius: 0.8f, world: true, flat: true);
+                    return root;
+                }
+                case "cast":
+                    // the launch: a kick of dust, a yellow ring and a flash where he sets off
+                    Burst(at, "mat_dust", abramsDust, 18, 0.9f, 7f, 2f, shapeRadius: 1f, flat: true);
+                    Ring(at + Vector3.up * 0.3f, chargeYellow, 0.5f, 4.5f, 0.35f, 0.8f);
+                    Flash(at + Vector3.up * 1.2f, chargeYellow, 8f, 0.3f, 5f);
                     return null;
             }
             return null;
@@ -399,7 +441,7 @@ namespace DeadlockOfRain
             Flash(at + Vector3.up, fireOrange, radius * 1.5f, life, 4f);
         }
 
-        static GameObject InfernusTrail(string moment, Vector3 at, float radius, Transform follow)
+        static GameObject InfernusTrail(string moment, Vector3 at, float radius, Transform follow, float life)
         {
             switch (moment)
             {
@@ -413,8 +455,8 @@ namespace DeadlockOfRain
                     return root;
                 }
                 case "hit":
-                    // one patch of burning ground left behind (radius = how long it burns)
-                    GroundFire(at, 1.6f, radius);
+                    // one pocket of burning ground left behind (radius = the pocket's, life = how long it burns)
+                    GroundFire(at, radius, life > 0f ? life : 5f);
                     return null;
             }
             return null;

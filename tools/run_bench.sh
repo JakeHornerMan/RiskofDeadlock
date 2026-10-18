@@ -24,6 +24,8 @@ B="$LOCALAPPDATA/DeadlockOfRain/bench.json"
 G=$(powershell -NoProfile -Command "(Get-Process -Name \"Risk of Rain 2\" -ErrorAction SilentlyContinue).Id"); [ -n "$G" ] && $UM win kill $G >/dev/null
 for i in $(seq 1 20); do tasklist | grep -qi "Risk of Rain" || break; sleep 1; done
 rm -f "$L" "$(cygpath -u "$OUT")"
+# a test-mode file left by run_test.sh would start the in-game test alongside the bench and wreck both
+rm -f "$LOCALAPPDATA/Melty/test/deadlock-of-rain.json"
 mkdir -p "$LOCALAPPDATA/DeadlockOfRain"
 MODE=heroes; [ -n "$BASE" ] && MODE=""; [ -n "$ALL" ] && MODE=all
 printf '{ "out": "%s", "seconds": %s, "only": "%s", "portraits": "%s", "survivors": "%s", "repeat": %s }\n' "${OUT//\\/\\\\}" "$SECS" "$ONLY" "${PDIR//\\/\\\\}" "$MODE" "${REPEAT:-1}" >"$B"

@@ -23,6 +23,9 @@ namespace DeadlockOfRain
         static readonly HashSet<string> written = new HashSet<string>();
         static CharacterBody fireBody;
         static float fireUntil;
+        /// <summary>The heroes this test run plays (test-mode file "heroes"); null = all of them.</summary>
+        static List<string> TestHeroes;
+        static HeroRow[] Tested => HeroRow.All.Where(h => TestHeroes == null || TestHeroes.Contains(h.Id)).ToArray();
 
         public static bool Active => checksFile != null;
 
@@ -40,9 +43,9 @@ namespace DeadlockOfRain
                 // the co-op test ("coop": true): the copy started with a join= line joins, the other hosts
                 Coop = System.Text.RegularExpressions.Regex.IsMatch(text, "\"coop\"\\s*:\\s*true");
                 Joiner = Coop && MeltyJoin.JoinAddress != "";
-                // optional "heroes": "haze,abrams": the co-op test plays only these
+                // optional "heroes": "haze,abrams": the test (solo or co-op) plays only these
                 var hm = System.Text.RegularExpressions.Regex.Match(text, "\"heroes\"\\s*:\\s*\"([^\"]*)\"");
-                if (hm.Success) CoopHeroes = hm.Groups[1].Value.Split(',').Select(h => h.Trim()).Where(h => h != "").ToList();
+                if (hm.Success) TestHeroes = hm.Groups[1].Value.Split(',').Select(h => h.Trim()).Where(h => h != "").ToList();
                 if (Coop) CoopTestPatches.Apply(new HarmonyLib.Harmony(Plugin.Guid + ".cooptest"), Joiner);
                 Log.Info("Melty test mode: reporting to " + checksFile + (Coop ? Joiner ? " (co-op test, joining)" : " (co-op test, hosting)" : ""));
                 var go = new GameObject("DeadlockOfRainMeltyTest");
@@ -85,7 +88,8 @@ namespace DeadlockOfRain
             yield return new WaitForSeconds(3f);
             var user = LocalUserManager.GetFirstLocalUser();
             while (user == null) { yield return null; user = LocalUserManager.GetFirstLocalUser(); }
-            user.userProfile.SetSurvivorPreference(Survivors.Defs[HeroRow.All[0].Id]);
+            var tested = Tested;
+            user.userProfile.SetSurvivorPreference(Survivors.Defs[tested[0].Id]);
             RoR2.Console.instance.SubmitCmd(null, "transition_command \"gamemode ClassicRun; host 0;\"");
             float t0 = Time.unscaledTime;
             while (!PreGameController.instance && Time.unscaledTime - t0 < 60f) yield return null;
@@ -95,7 +99,7 @@ namespace DeadlockOfRain
             if (PreGameController.instance) RoR2.Console.instance.SubmitCmd(null, "pregame_start_run");
             t0 = Time.unscaledTime;
             while ((user.cachedBody == null || !Run.instance) && Time.unscaledTime - t0 < 120f) yield return null;
-            if (!user.cachedBody) { foreach (var h in HeroRow.All) Write(h.Id + "-plays", false, "the run did not start"); yield break; }
+            if (!user.cachedBody) { foreach (var h in tested) Write(h.Id + "-plays", false, "the run did not start"); yield break; }
             yield return new WaitForSeconds(4f);
             // leave the drop pod so the hero stands in the open
             var first = user.cachedBody;
@@ -112,7 +116,7 @@ namespace DeadlockOfRain
             bool aimOk = true, handOk = true, slotsOk = true; string aimWhy = "", handWhy = "", slotsWhy = "";
             string gunsWhy = "", abilitiesWhy = "", ultsWhy = "", equipWhy = "";
             int heroes = 0, ragdolls = 0; string ragdollWhy = "";
-            foreach (var hero in HeroRow.All)
+            foreach (var hero in tested)
             {
                 if (!Survivors.Bodies.ContainsKey(hero.Id)) { Write(hero.Id + "-plays", false, "hero not built"); continue; }
                 var bodyName = Survivors.Bodies[hero.Id].name;
@@ -126,7 +130,7 @@ namespace DeadlockOfRain
                 body.healthComponent.godMode = true;
                 var token = body.baseNameToken;
                 // stand in the open, away from the drop pod
-                if (hero == HeroRow.All[0])
+                if (hero == tested[0])
                 {
                     var away = body.footPosition + body.inputBank.aimDirection.normalized * 14f;
                     if (Physics.Raycast(away + Vector3.up * 30f, Vector3.down, out var gh, 80f, LayerIndex.world.mask)) TeleportHelper.TeleportBody(body, gh.point + Vector3.up * 0.5f, false);
@@ -172,7 +176,7 @@ namespace DeadlockOfRain
                 if (!eqDef) equipWhy += hero.Id + ": no equipment built; ";
                 else
                 {
-                    if (hero == HeroRow.All[0] && inv.currentEquipmentIndex != eqDef.equipmentIndex)
+                    if (hero == tested[0] && inv.currentEquipmentIndex != eqDef.equipmentIndex)
                         equipWhy += $"{hero.Id}: started holding {(inv.currentEquipmentIndex == EquipmentIndex.None ? "nothing" : EquipmentCatalog.GetEquipmentDef(inv.currentEquipmentIndex).name)}; ";
 #pragma warning disable CS0618
                     var fig = eqDef.pickupModelPrefab ? eqDef.pickupModelPrefab.GetComponentInChildren<MeshRenderer>(true) : null;
@@ -253,7 +257,8 @@ namespace DeadlockOfRain
             }
             // the ult belongs to the equipment: Commando holding Concussive Combustion gets the same blast and ring
             string anyWhy = "";
-            var bomb = SkillRow.All.FirstOrDefault(r => r.Kind == "ult_selfbomb");
+            // (only when its hero is among the tested ones)
+            var bomb = SkillRow.All.FirstOrDefault(r => r.Kind == "ult_selfbomb" && tested.Any(h => h.Id == r.Hero));
             if (bomb != null)
             {
                 master.TransformBody("CommandoBody");
@@ -273,8 +278,8 @@ namespace DeadlockOfRain
                 else anyWhy = "could not become Commando";
                 KillTargets();
             }
-            Write("ult-any-survivor", anyWhy == "", anyWhy);
-            Write("ragdoll", ragdolls == HeroRow.All.Length, ragdollWhy);
+            if (bomb != null) Write("ult-any-survivor", anyWhy == "", anyWhy);
+            Write("ragdoll", ragdolls == tested.Length, ragdollWhy);
 
             var lb = master.GetBody();
             Write("guns-fire", gunsWhy == "", gunsWhy);
@@ -295,7 +300,7 @@ namespace DeadlockOfRain
             var missingSound = SoundRow.All.SelectMany(s => new[] { s.Cast, s.Loop, s.Hit, s.End, s.Reload, s.CastLayer, s.HitLayer, s.Tick, s.TickFinal })
                                            .Where(e => e != "none" && !DeadlockAudio.Has(e)).Distinct().ToList();
             Write("sound-events", missingSound.Count == 0, "not in the cache: " + string.Join(", ", missingSound.Take(5)));
-            Log.Info($"Melty test finished: {heroes}/4 heroes: every skill did what its sheet expects; Deadlock sounds played: {DeadlockAudio.Played}");
+            Log.Info($"Melty test finished: {heroes}/{tested.Length} heroes: every skill did what its sheet expects; Deadlock sounds played: {DeadlockAudio.Played}");
             if (lb) lb.healthComponent.godMode = false;
         }
 
