@@ -146,7 +146,9 @@ Changing the manifest changes the cache stamp (section 6.6), so the next first s
 already has `ready.json`, though, Melty's `setup.done` check is satisfied and **setup is skipped**. So an *older*
 cache stays in use until something deletes `ready.json` or the extractor runs again. This is fine as long as new
 releases only **remove** clips, images or sounds. A release that **adds** a hero, clip, image or sound needs the
-cache rebuilt: see section 10 and doc 03 for how to force it.
+cache rebuilt: see section 10 and doc 03 for how to force it. **Since 0.6.3 the recipe forces it:** `setup.done` has
+`contains: "|<extractor version>|<manifest hash>"` (doc 03 §6), so a cache stamped from another manifest is not "done" and
+Melty runs the extractor again, which rebuilds because the stamp differs.
 
 ---
 

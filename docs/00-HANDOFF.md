@@ -36,7 +36,7 @@ Before touching anything:
 | Item | State |
 |---|---|
 | Status | **The four heroes are done** (creator, 2026-10-18). Next: a new hero, one shot, via doc 08 |
-| Version | **0.6.3** (`plugin/Plugin.cs`; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). Not published on Melty since 0.2.0 |
+| Version | **0.6.3** (`plugin/Plugin.cs`; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). **0.6.3 submitted to Melty as a draft (2026-10-18)**; needs a passing `test_release` and the creator's yes before `publish` (doc 03 §6) |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
 | Installed build | **v0.6.3** (2026-10-18); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
 | Heroes | Haze, Abrams, Seven, Infernus; 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
@@ -231,8 +231,12 @@ Then the creator declared the four heroes done and asked whether the docs are re
 one shot: doc 08 (new-hero playbook) written, doc 03 §8/§10 and doc 02 §11 refreshed, the test's hard-coded hero count
 removed.
 
-**Next:** a new hero from the creator's outline (doc 08). Still open from before: Haze/Seven balance (0.5.1), a co-op
-check of the Flame Dash pockets, listing screenshots, a release with a forced re-extract.
+Then the creator: "its time to upload to melty!": 0.6.3 packaged, uploaded and submitted as a draft (release
+`5e542898-…`). The recipe's `setup.done.contains` now forces older caches to re-extract (doc 03 §6). README's Flame Dash line fixed.
+
+**Next:** `test_release` of 0.6.3 (3 × 8 min on this PC, once the creator agrees), new listing screenshots, listing text,
+then ask before `publish`. After that: a new hero from the creator's outline (doc 08). Still open: Haze/Seven balance
+(0.5.1), a co-op check of the Flame Dash pockets.
 
 ## 9-prev. v0.6.0 co-op (2026-10-17, done; untested with a real friend)
 

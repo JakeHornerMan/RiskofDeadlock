@@ -237,15 +237,22 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
   "setup": { "label":"Deadlock heroes",
              "launch": {"kind":"exe","path":"{localappdata}/DeadlockOfRain/extract/DeadlockExtract.exe",
                         "args":["--deadlock","{game:deadlock}","--out","{localappdata}/DeadlockOfRain/cache"]},
-             "done": {"file":"{localappdata}/DeadlockOfRain/cache/ready.json"} },
+             "done": {"file":"{localappdata}/DeadlockOfRain/cache/ready.json", "contains":"|1.2.0|<manifest hash>"} },
   "launch": {"kind":"game"},
   "runtimeData": ["{localappdata}/DeadlockOfRain"],
   "multiplayer": { "maxPlayers": 4,
                    "connect": { "address": {"log":"{localappdata}/DeadlockOfRain/melty.log","after":"Melty join address: "},
                                 "joinFile": {"path":"{localappdata}/DeadlockOfRain/melty.properties","key":"join"} } },
   "test": { "checks": ["deadlock-content","survivors-listed","haze-plays","abrams-plays","seven-plays","infernus-plays",
-                       "ult-equipment","gun-aims","gun-in-hand","four-slots","level-stats","hero-scale"], "minutes": 8 } }
+                       "ult-equipment","gun-aims","gun-in-hand","voice-lines","level-stats","hero-scale"], "minutes": 8 } }
 ```
+   - **`setup.done.contains` forces the re-extract** (since 0.6.3). It is the end of the cache stamp in `ready.json`:
+     `|<extractor version>|<first 16 hex of SHA-256 of extractor/manifest.json, upper case>` (Program.cs). A player whose
+     cache was made from another manifest or extractor lacks that text, so Melty runs setup again; the extractor sees the
+     stamp differ and rebuilds. The Deadlock build is left out on purpose: after a Deadlock update setup would otherwise
+     never be "done". Recompute it whenever the manifest or extractor version changes:
+     `python -c "import hashlib;print(hashlib.sha256(open('extractor/manifest.json','rb').read()).hexdigest()[:16].upper())"`
+     and check it against `%LOCALAPPDATA%/DeadlockOfRain/cache/ready.json` after a rebuild. 0.6.3: `|1.2.0|39DC86C5579DF781`.
    - **Max 12 checks.** Only list names the mod really reports.
    - `multiplayer` (since 0.6.0) is what `setup_multiplayer` returned for this mashup; call it again before `submit_release`, then with the co-op test's `build/coop_host.log` / `build/coop_join.log` as `hostLog` / `joinLog`.
    - **Do not** take `inspect_package`'s draft mappings. It suggests `{game}/BepInEx/plugins/DeadlockOfRain-<ver>`, which is version-named, and puts the extractor inside the plugins folder.
@@ -256,9 +263,10 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 8. `update_mod` for listing text (description, tagline) when features change. `add_screenshot`/`finish_screenshot` for real in-game shots.
 9. **Ask the creator before `publish`.** Only after a clear yes: `publish`, then `mod_status`. Say "live" only if the server says so; otherwise it is "awaiting review".
 
-**Status at the time of writing:**
-- 0.1.0 and 0.2.0 are both draft releases. 0.2.0's test passed.
-- **Not yet published.** Waiting for the creator's playtest and go-ahead.
+**Status at the time of writing (2026-10-18):**
+- 0.1.0, 0.2.0 and **0.6.3** are draft releases. 0.2.0's test passed; 0.6.3 (release `5e542898-bfa4-4bad-9f8c-631175af83f1`,
+  upload `55889b47-…`) is submitted and needs its own passing `test_release` before `publish`.
+- **Not yet published.**
 - The listing screenshots are from 0.1.0.
 
 ---

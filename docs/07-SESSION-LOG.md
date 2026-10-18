@@ -437,3 +437,13 @@ Mid-work: "does any other risk of rain character work by needing to hold down th
 **Not done / open:** the playbook is untested until the first new hero; Haze/Seven balance; co-op check of the pockets; listing screenshots; a release.
 **Lessons:** checklists rot as features land (ult item, voice, ragdoll, effects, library); when a feature lands, update the add-a-hero playbook too.
 
+
+### 2026-10-18 · upload 0.6.3 to Melty · v0.6.3
+**Request (verbatim):** "its time to upload to melty!"
+**Questions asked → answers:** (asked after the upload: test run now, screenshots, publish.)
+**Done:**
+- `package.py 0.6.3` (README's Flame Dash line was stale: "hold to keep going" → the 5 s run with fire pockets). inspect_package, setup_multiplayer (joined, same block as 0.6.0), validate_recipe (valid, one click), upload, `submit_release` → draft `5e542898-bfa4-4bad-9f8c-631175af83f1`; only the expected executable-code review finding.
+- Recipe: `setup.done.contains: "|1.2.0|39DC86C5579DF781"` (end of the cache stamp) forces every older cache to re-extract; checks swap `four-slots` for `voice-lines`. Docs 00, 01, 03.
+**Results:** draft submitted; not tested on Melty yet.
+**Not done / open:** test_release, new screenshots (listing still shows 0.1.0), listing text, publish (ask first).
+**Lessons:** the stamp includes the Deadlock build, so `contains` must leave it out, or setup would never count as done after a Deadlock update.
