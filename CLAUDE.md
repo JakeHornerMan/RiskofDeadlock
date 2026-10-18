@@ -4,7 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Deadlock of Rain (RiskofDeadlock)
 
-A Melty mashup that adds Deadlock heroes (Haze, Abrams, Seven, Infernus) to Risk of Rain 2 as survivors. It reads
+A Melty mashup that adds Deadlock heroes (Haze, Abrams, Seven, Infernus) to Risk of Rain 2 as survivors. The four heroes
+are finished (v0.6.3, 2026-10-18); new heroes follow `docs/08-NEW-HERO-PLAYBOOK.md`. It reads
 Deadlock's assets from the player's own install; nothing from either game ships.
 
 ## Origin and goals (from Melty's original setup brief, as summarised by the creator)
@@ -28,6 +29,8 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 4. `docs/04-ABILITY-REDESIGN-PROPOSALS.md`: the ability options and the creator's v0.3.0 picks (§6).
 5. `docs/05-DAMAGE-COMPARISON.md`: DPS benchmark against Commando, balance suggestions, and the "retest needed" flags (§0).
 6. `docs/06-CURRENT-ABILITIES.md`: every survivor's current abilities, numbers and DPS (keep it in sync).
+7. `docs/08-NEW-HERO-PLAYBOOK.md`: **adding a new hero in one go** (the four heroes are done; this is the next job):
+   intake questions, sound and voice, Unity-built effects, tests, bench, pages, definition of done.
 `MODLOG.md` is the short journal of versions, lab notes and gotchas.
 
 ## Standing rules

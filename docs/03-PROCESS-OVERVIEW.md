@@ -71,8 +71,11 @@ docs/02-RISK-OF-RAIN-2-INTEGRATION.md RoR2 side in depth
 docs/03-PROCESS-OVERVIEW.md           this file
 docs/05-DAMAGE-COMPARISON.md         DPS benchmark vs Commando: variables, results, balance suggestions, retest flags (§0)
 docs/06-CURRENT-ABILITIES.md         every survivor's current abilities, numbers and DPS (living; updated with every ability change)
+docs/07-SESSION-LOG.md               every creator request, question, answer and result, session by session
+docs/08-NEW-HERO-PLAYBOOK.md         adding a new hero in one go: order of work and definition of done
+docs/dps-library.json                stored DPS of every vanilla survivor and our heroes (never re-bench vanilla)
 docs/04-ABILITY-REDESIGN-PROPOSALS.md planning: current kit + 2 alternatives (abilities and passive) per hero, from the Deadlock and RoR2 wikis
-design/                   THE SOURCE OF TRUTH – JSON sheets (heroes, stats, skills, buffs, animations, sounds, effects, hooks)
+design/                   THE SOURCE OF TRUTH – JSON sheets (heroes, stats, skills, equipment, buffs, animations, sounds, voice, effects, hooks)
 tools/preflight.py        checks every sheet cell and cross-reference (and Deadlock/RoR2 names against tools/dev listings)
 tools/gen.py              runs preflight, then generates plugin/Generated/Sheets.g.cs + extractor/manifest.json
 tools/package.py          builds build/DeadlockOfRain-<ver>.zip (+ .json with size, sha256, entries)
@@ -275,15 +278,19 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 
 ## 8. Checklist: adding a new Deadlock hero
 
-0. **Read the three per-doc checklists** (doc 01 §10, doc 02 §11 including its §0 test-mode limits, and this one); each covers a different part. Doc 01 §8 has a ready asset cheat-sheet for **Wraith**.
-1. **Pick a hero** and a RoR2 analog (play style, durability). Read their kit in the decompiled `scripts/abilities.vdata` and `scripts/heroes.vdata` (doc 01 §8). Choose the gun, **two** abilities, an R move and the ultimate (the Q equipment).
-2. **Deadlock half** (doc 01 §10): find the vmdl, mesh names, clip names, bones, images and sound events. Update the dev listings.
-3. **Sheets:** `heroes.json`, `stats.json`, `skills.json` (4 rows with `expect`), `animations.json` (gun rig + clips), `sounds.json`, maybe `buffs.json` and `effects.json`.
-4. **Code only if a new mechanic is needed:** a new `[Kind]` state (doc 02 §11).
-5. **Run:** `gen.py` (preflight clean) → build plugin → extractor `--force` → `tools/run_test.sh` until every check passes → inspect the devshots (scale next to Commando, gun in hand, aim) → `lab_restore.sh`.
-6. **Recipe:** add `<hero>-plays`. The recipe is at the 12-check cap, so drop `four-slots` (doc 02 §11), and raise `test.minutes` by about 2 per hero.
-7. **Docs:** update **all three** docs, CLAUDE.md's hero list, README/listing text, and the "four heroes" wording in §1. **Commit.**
-8. **Release** as in §6. Ask before publishing.
+**Follow `docs/08-NEW-HERO-PLAYBOOK.md`**: the one-shot order of work (intake questions, Deadlock lookup, sheets, sound,
+Unity-built effects, code, tests, bench, pages, docs, definition of done). The per-half details are in doc 01 §10 and
+doc 02 §11. In short:
+1. Intake: one round of questions on the creator's outline (moves per slot, the RoR2 match, changes, the look).
+2. Deadlock half (doc 01 §10): model, meshes, clips (from the glb), bones, images, sound and voice events, dev listings.
+3. Sheets: `heroes`, `stats`, `skills` (**5 rows** with `expect`), `equipment` (the Q ult), `animations` (gun rig, clips,
+   `ragdollBones`), `sounds`, `voice`, `effects` (one `custom` row per visual), `buffs`/`hooks` if needed.
+4. Effects in `plugin/Runtime/Vfx.cs`; a new `[Kind]` state only for a new mechanic (doc 02 §11).
+5. `gen.py` (preflight clean) → build → extractor `--force --manifest` → `run_test.sh <hero>` (**that hero only**) →
+   devshots → bench (`run_bench.sh 30 <hero>` + `dps_library.py --add`) → portraits → co-op check → `lab_restore.sh`
+   and `winhttp.dll` back.
+6. Pages: a new artifact for the hero, `LINKS`/`VANILLA`/`CHANGES` in `tools/kit_pages.py`, republish all.
+7. Docs in the same commit (doc 08 §7); release only when asked (recipe `<hero>-plays`, drop `four-slots`).
 
 ---
 
@@ -325,17 +332,17 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 - Seven's Thunderhead cast uses his Storm Cloud `ult_start` clip (0.6 s); its loop pose (tilted) is no longer used.
 - **No normal maps** (VRF does not export them for Deadlock's hero shader). Only the albedo is used.
 - **Reload clips still animate the arms** (gun parts stay frozen), by design.
-- **Listing screenshots** are from 0.1.0 and should be replaced with 0.4.0 shots (4 skills, the Q ults, the hero pickups, the new effects).
-- **0.3.0 and 0.4.0 add Deadlock content** (icons, sounds, clips; doc 01 §5). A player's older cache has `ready.json`, so Melty skips setup and the new icons, sounds and R clips stay missing until the cache is rebuilt. The release must force a re-extract (doc 01 §5).
+- **Listing screenshots** are from 0.1.0 and should be replaced with current shots (the Q ults, hero pickups, effects, ragdolls) before the next release.
+- **Every release since 0.2.0 added Deadlock content** (icons, sounds, clips, voice, the v0.6.2 tick sounds; doc 01 §5). A player's older cache has `ready.json`, so Melty skips setup and the new content stays missing until the cache is rebuilt. The next release must force a re-extract (doc 01 §5).
 - **New effects are only checked by eye** (devshots); the test measures what skills do, not how they look.
 - **Co-op over the internet is untested with real friends.** The two-copy test proves joining, every skill of a joined player and the relay on one PC (loopback). Steam lobbies, Melty's Join link with a `.steamlobby` address and lag were not tested (one Steam account can't join itself); the first real session with a friend is the test. With lag, Haymaker's damage and Seismic Impact's slam land a moment after the owner sees them (doc 02 §7.7).
 - **Equipment ults on non-heroes** (Commando, Equipment Drones) use plain muzzles and no Deadlock animation; they work but look plainer than on the hero.
-- **More heroes:** follow §8. Abrams-style off-hand weapon pivots need `gunBone`.
+- **More heroes:** follow doc 08 (the four heroes are done, creator 2026-10-18). Abrams-style off-hand weapon pivots need `gunBone`.
 - **Seven's gun froze after a magazine (fixed in v0.4.1):** 29 rounds in bursts of 3 drove the burst counter below zero; any gun whose magazine is not a multiple of its burst would have done the same.
 - **Seven's gun is stronger than the sheet says:** about 350 %/s sustained (before Capacitor), against a `targetDps` of 250. Preflight's burst formula doesn't match `GunState`'s re-arm timing (doc 02 §7.6).
 - **Negative move-speed adds divide** (doc 02 §7.4). The 0.3.0 slows (Napalm Slow, Fixation Slow) are written so they really are 28 % and 12 %.
 - **Pelvis bob is lost** for Haze, Seven and Infernus: their `pelvis` is a separate root in the DLM, and the animator skips position curves on every root bone (doc 01 §7). A fix would skip only `root_motion`, plus the pelvis' *horizontal* drift.
-- **The local cache is from the 0.1.0 manifest**, a superset of 0.2.0's. A clean re-extract with `--manifest extractor/manifest.json --force` has not been run for 0.2.0. Melty's 0.2.0 test skipped setup because `ready.json` existed.
+- **This PC's cache** was rebuilt from the current manifest on 2026-10-18 (v0.6.2, 58 sound events, 44 voice groups).
 
 ---
 

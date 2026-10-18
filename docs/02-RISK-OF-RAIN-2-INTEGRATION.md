@@ -686,12 +686,12 @@ the other is the **host** (only the host writes checks). How to run it: doc 03 Â
 
 ## 11. Adding another hero: the RoR2 half
 
+(The order of work and the definition of done are in doc 08, the new-hero playbook.)
+
 0. **Test-mode limits first:**
-   - `MeltyTest` **hard-codes 4 heroes**:
-     - `deadlock-content` needs `Bodies.Count == 4`, and `survivors-listed` needs 4 listed.
-     - The final log line prints `{heroes}/4`.
-     - Change all three to `HeroRow.All.Length`.
-   - The run starts as `HeroRow.All[0]`, and that hero picks the arena.
+   - The hero count is no longer hard-coded (v0.6.3: `deadlock-content`, `survivors-listed` and the summary use
+     `HeroRow.All.Length` or the tested heroes). `run_test.sh <hero>` plays only the new hero.
+   - The run starts as the first tested hero, and that hero picks the arena. The co-op test hosts as `HeroRow.All[1]`.
    - New `expect` effect kinds need code in `MeltyTest.Effects.Missing` **and** in preflight's allowed list.
    - Other hard-coded per-hero cases to look at:
      - Abrams' `secondary` clip loops (DeadlockAnimator).

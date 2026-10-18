@@ -426,3 +426,14 @@ Mid-work: "does any other risk of rain character work by needing to hold down th
 **Not done / open:** co-op test of the pockets skipped (time). Haze/Seven balance from 0.5.1.
 **Lessons:** read back what the creator asked before (07) when they say "I told you"; my "hold to keep going" was not what they asked. Test only changed heroes. Tell the creator up front how many game runs are needed.
 
+### 2026-10-18 · four heroes done; docs readied for a one-shot new hero · docs + test code
+**Request (verbatim):** "ok i sthere any documentation needing upgrading as i think we are done development on these 4 characters! and the next task for na new agent would be attamepting a 1 shot birng a character into deadlock when i outline specific need. we need everything from sfx to the vfx reuild in unity sare we prepared!"
+**Questions asked → answers:** none (read as: a new Deadlock hero into RoR2; putting characters into Deadlock itself is out of scope).
+**Done:**
+- New `docs/08-NEW-HERO-PLAYBOOK.md`: intake questions, Deadlock lookup, every sheet, sound (events, layers, ticks, how to measure a sound, voice groups), Unity-built effects (moments, building blocks, materials, rules learned), code, the game launches (test, bench, portraits, co-op), pages, docs, definition of done.
+- Doc 03 §8 rewritten to follow doc 08 (it still said 4 skill rows and missed the ult item, voice, ragdoll, effects, bench, pages); §3 layout lists docs 07/08 and the library; §10 stale items fixed (cache rebuilt, re-extract note, screenshots). Doc 02 §11, CLAUDE.md (status + read-first 7), doc 00 (prompt, §1 status, §8 table, §9).
+- Test code: `deadlock-content`, `survivors-listed` and the co-op summary used a hard-coded 4; now the hero count (a fifth hero would have failed them). Built; not run in game (no launch asked; trivial change).
+**Results:** build clean.
+**Not done / open:** the playbook is untested until the first new hero; Haze/Seven balance; co-op check of the pockets; listing screenshots; a release.
+**Lessons:** checklists rot as features land (ult item, voice, ragdoll, effects, library); when a feature lands, update the add-a-hero playbook too.
+

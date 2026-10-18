@@ -19,6 +19,8 @@ AskUserQuestion tool with a recommended option first.
 
 Before touching anything:
 1. Read `CLAUDE.md` (rules), this file, the newest `docs/07-SESSION-LOG.md` entries, then docs 03, 02, 06, 05 as needed.
+   **The four heroes are finished (v0.6.3). The next job is a new hero from the creator's outline: follow
+   `docs/08-NEW-HERO-PLAYBOOK.md`** (one round of questions, then build it all: sounds, voice, Unity effects, tests, pages).
 2. The design sheets in `design/*.json` are the source of truth. Edit them, run `python tools/gen.py` (must say
    `PREFLIGHT CLEAN`), then `dotnet build plugin -c Release`.
 3. Test with `bash tools/run_test.sh <hero>` (**only the heroes you changed**; the creator was angry at full runs for one-hero changes; must end `N/N heroes`), then make sure the game is closed
@@ -33,6 +35,7 @@ Before touching anything:
 
 | Item | State |
 |---|---|
+| Status | **The four heroes are done** (creator, 2026-10-18). Next: a new hero, one shot, via doc 08 |
 | Version | **0.6.3** (`plugin/Plugin.cs`; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). Not published on Melty since 0.2.0 |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
 | Installed build | **v0.6.3** (2026-10-18); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
@@ -198,6 +201,7 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
 | Ability options and the creator's picks | doc 04 | when kits are redesigned |
 | Benchmark method, results, flags, suggestions | doc 05 | every bench run / ability change |
 | Every current ability with numbers and DPS | doc 06 | every ability change |
+| How to add a new hero in one go | doc 08 (new-hero playbook) | when the process or tools change |
 | Short version journal + gotchas | `MODLOG.md` | new gotchas, versions |
 | Rules for agents | `CLAUDE.md` | when a rule changes |
 | Player-facing description | `README.md` | when features change |
@@ -223,7 +227,12 @@ Then v0.6.3: Flame Gun 75 %; Flame Dash always runs 5 s and lays Afterburn fire 
 Abrams' Shoulder Charge rockets forward (yellow front, trails). The creator was angry at four-hero test runs for
 one-hero changes: `run_test.sh <hero>` and a CLAUDE.md rule. Infernus 1149 vs Engineer 1611, inside.
 
-**Next:** Haze/Seven balance from 0.5.1. Co-op check of the Flame Dash pockets (`run_coop_test.sh infernus`) when convenient.
+Then the creator declared the four heroes done and asked whether the docs are ready for a new agent to add a hero in
+one shot: doc 08 (new-hero playbook) written, doc 03 §8/§10 and doc 02 §11 refreshed, the test's hard-coded hero count
+removed.
+
+**Next:** a new hero from the creator's outline (doc 08). Still open from before: Haze/Seven balance (0.5.1), a co-op
+check of the Flame Dash pockets, listing screenshots, a release with a forced re-extract.
 
 ## 9-prev. v0.6.0 co-op (2026-10-17, done; untested with a real friend)
 

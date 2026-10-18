@@ -66,7 +66,7 @@ namespace DeadlockOfRain
             Directory.CreateDirectory(coopDir);
             foreach (var f in new[] { StepFile, AckFile }) if (File.Exists(f)) File.Delete(f);
             while (!RoR2Application.loadFinished) yield return null;
-            Write("deadlock-content", DeadlockCache.Ready && Survivors.Bodies.Count == 4, $"cache ready={DeadlockCache.Ready}, heroes built={Survivors.Bodies.Count}");
+            Write("deadlock-content", DeadlockCache.Ready && Survivors.Bodies.Count == HeroRow.All.Length, $"cache ready={DeadlockCache.Ready}, heroes built={Survivors.Bodies.Count}");
             if (Survivors.Bodies.Count == 0) yield break;
 
             // 1. host a game others can join (the copy on this PC joins through loopback)
@@ -87,7 +87,7 @@ namespace DeadlockOfRain
             while (NetworkUser.readOnlyInstancesList.Count < 2 && Time.unscaledTime - t0 < 600f) yield return null;
             var remoteUser = NetworkUser.readOnlyInstancesList.FirstOrDefault(u => u && !u.isLocalPlayer);
             Write("coop-joined", remoteUser, $"{NetworkUser.readOnlyInstancesList.Count} player(s) in the lobby after 600 s");
-            if (!remoteUser) { Log.Info("Melty test finished: co-op 0/4 heroes (nobody joined)"); yield break; }
+            if (!remoteUser) { Log.Info($"Melty test finished: co-op 0/{(TestHeroes != null ? TestHeroes.Count : HeroRow.All.Length)} heroes (nobody joined)"); yield break; }
             yield return new WaitForSeconds(5f);
             Shot("coop_lobby_host");
             if (PreGameController.instance) RoR2.Console.instance.SubmitCmd(null, "pregame_start_run");
@@ -233,7 +233,7 @@ namespace DeadlockOfRain
             bool sawJoinerShots = seen.Contains("coop-remote-shot");
             Write("coop-shots-seen", sawJoinerShots && sawHostShots, $"host saw the joiner's shots={sawJoinerShots}, joiner saw the host's shots={sawHostShots}");
             Write("coop-effects-seen", relayed > 0, $"the joiner received {relayed} server effects (hit marks, stack bursts, strikes)");
-            Log.Info($"Melty test finished: co-op {heroes}/{(TestHeroes != null ? TestHeroes.Count : 4)} heroes played by a joined player; joiner received {relayed} relayed effects");
+            Log.Info($"Melty test finished: co-op {heroes}/{(TestHeroes != null ? TestHeroes.Count : HeroRow.All.Length)} heroes played by a joined player; joiner received {relayed} relayed effects");
             fireBody = null;
             if (hostBody) hostBody.healthComponent.godMode = false;
         }

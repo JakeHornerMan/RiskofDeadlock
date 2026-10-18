@@ -79,9 +79,9 @@ namespace DeadlockOfRain
             if (Coop) { yield return Joiner ? CoopJoin() : CoopHost(); yield break; }
             // 1. content
             while (!RoR2Application.loadFinished) yield return null;
-            Write("deadlock-content", DeadlockCache.Ready && Survivors.Bodies.Count == 4, $"cache ready={DeadlockCache.Ready}, heroes built={Survivors.Bodies.Count}");
+            Write("deadlock-content", DeadlockCache.Ready && Survivors.Bodies.Count == HeroRow.All.Length, $"cache ready={DeadlockCache.Ready}, heroes built={Survivors.Bodies.Count}");
             int listed = HeroRow.All.Count(h => Survivors.Defs.TryGetValue(h.Id, out var d) && SurvivorCatalog.FindSurvivorDefFromBody(d.bodyPrefab) != null);
-            Write("survivors-listed", listed == 4, listed + "/4 heroes in the survivor catalog");
+            Write("survivors-listed", listed == HeroRow.All.Length, $"{listed}/{HeroRow.All.Length} heroes in the survivor catalog");
             if (Survivors.Bodies.Count == 0) yield break;
 
             // 2. start a single-player run as Haze
