@@ -465,3 +465,9 @@ Mid-work: "does any other risk of rain character work by needing to hold down th
 - Listing: new tagline and description with links to the five kit pages.
 **Not done / open:** the retest and its footage reviews; character select screenshots; the kit pages must be shared publicly by the creator (I can't change who can see a page); publish (ask first).
 **Lessons:** a Melty rename changes the slug, and the test file is named after the slug. Check which check names Melty actually read (`selfChecks.passed`) before trusting a recipe list. Write doc-edit scripts with raw strings (`\t` in a Windows path became a tab).
+
+### 2026-10-19 · Melty test passes · v0.6.3
+**Request (verbatim):** "why is the game still opne?"; "all links should be accessable thorugh the link now"; "check the test"; "i think i messed with it just restrt test 2"
+**Done:** explained the test opens and closes the game itself. Kit pages now public (docs 00, 06). Test `40cc813d-…`: run 1 pass (footage reviewed), run 2 failed: the creator opened the pause menu at 1:44 and browsed Settings, so the paused run never played the heroes. New 2-run test `e2e6d068-…`: 12/12 checks in both runs, both footage reviews pass, `graduates: true`.
+**Not done / open:** publish (asking), character select screenshots for the listing.
+**Lessons:** tell the creator up front to keep off the PC during a Melty test; Melty's own note says "play the mashup", which is wrong for a self-playing test mode. Melty can't rerun one run; a new 2-run test is the quickest redo.

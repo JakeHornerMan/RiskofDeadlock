@@ -235,7 +235,8 @@ Then the creator: "its time to upload to melty!": 0.6.3 packaged, uploaded and s
 `5e542898-…`). The recipe's `setup.done.contains` now forces older caches to re-extract (doc 03 §6). README's Flame Dash line fixed.
 The creator then renamed it on Melty: **"Risk of Deadlock"**, slug `risk-of-deadlock-2`; test mode reads that slug's test
 file too. First test: every run passed every check the mod wrote, but the recipe named checks Melty didn't read; resubmitted
-with the first 12 the test writes, listing text rewritten with links to the kit pages. Retest `40cc813d-…` started.
+with the first 12 the test writes, listing text rewritten with links to the kit pages. Retest: a run failed when the creator
+opened the pause menu; a 2-run test (`e2e6d068-…`) then passed with both footage reviews (`graduates: true`).
 
 **Next:** `test_release` of 0.6.3 (3 × 8 min on this PC, once the creator agrees), new listing screenshots, listing text,
 then ask before `publish`. After that: a new hero from the creator's outline (doc 08). Still open: Haze/Seven balance

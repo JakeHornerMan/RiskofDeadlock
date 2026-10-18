@@ -271,8 +271,11 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 - 0.1.0, 0.2.0 and **0.6.3** are draft releases. 0.2.0's test passed; 0.6.3 (release `5e542898-bfa4-4bad-9f8c-631175af83f1`,
   upload `55889b47-…`) was tested: every game ran and every check the mod wrote passed, but the recipe listed checks Melty
   did not read (see above), and the footage had no review. Resubmitted as release `4ed38587-cd16-4083-8437-0e3d0211c194`
-  (upload `df73856a-…`, the slug fix and new checks); its test `40cc813d-8d29-4159-a5c0-5e2033d7d598` runs next, then a
-  `test_footage` + `test_review` per run.
+  (upload `df73856a-…`, the slug fix and new checks). Test `40cc813d-…`: run 1 passed, run 2 failed because the creator
+  opened the pause menu (a paused solo run stops the test). **Test `e2e6d068-8b4d-4431-9b59-d641cc9efe55` (2 runs) passed,
+  both footage reviews pass, `graduates: true`.** Ready to publish once the creator says yes.
+- **Nobody may touch the PC during `test_release`.** Melty's own message tells the creator to "play the mashup"; for us that
+  is wrong: the test mode plays itself and any input (Esc) pauses it. A 2-run test is enough to publish.
 - **Not yet published.**
 - The listing screenshots are from 0.1.0.
 
