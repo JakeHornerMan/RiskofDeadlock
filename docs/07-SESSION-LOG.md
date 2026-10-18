@@ -347,3 +347,19 @@ smoke looked larger and darker on the joined copy's small window: check in play.
 **Lessons:** in RoR2 the skill states run on every machine but inputs (aim) exist only on the owner; never time one copy
 of the game on the other's clock; two copies of one Steam account can only meet over loopback with a test-only id.
 
+### 2026-10-18 · documentation check: sounds, ults, the DPS library · docs only
+**Request (verbatim):** "ok has everything be mad a record of in docukentation the dosund sthe the ults and the fact we have already run the dps test on all bas echaracters if not you should now"
+**Questions asked → answers:** none.
+**Done:** checked every doc. Already recorded: the ults (doc 06 rows and "The ult equipment", doc 02 kinds, `equipment.json`),
+the DPS library (doc 05 §6, doc 03 decision row, doc 00 "Bench rule", CLAUDE.md "Never re-bench", `docs/dps-library.json`),
+sound extraction (doc 01 §6.5) and the mixer (doc 02). **Missing, now added to doc 06:**
+- a **Sounds** table: every move's Deadlock sound per moment (start, loop, hit, end, reload, layer, gain), mirroring `design/sounds.json`;
+- a **Voice lines** summary: when each hero speaks (no lines written out);
+- **every vanilla survivor's stored DPS** (library means, 3 runs each, with the not-comparable three).
+**Fixed stale numbers in doc 06:** version 0.4.2 → 0.6.0; DPS source now the library; Commando baseline 1255 → 1222 (M2 752 → 717,
+Q 1947 → 1902); Infernus 1102 vs Engineer 1488 → 1512 vs 1611, his moves 317/538/311/768 → 320/588/441/901.
+**Results:** the pages already read the library, so they show the right numbers; no republish needed.
+**Not done / open:** the Seekers of the Storm survivors (Seeker, False Son, CHEF) are not in the library: their expansion was off
+in the bench's run. Measuring them needs that expansion and the creator's go-ahead (CLAUDE.md: ask before re-benching).
+**Lessons:** doc 06 header lines (version, DPS source) go stale silently; refresh them whenever the numbers move.
+

@@ -9,9 +9,11 @@
 [Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) · [Balance vs Commando](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3).
 Built by `python tools/kit_pages.py` into `build/pages/`. Republish each page to its link whenever this doc or doc 05 changes.
 
-**Version:** 0.4.2 (2026-10-16).
+**Version:** 0.6.0 (2026-10-17; co-op, no ability numbers changed since 0.5.1).
 
-**DPS source:** the v0.4.1 benchmark of 2026-10-16; doc 05 lists every variable. Setup:
+**DPS source:** the stored library `docs/dps-library.json` (doc 05 §6): every vanilla survivor measured 3 times on
+2026-10-17 and **never re-measured**; Haze, Abrams and Seven from the v0.5.1 heroes-only run, Infernus from his 3 library runs.
+Doc 05 lists every variable. Setup:
 - Monsoon, level 1, no items
 - 12 still enemies 10–15 m away, perfect aim
 - **each ability used alone, whenever ready, for 30 s**
@@ -24,7 +26,7 @@ How to read the DPS:
   survivor its stats are built on): balanced = within **±500 %/s** of the match, comparing the **means over every bench run of
   the current build** (doc 05 §3.0; one run is too noisy). Haze → Commando, Abrams → Loader,
   Seven → Artificer, Infernus → Engineer.
-- Per-ability DPS below is from the last full run (v0.4.2); single runs swing ±10 %.
+- Per-ability DPS below is the library entry of each survivor (means of 3 runs; one run for Haze, Abrams, Seven); single runs swing ±10 %.
 - **Q (equipment)** is **not balanced** (any survivor can carry it): its column is one use, spread over 30 s, plus its total, for fun.
 - Passives have no number of their own: they are inside their gun's (and other skills') numbers.
 
@@ -39,11 +41,32 @@ of the hero.
 | Key | Ability | DPS alone (%/s · dmg/s) |
 |---|---|---|
 | M1 | Double Tap | **603** · 72 |
-| M2 | Phase Round (pierces) | **752** · 90 |
+| M2 | Phase Round (pierces) | **717** · 86 |
 | Shift | Tactical Dive | 0 |
 | R | Suppressive Fire (4 casts in 30 s) | 80 · 10 |
-| | **Main moves at once** (no equipment) | **1255 · 151** (the balance baseline) |
-| Q | Preon Accumulator (not balanced; one use: 58400 % on the pack) | 1947 · 234 |
+| | **Main moves at once** (no equipment) | **1222 · 147** (the balance baseline; library mean of 3 runs: 1104 / 1384 / 1178) |
+| Q | Preon Accumulator (not balanced; one use: 58400 % on the pack) | 1902 · 228 |
+
+### Every other vanilla survivor (stored, never re-measured)
+Measured 3 times each on 2026-10-17 (`ALL=1 bash tools/run_bench.sh 30`, doc 05 §6), main moves at once, %/s means.
+The base game and Survivors of the Void are all here. Seekers of the Storm survivors are not: that expansion was off in the
+bench's run.
+
+| Survivor | All | M1 / M2 / Shift / R alone | Matched by |
+|---|---|---|---|
+| Mercenary | 5112 | 2850 / 1351 / 1120 / 128 | – |
+| Artificer | 4013 | 3052 / 1741 / 78 / 1058 (noisy: burns) | Seven |
+| Captain | 3490 | 800 / 7 / 0 / 0 (M1 released every 0.6 s) | – |
+| Loader | 2951 | 2333 / 14 / 2486 / 1933 (noisy) | Abrams |
+| Huntress | 1921 | 186 / 369 / 0 / 1616 | – |
+| Bandit | 1919 | 11 / 1478 / 709 / 140 | – |
+| REX | 1738 | 392 / 7465 / 0 / 393 | – |
+| Engineer | 1611 | 2113 / 187 / 0 / 39 (turrets count; damage stat 14) | Infernus |
+| MUL-T | 1450 | 876 / 754 / 435 / 0 | – |
+| Commando | 1222 | 603 / 717 / 0 / 80 | Haze |
+| Acrid | 11206 | not comparable (max-health damage on ×101-health enemies) | – |
+| Railgunner | 592 | not comparable (the bench doesn't scope) | – |
+| Void Fiend | 380 | not comparable (never corrupts in 30 s) | – |
 
 ---
 
@@ -80,16 +103,63 @@ of the hero.
 | R | **Power Surge** (his Deadlock ability) | For 8 s he crackles with lightning: every Shock Rifle burst arcs RoR2 Tesla lightning (like the Unstable Tesla Coil) from the target to up to 4 more enemies within 10 m, each arc building Static. +40 % move speed. | 60 % per arc, proc 0.2 | 10 s | 0 alone (it powers the gun; counted in "all") |
 | Q | **Thunderhead** (equipment) | Dark storm clouds 35 m over the spot he stands on, darkening it; lightning strikes enemies from the clouds; allies inside get RoR2's Warbanner. | up to 4 enemies every 0.4 s, 272 % each, 20 m, 10 s (6800 % per enemy); Warbanner +30 % attack and move speed | 120 s | 907 · 109 (not balanced; one use: 27200 %) |
 
-## Infernus: the burning man (main moves at once: **1102 %/s** mean of 3 runs; match Engineer 1488: inside ±500)
+## Infernus: the burning man (main moves at once: **1512 %/s**, mean of 3 library runs on v0.5.1; match Engineer 1611 (library): inside ±500)
 
 | Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
 |---|---|---|---|---|---|
 | Passive | **Afterburn** | Gun hits build Afterburn; at 12 stacks the target burns. Embers show the build-up; RoR2's Helfire flare and big flames show the burn. | burn 100 %/s for 3 s; build-up max 12, 4 s | – | in M1 and R |
-| M1 | **Flame Gun** | Automatic, from the end of the gun, with a heavier shot sound (Warden's shot layered under his own, louder) and a flash and puff of smoke at the muzzle; hits build Afterburn. | 50 % per bullet, 9.5 shots/s, 27 rounds, 1.4 s reload, proc 0.5 | – | **317** · 38 |
-| M2 | **Napalm** | A lobbed flask (Molotov's bottle, glowing and trailing fire, flies from him to the target) that bursts in a ring of fire and leaves a burning puddle: damage, a slow, and the target takes more damage from him. | 300 % in 5 m, slow 28 % for 4 s, +16 % damage taken from Infernus for 8 s, 2 charges | 5 s | **538** · 65 |
-| Shift | **Flame Dash** | Dash at ×2.2 speed; hold to keep going. Leaves burning ground behind him; enemies he runs into are knocked aside and scorched. 50 % slow resistance while dashing. | trail 150 %/s for 5 s; shove 75 % + knockback 22 m/s; 0.8 s on a tap, up to 3 s held | 8 s | **311** · 37 |
-| R | **Torment Pulse** (Deadlock item) | For 6 s, rings of fire race out of him every 0.5 s, burning everything within 10 m and building Afterburn. | 50 % per pulse, +2 Afterburn build-up, proc 0.5 | 12 s | **768** · 92 (burns included) |
+| M1 | **Flame Gun** | Automatic, from the end of the gun, with a heavier shot sound (Warden's shot layered under his own, louder) and a flash and puff of smoke at the muzzle; hits build Afterburn. | 50 % per bullet, 9.5 shots/s, 27 rounds, 1.4 s reload, proc 0.5 | – | **320** · 38 |
+| M2 | **Napalm** | A lobbed flask (Molotov's bottle, glowing and trailing fire, flies from him to the target) that bursts in a ring of fire and leaves a burning puddle: damage, a slow, and the target takes more damage from him. | 300 % in 5 m, slow 28 % for 4 s, +16 % damage taken from Infernus for 8 s, 2 charges | 5 s | **588** · 71 |
+| Shift | **Flame Dash** | Dash at ×2.2 speed; hold to keep going. Leaves burning ground behind him; enemies he runs into are knocked aside and scorched. 50 % slow resistance while dashing. | trail 150 %/s for 5 s; shove 75 % + knockback 22 m/s; 0.8 s on a tap, up to 3 s held | 8 s | **441** · 53 |
+| R | **Torment Pulse** (Deadlock item) | For 6 s, rings of fire race out of him every 0.5 s, burning everything within 10 m and building Afterburn. | 50 % per pulse, +2 Afterburn build-up, proc 0.5 | 12 s | **901** · 108 (burns included) |
 | Q | **Concussive Combustion** (equipment) | Becomes a bomb, fire gathering on him; can move while it builds; the blast stuns and leaves burning ground. | 6800 % in 18 m after a 3 s fuse, stun 2 s, each kill heals 10 % of max health | 120 s | 2493 · 299 (not balanced; one use: 74800 % on 11 enemies) |
+
+
+## Sounds (all four heroes)
+Every sound is the hero's own Deadlock sound, read from the player's install (doc 01 §6.5) and played by our mixer
+(doc 02, sound). The source of truth is `design/sounds.json`; this table mirrors it. **Start** plays when the move starts, **loop** while
+it lasts, **hit** on each hit, **end** when it ends, **reload** on a reload; a **layer** plays under the start or hit to make it
+heavier; **gain** scales the whole row. In co-op every player hears each sound once (doc 02 §7.7).
+
+| Hero | Key | Move | Start | Loop | Hit | End | Reload | Layer | Gain |
+|---|---|---|---|---|---|---|---|---|---|
+| Haze | M1 | Twin SMGs | `Haze.Wpn.Fire.Main` | – | – | – | `Haze.Wpn.Reload.Start` | – | 1.0 |
+| Haze | M2 | Sleep Dagger | `Haze.Finesse.Dagger.Cast` | – | `Haze.Finesse.Dagger.Projectile.Hit` | – | – | – | 1.0 |
+| Haze | Shift | Smoke Bomb | `Haze.Smoke.Bomb.Cast` | – | – | `Haze.Smoke.Bomb.End` | – | – | 1.0 |
+| Haze | R | Phantom Strike | `Mods.Armor.Phantom.Strike.Cast` | – | `Mods.Armor.Phantom.Strike.Hit` | – | – | – | 1.0 |
+| Haze | Q | Bullet Dance | `Haze.BulletFlurry.Cast.Delay` | `Haze.BulletFlurry.Modifier.Lp` | `Haze.Wpn.Fire.Main` | `Haze.BulletFlurry.Modifier.End` | – | – | 1.0 |
+| Abrams | M1 | Shotgun | `Abrams.Wpn.Fire.Main` | – | `Abrams.Wpn.Impact` | – | – | – | 1.0 |
+| Abrams | M2 | Siphon Life | `Abrams.A1.SiphonLife.Cast` | `Abrams.A1.SiphonLife.Loop` | – | `Abrams.A1.SiphonLife.End` | – | – | 1.0 |
+| Abrams | Shift | Shoulder Charge | `Abrams.Charge.Cast` | – | `Abrams.Charge.HitEnemy` | `Abrams.Charge.Wall.Impact` | – | – | 1.0 |
+| Abrams | R | Haymaker | `Abrams.Melee.Swing.Charged` | – | `Ability.Melee.Impact.Heavy.NPC` | – | – | hit + `Abrams.Charge.Wall.Impact` | 1.3 |
+| Abrams | Q | Seismic Impact | `Abrams.A4.Leap.Cast` | `Abrams.A4.Leap.Float.Lp` | `Abrams.A4.Leap.Descend` | `Abrams.A4.Leap.Impact` | – | – | 1.0 |
+| Seven | M1 | Shock Rifle | `Seven.Wpn.Fire` | – | `Seven.Wpn.Impact` | – | `Seven.Wpn.Reload.Start` | – | 1.0 |
+| Seven | M2 | Lightning Ball | `Gigawatt.LightningBall.Cast` | `Gigawatt.LightningBall.Proj.Lp` | `Gigawatt.LightningBall.Damage` | `Gigawatt.LightningBall.Proj.Explo` | – | – | 1.0 |
+| Seven | Shift | Static Charge | `Gigawatt.StaticCharge.Cast` | `Gigawatt.StaticCharge.Lp` | `Gigawatt.StaticCharge.Proc` | – | – | – | 1.0 |
+| Seven | R | Power Surge | `Gigawatt.PowerSurge.Cast` | `Gigawatt.PowerSurge.Lp` | `Gigawatt.PowerSurge.ChainMod.Proc` | `Gigawatt.PowerSurge.End` | – | – | 1.0 |
+| Seven | Q | Thunderhead | `Gigawatt.StormCloud.Cast` | `Gigawatt.StormCloud.Lp` | `Gigawatt.StormCloud.Bolt.Detonate` | `Gigawatt.StormCloud.End` | – | – | 1.0 |
+| Infernus | M1 | Flame Gun | `Infernus.Wpn.Fire` | – | `Infernus.Wpn.Impact` | – | `Infernus.Wpn.Reload.Start` | start + `Warden.Wpn.Fire` | 1.2 |
+| Infernus | M2 | Napalm | `Inferno.Incend.Cast` | – | `Inferno.Incend.Hit` | – | – | – | 1.0 |
+| Infernus | Shift | Flame Dash | `Inferno.FlameDash.Modifier.Start` | `Inferno.FlameDash.Modifier.Lp` | `Infernus.FlameDash.Hit` | `Inferno.FlameDash.Modifier.Stop` | – | – | 1.0 |
+| Infernus | R | Torment Pulse | `Mods.Tech.TormentPulse.Proc` | – | `Mods.Tech.TormentPulse.Proc` | – | – | – | 1.0 |
+| Infernus | Q | Concussive Combustion | `Inferno.FireBomb.Cast` | – | – | `Inferno.FireBomb.Explode` | – | – | 1.0 |
+
+Notes:
+- Phantom Strike and Torment Pulse are Deadlock items, so they use the item sounds (`Mods.*`); Haymaker's hit is Deadlock's
+  heavy melee impact with Abrams' charge-into-wall thud under it; the Flame Gun has Warden's shot under Infernus' own (v0.5.1).
+- Volumes come from Deadlock (its `volume` is decibels, read correctly since extractor 1.2.0), times the row's gain, times
+  RoR2's SFX volume.
+- Bullet Dance's hits replay Haze's gun shot; Seismic Impact plays its `hit` (the descend) as the dive starts and `end` on landing.
+
+### Voice lines
+The heroes also speak their own Deadlock lines (`design/voice.json`, `Runtime/Voice.cs`, since v0.5.0). The lines themselves
+are never written out here or on the pages. When each hero speaks:
+- **Run start and after each teleport** (select) and **when the teleporter finishes charging** (unselect).
+- **Moves:** M2 and Shift 40 % of the time (at most every 8 s); R 40 % for Haze and Seven, 60 % (at most every 3 s) for
+  Abrams' Haymaker and Infernus' Torment Pulse, which use a grunt instead of a line; Q every time. An ult used by another survivor speaks in its own hero's voice.
+- **Kill streaks:** 4, 7 and 10 kills in quick succession (gaps under 1.5 s).
+- **Idle:** after 2–5 min of silence.
+- Only the local player hears their own hero's voice.
 
 ---
 
