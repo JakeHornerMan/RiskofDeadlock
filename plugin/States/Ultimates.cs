@@ -246,7 +246,7 @@ namespace DeadlockOfRain.States
     [Kind("ult_selfbomb")]
     public sealed class UltSelfBomb : UltState
     {
-        bool exploded; int loop; GameObject fuse;
+        bool exploded; int loop; GameObject fuse, ring;
         public override void OnEnter()
         {
             base.OnEnter();
@@ -255,6 +255,8 @@ namespace DeadlockOfRain.States
             SlowWhileActive(row.MoveSpeedMult);
             // fire gathering on him through the fuse
             fuse = Vfx.Play(row.Vfx, "loop", characterBody.corePosition, row.Radius, characterBody.coreTransform ? characterBody.coreTransform : transform);
+            // the blast's reach on the ground around whoever holds the equipment (any survivor or drone; every player sees it)
+            ring = Vfx.Play(row.Vfx, "aim", characterBody.footPosition, row.Radius, transform);
         }
         public override void FixedUpdate()
         {
@@ -264,6 +266,7 @@ namespace DeadlockOfRain.States
                 exploded = true;
                 if (anim) anim.Override("ult_end", 0.8f);
                 Vfx.Stop(fuse, 0.2f);
+                Vfx.Stop(ring, 0.1f);
                 Fx.Impact(row.Effect, transform.position, row.Radius);
                 Vfx.Play(row.Vfx, "hit", characterBody.footPosition, row.Radius);
                 Sound("end");
@@ -285,6 +288,7 @@ namespace DeadlockOfRain.States
         {
             DeadlockAudio.Stop(loop);
             Vfx.Stop(fuse, 0.2f);
+            Vfx.Stop(ring, 0.1f);
             base.OnExit();
         }
     }

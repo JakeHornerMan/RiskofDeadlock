@@ -14,7 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
-| – | – | nothing open (the v0.5.1 Phantom Strike, Haymaker and Lightning Ball flags were covered by the 2026-10-17 heroes-only run, §3.1) | – | – |
+| – | – | nothing open (v0.6.1 Napalm and Flame Dash covered by the Infernus-only run of 2026-10-18, §3.2) | – | – |
 
 ## 1. The question
 The creator's hypothesis: **Commando, using every ability the moment it is ready while shooting constantly for 30 s
@@ -105,6 +105,20 @@ Matches are the stored library means (3 runs each). One run per hero; the 0.4.2 
   stop at the first surface inside the pack and shock it for 5 s). Options: bounce only off walls (roll along the floor),
   or lose speed on each bounce.
 - **Abrams:** the lock-on Haymaker does about what the lunge did (1760 vs 1680 %/s alone).
+
+### 3.2 v0.6.1 Infernus (Infernus-only run, 2026-10-18; reported, not retuned)
+Napalm is now aimed (Right Click readies it, Left Click throws; the bench throws by itself 0.8 s after readying, and its
+mashed Right Clicks don't put it away), 45 → 78 m/s; Flame Dash 5 s held / 13 s cooldown (the bench taps it, so 0.8 s).
+
+| Hero | %/s | M1 / M2 / Shift / R alone | RoR2 match (library) | Gap | Verdict (±500) |
+|---|---|---|---|---|---|
+| Infernus | **929** (was 1512) | 307 / **685** (was 588) / 145 (was 441) / 876 | Engineer 1611 | −682 | **below** |
+
+- **Why "all" fell:** while he holds the flask the Weapon machine is busy, so the gun can't fire. The bench readies
+  Napalm whenever a charge is back, so the gun fired 10 times in the pass (119 before). A player who throws at once loses
+  less. Napalm alone rose (faster flight, 8 throws).
+- **Flame Dash alone** fell with the longer cooldown (one run; this pass is noisy: 244–485 before).
+- Options for the creator: a shorter auto-ready (the gun fires while aiming), or Flame Gun 50 → 60 % per bullet.
 
 Each move alone in the last full run (%/s, hero vs match):
 

@@ -16,7 +16,7 @@ import json, os, re, sys, datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LIB = os.path.join(ROOT, 'docs', 'dps-library.json')
 MODES = ['all', 'primary', 'secondary', 'utility', 'special', 'equipment']
-VERSION = 'v0.5.1'  # the build heroes are measured on; bump it when a hero's kit changes
+VERSION = 'v0.6.1'  # the build heroes are measured on; bump it when a hero's kit changes
 
 def parse(path):
     """-> list of runs; each run = {who: {mode: {'dps', 'total', 'hits', 'enemies'}}}, plus stats and skills per who."""
@@ -59,6 +59,7 @@ def summary(values):
 def build(paths, base=None):
     lib = base or dict(survivors={})
     raw = {}  # who -> mode -> [dps...]
+    fresh = set()  # survivors measured in the files being added
     for who, e in lib['survivors'].items():
         for mode in MODES:
             if mode in e.get('dps', {}): raw.setdefault(who, {})[mode] = list(e['dps'][mode]['runs'])
@@ -66,6 +67,7 @@ def build(paths, base=None):
         runs, stats, skills = parse(path)
         # a hero measured on an older build had a different kit: its old runs are dropped, the new ones replace them
         for who in {w for run in runs for w in run}:
+            fresh.add(who)
             e = lib['survivors'].get(who, {})
             if who.startswith('Deadlock') and e.get('measuredOn') != VERSION: raw.pop(who, None)
         for run in runs:
@@ -84,7 +86,7 @@ def build(paths, base=None):
         e = lib['survivors'].setdefault(who, {})
         e.setdefault('name', who)
         e['hero'] = who.startswith('Deadlock')
-        if e['hero']: e['measuredOn'] = VERSION
+        if e['hero'] and who in fresh: e['measuredOn'] = VERSION  # the others keep the build they were measured on
         e['dps'] = {m: summary(v) for m, v in modes.items() if v}
         if who in NOTES: e['note'] = NOTES[who]
         else: e.pop('note', None)

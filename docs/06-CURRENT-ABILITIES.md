@@ -9,10 +9,10 @@
 [Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) · [Balance vs Commando](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3).
 Built by `python tools/kit_pages.py` into `build/pages/`. Republish each page to its link whenever this doc or doc 05 changes.
 
-**Version:** 0.6.0 (2026-10-17; co-op, no ability numbers changed since 0.5.1).
+**Version:** 0.6.1 (2026-10-18; Napalm aimed throw, Flame Dash 5 s / 13 s, Combustion range ring, ragdoll deaths).
 
 **DPS source:** the stored library `docs/dps-library.json` (doc 05 §6): every vanilla survivor measured 3 times on
-2026-10-17 and **never re-measured**; Haze, Abrams and Seven from the v0.5.1 heroes-only run, Infernus from his 3 library runs.
+2026-10-17 and **never re-measured**; Haze, Abrams and Seven from the v0.5.1 heroes-only run, Infernus from his v0.6.1 run (2026-10-18).
 Doc 05 lists every variable. Setup:
 - Monsoon, level 1, no items
 - 12 still enemies 10–15 m away, perfect aim
@@ -29,6 +29,8 @@ How to read the DPS:
 - Per-ability DPS below is the library entry of each survivor (means of 3 runs; one run for Haze, Abrams, Seven); single runs swing ±10 %.
 - **Q (equipment)** is **not balanced** (any survivor can carry it): its column is one use, spread over 30 s, plus its total, for fun.
 - Passives have no number of their own: they are inside their gun's (and other skills') numbers.
+
+**Deaths:** every hero falls as a ragdoll, like the vanilla survivors (v0.6.1).
 
 **Every hero starts each run holding their own ult on Q.** Swap it for another equipment and it stays on the ground.
 Anyone, Commando included, can find the four ults wherever the Preon Accumulator drops. The pickup is a small figure
@@ -103,16 +105,16 @@ bench's run.
 | R | **Power Surge** (his Deadlock ability) | For 8 s he crackles with lightning: every Shock Rifle burst arcs RoR2 Tesla lightning (like the Unstable Tesla Coil) from the target to up to 4 more enemies within 10 m, each arc building Static. +40 % move speed. | 60 % per arc, proc 0.2 | 10 s | 0 alone (it powers the gun; counted in "all") |
 | Q | **Thunderhead** (equipment) | Dark storm clouds 35 m over the spot he stands on, darkening it; lightning strikes enemies from the clouds; allies inside get RoR2's Warbanner. | up to 4 enemies every 0.4 s, 272 % each, 20 m, 10 s (6800 % per enemy); Warbanner +30 % attack and move speed | 120 s | 907 · 109 (not balanced; one use: 27200 %) |
 
-## Infernus: the burning man (main moves at once: **1512 %/s**, mean of 3 library runs on v0.5.1; match Engineer 1611 (library): inside ±500)
+## Infernus: the burning man (main moves at once: **929 %/s**, one v0.6.1 run; match Engineer 1611 (library): **below** ±500, doc 05 §3.2)
 
 | Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
 |---|---|---|---|---|---|
 | Passive | **Afterburn** | Gun hits build Afterburn; at 12 stacks the target burns. Embers show the build-up; RoR2's Helfire flare and big flames show the burn. | burn 100 %/s for 3 s; build-up max 12, 4 s | – | in M1 and R |
-| M1 | **Flame Gun** | Automatic, from the end of the gun, with a heavier shot sound (Warden's shot layered under his own, louder) and a flash and puff of smoke at the muzzle; hits build Afterburn. | 50 % per bullet, 9.5 shots/s, 27 rounds, 1.4 s reload, proc 0.5 | – | **320** · 38 |
-| M2 | **Napalm** | A lobbed flask (Molotov's bottle, glowing and trailing fire, flies from him to the target) that bursts in a ring of fire and leaves a burning puddle: damage, a slow, and the target takes more damage from him. | 300 % in 5 m, slow 28 % for 4 s, +16 % damage taken from Infernus for 8 s, 2 charges | 5 s | **588** · 71 |
-| Shift | **Flame Dash** | Dash at ×2.2 speed; hold to keep going. Leaves burning ground behind him; enemies he runs into are knocked aside and scorched. 50 % slow resistance while dashing. | trail 150 %/s for 5 s; shove 75 % + knockback 22 m/s; 0.8 s on a tap, up to 3 s held | 8 s | **441** · 53 |
-| R | **Torment Pulse** (Deadlock item) | For 6 s, rings of fire race out of him every 0.5 s, burning everything within 10 m and building Afterburn. | 50 % per pulse, +2 Afterburn build-up, proc 0.5 | 12 s | **901** · 108 (burns included) |
-| Q | **Concussive Combustion** (equipment) | Becomes a bomb, fire gathering on him; can move while it builds; the blast stuns and leaves burning ground. | 6800 % in 18 m after a 3 s fuse, stun 2 s, each kill heals 10 % of max health | 120 s | 2493 · 299 (not balanced; one use: 74800 % on 11 enemies) |
+| M1 | **Flame Gun** | Automatic, from the end of the gun, with a heavier shot sound (Warden's shot layered under his own, louder) and a flash and puff of smoke at the muzzle; hits build Afterburn. | 50 % per bullet, 9.5 shots/s, 27 rounds, 1.4 s reload, proc 0.5 | – | **307** · 37 |
+| M2 | **Napalm** | Right Click readies the flask and shows where it will land (its flight path and a splash-sized circle); **Left Click throws it** (Right Click again puts it away, charge kept). Molotov's bottle, glowing and trailing fire, flies in a high arc (as far again ×3 since v0.6.1) and bursts in a ring of fire and leaves a burning puddle: damage, a slow, and the target takes more damage from him. | 300 % in 5 m, slow 28 % for 4 s, +16 % damage taken from Infernus for 8 s, 2 charges; thrown at 78 m/s | 5 s | **685** · 82 |
+| Shift | **Flame Dash** | Dash at ×2.2 speed; hold to keep going. Leaves burning ground behind him; enemies he runs into are knocked aside and scorched. 50 % slow resistance while dashing. | trail 150 %/s for 5 s; shove 75 % + knockback 22 m/s; 0.8 s on a tap, up to 5 s held | 13 s | **145** · 17 (one run) |
+| R | **Torment Pulse** (Deadlock item) | For 6 s, rings of fire race out of him every 0.5 s, burning everything within 10 m and building Afterburn. | 50 % per pulse, +2 Afterburn build-up, proc 0.5 | 12 s | **876** · 105 (burns included) |
+| Q | **Concussive Combustion** (equipment) | Becomes a bomb, fire gathering on him; a yellow ring on the ground shows the blast's reach, with a ring sweeping inward each second as a countdown (on whoever holds the item); can move while it builds; the blast stuns and leaves burning ground. | 6800 % in 18 m after a 3 s fuse, stun 2 s, each kill heals 10 % of max health | 120 s | 2720 · 326 (not balanced; one use: 81600 % on 12 enemies) |
 
 
 ## Sounds (all four heroes)

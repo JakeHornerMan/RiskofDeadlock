@@ -111,7 +111,7 @@ namespace DeadlockOfRain
             bool levelOk = true; string levelWhy = "";
             bool aimOk = true, handOk = true, slotsOk = true; string aimWhy = "", handWhy = "", slotsWhy = "";
             string gunsWhy = "", abilitiesWhy = "", ultsWhy = "", equipWhy = "";
-            int heroes = 0;
+            int heroes = 0, ragdolls = 0; string ragdollWhy = "";
             foreach (var hero in HeroRow.All)
             {
                 if (!Survivors.Bodies.ContainsKey(hero.Id)) { Write(hero.Id + "-plays", false, "hero not built"); continue; }
@@ -241,11 +241,41 @@ namespace DeadlockOfRain
                 if (Mathf.Abs(body.maxHealth - wantHp) > 1.5f || Mathf.Abs(body.damage - wantDmg) > 0.3f)
                 { levelOk = false; levelWhy += $"{hero.Id} lvl {lvl}: hp {body.maxHealth:F0} want {wantHp:F0}, dmg {body.damage:F1} want {wantDmg:F1}; "; }
 
+                // death: a spare body of this hero, killed in front of the player, must go limp like vanilla survivors
+                var rag = new string[1];
+                yield return TestRagdoll(master.GetBody(), hero, rag);
+                if (rag[0] == "") ragdolls++; else ragdollWhy += $"{hero.Id}: {rag[0]}; ";
+
                 KillTargets();
                 // grow a level before the next hero so later heroes are checked at higher levels
                 TeamManager.instance.GiveTeamExperience(TeamIndex.Player, (ulong)Mathf.Max(100f, TeamManager.instance.GetTeamNextLevelExperience(TeamIndex.Player) - TeamManager.instance.GetTeamExperience(TeamIndex.Player) + 1f));
                 yield return new WaitForSeconds(1f);
             }
+            // the ult belongs to the equipment: Commando holding Concussive Combustion gets the same blast and ring
+            string anyWhy = "";
+            var bomb = SkillRow.All.FirstOrDefault(r => r.Kind == "ult_selfbomb");
+            if (bomb != null)
+            {
+                master.TransformBody("CommandoBody");
+                yield return new WaitForSeconds(1.5f);
+                var cb = master.GetBody();
+                if (cb)
+                {
+                    cb.healthComponent.godMode = true;
+                    var res = new Effects();
+                    yield return TestSkill(cb, bomb, res);
+                    // Commando is several levels up by now and the blast can kill the targets before they are stunned:
+                    // the blast landing is what shows the ult works on him
+                    var miss = res.Missing(bomb).Where(m => m != "enemy_stun").ToList();
+                    Log.Info($"Melty test: Commando with {bomb.Id}: {res} -> {(miss.Count == 0 ? "ok" : "MISSING " + string.Join(", ", miss))}");
+                    if (miss.Count > 0) anyWhy = "Commando: no " + string.Join(", ", miss);
+                }
+                else anyWhy = "could not become Commando";
+                KillTargets();
+            }
+            Write("ult-any-survivor", anyWhy == "", anyWhy);
+            Write("ragdoll", ragdolls == HeroRow.All.Length, ragdollWhy);
+
             var lb = master.GetBody();
             Write("guns-fire", gunsWhy == "", gunsWhy);
             Write("abilities-fire", abilitiesWhy == "", abilitiesWhy);
@@ -263,6 +293,36 @@ namespace DeadlockOfRain
                 missingVoice.Count > 0 ? "not in the cache: " + string.Join(", ", missingVoice.Take(5)) : Voice.Spoken == 0 ? "no voice line played" : "");
             Log.Info($"Melty test finished: {heroes}/4 heroes: every skill did what its sheet expects; Deadlock sounds played: {DeadlockAudio.Played}");
             if (lb) lb.healthComponent.godMode = false;
+        }
+
+        /// <summary>Spawn a spare body of the hero 4 m in front of the player, kill it, and check after 1.5 s that its
+        /// RagdollController's bones went limp and its head dropped. why[0] = "" on success.</summary>
+        static IEnumerator TestRagdoll(CharacterBody player, HeroRow hero, string[] why)
+        {
+            why[0] = "";
+            var prefab = Survivors.Bodies.TryGetValue(hero.Id, out var bp) ? bp : null;
+            if (!player || !prefab) { why[0] = "no body"; yield break; }
+            var fwd = player.inputBank.aimDirection; fwd.y = 0; fwd.Normalize();
+            var at = player.footPosition + fwd * 4f;
+            if (Physics.Raycast(at + Vector3.up * 2f, Vector3.down, out var g, 8f, LayerIndex.world.mask)) at = g.point;
+            var go = UnityEngine.Object.Instantiate(prefab, at + Vector3.up * 1f, Quaternion.LookRotation(-fwd));
+            NetworkServer.Spawn(go);
+            var body = go.GetComponent<CharacterBody>();
+            yield return new WaitForSeconds(1f);
+            var model = body && body.modelLocator ? body.modelLocator.modelTransform : null;
+            var rc = model ? model.GetComponent<RagdollController>() : null;
+            if (!rc) { why[0] = "no RagdollController"; if (go) UnityEngine.Object.Destroy(go); yield break; }
+            var head = model.GetComponent<ChildLocator>()?.FindChild("Head");
+            float headBefore = head ? head.position.y - body.footPosition.y : 0f;
+            float groundY = body.footPosition.y;
+            body.healthComponent.Suicide();
+            yield return new WaitForSeconds(1.5f);
+            int limp = rc.bones.Count(b => b && b.GetComponent<Rigidbody>() && !b.GetComponent<Rigidbody>().isKinematic);
+            float headAfter = head ? head.position.y - groundY : 0f;
+            Log.Info($"Melty test: {hero.Id} ragdoll: {limp}/{rc.bones.Length} bones limp, head {headBefore:F2} m -> {headAfter:F2} m above the ground");
+            if (DevShots) Shot(hero.Id + "_ragdoll");
+            if (limp < rc.bones.Length) why[0] = $"{limp}/{rc.bones.Length} bones limp";
+            else if (!head || headAfter > headBefore * 0.6f) why[0] = $"head stayed up ({headBefore:F2} -> {headAfter:F2} m)";
         }
 
         /// <summary>Dev only: when %LOCALAPPDATA%/DeadlockOfRain/devshots exists, save a screenshot there.</summary>

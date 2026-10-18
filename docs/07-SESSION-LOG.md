@@ -363,3 +363,20 @@ Q 1947 → 1902); Infernus 1102 vs Engineer 1488 → 1512 vs 1611, his moves 317
 in the bench's run. Measuring them needs that expansion and the creator's go-ahead (CLAUDE.md: ask before re-benching).
 **Lessons:** doc 06 header lines (version, DPS source) go stale silently; refresh them whenever the numbers move.
 
+### 2026-10-18 · Napalm aimed throw, Combustion ring, ragdolls, longer Flame Dash · v0.6.1
+**Request (verbatim):** "ok for infernum i woudl like the bottle to be thorwn and bit harder... but i really like how the arn of the bottle and the visual happens so maybe throw it like 3 times as hard before the arc down happens, also i woudl like some more cisual on the equipable ultimate ability for infernum some thing to indicate he will explaode maybe some yellow ring indicating the range of the exposion on teh wind up... pls make sur ethese is acttached to the equipable item not the character, so it is accessable everywhere... also for ecah character we need on death to have a ragdoll this is for all characters!"
+Mid-work: "make infernus run last fir 5 seconds and increase the cool down by 5 pls"; also asked "why are you testing every character?" and "what are you doing?" (answered: `run_test.sh` always plays all four, and the ragdoll touches all four; DPS was benched for Infernus only).
+Earlier the same day: "so if i just press play on steam my new characters will be there" → Melty had switched BepInEx off; `winhttp.dll` copied back so a Steam launch loads the mods.
+**Questions asked → answers:** the harder throw → "Same arc, 3× as far", with the note "can we have an indicator of how far and we trigger the trow by pressing lmb".
+**Done:**
+- Napalm: `ThrowLob` is now an aim state (owner sees the path and a splash circle, `DlrLob.Predict` shares the flask's flight step); Left Click → `LobThrow`; Right Click again cancels and refunds. Speed 45 → 78, range 80 → 240.
+- Concussive Combustion: yellow ground ring at the full 18 m radius with an inward countdown (area domes, gotcha 15), in the ult state, so any carrier shows it.
+- Ragdolls: `ModelBuilder.BuildRagdoll` + RoR2's `RagdollController` (sheet columns `ragdollBones`, `ragdollThickness`); `DeadlockAnimator.OnDisable` stops the clips, drops the gun with the hand, switches off bone hurtboxes.
+- Flame Dash: up to 5 s held (was 3), cooldown 13 s (was 8).
+- Co-op fix found on the way: `EmberFx` asked `DotController` (server only) every frame on clients, so friends never saw Afterburn's burn flames; now reads the synced `OnFire` buff.
+- Test: checks `ragdoll` and `ult-any-survivor` (Commando fires Combustion). `dps_library.py` tagged every hero with the new build on `--add`; now only the measured ones.
+- Docs 02, 03, 05, 06, MODLOG; pages v0.6.1 lines.
+**Results:** `run_test.sh`: every check passes, 4/4 heroes, `ragdoll` 4/4 (bones limp, head 1.5–2.2 m → under 0.5 m), `ult-any-survivor` pass (first run: Haymaker found no target on a ledge spot, the known flaky stage; the re-run passed). `run_coop_test.sh infernus`: first run the joined player's Combustion did no damage (charge spent, no blast; no error in either log), re-run passed everything; not explained. Infernus bench: 929 %/s vs Engineer 1611 (below ±500; the gun waits while he holds the flask), Napalm alone 588 → 685, Flame Dash alone 441 → 145 (one run). Not retuned.
+**Not done / open:** Infernus' balance is the creator's call (doc 05 §3.2 options). The one-off co-op Combustion miss. Haze/Seven balance from 0.5.1 still open. Not published.
+**Lessons:** a "press again to cancel" control breaks the bench, which mashes every key; give bots their own path. Library tools must tag only what they measured.
+

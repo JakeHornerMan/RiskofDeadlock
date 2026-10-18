@@ -122,8 +122,66 @@ namespace DeadlockOfRain
                 group.bullseyeCount = 1;
                 hb.hurtBoxGroup = group; hb.indexInGroup = 0;
                 shb.hurtBoxGroup = group; shb.indexInGroup = 1;
+
+                BuildRagdoll(root, bones, anims, anim);
             }
             return root;
+        }
+
+        /// <summary>Death ragdoll, as vanilla survivors have: RoR2's RagdollController on the model, and on each of the sheet's
+        /// ragdollBones a kinematic Rigidbody, a capsule along the bone (to the next listed bone below it, or its farthest child;
+        /// radius ragdollThickness x that length) and a CharacterJoint to the nearest listed bone above it. The body's death
+        /// state (Commando's, cloned) calls BeginRagdoll: the bones go limp and DeadlockAnimator switches off.</summary>
+        static void BuildRagdoll(GameObject root, Transform[] bones, AnimRow anims, DeadlockAnimator anim)
+        {
+            var list = new List<Transform>();
+            foreach (var n in anims.RagdollBones) { var t = n == "none" ? null : Find(bones, n); if (t) list.Add(t); else if (n != "none") Log.Warn($"ragdoll: no bone {n}"); }
+            if (list.Count < 2) return;
+            var parentOf = new Dictionary<Transform, Transform>();
+            foreach (var b in list)
+                for (var p = b.parent; p; p = p.parent)
+                    if (list.Contains(p)) { parentOf[b] = p; break; }
+            var length = new Dictionary<Transform, float>();
+            foreach (var b in list)
+            {
+                // the segment this bone covers, in its own space (so the model's scale is already in it)
+                Transform end = null;
+                foreach (var c in list) if (parentOf.TryGetValue(c, out var pp) && pp == b) { end = c; break; }
+                if (!end) { float far = 0f; foreach (Transform c in b) { float d = (c.position - b.position).sqrMagnitude; if (d > far) { far = d; end = c; } } }
+                var seg = end ? b.InverseTransformPoint(end.position) : Vector3.zero;
+                float parentLen = parentOf.TryGetValue(b, out var par) && length.TryGetValue(par, out var pl) ? pl : seg.magnitude;
+                if (seg.magnitude < 0.3f * parentLen)
+                {
+                    // an end bone with no real child (the head): a ball half its parent's length, pushed out along the chain
+                    var dir = par ? b.InverseTransformDirection(b.position - par.position).normalized : Vector3.up;
+                    seg = dir * parentLen * 0.6f;
+                }
+                length[b] = seg.magnitude;
+                b.gameObject.layer = LayerIndex.ragdoll.intVal;
+                var rb = b.gameObject.AddComponent<Rigidbody>();
+                rb.isKinematic = true; rb.mass = 5f;
+                var cap = b.gameObject.AddComponent<CapsuleCollider>();
+                var a = Mathf.Abs(seg.x) > Mathf.Abs(seg.y) ? (Mathf.Abs(seg.x) > Mathf.Abs(seg.z) ? 0 : 2) : (Mathf.Abs(seg.y) > Mathf.Abs(seg.z) ? 1 : 2);
+                cap.direction = a;
+                cap.center = seg * 0.5f;
+                cap.radius = Mathf.Max(0.01f, anims.RagdollThickness * seg.magnitude);
+                cap.height = seg.magnitude + cap.radius;
+                cap.enabled = false;
+            }
+            foreach (var b in list)
+            {
+                if (!parentOf.TryGetValue(b, out var par)) continue;
+                var j = b.gameObject.AddComponent<CharacterJoint>();
+                j.connectedBody = par.GetComponent<Rigidbody>();
+                j.enableProjection = true;
+                j.lowTwistLimit = new SoftJointLimit { limit = -30f };
+                j.highTwistLimit = new SoftJointLimit { limit = 30f };
+                j.swing1Limit = new SoftJointLimit { limit = 50f };
+                j.swing2Limit = new SoftJointLimit { limit = 40f };
+            }
+            var rc = root.AddComponent<RagdollController>();
+            rc.bones = list.ToArray();
+            rc.componentsToDisableOnRagdoll = new MonoBehaviour[] { anim };
         }
 
         public static Transform Find(Transform[] bones, string name)

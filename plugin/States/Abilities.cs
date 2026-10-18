@@ -271,6 +271,52 @@ namespace DeadlockOfRain.States
     [Kind("lob")]
     public sealed class ThrowLob : DlrState
     {
+        // Napalm, step 1: hold the flask. The owner sees where it would land (the path and a splash-sized circle, from the
+        // same flight as the flask, DlrLob.Predict); Left Click throws (LobThrow), Right Click again puts it away and gives
+        // the charge back. The throw is a state change, so every player sees the flask fly.
+        GameObject marker;
+        readonly List<Vector3> path = new List<Vector3>();
+        public override void OnEnter()
+        {
+            base.OnEnter();
+            characterBody.SetAimTimer(2f);
+            if (isAuthority) marker = Vfx.Play(row.Vfx, "aim", transform.position, row.Radius);
+        }
+        public override void Update()
+        {
+            base.Update();
+            if (!marker) return;
+            var landing = DlrLob.Predict(characterBody, row, MuzzlePos(), GetAimRay().direction, path);
+            Vfx.SetArc(marker, path, landing);
+        }
+        public override void FixedUpdate()
+        {
+            base.FixedUpdate();
+            if (!isAuthority) return;
+            characterBody.SetAimTimer(2f);
+            // test mode and the DPS bench have no player to click: they throw shortly after the marker is up
+            // (the bench mashes every key, so there Right Click never puts the flask away)
+            bool bot = MeltyTest.Active || DpsBench.Active;
+            if (inputBank && inputBank.skill1.justPressed || bot && fixedAge >= 0.8f)
+                outer.SetNextState(new LobThrow { RowOverride = row });
+            else if (!bot && inputBank && inputBank.skill2.justPressed && fixedAge > 0.1f)
+            {
+                RefundStock();
+                outer.SetNextStateToMain();
+            }
+        }
+        public override void OnExit()
+        {
+            Vfx.Stop(marker, 0.1f);
+            base.OnExit();
+        }
+        // the gun can't take the Left Click that throws
+        public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.PrioritySkill;
+    }
+
+    /// <summary>Napalm, step 2: the throw (no kind of its own; started by ThrowLob with the row).</summary>
+    public sealed class LobThrow : DlrState
+    {
         bool thrown;
         public override void OnEnter()
         {
@@ -289,6 +335,12 @@ namespace DeadlockOfRain.States
                 DlrLob.Launch(characterBody, row, MuzzlePos(), ThrowDir, Server);
             }
             if (fixedAge >= dur && isAuthority) outer.SetNextStateToMain();
+        }
+        public override void OnExit()
+        {
+            // cut short before the throw point: still throw, so the charge is never lost
+            if (!thrown && row != null) { thrown = true; DlrLob.Launch(characterBody, row, MuzzlePos(), ThrowDir, Server); }
+            base.OnExit();
         }
     }
 

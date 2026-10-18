@@ -33,13 +33,13 @@ Before touching anything:
 
 | Item | State |
 |---|---|
-| Version | **0.6.0** (`plugin/Plugin.cs`; co-op), extractor **1.2.0** (sound volumes read as dB). Not published on Melty since 0.2.0 |
+| Version | **0.6.1** (`plugin/Plugin.cs`; Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). Not published on Melty since 0.2.0 |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
 | Installed build | v0.4.1 + the bench's match/portrait dev code (committed with the page redesign) |
 | Heroes | Haze, Abrams, Seven, Infernus; 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
-| Test | `run_test.sh`: every check passes incl. `voice-lines`, 4/4 heroes (2026-10-17, v0.6.0); `run_coop_test.sh`: every co-op check passes |
+| Test | `run_test.sh`: every check passes incl. `ragdoll` and `ult-any-survivor`, 4/4 heroes (2026-10-18, v0.6.1); `run_coop_test.sh infernus` passes (one earlier run missed the joined Combustion, unexplained) |
 | Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, within **±500 %/s**, comparing **means over every bench run** of the current build (`RUNS` in `tools/kit_pages.py`; doc 05 §3.0) |
-| Balance now | v0.5.1 heroes-only run vs the library (doc 05 §3.1): **Haze 6550 vs Commando 1222 (far above: Phantom Strike's area spreads Fixation)**, Abrams 2460 vs Loader 2951 (inside), **Seven 3164 vs Artificer 4013 (below: the bouncing ball leaves the pack)**, Infernus library 1512 vs Engineer 1611 (inside). Not retuned; the creator decides |
+| Balance now | v0.5.1 heroes-only run vs the library (doc 05 §3.1): **Haze 6550 vs Commando 1222 (far above: Phantom Strike's area spreads Fixation)**, Abrams 2460 vs Loader 2951 (inside), **Seven 3164 vs Artificer 4013 (below: the bouncing ball leaves the pack)**, **Infernus 929 vs Engineer 1611 (below, v0.6.1: the gun waits while he holds the Napalm flask; doc 05 §3.2)**. Not retuned; the creator decides |
 | Bench rule | **Bench our heroes only** (`run_bench.sh 30 <ids>`, the default); vanilla numbers come from `docs/dps-library.json` (creator, 2026-10-17; CLAUDE.md). Every base-game and Survivors of the Void survivor is stored (3 runs each, also listed in doc 06); the Seekers of the Storm three are not (expansion off) |
 | Sounds | Every move's Deadlock sounds and the voice-line triggers are listed in doc 06 "Sounds" (mirrors `design/sounds.json` / `voice.json`) |
 | Pages | Five claude.ai Artifacts, redesigned (links at the top of doc 06); the overview is shared "anyone with the link" |
@@ -184,6 +184,8 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
   PC; anything the server needs from the owner goes in `OnSerialize`. Code that runs on the server alone must play its
   sounds/visuals through `Relay`, or the other players never see them. Test with `run_coop_test.sh`; the second copy is slow,
   so steps wait for answers, and `run_coop_test.sh haze,abrams` keeps a check to ~8 min.
+- **Bots mash keys:** the DPS bench presses every key whenever ready, so a "press again to cancel" control never lets
+  it act; give test/bench mode its own path (Napalm throws by itself after 0.8 s and ignores the cancel there).
 - `run_test.sh` sometimes lands on a **ledge** (hero ~15 m above where the summoned targets fall): nearly every check
   fails, including moves nobody touched. The stage is random, so run it again; if in doubt, run the previous commit at once.
 
@@ -210,7 +212,15 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: v0.6.0 co-op (2026-10-17, done; untested with a real friend)
+## 9. Last work: v0.6.1 Infernus requests + ragdolls (2026-10-18, done; balance open)
+
+The creator played 0.6.0 from Steam (BepInEx re-enabled by copying `winhttp.dll`; Melty may switch it off again). Napalm
+is now aimed (Right Click readies, marker shows the landing, Left Click throws; same arc ×3 as far), Combustion shows its
+18 m range as a yellow ground ring on any carrier, every hero ragdolls on death, Flame Dash 5 s / 13 s. Answers in doc 07.
+
+**Next:** the creator decides Infernus' balance (929 vs Engineer 1611; doc 05 §3.2), plus Haze/Seven from 0.5.1.
+
+## 9-prev. v0.6.0 co-op (2026-10-17, done; untested with a real friend)
 
 The creator: "ok now make these character work online!" (answers in doc 07). Built on RoR2's own networking: states run on
 every machine, damage on the server, server-only sounds/visuals through one relay effect, the owner's choices (lock-on

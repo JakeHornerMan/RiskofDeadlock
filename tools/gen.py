@@ -77,7 +77,7 @@ os.makedirs(os.path.join(ROOT, 'plugin', 'Generated'), exist_ok=True)
 open(os.path.join(ROOT, 'plugin', 'Generated', 'Sheets.g.cs'), 'w', encoding='utf-8').write('\n'.join(parts) + '\n')
 
 # extractor manifest
-ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'clothParents'}  # animations columns that are not clip names
+ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'clothParents', 'ragdollBones', 'ragdollThickness'}  # animations columns that are not clip names
 anims = {r['hero']: r for r in load('animations')['rows']}
 skills = load('skills')['rows']
 buffs = load('buffs')['rows']

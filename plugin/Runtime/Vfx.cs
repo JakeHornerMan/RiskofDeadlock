@@ -287,7 +287,7 @@ namespace DeadlockOfRain
         }
 
         // ------------------------------------------------------------------ Infernus: Afterburn, Napalm
-        static readonly Color fireOrange = new Color(1f, 0.48f, 0.12f), fireYellow = new Color(1f, 0.8f, 0.35f);
+        static readonly Color fireOrange = new Color(1f, 0.48f, 0.12f), fireYellow = new Color(1f, 0.8f, 0.35f), bombYellow = new Color(1f, 0.9f, 0.15f);
 
         static GameObject InfernusAfterburn(string moment, Vector3 at, Transform follow)
         {
@@ -346,6 +346,24 @@ namespace DeadlockOfRain
                     Light(root, fireOrange, 8f, 3f, Vector3.zero).gameObject.AddComponent<Flicker>();
                     return root;
                 }
+                case "aim":
+                {
+                    // the aim marker (owner only): the flight path as a thin line and, where it lands, a circle the size of
+                    // the splash (the area dome, drawn where it meets the ground) with embers on its edge; the state moves it
+                    // and redraws the path every frame (SetArc)
+                    var root = Root(at, 0f, null);
+                    var dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    Object.Destroy(dome.GetComponent<Collider>());
+                    dome.transform.SetParent(root.transform, false);
+                    dome.transform.localScale = Vector3.one * radius * 2f;
+                    dome.GetComponent<MeshRenderer>().sharedMaterial = Mat("mat_area", fireOrange);
+                    var edge = new GameObject("edge"); edge.transform.SetParent(root.transform, false); edge.transform.localPosition = Vector3.up * 0.3f;
+                    Particles(edge, "mat_glow", fireOrange, rate: 40, life: 0.4f, speed: 1f, size: 0.4f, shapeRadius: radius, world: true, ring: true);
+                    var arc = Line(root.transform, fireYellow, 0.12f, Vector3.zero, Vector3.zero);
+                    arc.name = "arc"; arc.useWorldSpace = true;
+                    arc.widthCurve = new AnimationCurve(new Keyframe(0, 0.3f), new Keyframe(0.15f, 1f), new Keyframe(1, 1f));
+                    return root;
+                }
                 case "hit":
                     FireRing(at, radius, 0.35f);
                     Burst(at, "mat_fire_large", fireOrange, 26, 0.9f, radius * 1.1f, 2.2f, shapeRadius: radius * 0.4f, upward: true);
@@ -402,10 +420,48 @@ namespace DeadlockOfRain
             return null;
         }
 
+        /// <summary>Move an aim marker made by a moment "aim" (Napalm) to where the throw lands and redraw its path.</summary>
+        public static void SetArc(GameObject marker, List<Vector3> path, Vector3 landing)
+        {
+            if (!marker) return;
+            marker.transform.position = landing;
+            foreach (var lr in marker.GetComponentsInChildren<LineRenderer>())
+            {
+                if (lr.name != "arc") continue;
+                lr.positionCount = path.Count;
+                for (int i = 0; i < path.Count; i++) lr.SetPosition(i, path[i]);
+            }
+        }
+
         static GameObject InfernusBomb(string moment, Vector3 at, float radius, Transform follow)
         {
             switch (moment)
             {
+                case "aim":
+                {
+                    // the blast's reach while the fuse burns, on whoever holds the equipment: a yellow circle on the ground
+                    // at the full radius (the area dome, drawn only where it meets the ground, so it hugs slopes), embers
+                    // rising from its edge, and a second dome shrinking once a second, whose outline on the ground sweeps
+                    // inward as a countdown; it glows hotter toward the blast (no flat line circles: they float on slopes)
+                    var root = Root(at, 0f, follow);
+                    var feet = new GameObject("feet"); feet.transform.SetParent(root.transform, false);
+                    if (follow) feet.transform.localPosition = at - follow.position;
+                    var dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    Object.Destroy(dome.GetComponent<Collider>());
+                    dome.transform.SetParent(feet.transform, false);
+                    dome.transform.localScale = Vector3.one * radius * 2f;
+                    dome.GetComponent<MeshRenderer>().sharedMaterial = Mat("mat_area", bombYellow);
+                    var rise = new GameObject("rise"); rise.transform.SetParent(feet.transform, false); rise.transform.localPosition = Vector3.up * 0.3f;
+                    Particles(rise, "mat_glow", bombYellow, rate: 8f * radius, life: 0.7f, speed: 2f, size: 0.6f, shapeRadius: radius, world: true, ring: true);
+                    var sweep = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    Object.Destroy(sweep.GetComponent<Collider>());
+                    sweep.transform.SetParent(feet.transform, false);
+                    sweep.GetComponent<MeshRenderer>().sharedMaterial = Mat("mat_area", fireYellow);
+                    var p = sweep.AddComponent<DomeSweep>(); p.From = radius * 2f; p.To = radius * 0.2f; p.Period = 1f;
+                    var l = Light(feet, bombYellow, radius, 1f, Vector3.up * 2f);
+                    var g = l.gameObject.AddComponent<GrowLight>(); g.To = 6f; g.Over = 3f;
+                    return root;
+                }
                 case "loop":
                 {
                     // the fuse: fire and embers gathering on him, a glow growing hotter
@@ -860,6 +916,20 @@ namespace DeadlockOfRain
             }
         }
 
+        /// <summary>A dome that shrinks from From to To (diameters) every Period seconds: with the area material its outline
+        /// on the ground sweeps inward, a countdown that follows the terrain.</summary>
+        sealed class DomeSweep : MonoBehaviour
+        {
+            public float From, To, Period = 1f;
+            float age;
+            void Update()
+            {
+                age += Time.deltaTime;
+                float t = (age % Period) / Period;
+                transform.localScale = Vector3.one * Mathf.Lerp(From, To, t * t);
+            }
+        }
+
         sealed class BoltFx : MonoBehaviour
         {
             public Vector3 A, B; public int Segments; public float Jitter, Life, Width;
@@ -980,8 +1050,8 @@ namespace DeadlockOfRain
                 if (!body || !body.healthComponent || !body.healthComponent.alive) { Done(); return; }
                 var row = Sheet.Buff("afterburn_buildup");
                 float build = row != null && row.TriggerStacks > 0 ? Buffs.Count(body, row.Id) / row.TriggerStacks : 0f;
-                var dc = DotController.FindDotController(body.gameObject);
-                bool burning = dc && dc.HasDotActive(DotController.DotIndex.Burn);
+                // the Burn DoT's own buff: synced to every player (DotController exists only on the server)
+                bool burning = body.HasBuff(RoR2Content.Buffs.OnFire);
                 var e = embers.emission; e.rateOverTime = build * 60f;
                 var f = flames.emission; f.rateOverTime = burning ? 40f : build * 8f;
                 glow.intensity = burning ? Random.Range(3f, 5f) : build * 2f;

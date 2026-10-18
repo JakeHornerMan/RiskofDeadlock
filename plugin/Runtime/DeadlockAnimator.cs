@@ -333,6 +333,16 @@ namespace DeadlockOfRain
             if (loco != null && anim[loco] != null) anim[loco].speed = speed;
         }
 
+        /// <summary>Switched off by the death ragdoll (RagdollController): stop posing the bones, let the gun fall with the
+        /// hand, and drop the hurtboxes riding on the bones so they don't join the ragdoll's physics.</summary>
+        void OnDisable()
+        {
+            if (!body || !body.healthComponent || body.healthComponent.alive) return;
+            if (anim) { anim.Stop(); anim.enabled = false; }
+            if (gunBone && gunHand) gunBone.SetParent(gunHand, true);
+            foreach (var hb in GetComponentsInChildren<HurtBox>(true)) { var c = hb.GetComponent<Collider>(); if (c) c.enabled = false; }
+        }
+
         void LateUpdate()
         {
             if (anim == null || rigBones == null) return;

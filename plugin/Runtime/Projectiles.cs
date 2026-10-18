@@ -170,23 +170,40 @@ namespace DeadlockOfRain
         void FixedUpdate()
         {
             if (!owner) { Destroy(gameObject); return; }
-            float dt = Time.fixedDeltaTime;
+            var pos = transform.position;
+            if (Step(owner, row, ref pos, ref velocity, ref age, Time.fixedDeltaTime)) Burst(pos);
+            else transform.position = pos;
+        }
+
+        /// <summary>One tick of the flight: gravity, then the first enemy or surface on the way (it flies through its own team).
+        /// True = it bursts at pos. Shared by the flask and the aim marker, so the marker shows exactly where it lands.</summary>
+        static bool Step(CharacterBody owner, SkillRow row, ref Vector3 pos, ref Vector3 velocity, ref float age, float dt)
+        {
             age += dt;
             velocity += Physics.gravity * dt;
             var step = velocity * dt;
-            var pos = transform.position;
             var hits = Physics.SphereCastAll(pos, 0.4f, step.normalized, step.magnitude, LayerIndex.world.mask | LayerIndex.entityPrecise.mask, QueryTriggerInteraction.Ignore);
             System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
             foreach (var h in hits)
             {
                 var hb = h.collider.GetComponent<HurtBox>();
-                // fly through Infernus and his allies
                 if (hb && (!hb.healthComponent || !hb.healthComponent.body || hb.healthComponent.body.teamComponent.teamIndex == owner.teamComponent.teamIndex)) continue;
-                Burst(h.distance > 0 ? h.point : pos);
-                return;
+                if (h.distance > 0) pos = h.point;
+                return true;
             }
-            transform.position = pos + step;
-            if (age * row.Speed > row.Range) Burst(transform.position);
+            pos += step;
+            return age * row.Speed > row.Range;
+        }
+
+        /// <summary>Where a flask thrown now would burst; points gets the path (every few ticks) for the aim marker.</summary>
+        public static Vector3 Predict(CharacterBody owner, SkillRow row, Vector3 from, Vector3 dir, List<Vector3> points)
+        {
+            var pos = from; var vel = dir.normalized * row.Speed; float age = 0f; int n = 0;
+            points?.Clear(); points?.Add(pos);
+            while (!Step(owner, row, ref pos, ref vel, ref age, Time.fixedDeltaTime))
+                if (++n % 3 == 0) points?.Add(pos);
+            points?.Add(pos);
+            return pos;
         }
 
         void Burst(Vector3 at)
