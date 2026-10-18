@@ -471,3 +471,9 @@ Mid-work: "does any other risk of rain character work by needing to hold down th
 **Done:** explained the test opens and closes the game itself. Kit pages now public (docs 00, 06). Test `40cc813d-…`: run 1 pass (footage reviewed), run 2 failed: the creator opened the pause menu at 1:44 and browsed Settings, so the paused run never played the heroes. New 2-run test `e2e6d068-…`: 12/12 checks in both runs, both footage reviews pass, `graduates: true`.
 **Not done / open:** publish (asking), character select screenshots for the listing.
 **Lessons:** tell the creator up front to keep off the PC during a Melty test; Melty's own note says "play the mashup", which is wrong for a self-playing test mode. Melty can't rerun one run; a new 2-run test is the quickest redo.
+
+### 2026-10-19 · published 0.6.3 · v0.6.3
+**Request (verbatim):** publish → "Publish now"; screenshots → "Do it now", then mid-way "ill give you my screen shots", then four PNGs (Haze, Abrams, Seven, Infernus character select).
+**Done:** `publish` → safety review → **live** (0.6.3, Discover). My own select-screen capture was abandoned (click coordinates off, a pause menu appeared, then the window closed); lab_restore and `winhttp.dll` back on. The creator's four shots uploaded (Haze cover), the four 0.1.0 shots removed; the new shots were still in Melty's picture check at the time of writing.
+**Not done / open:** Infernus' select-screen lore says "Catalyst makes victims burn hotter" (`design/heroes.json`), stale since Napalm; fix in the next release. Watch player reports.
+**Lessons:** for listing pictures, asking the creator for screenshots beats driving the game's UI blind.

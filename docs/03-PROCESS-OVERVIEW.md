@@ -273,11 +273,14 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
   did not read (see above), and the footage had no review. Resubmitted as release `4ed38587-cd16-4083-8437-0e3d0211c194`
   (upload `df73856a-…`, the slug fix and new checks). Test `40cc813d-…`: run 1 passed, run 2 failed because the creator
   opened the pause menu (a paused solo run stops the test). **Test `e2e6d068-8b4d-4431-9b59-d641cc9efe55` (2 runs) passed,
-  both footage reviews pass, `graduates: true`.** Ready to publish once the creator says yes.
+  both footage reviews pass, `graduates: true`.** Published with the creator's yes: **0.6.3 is live** (2026-10-18 23:54 UTC),
+  shown on Discover.
 - **Nobody may touch the PC during `test_release`.** Melty's own message tells the creator to "play the mashup"; for us that
   is wrong: the test mode plays itself and any input (Esc) pauses it. A 2-run test is enough to publish.
-- **Not yet published.**
-- The listing screenshots are from 0.1.0.
+- **0.6.3 live**; 0.1.0 and 0.2.0 stay unpublished drafts.
+- Listing pictures: the creator's own character select shots of the four heroes (Haze cover, then Abrams, Seven, Infernus);
+  the four 0.1.0 shots were removed. Driving the select screen with `um win drive` is fiddly (client coords are half the
+  shot's full size on this monitor; clicks lag a frame); asking the creator for shots was quicker.
 
 ---
 
@@ -350,7 +353,6 @@ doc 02 §11. In short:
 - Seven's Thunderhead cast uses his Storm Cloud `ult_start` clip (0.6 s); its loop pose (tilted) is no longer used.
 - **No normal maps** (VRF does not export them for Deadlock's hero shader). Only the albedo is used.
 - **Reload clips still animate the arms** (gun parts stay frozen), by design.
-- **Listing screenshots** are from 0.1.0 and should be replaced with current shots (the Q ults, hero pickups, effects, ragdolls) before the next release.
 - **Every release since 0.2.0 added Deadlock content** (icons, sounds, clips, voice, the v0.6.2 tick sounds; doc 01 §5). A player's older cache has `ready.json`, so Melty skips setup and the new content stays missing until the cache is rebuilt. The next release must force a re-extract (doc 01 §5).
 - **New effects are only checked by eye** (devshots); the test measures what skills do, not how they look.
 - **Co-op over the internet is untested with real friends.** The two-copy test proves joining, every skill of a joined player and the relay on one PC (loopback). Steam lobbies, Melty's Join link with a `.steamlobby` address and lag were not tested (one Steam account can't join itself); the first real session with a friend is the test. With lag, Haymaker's damage and Seismic Impact's slam land a moment after the owner sees them (doc 02 §7.7).
