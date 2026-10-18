@@ -375,6 +375,9 @@ Since v0.4.0 the Deadlock ults are RoR2 **equipment** (Q). There is no charge me
   - `Fire` finds the kind's machine (`MachineFor`; falls back to `Weapon`, then any machine on bodies without it), creates the state with
     `RowOverride = row` and `SetInterruptState(PrioritySkill)`; false (no charge spent) when the machine is busy with something that outranks it.
   - Any body can fire any ult: no `DeadlockAnimator` (null-checked), muzzle falls back to the aim origin, `UltLeap` needs a `CharacterMotor`.
+  - **Sounds, effects and voice come from the item's row, not the body:** the ult states call `DlrState.Sound(moment)` / `Vfx.Play(row.Vfx, …)`
+    with `row` = `RowOverride`, so any carrier plays the ult's `sounds.json` row and `effects.json` moments; `Fire` then calls
+    `Voice.SkillLine(row)` for a local player, so the item's hero speaks (§8). Test check `ult-any-survivor` covers it on Commando.
 
 ### 7.6 Balance targets (from `skills.json` about + preflight)
 - **Sustained primary DPS** (magazine and reload included, computed by preflight from the row) must match `targetDps` ±10 % and sit in **240–600 %/s**. Commando's Double Tap is about 400.

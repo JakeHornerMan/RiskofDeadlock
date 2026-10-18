@@ -35,7 +35,7 @@ Before touching anything:
 |---|---|
 | Version | **0.6.1** (`plugin/Plugin.cs`; Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). Not published on Melty since 0.2.0 |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
-| Installed build | v0.4.1 + the bench's match/portrait dev code (committed with the page redesign) |
+| Installed build | **v0.6.1** (commit `e951562`); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
 | Heroes | Haze, Abrams, Seven, Infernus; 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
 | Test | `run_test.sh`: every check passes incl. `ragdoll` and `ult-any-survivor`, 4/4 heroes (2026-10-18, v0.6.1); `run_coop_test.sh infernus` passes (one earlier run missed the joined Combustion, unexplained) |
 | Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, within **±500 %/s**, comparing **means over every bench run** of the current build (`RUNS` in `tools/kit_pages.py`; doc 05 §3.0) |
@@ -45,15 +45,6 @@ Before touching anything:
 | Pages | Five claude.ai Artifacts, redesigned (links at the top of doc 06); the overview is shared "anyone with the link" |
 | Voice lines | `design/voice.json` + `Runtime/Voice.cs` (doc 02 §8). Not yet heard in a real run: unselect (teleporter finish), multikill and idle lines; the test only proves select/skill lines play. Release needs a forced re-extract (new voice files) and the recipe check `voice-lines` |
 | Open | RoR2 survivor portraits fail to render (§9); pickup figure size and Haymaker wave vfx not seen in game; the bench is noisy for Loader/Artificer (a steadier multi-run bench would help) |
-
----|---|
-| Version | **0.4.1** (`plugin/Plugin.cs`), last commit `d91047f` (balance pass). Not published on Melty since 0.2.0 |
-| Installed build | v0.4.1 + the bench/portrait dev code (uncommitted while §9 is in progress) |
-| Heroes | Haze, Abrams, Seven, Infernus; 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
-| Test | `run_test.sh`: every check passes, 4/4 heroes (2026-10-16, v0.4.1) |
-| Balance | Main moves vs Commando ±20 %: Haze 1315 and Seven 1272 inside; Infernus 920 and Abrams 729 below (doc 05 §3). The creator has **not yet chosen** fixes for Abrams/Infernus (doc 05 §5) |
-| In progress | Kit-page redesign + benchmarking each hero against **its own RoR2 match** (§9) |
-| Pages | Five claude.ai Artifacts, links at the top of doc 06; the Balance page is shared "anyone with the link" |
 
 ---
 
@@ -97,6 +88,9 @@ power level as the Preon Accumulator."
   pickup 'ultimates' can be overpowered as we like"). Preflight only enforces the ≥ 6000 % floor and 120 s cooldown.
 - The old charge meter (`Ult.cs`, kills/damage charging R) was **removed** in 0.4.0.
 - Seismic Impact slams on **Left Click only** (or its 3 s timeout).
+- **Sounds, effects and voice belong to the item:** whoever fires it gets the ult's Deadlock sounds and effects (from the
+  row in `RowOverride`), and the item's hero speaks its ult line (`Equipment.Fire` → `Voice.SkillLine`). Combustion's 3 s
+  fuse is silent (no loop sound): a possible addition, not asked for yet.
 
 ---
 
@@ -218,7 +212,11 @@ The creator played 0.6.0 from Steam (BepInEx re-enabled by copying `winhttp.dll`
 is now aimed (Right Click readies, marker shows the landing, Left Click throws; same arc ×3 as far), Combustion shows its
 18 m range as a yellow ground ring on any carrier, every hero ragdolls on death, Flame Dash 5 s / 13 s. Answers in doc 07.
 
+Then the creator asked whether the Q items carry their sounds and voice lines (yes; now spelled out in docs 00 §3, 02 §7.5, 06),
+and asked for a docs refresh (this section, §1's stale install row).
+
 **Next:** the creator decides Infernus' balance (929 vs Engineer 1611; doc 05 §3.2), plus Haze/Seven from 0.5.1.
+Offered: a fuse sound for Combustion's silent 3 s wind-up.
 
 ## 9-prev. v0.6.0 co-op (2026-10-17, done; untested with a real friend)
 

@@ -171,3 +171,5 @@ are never written out here or on the pages. When each hero speaks:
 - **Power:** at least 6800 % per enemy per use, the Preon scaled from 140 s to 120 s. **Not balanced** (creator's decision, v0.4.1): any survivor can carry them, so they may be as strong as we like and are left out of the comparison with Commando.
 - **Starting:** every hero starts holding their own; there is no charge meter any more.
 - **Other users:** any survivor, or an Equipment Drone, can fire any of them. On non-heroes they use plain muzzles and no Deadlock animation.
+- **Sounds and voice travel with the item:** whoever fires it gets the ult's own Deadlock sounds (the Q rows of the Sounds table above) and its effects (Combustion's yellow ring too), and the **item's hero** speaks their ult line (Commando firing Combustion hears Infernus). Voice is heard by the player who fired it only; ult sounds are heard by everyone in co-op. Checked in game by `ult-any-survivor` (Commando fires Combustion, v0.6.1).
+- **Known gap:** Concussive Combustion has no sound during its 3 s fuse (its `loop` is `none`): wind-up, then silence, then the bang.

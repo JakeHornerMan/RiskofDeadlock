@@ -380,3 +380,16 @@ Earlier the same day: "so if i just press play on steam my new characters will b
 **Not done / open:** Infernus' balance is the creator's call (doc 05 §3.2 options). The one-off co-op Combustion miss. Haze/Seven balance from 0.5.1 still open. Not published.
 **Lessons:** a "press again to cancel" control breaks the bench, which mashes every key; give bots their own path. Library tools must tag only what they measured.
 
+
+### 2026-10-18 · do the Q ult items carry their sounds and voice? + docs refresh · docs only
+**Request (verbatim):** "ok do these equipable ult have the sfx and voicelines attached?", then "ok let  up date all our documenttion pls"
+**Questions asked → answers:** none.
+**Done:** traced it in code: the ult states play sounds and effects from `row` (= the item's `RowOverride`), and
+`Equipment.Fire` calls `Voice.SkillLine(row)`, so any carrier gets the ult's own sounds and the item's hero speaks. All four
+items have a `sounds.json` row and a `use_power4` voice row. Answered yes. Docs: doc 06 "The ult equipment" and doc 00 §3
+now say so explicitly (and note Combustion's silent fuse); doc 02 §7.5 explains why it works; doc 00 §1 "Installed build"
+was stale (v0.4.1 → v0.6.1, BepInEx on) and a leftover old state table under §1 was removed; doc 00 §9 updated.
+**Results:** no code change; no retest flag (nothing in a kit changed); pages unchanged.
+**Not done / open:** offered a fuse sound for Combustion's 3 s wind-up (its `loop` is `none`); waiting on the creator.
+Infernus balance (doc 05 §3.2) still the creator's call.
+**Lessons:** doc 00 §1 rows other than Version/Test go stale when only those two are refreshed; re-read the whole table each session.
