@@ -196,7 +196,7 @@ ev = dev('sound_events.txt')
 if ev:
     events = set(l.strip() for l in open(ev, encoding='utf-8'))
     for r in sheets['sounds']['rows']:
-        for c in ['cast', 'loop', 'hit', 'end', 'reload', 'castLayer', 'hitLayer']:
+        for c in ['cast', 'loop', 'hit', 'end', 'reload', 'castLayer', 'hitLayer', 'tick', 'tickFinal']:
             if r[c] != 'none' and r[c] not in events: bad(f'sounds[{r["skill"]}].{c}: event "{r[c]}" not in Deadlock soundevents')
 else:
     bad('dev listing tools/dev/sound_events.txt missing: sound events unverified')

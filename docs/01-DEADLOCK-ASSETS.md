@@ -131,7 +131,7 @@ Where every entry comes from:
 | `heroes[].meshes` | `heroes.json` → `meshInclude` | VRF **MeshFilter**: only these mesh names are exported. This drops LODs, alternate costumes, ability props and effect meshes. Mesh names are glTF mesh names (the part after the last `.`). |
 | `heroes[].clips` | `animations.json`: every column **except** `ANIM_RIG_COLUMNS` = {`hero`, `upperBodyBone`, `gunArms`, `gunBone`, `gunHand`, `muzzle`, `muzzleLeft`, `clothParents`}, de-duplicated, `none` dropped | VRF **AnimationFilter**. `aimPose` *is* a clip column (it names a clip). |
 | `images` | `heroes.imageSmall`, `heroes.imageCard`, `heroes.passiveIcon` (unless `none`), `skills.icon` (the equipment ults use their skill's icon), `buffs.icon` (unless `none`) | sorted, unique |
-| `soundEvents` | `sounds.json` columns `cast`, `loop`, `hit`, `end`, `reload`, `castLayer`, `hitLayer` (unless `none`; the layers, v0.5.1, may be any hero's event, e.g. `Warden.Wpn.Fire` under Infernus' gun) | sorted, unique |
+| `soundEvents` | `sounds.json` columns `cast`, `loop`, `hit`, `end`, `reload`, `castLayer`, `hitLayer`, `tick`, `tickFinal` (unless `none`; the layers, v0.5.1, and the ticks, v0.6.2, may be any hero's event, e.g. `Warden.Wpn.Fire` under Infernus' gun) | sorted, unique |
 | `soundEventFiles` | `heroes.soundevents` | **informational only.** The extractor indexes *every* `soundevents/*.vsndevts_c` in the VPK, so cross-file `base` inheritance resolves. |
 
 Counts at v0.4.0: 4 heroes, 32 images, 55 sound events. (0.3.0 **added** two images, the passive icons

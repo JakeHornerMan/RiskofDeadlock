@@ -390,6 +390,25 @@ items have a `sounds.json` row and a `use_power4` voice row. Answered yes. Docs:
 now say so explicitly (and note Combustion's silent fuse); doc 02 §7.5 explains why it works; doc 00 §1 "Installed build"
 was stale (v0.4.1 → v0.6.1, BepInEx on) and a leftover old state table under §1 was removed; doc 00 §9 updated.
 **Results:** no code change; no retest flag (nothing in a kit changed); pages unchanged.
-**Not done / open:** offered a fuse sound for Combustion's 3 s wind-up (its `loop` is `none`); waiting on the creator.
+**Not done / open:** offered a fuse sound for Combustion's 3 s wind-up (its `loop` is `none`); taken up in the next entry (v0.6.2).
 Infernus balance (doc 05 §3.2) still the creator's call.
 **Lessons:** doc 00 §1 rows other than Version/Test go stale when only those two are refreshed; re-read the whole table each session.
+
+### 2026-10-18 · Combustion fuse ticks · v0.6.2
+**Request (verbatim):** "yes add a fuse sound for combustion"
+**Questions asked → answers:** I first corrected myself: the fuse is not silent; `Inferno.FireBomb.Cast` is a 3.4 s sound that
+rises to the bang (I had read the sheet's `loop: none` as silence). Asked what to add → "Add a tick each second (Recommended)"
+(over a burning sizzle, or leaving it).
+**Done:**
+- Deadlock's fire bomb has only Cast and Explode, so the tick is Rat King's `Ratking.ScrapGrenade.Timer` (a 1.26 s clock tick
+  peaking at 0.35 s) and, for the last second, `Ratking.ScrapGrenade.Timer.Final` (the tick then a 1 s rising buzz). Checked by
+  exporting both with the VRF CLI and measuring their loudness over time.
+- Sound sheet columns `tick` / `tickFinal` (none for every other move); `gen.py` and preflight read them; `Fx.Sound` handles the
+  two moments and returns the voice id; `UltSelfBomb` ticks at 0 s and 1 s, plays the final at 2 s, cuts it at the blast.
+- Test check `sound-events`: every event the sound sheet names is in the cache.
+- Cache re-extracted (`--manifest --force`, 58 sound events). Version 0.6.2. Docs 01, 02, 03, 06, MODLOG; Infernus page v0.6.2 line,
+  republished (version 10). No retest flag: sound only, no numbers changed.
+**Results:** `run_test.sh`: every check passes incl. `sound-events`, 4/4 heroes; Combustion 3264 damage + stun as Infernus, 3590
+as Commando. The test cannot hear, so the tick timing is unheard until the creator plays. lab_restore, `winhttp.dll` back on.
+**Not done / open:** the creator listens in play (tick loudness vs the build-up; `gain` is shared by the row). Infernus balance.
+**Lessons:** a `none` loop is not a silent move; measure the cast's length before calling a gap.

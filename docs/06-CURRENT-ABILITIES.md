@@ -9,7 +9,7 @@
 [Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) · [Balance vs Commando](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3).
 Built by `python tools/kit_pages.py` into `build/pages/`. Republish each page to its link whenever this doc or doc 05 changes.
 
-**Version:** 0.6.1 (2026-10-18; Napalm aimed throw, Flame Dash 5 s / 13 s, Combustion range ring, ragdoll deaths).
+**Version:** 0.6.2 (2026-10-18; Combustion fuse ticks. 0.6.1: Napalm aimed throw, Flame Dash 5 s / 13 s, Combustion range ring, ragdoll deaths).
 
 **DPS source:** the stored library `docs/dps-library.json` (doc 05 §6): every vanilla survivor measured 3 times on
 2026-10-17 and **never re-measured**; Haze, Abrams and Seven from the v0.5.1 heroes-only run, Infernus from his v0.6.1 run (2026-10-18).
@@ -114,7 +114,7 @@ bench's run.
 | M2 | **Napalm** | Right Click readies the flask and shows where it will land (its flight path and a splash-sized circle); **Left Click throws it** (Right Click again puts it away, charge kept). Molotov's bottle, glowing and trailing fire, flies in a high arc (as far again ×3 since v0.6.1) and bursts in a ring of fire and leaves a burning puddle: damage, a slow, and the target takes more damage from him. | 300 % in 5 m, slow 28 % for 4 s, +16 % damage taken from Infernus for 8 s, 2 charges; thrown at 78 m/s | 5 s | **685** · 82 |
 | Shift | **Flame Dash** | Dash at ×2.2 speed; hold to keep going. Leaves burning ground behind him; enemies he runs into are knocked aside and scorched. 50 % slow resistance while dashing. | trail 150 %/s for 5 s; shove 75 % + knockback 22 m/s; 0.8 s on a tap, up to 5 s held | 13 s | **145** · 17 (one run) |
 | R | **Torment Pulse** (Deadlock item) | For 6 s, rings of fire race out of him every 0.5 s, burning everything within 10 m and building Afterburn. | 50 % per pulse, +2 Afterburn build-up, proc 0.5 | 12 s | **876** · 105 (burns included) |
-| Q | **Concussive Combustion** (equipment) | Becomes a bomb, fire gathering on him; a yellow ring on the ground shows the blast's reach, with a ring sweeping inward each second as a countdown (on whoever holds the item); can move while it builds; the blast stuns and leaves burning ground. | 6800 % in 18 m after a 3 s fuse, stun 2 s, each kill heals 10 % of max health | 120 s | 2720 · 326 (not balanced; one use: 81600 % on 12 enemies) |
+| Q | **Concussive Combustion** (equipment) | Becomes a bomb, fire gathering on him; a yellow ring on the ground shows the blast's reach, with a ring sweeping inward each second as a countdown and a timer ticking along (on whoever holds the item); can move while it builds; the blast stuns and leaves burning ground. | 6800 % in 18 m after a 3 s fuse, stun 2 s, each kill heals 10 % of max health | 120 s | 2720 · 326 (not balanced; one use: 81600 % on 12 enemies) |
 
 
 ## Sounds (all four heroes)
@@ -146,11 +146,15 @@ heavier; **gain** scales the whole row. In co-op every player hears each sound o
 | Infernus | R | Torment Pulse | `Mods.Tech.TormentPulse.Proc` | – | `Mods.Tech.TormentPulse.Proc` | – | – | – | 1.0 |
 | Infernus | Q | Concussive Combustion | `Inferno.FireBomb.Cast` | – | – | `Inferno.FireBomb.Explode` | – | – | 1.0 |
 
+Fuse ticks (v0.6.2, columns `tick` / `tickFinal`): Concussive Combustion plays `Ratking.ScrapGrenade.Timer` at 0 s and 1 s and
+`Ratking.ScrapGrenade.Timer.Final` at 2 s (cut at the blast), in time with its ring closing in. No other move has a fuse.
+
 Notes:
 - Phantom Strike and Torment Pulse are Deadlock items, so they use the item sounds (`Mods.*`); Haymaker's hit is Deadlock's
   heavy melee impact with Abrams' charge-into-wall thud under it; the Flame Gun has Warden's shot under Infernus' own (v0.5.1).
 - Volumes come from Deadlock (its `volume` is decibels, read correctly since extractor 1.2.0), times the row's gain, times
   RoR2's SFX volume.
+- Concussive Combustion's cast is itself a 3 s build-up that rises to the bang; the ticks sit on top of it.
 - Bullet Dance's hits replay Haze's gun shot; Seismic Impact plays its `hit` (the descend) as the dive starts and `end` on landing.
 
 ### Voice lines
@@ -172,4 +176,4 @@ are never written out here or on the pages. When each hero speaks:
 - **Starting:** every hero starts holding their own; there is no charge meter any more.
 - **Other users:** any survivor, or an Equipment Drone, can fire any of them. On non-heroes they use plain muzzles and no Deadlock animation.
 - **Sounds and voice travel with the item:** whoever fires it gets the ult's own Deadlock sounds (the Q rows of the Sounds table above) and its effects (Combustion's yellow ring too), and the **item's hero** speaks their ult line (Commando firing Combustion hears Infernus). Voice is heard by the player who fired it only; ult sounds are heard by everyone in co-op. Checked in game by `ult-any-survivor` (Commando fires Combustion, v0.6.1).
-- **Known gap:** Concussive Combustion has no sound during its 3 s fuse (its `loop` is `none`): wind-up, then silence, then the bang.
+- **Combustion's fuse** (v0.6.2): a timer ticks once a second over the build-up, the last second faster, on whoever holds the item.

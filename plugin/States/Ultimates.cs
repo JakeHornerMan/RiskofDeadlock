@@ -246,7 +246,7 @@ namespace DeadlockOfRain.States
     [Kind("ult_selfbomb")]
     public sealed class UltSelfBomb : UltState
     {
-        bool exploded; int loop; GameObject fuse, ring;
+        bool exploded; int loop, ticks, tickSound; GameObject fuse, ring;
         public override void OnEnter()
         {
             base.OnEnter();
@@ -261,9 +261,18 @@ namespace DeadlockOfRain.States
         public override void FixedUpdate()
         {
             base.FixedUpdate();
+            // a countdown tick each second, in time with the ring closing in; the last one is the final timer (stopped at the blast)
+            if (!exploded && fixedAge >= ticks)
+            {
+                bool last = ticks + 1 >= row.Duration;
+                DeadlockAudio.Stop(tickSound);
+                tickSound = Sound(last ? "tickFinal" : "tick");
+                ticks++;
+            }
             if (!exploded && fixedAge >= row.Duration)
             {
                 exploded = true;
+                DeadlockAudio.Stop(tickSound);
                 if (anim) anim.Override("ult_end", 0.8f);
                 Vfx.Stop(fuse, 0.2f);
                 Vfx.Stop(ring, 0.1f);
@@ -287,6 +296,7 @@ namespace DeadlockOfRain.States
         public override void OnExit()
         {
             DeadlockAudio.Stop(loop);
+            DeadlockAudio.Stop(tickSound);
             Vfx.Stop(fuse, 0.2f);
             Vfx.Stop(ring, 0.1f);
             base.OnExit();

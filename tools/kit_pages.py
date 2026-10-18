@@ -77,7 +77,7 @@ CHANGES = {
            ('v0.4.1', ['Cooldowns only, no damage cuts: Lightning Ball 6 → 16 s, Static Charge 7 → 16 s, Power Surge 14 → 30 s',
                        'Shock Rifle fix: the gun froze after a magazine (29 rounds in bursts of 3)']),
            ('v0.4.0', ['Thunderhead moves to Q as an equipment; new R: Power Surge with RoR2 Tesla arcs'])],
- 'infernus': [('v0.6.1', ['Napalm: Right Click shows where the flask will land, Left Click throws it; same arc, three times as far (45 → 78 m/s)', 'Flame Dash: hold for up to 5 s (was 3); cooldown 13 s (was 8)', 'Concussive Combustion: a yellow ring on the ground shows the blast range during the fuse, on anyone holding the item', 'Falls as a ragdoll on death']),
+ 'infernus': [('v0.6.2', ['Concussive Combustion: a timer ticks once a second through the fuse, faster on the last second, on anyone holding the item']), ('v0.6.1', ['Napalm: Right Click shows where the flask will land, Left Click throws it; same arc, three times as far (45 → 78 m/s)', 'Flame Dash: hold for up to 5 s (was 3); cooldown 13 s (was 8)', 'Concussive Combustion: a yellow ring on the ground shows the blast range during the fuse, on anyone holding the item', 'Falls as a ragdoll on death']),
             ('v0.6.0', ['Co-op: up to 4 players; every move works the same when a friend joins your game and plays Infernus']),
             ('v0.5.1', ['Flame Gun: louder, with a heavier shot layered under his own, and muzzle smoke and a flash', 'Napalm: a visible bottle flies from him to the target']),
               ('v0.4.1', ['Torment Pulse 120 → 50 % per pulse', 'Flame Gun 40 → 50 % per bullet']),

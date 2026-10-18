@@ -136,7 +136,7 @@ namespace DeadlockOfRain.States
             if (isAuthority && activatorSkillSlot) activatorSkillSlot.AddOneStock();
         }
 
-        protected void Sound(string moment) => Fx.Sound(row?.Id, moment, transform.position);
+        protected int Sound(string moment) => Fx.Sound(row?.Id, moment, transform.position);
 
         protected bool Server => NetworkServer.active;
 

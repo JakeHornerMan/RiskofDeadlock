@@ -79,15 +79,21 @@ namespace DeadlockOfRain
             else { var m = Muzzle(body, left); if (m) Impact("muzzle", m.position); }
         }
 
-        public static void Sound(string skillId, string moment, Vector3? at = null)
+        /// <summary>Play a skill row's sound for one moment (cast, loop, hit, end, reload, tick, tickFinal); returns its voice id (0 = none).</summary>
+        public static int Sound(string skillId, string moment, Vector3? at = null)
         {
             var row = Sheet.Sound(skillId);
-            if (row == null) return;
-            string ev = moment == "cast" ? row.Cast : moment == "loop" ? row.Loop : moment == "hit" ? row.Hit : moment == "end" ? row.End : row.Reload;
-            DeadlockAudio.Play(ev, at, false, row.Gain);
+            if (row == null) return 0;
+            string ev = moment switch
+            {
+                "cast" => row.Cast, "loop" => row.Loop, "hit" => row.Hit, "end" => row.End,
+                "tick" => row.Tick, "tickFinal" => row.TickFinal, _ => row.Reload,
+            };
+            int id = ev == "none" ? 0 : DeadlockAudio.Play(ev, at, false, row.Gain);
             // the heavier layer under the cast or hit (castLayer / hitLayer)
             string layer = moment == "cast" ? row.CastLayer : moment == "hit" ? row.HitLayer : "none";
             if (layer != "none") DeadlockAudio.Play(layer, at, false, row.Gain);
+            return id;
         }
 
         public static int Loop(string skillId, Vector3? at = null)

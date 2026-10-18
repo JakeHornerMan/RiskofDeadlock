@@ -33,11 +33,11 @@ Before touching anything:
 
 | Item | State |
 |---|---|
-| Version | **0.6.1** (`plugin/Plugin.cs`; Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). Not published on Melty since 0.2.0 |
+| Version | **0.6.2** (`plugin/Plugin.cs`; Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). Not published on Melty since 0.2.0 |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
-| Installed build | **v0.6.1** (commit `e951562`); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
+| Installed build | **v0.6.2** (cache re-extracted 2026-10-18 with the tick sounds); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
 | Heroes | Haze, Abrams, Seven, Infernus; 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
-| Test | `run_test.sh`: every check passes incl. `ragdoll` and `ult-any-survivor`, 4/4 heroes (2026-10-18, v0.6.1); `run_coop_test.sh infernus` passes (one earlier run missed the joined Combustion, unexplained) |
+| Test | `run_test.sh`: every check passes incl. `ragdoll`, `ult-any-survivor` and the new `sound-events`, 4/4 heroes (2026-10-18, v0.6.2); `run_coop_test.sh infernus` passes (one earlier run missed the joined Combustion, unexplained) |
 | Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, within **±500 %/s**, comparing **means over every bench run** of the current build (`RUNS` in `tools/kit_pages.py`; doc 05 §3.0) |
 | Balance now | v0.5.1 heroes-only run vs the library (doc 05 §3.1): **Haze 6550 vs Commando 1222 (far above: Phantom Strike's area spreads Fixation)**, Abrams 2460 vs Loader 2951 (inside), **Seven 3164 vs Artificer 4013 (below: the bouncing ball leaves the pack)**, **Infernus 929 vs Engineer 1611 (below, v0.6.1: the gun waits while he holds the Napalm flask; doc 05 §3.2)**. Not retuned; the creator decides |
 | Bench rule | **Bench our heroes only** (`run_bench.sh 30 <ids>`, the default); vanilla numbers come from `docs/dps-library.json` (creator, 2026-10-17; CLAUDE.md). Every base-game and Survivors of the Void survivor is stored (3 runs each, also listed in doc 06); the Seekers of the Storm three are not (expansion off) |
@@ -90,7 +90,7 @@ power level as the Preon Accumulator."
 - Seismic Impact slams on **Left Click only** (or its 3 s timeout).
 - **Sounds, effects and voice belong to the item:** whoever fires it gets the ult's Deadlock sounds and effects (from the
   row in `RowOverride`), and the item's hero speaks its ult line (`Equipment.Fire` → `Voice.SkillLine`). Combustion's 3 s
-  fuse is silent (no loop sound): a possible addition, not asked for yet.
+  fuse: Deadlock's cast is itself a rising build-up; since v0.6.2 a timer ticks on top once a second (sound columns `tick` / `tickFinal`).
 
 ---
 
@@ -206,7 +206,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: v0.6.1 Infernus requests + ragdolls (2026-10-18, done; balance open)
+## 9. Last work: v0.6.1 Infernus requests + ragdolls, v0.6.2 Combustion fuse ticks (2026-10-18, done; balance open)
 
 The creator played 0.6.0 from Steam (BepInEx re-enabled by copying `winhttp.dll`; Melty may switch it off again). Napalm
 is now aimed (Right Click readies, marker shows the landing, Left Click throws; same arc ×3 as far), Combustion shows its
@@ -215,8 +215,10 @@ is now aimed (Right Click readies, marker shows the landing, Left Click throws; 
 Then the creator asked whether the Q items carry their sounds and voice lines (yes; now spelled out in docs 00 §3, 02 §7.5, 06),
 and asked for a docs refresh (this section, §1's stale install row).
 
+Then v0.6.2: the creator chose "Add a tick each second" for Combustion's fuse: Rat King's scrap-grenade timer at 0 s and 1 s,
+its final timer at 2 s (cut at the blast). Earlier I had called the fuse silent; it is not (the cast is a 3 s build-up).
+
 **Next:** the creator decides Infernus' balance (929 vs Engineer 1611; doc 05 §3.2), plus Haze/Seven from 0.5.1.
-Offered: a fuse sound for Combustion's silent 3 s wind-up.
 
 ## 9-prev. v0.6.0 co-op (2026-10-17, done; untested with a real friend)
 

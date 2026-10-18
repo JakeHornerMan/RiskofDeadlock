@@ -291,6 +291,10 @@ namespace DeadlockOfRain
             var missingVoice = VoiceRow.All.Where(v => !DeadlockAudio.Has("vo:" + v.Group)).Select(v => v.Group).Distinct().ToList();
             Write("voice-lines", missingVoice.Count == 0 && Voice.Spoken > 0,
                 missingVoice.Count > 0 ? "not in the cache: " + string.Join(", ", missingVoice.Take(5)) : Voice.Spoken == 0 ? "no voice line played" : "");
+            // every sound event the sheet names (design/sounds.json) made it into the cache
+            var missingSound = SoundRow.All.SelectMany(s => new[] { s.Cast, s.Loop, s.Hit, s.End, s.Reload, s.CastLayer, s.HitLayer, s.Tick, s.TickFinal })
+                                           .Where(e => e != "none" && !DeadlockAudio.Has(e)).Distinct().ToList();
+            Write("sound-events", missingSound.Count == 0, "not in the cache: " + string.Join(", ", missingSound.Take(5)));
             Log.Info($"Melty test finished: {heroes}/4 heroes: every skill did what its sheet expects; Deadlock sounds played: {DeadlockAudio.Played}");
             if (lb) lb.healthComponent.godMode = false;
         }
