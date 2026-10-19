@@ -114,7 +114,8 @@ Three pieces, linked by generated data:
 - **Versions**: `tools/package.py` reads the creator's own RoR2 Steam build and Deadlock ClientVersion, ships them as
   `built-with.txt`, keeps `thunderstore/built-with.json`, and writes the "Built with ..." line into `README.md`,
   `thunderstore/README.md` and the version's CHANGELOG section. Every problem message shows *built with* vs *this PC* (`Runtime/BuiltWith.cs`).
-  Put the same line in the Melty listing description on every publish. `package.py` refuses a zip when `Plugin.Version` differs or the CHANGELOG has no section.
+  Put the same line in the Melty listing description on every publish. **Keep the listing's "Hero pages" section** (links to
+  every kit page and the balance page, listed at the top of doc 06) whenever the description is rewritten (0.7.2 dropped it once). `package.py` refuses a zip when `Plugin.Version` differs or the CHANGELOG has no section.
 - **Test it every release**: `BREAK=infernus bash tools/run_test.sh haze` marks a hero unreadable on purpose; the run must pass
   `missing-hero-tile` and every other check. After a publish, check Melty `install_outcomes` / `player_logs` for setup failures.
 

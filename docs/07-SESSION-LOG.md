@@ -696,3 +696,8 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 - Melty 1-run test of 0.7.3: everything passed except `mokrill-plays`, twice on test timing: (1) Burrow-then-Dust-Devil fired Burrow while the R no-target state still held the body (now: back to idle, then wait up to 1.5 s for him to be under); (2) the Tag Team punch target died part-way (thrown 1.9 m), because Tag Team had already hurt it (now healed to full first). `run_test.sh mokrill`: all pass, thrown 9.1 m. Published at the creator's word ("ok just publish it when it passes").
 **Not done / open:** the quit crash itself (bisect plan in doc 00 §9). The 0.7.3 change doesn't fix it and isn't described as a fix.
 **Lessons:** reproduce a crash before calling a change its fix. Quitting with `CloseMainWindow()` after a test run reproduces this one in about 7 minutes. Bash heredocs still mangle backslashes in scripts: write Python with the Write tool.
+
+### 2026-10-20 · Hero pages back on the Melty listing · listing only · the commit that adds this entry
+**Request (verbatim):** "put the fucking artifacts on the melty page!"
+**Done:** the 0.7.2 description rewrite had dropped the links to the five kit pages and the balance page. They are back in a "Hero pages" section (`update_mod`), and the Built-with line now says v0.7.3. CLAUDE.md now says to keep that section on every rewrite.
+**Lessons:** when rewriting a listing, start from the current text and keep every section unless the creator asks to remove it.
