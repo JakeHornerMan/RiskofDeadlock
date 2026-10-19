@@ -1287,61 +1287,55 @@
     "special": "Tag Team"
    },
    "hero": true,
-   "measuredOn": "v0.7.1c",
+   "measuredOn": "v0.7.1d",
    "dps": {
     "all": {
      "runs": [
-      2317,
       2227
      ],
-     "mean": 2272,
+     "mean": 2227,
      "min": 2227,
-     "max": 2317
+     "max": 2227
     },
     "primary": {
      "runs": [
-      443,
       427
      ],
-     "mean": 435,
+     "mean": 427,
      "min": 427,
-     "max": 443
+     "max": 427
     },
     "secondary": {
      "runs": [
-      800,
       333
      ],
-     "mean": 566,
+     "mean": 333,
      "min": 333,
-     "max": 800
+     "max": 333
     },
     "utility": {
      "runs": [
-      1567,
       1700
      ],
-     "mean": 1634,
-     "min": 1567,
+     "mean": 1700,
+     "min": 1700,
      "max": 1700
     },
     "special": {
      "runs": [
-      1367,
       1017
      ],
-     "mean": 1192,
+     "mean": 1017,
      "min": 1017,
-     "max": 1367
+     "max": 1017
     },
     "equipment": {
      "runs": [
-      3330,
       1980
      ],
-     "mean": 2655,
+     "mean": 1980,
      "min": 1980,
-     "max": 3330
+     "max": 1980
     }
    }
   }
