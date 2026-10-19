@@ -510,3 +510,11 @@ On the plan, added: "i would like mo to also enter a frenzy state where move spe
 **Not done / open:** the creator's next play-check (feel of the Frenzy, Sand Blast's cone, the sink and rise); co-op rerun; release; repo visibility. Levers if he should come back into the band: Tag Team 30 → 60 s, Burrow 500 → 200 % (doc 05 §3.5).
 **Lessons:** the game stayed open between my fix-and-rerun rounds: `lab_restore.sh` right after every `run_test.sh` (copy the devshots aside first); dark or big `mat_dust` makes black blobs; additive lines vanish on snow (use `Vfx.Solid`); a feedback note with two numbers that disagree is worth one question.
 
+### 2026-10-19 · Mo & Krill co-op test · v0.7.0b · docs-only commit
+**Request (verbatim):** "The co-op test hasn't been rerun yet. run them"; while it ran: "you are doing nothing on the test"
+**Questions asked → answers:** only 1.6 GB of 15.4 GB free (two game copies need ~3 GB each; the first run was stopped for low memory) → "Run it anyway now".
+**Done:** `bash tools/run_coop_test.sh mokrill`, then `lab_restore.sh`.
+**Results:** every check pass: coop-hosts, coop-joined, coop-run, **coop-mokrill** (the joined player's Yellow Canary, Sand Blast (Sanded, disarm), Burrow (hidden, slow), Tag Team on R (2365 damage, stun, Frenzy buff), Dust Devil on Q (1672 damage, pull)), coop-shots-seen, coop-effects-seen; 88 relayed effects reached the joiner. It ran through despite the low free memory.
+**Not done / open:** the creator's next play-check; release; repo visibility.
+**Lessons:** the co-op run sits quietly for minutes after "host open" (no output until it ends): when asked, show progress from `%LOCALAPPDATA%/DeadlockOfRain/coop/step.txt` and the BepInEx log instead of waiting silently.
+

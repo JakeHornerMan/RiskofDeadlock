@@ -35,7 +35,7 @@ Before touching anything:
 
 | Item | State |
 |---|---|
-| Status | **Mo & Krill added (v0.7.0, 2026-10-19, not released) and reworked after the creator's play-check (v0.7.0b, same day)**: Tag Team on R (30 s), Dust Devil the Q ult (any carrier spins), Burrow 8 s / 3 × 500 % with sink and rise, Frenzy, Sand Blast wind-up and cone. Every test check passes; bench 3252 vs MUL-T 1450 (far above, the creator's numbers, reported). Waiting on the creator's next play-check, a co-op rerun and the release. The first four heroes are done |
+| Status | **Mo & Krill added (v0.7.0, 2026-10-19, not released) and reworked after the creator's play-check (v0.7.0b, same day)**: Tag Team on R (30 s), Dust Devil the Q ult (any carrier spins), Burrow 8 s / 3 × 500 % with sink and rise, Frenzy, Sand Blast wind-up and cone. Every test check passes; bench 3252 vs MUL-T 1450 (far above, the creator's numbers, reported). Co-op checked as a joined player (2026-10-19: every move, 88 relayed effects). Waiting on the creator's next play-check and the release. The first four heroes are done |
 | Version | **0.6.3** (`plugin/Plugin.cs`; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). **0.6.3 is LIVE on Melty as "Risk of Deadlock"** (https://melty.gg/m/risk-of-deadlock-2, 2026-10-18), character select screenshots; Infernus' select-screen text still says "Catalyst" (fix in the next release) |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
 | Installed build | **v0.7.0b dev build with Mo & Krill** (2026-10-19, after the play-check feedback, for the next play-check; Melty's live release is still 0.6.3); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
@@ -224,7 +224,9 @@ still 5), and a Frenzy while Krill is away (×2 speed, 600 % punches that throw 
 knockback, no-target R, Q underground, Dust Devil on Commando). Bench 3252 vs MUL-T 1450 (far above: reported, not
 retuned). Pages republished.
 
-**Next:** the creator plays him again; rerun `run_coop_test.sh mokrill` when the PC has memory to spare; a release when
+Co-op rerun (`run_coop_test.sh mokrill`, 1.6 GB free at the start): every check pass, all five moves as a joined player.
+
+**Next:** the creator plays him again; a release when
 asked (recipe `mokrill-plays`, drop one check; forced re-extract; `test.minutes` +2). Repo public: still waiting on whether
 to push the unpushed commits first.
 
