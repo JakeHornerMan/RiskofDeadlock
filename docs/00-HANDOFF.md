@@ -36,7 +36,7 @@ Before touching anything:
 | Item | State |
 |---|---|
 | Status | **Mo & Krill added (v0.7.0, 2026-10-19, not released) and reworked after the creator's play-check (v0.7.0b, same day)**: Tag Team on R (30 s), Dust Devil the Q ult (any carrier spins), Burrow 8 s / 3 × 500 % with sink and rise, Frenzy, Sand Blast wind-up and cone. Every test check passes; bench 3252 vs MUL-T 1450 (far above, the creator's numbers, reported). Co-op checked as a joined player (2026-10-19: every move, 88 relayed effects). Waiting on the creator's next play-check and the release. The first four heroes are done |
-| Version | **0.7.1 in the repo** (2026-10-19: extractor **1.3.0**, VRF 20.1.7467, reads Deadlock build 6795; one hero that can't be read no longer stops the others; §9). Live: **0.6.3** (`plugin/Plugin.cs` then; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). **0.6.3 is LIVE on Melty as "Risk of Deadlock"** (https://melty.gg/m/risk-of-deadlock-2, 2026-10-18), character select screenshots; Infernus' select-screen text still says "Catalyst" (fix in the next release) |
+| Version | **0.7.1, LIVE on Melty 2026-10-19 15:06 UTC (four heroes)** ( extractor **1.3.0**, VRF 20.1.7467, reads Deadlock build 6795; one hero that can't be read no longer stops the others; §9). Live: **0.6.3** (`plugin/Plugin.cs` then; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). **0.6.3 is LIVE on Melty as "Risk of Deadlock"** (https://melty.gg/m/risk-of-deadlock-2, 2026-10-18), character select screenshots; Infernus' select-screen text still says "Catalyst" (fix in the next release) |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
 | Installed build | **v0.7.0b dev build with Mo & Krill** (2026-10-19, after the play-check feedback, for the next play-check; Melty's live release is still 0.6.3); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
 | Heroes | Haze, Abrams, Seven, Infernus, **Mo & Krill** (v0.7.0); 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
@@ -226,8 +226,8 @@ uploaded, not tested or published); the creator wanted it fixed here. Done: VRF 
 on its own (ready.json `failed`), the plugin skips and names unreadable heroes on the title screen, version 0.7.1.
 All five heroes read from 6795 (9 min 40 s); the broken-hero test kept the other hero. The creator: "straight away upload to melty with the 4original characters", then "Publish now": `package.py 0.7.1 --release`
 (Haze, Abrams, Seven, Infernus; recipe `setup.done.contains` `|1.3.0|FD43C19E6B46D5A4`), release `2dcdb0d2-058c-4014-96a3-90198b7c99f6`,
-published 2026-10-19 without a Melty test (not required for a live mashup); the player bug is recorded as fixed by it.
-Melty's own 0.6.4 stays an unpublished draft. **Next:** check it went live and `player_logs` stay clean; Thunderstore
+published and **live 2026-10-19 15:06 UTC** without a Melty test (not required for a live mashup); the player bug is recorded as fixed by it.
+Melty's own 0.6.4 stays an unpublished draft. **Next:** check `player_logs` stay clean; Thunderstore
 re-upload of `build/Risk_of_Deadlock-0.7.1-thunderstore.zip` (by the creator); Mo & Krill in a later release.
 
 ## 9-prev000. "Risk of Deadlock" first Thunderstore release, four heroes (2026-10-19, built; uploaded and rejected)
