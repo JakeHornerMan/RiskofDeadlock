@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.3
+- Closing the game shuts the mod's Deadlock sound down properly first.
+
 ## 0.7.2
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6795 (v0.7.2, 2026-10-19).
 - A hero that can't be read from your Deadlock no longer disappears: its spot in character select shows a red "!" (it can't be picked), and hovering it says why. Every other hero still works.

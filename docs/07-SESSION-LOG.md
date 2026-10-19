@@ -681,3 +681,17 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 ### 2026-10-19 · Write-up of the public exe build · docs only · the commit that adds this entry
 **Request (verbatim):** "ok please write some documentation on what we just did!"
 **Done:** `docs/09-PUBLIC-EXE-BUILD.md`: why, the options weighed, what was built, the first release, how to release and verify, and the DLL fallback plan in full as an appendix, since the plan file was overwritten. Linked from CLAUDE.md, doc 03 layout and doc 00 §9.
+
+### 2026-10-19 · A player's 0.7.2 logs; clean sound shutdown · v0.7.3 · the commit that adds this entry
+**Request (verbatim):** the creator pasted a player's 0.7.2 extract.log (plus the older 0.6.3 and 0.7.1 logs), then: "upload to melty when you are done!"
+**Questions asked → answers:** none.
+**Done:**
+- Read Melty: 0.7.2 is live. The player's setup read 5/5 heroes on Deadlock 6795 (the fallback and model lookup work on a player's PC). The one current issue is that player's game crashing in ntdll (c0000005) while quitting, 228 s in.
+- `DeadlockAudio.Shutdown` now joins the mixer thread (0.5 s), also on `Application.quitting`, frees its buffers and logs "Deadlock audio stopped".
+- Docs 00, 02, MODLOG, CHANGELOG 0.7.3.
+**Results:**
+- `run_test.sh haze`: every check passes, 1/1 heroes (run twice).
+- Quit tests on this PC: quitting after a test run crashes in ntdll even with the fix (the audio stop is logged first). An unmodded quit, a BepInEx-only quit and a modded title-screen quit did not crash. Windows' log has the same crash on this PC since 2026-10-13.
+- The dump scan shows the crash in Mono's runtime shutdown, with no winmm or mod thread alive.
+**Not done / open:** the quit crash itself (bisect plan in doc 00 §9). The 0.7.3 change doesn't fix it and isn't described as a fix.
+**Lessons:** reproduce a crash before calling a change its fix. Quitting with `CloseMainWindow()` after a test run reproduces this one in about 7 minutes. Bash heredocs still mangle backslashes in scripts: write Python with the Write tool.

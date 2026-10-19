@@ -543,6 +543,13 @@ Steam invites and RoR2's lobby work as in vanilla; the Melty line is an extra wa
   - **Pan:** `dot(direction, camera.right) × 0.6`.
   - Distance and pan are computed **once when the sound starts**, so loops don't follow a moving source.
   - At most 25 voices; the oldest is dropped.
+  - **Shutdown** (v0.7.3): `Plugin.OnDestroy`/`OnApplicationQuit` call `DeadlockAudio.Shutdown()`, which stops the loop and
+    **joins the thread (up to 0.5 s)** so `waveOutReset/Unprepare/Close` finish and the buffers are freed before the process
+    exits (also on `Application.quitting`; logs "Deadlock audio stopped"). Before 0.7.3 it only cleared a flag.
+    **Open:** the game still sometimes crashes in ntdll (c0000005) while quitting after a run (a 0.7.2 player, and this PC
+    since 2026-10-13). The dump shows it inside Mono's runtime shutdown with no mod thread alive, so it is not the mixer.
+    Not seen quitting from the title screen, with or without the mod, or in an unmodded game. Cause unknown; the profile is
+    saved before it happens.
   - **Master volume** = `volume_master/100 × volume_sfx/100` (RoR2 convars, re-read once per second), × config `Audio/Deadlock sound volume`, × 0.55, and 0 when the window is unfocused.
   - Guns play their `cast` sound per shot, but never their `hit` sound; the Afterburn ignite uses `infernus_gun.hit`.
   - **Layers and gain** (v0.5.1): a `design/sounds.json` row's `castLayer` / `hitLayer` event plays together with its `cast` / `hit` (a heavier sound under it: Infernus' gun has Warden's shot, Haymaker Abrams' charge-into-wall thud), and `gain` multiplies every event of the row (`Play(..., gain)`); the mixer hard-clips the sum.

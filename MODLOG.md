@@ -54,6 +54,12 @@
   path, then heroes_wip <-> heroes_staging; progress lines on stdout. Plugin: a locked red "!" tile per skipped hero,
   versions (built with / this PC) in every problem message, `built-with.txt` from package.py. `BREAK=<hero> run_test.sh`.
 
+## 0.7.3 (2026-10-19)
+- 0.7.2 confirmed on a player's PC: extractor 1.4.0 read 5/5 heroes on Deadlock 6795. The same player's game crashed in
+  ntdll (c0000005) while quitting; `DeadlockAudio.Shutdown` now joins the mixer thread so winmm is closed before exit.
+  That did NOT stop the crash: it repeats on this PC when quitting after a test run, inside Mono's shutdown with no mod
+  thread alive (dump scan). Unmodded and title-screen quits don't crash. Still open.
+
 ## Gotchas found
 1. RoR2's CharacterModel keeps ONE material per renderer (it re-applies defaultMaterial), so a multi-material
    SkinnedMeshRenderer only drew submesh 0. Fix: one SkinnedMeshRenderer per material, one RendererInfo each.

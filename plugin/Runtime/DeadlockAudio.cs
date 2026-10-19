@@ -38,13 +38,22 @@ namespace DeadlockOfRain
                 thread = new Thread(Run) { IsBackground = true, Name = "DeadlockAudio" };
                 thread.Start();
                 RoR2Application.onUpdate += UpdateVolume;
+                Application.quitting += Shutdown;
             }
             catch (Exception e) { Log.Warn("Deadlock audio disabled: " + e.Message); }
         }
 
+        /// <summary>Stops the mixer and waits for it to close the waveOut device, so the game never quits while the
+        /// thread is still inside winmm (a 0.7.2 player crashed in ntdll on quit). Safe to call twice.</summary>
         public static void Shutdown()
         {
             running = false;
+            var t = thread;
+            thread = null;
+            if (t == null) return;
+            bool closed = false;
+            try { closed = !t.IsAlive || t.Join(500); } catch { }
+            Log.Info("Deadlock audio stopped" + (closed ? "" : " (mixer thread still busy)"));
         }
 
         static float nextVolumeCheck;
@@ -260,6 +269,8 @@ namespace DeadlockOfRain
                 waveOutReset(device);
                 for (int b = 0; b < Buffers; b++) { if (prepared[b]) waveOutUnprepareHeader(device, hdrs[b], hdrSize); }
                 waveOutClose(device);
+                device = IntPtr.Zero;
+                for (int b = 0; b < Buffers; b++) { Marshal.FreeHGlobal(hdrs[b]); Marshal.FreeHGlobal(datas[b]); }
             }
         }
     }
