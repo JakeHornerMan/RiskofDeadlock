@@ -593,6 +593,6 @@ Tag Team gamage from Krill  and also let -50 form mo and krill base health make 
 Dust Devil ability for alllcharactere i would like to be able to jump"
 **Questions asked → answers:** none.
 **Done:** `UltDevil` jumps on the jump press for any carrier (all its jumps, Feathers included) via `GenericCharacterMain.ApplyJumpVelocity`; sheet description, docs 02 and 06.
-**Results:** PREFLIGHT CLEAN, build succeeded; the creator had the game open, so the DLL was copied for their next start (not closed). Not tested in game.
+**Results:** PREFLIGHT CLEAN, build succeeded; the creator had the game open and the running game locks the DLL, so it is not installed yet (the game was not closed). Not tested in game.
 **Not done / open:** as before.
 **Lessons:** none new.
