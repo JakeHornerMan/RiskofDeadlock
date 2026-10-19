@@ -224,8 +224,11 @@ Deadlock's update of 2026-10-19 (build 6795) made VRF 20.0 throw "Unknown KVType
 aborted, and every Melty player on 0.6.3 got no heroes (3 players, `player_logs`). Melty started its own fix (0.6.4,
 uploaded, not tested or published); the creator wanted it fixed here. Done: VRF 20.1.7467, extractor 1.3.0 reads each hero
 on its own (ready.json `failed`), the plugin skips and names unreadable heroes on the title screen, version 0.7.1.
-All five heroes read from 6795 (9 min 40 s); the broken-hero test kept the other hero. **Next:** the creator picks the
-Melty release (0.7.1 with Mo & Krill, or a fix-only 0.6.x) and the Thunderstore re-upload as 0.7.1.
+All five heroes read from 6795 (9 min 40 s); the broken-hero test kept the other hero. The creator: "straight away upload to melty with the 4original characters", then "Publish now": `package.py 0.7.1 --release`
+(Haze, Abrams, Seven, Infernus; recipe `setup.done.contains` `|1.3.0|FD43C19E6B46D5A4`), release `2dcdb0d2-058c-4014-96a3-90198b7c99f6`,
+published 2026-10-19 without a Melty test (not required for a live mashup); the player bug is recorded as fixed by it.
+Melty's own 0.6.4 stays an unpublished draft. **Next:** check it went live and `player_logs` stay clean; Thunderstore
+re-upload of `build/Risk_of_Deadlock-0.7.1-thunderstore.zip` (by the creator); Mo & Krill in a later release.
 
 ## 9-prev000. "Risk of Deadlock" first Thunderstore release, four heroes (2026-10-19, built; uploaded and rejected)
 

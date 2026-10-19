@@ -278,6 +278,8 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 - **Nobody may touch the PC during `test_release`.** Melty's own message tells the creator to "play the mashup"; for us that
   is wrong: the test mode plays itself and any input (Esc) pauses it. A 2-run test is enough to publish.
 - **0.6.3 live**; 0.1.0 and 0.2.0 stay unpublished drafts.
+- **0.7.1 (2026-10-19)**: the Deadlock 6795 fix, four heroes (`--release`), release `2dcdb0d2-058c-4014-96a3-90198b7c99f6`, published on the
+  creator's yes without a Melty test (a new version of a live mashup needs none). Melty's own fix 0.6.4 (extractor "1.2.1") stays a draft.
 - Listing pictures: the creator's own character select shots of the four heroes (Haze cover, then Abrams, Seven, Infernus);
   the four 0.1.0 shots were removed. Driving the select screen with `um win drive` is fiddly (client coords are half the
   shot's full size on this monitor; clicks lag a frame); asking the creator for shots was quicker.
