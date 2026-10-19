@@ -14,7 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
-| Mo & Krill | speed 6.3, Sand Blast 750 % / knockback 22, Burrow ×3 speed, Dust Devil 450 % ×32 proc 0.5; then (same day) Tag Team 1000 % + 300 % splash, base health 200 | v0.7.1c balance pass after the creator's play (they asked to play it before any test or bench) | this one | **open** |
+| Mo & Krill | speed 6.3, Sand Blast 750 % / knockback 22, Burrow ×3 speed, Dust Devil 450 % ×32 proc 0.5; then (same day) Tag Team 1000 % + 300 % splash, base health 200; then Tag Team 400 % + 150 %, 8 s, 20 s | v0.7.1c balance pass after the creator's play | this one | **benched** (2317 %/s, run of 2026-10-19); Sand Blast on slopes and the every-kill health still need `run_test.sh mokrill` |
 | – | – | earlier: nothing open (v0.6.3 Flame Gun 75 % and Flame Dash pockets covered by the Infernus-only run of 2026-10-18, §3.3; Mo & Krill's play-check pass (Tag Team on R, Dust Devil on Q, Burrow 3 × 500 %, Frenzy punch 600 %, Sand Blast wind-up and shove) covered by the Mo & Krill-only run of 2026-10-19, §3.5) | – | – |
 
 ## 1. The question

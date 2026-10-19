@@ -589,7 +589,7 @@
       "isDebuff": false,
       "isHidden": false,
       "maxStacks": 1,
-      "duration": 10,
+      "duration": 8,
       "moveSpeedAdd": 1.0,
       "attackSpeedAdd": 0,
       "armorAdd": 0,
@@ -616,7 +616,7 @@
     },
     {
       "id": "tag_team_health",
-      "name": "Tag Team Trophies",
+      "name": "Trophies",
       "icon": "panorama/images/hud/abilities/grappler/grappler_combo_psd.vtex",
       "color": "#7FD07F",
       "canStack": true,
@@ -646,7 +646,7 @@
       "disarm": false,
       "noGun": false,
       "melee": false,
-      "notes": "+2 max health per stack, one per Tag Team kill (10 for a boss), up to 100 stacks; permanent on the body, so it resets each stage"
+      "notes": "+2 max health per stack, one per kill Mo & Krill make with any move (10 for a boss), up to 100 stacks; permanent on the body, so it resets each stage"
     }
   ]
 }

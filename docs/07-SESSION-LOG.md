@@ -575,3 +575,15 @@ Tag Team gamage from Krill  and also let -50 form mo and krill base health make 
 **Results:** PREFLIGHT CLEAN, build succeeded, installed, RoR2 started through Steam for the creator (the game was already closed). Not tested in game (their request).
 **Not done / open:** as the entry before: their verdict, then test, bench, page.
 **Lessons:** none new.
+
+### 2026-10-19 · Tag Team nerf, Sand Blast on slopes, health from every kill, bench · v0.7.1c (dev) · the commit that adds this entry
+**Request (verbatim):** "ok let really amke sure Tag Team Krill nerfed so he need like 2 bounces on a basic enemy to kill them, no nerf to mo and his punching!, also let bring the cool down to 20 seconds and the duration to 8....can we plase make sure Sand Blast travels upat and  angle r down angle or along any floor to damaage enemys please!"; "please run damage testing and suggest edits to fix!"; (pasted the Tag Team page text) "also is ot only tage team that increase health? it shoudl be all kill that increase their health pool that why it starts low!", "all kill by that character!"
+**Questions asked → answers:** none yet (suggestions asked after the bench).
+**Done:**
+- Tag Team 400 % + 150 % splash (level 1: 44 per landing, a Lemurian/Beetle has 80), duration 8, cooldown 20; `krill_away` 8 s. Frenzy punches unchanged.
+- `DlrSandWave` walks the ground in 0.5 m steps (rises up to 1.2 m per step, any drop; a higher rise is a wall) and checks each enemy's height against the ground it passed (±4 m), so it climbs and descends slopes and hits there.
+- Trophies: `DlrHopper.InitTrophies` (Plugin start): every kill by a hero with a krill_hop row gives that row's debuff stacks; the hopper's own death hook is gone. Descriptions (passive, Tag Team), buff name "Trophies", hooks.json.
+- Bench `run_bench.sh 30 mokrill` (built before the slope and trophy changes; neither changes the flat bench); library VERSION v0.7.1c, merged.
+**Results:** all 2317 %/s (was 3252), M1 443, Sand Blast 800, Burrow 1567, Tag Team 1367, Dust Devil 3330 (99900 % per use on 12). MUL-T 1450: +867, above the ±500 band; Abrams 2460, Seven 3164.
+**Not done / open:** the creator's pick from the suggestions; `run_test.sh mokrill` (slopes, trophies); page republish.
+**Lessons:** a terrain-following wave must step along the ground; a flat ray at the start height reads every uphill slope as a wall.

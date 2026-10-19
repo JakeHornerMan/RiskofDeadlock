@@ -318,8 +318,13 @@ namespace DeadlockOfRain
     /// and the row's buff (Sanded: no attacks; bosses bossMult as long). A wall in front of the centre stops it.</summary>
     public sealed class DlrSandWave : MonoBehaviour
     {
-        CharacterBody owner; SkillRow row; Vector3 origin, dir; float dist; bool damage; GameObject vfx;
+        /// <summary>How far the ground may rise or drop between two steps and still carry the wave (more is a wall or a
+        /// cliff), and how far above or below the ground under it an enemy can be hit.</summary>
+        const float Climb = 1.2f, Reach = 4f;
+        CharacterBody owner; SkillRow row; Vector3 origin, dir; float dist, groundY; bool damage; GameObject vfx;
         readonly HashSet<HealthComponent> hit = new HashSet<HealthComponent>();
+        // the ground height under the centre line every metre travelled, for the hit check on slopes
+        readonly List<float> heights = new List<float>();
 
         public static void Launch(CharacterBody owner, SkillRow row, Vector3 from, Vector3 dir, bool damage)
         {
@@ -327,6 +332,7 @@ namespace DeadlockOfRain
             go.transform.position = from;
             var w = go.AddComponent<DlrSandWave>();
             w.owner = owner; w.row = row; w.origin = from; w.dir = dir.normalized; w.damage = damage;
+            w.groundY = from.y; w.heights.Add(from.y);
             w.vfx = Vfx.Play(row.Vfx, "loop", from, row.Radius, null, from + dir);
         }
 
@@ -335,26 +341,44 @@ namespace DeadlockOfRain
         void FixedUpdate()
         {
             if (!owner) { Destroy(gameObject); return; }
-            float step = row.Speed * Time.fixedDeltaTime;
-            // the centre line runs into a wall: the wave ends there
-            var p = origin + dir * dist + Vector3.up * 1f;
-            bool blocked = Physics.Raycast(p, dir, out var wall, step, LayerIndex.world.mask, QueryTriggerInteraction.Ignore);
-            float next = Mathf.Min(row.Range, blocked ? dist + wall.distance : dist + step);
-            // the front hugs the ground (slopes, steps)
-            var front = origin + dir * next;
-            if (Physics.Raycast(front + Vector3.up * 4f, Vector3.down, out var g, 10f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) front = g.point;
+            // the front runs along the ground in small steps: up slopes and steps, down slopes and drops; a wall (a rise of
+            // more than Climb in one step) ends it. Over a gap it keeps its height
+            float target = Mathf.Min(row.Range, dist + row.Speed * Time.fixedDeltaTime);
+            bool blocked = false;
+            while (dist < target && !blocked)
+            {
+                float next = Mathf.Min(target, dist + 0.5f);
+                var flat = origin + dir * next;
+                if (Physics.Raycast(new Vector3(flat.x, groundY + Climb + 0.3f, flat.z), Vector3.down, out var g, Climb + 30f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
+                {
+                    if (g.point.y > groundY + Climb) { blocked = true; break; }
+                    groundY = g.point.y;
+                }
+                else if (Physics.Raycast(new Vector3(flat.x, groundY + 0.5f, flat.z) - dir * 0.5f, dir, 0.5f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
+                {
+                    // the ray down started inside a wall's top or overhang: a wall
+                    blocked = true; break;
+                }
+                dist = next;
+                while (heights.Count <= Mathf.FloorToInt(dist)) heights.Add(groundY);
+            }
+            var front = origin + dir * dist; front.y = groundY;
             transform.position = front;
-            Vfx.SetWave(vfx, front, dir, HalfWidth(next));
-            foreach (var hb in Fx.Enemies(owner, origin + dir * (next * 0.5f), next * 0.5f + HalfWidth(next) + 2f))
+            Vfx.SetWave(vfx, front, dir, HalfWidth(dist));
+            // everything the wave has passed, on whatever height the ground was there
+            var mid = (origin + front) * 0.5f;
+            foreach (var hb in Fx.Enemies(owner, mid, (front - origin).magnitude * 0.5f + HalfWidth(dist) + Reach))
             {
                 if (hit.Contains(hb.healthComponent)) continue;
                 var b = hb.healthComponent.body;
                 var at = b ? b.corePosition : hb.transform.position;
                 var rel = at - origin; rel.y = 0;
                 float along = Vector3.Dot(rel, dir);
-                if (along < -1f || along > next + 1f) continue;
+                if (along < -1f || along > dist + 1f) continue;
                 float side = (rel - dir * along).magnitude;
                 if (side > HalfWidth(Mathf.Max(0f, along)) + (b ? b.radius : 0.5f)) continue;
+                float floor = heights[Mathf.Clamp(Mathf.FloorToInt(along), 0, heights.Count - 1)];
+                if (Mathf.Abs(at.y - floor) > Reach + (b ? b.radius : 0.5f)) continue;
                 hit.Add(hb.healthComponent);
                 // the hit, and sand circling the Sanded enemy for as long as the debuff lasts
                 Vfx.Play(row.Vfx, "hit", at, 1f, b ? b.transform : null);
@@ -365,7 +389,6 @@ namespace DeadlockOfRain
                 // the sand shoves what it hits back along the cone (bosses stand firm)
                 if (row.Knockback > 0 && b && !b.isChampion) Fx.KnockBack(owner, hb.healthComponent, dir, row.Knockback);
             }
-            dist = next;
             if (blocked || dist >= row.Range) Destroy(gameObject);
         }
 
@@ -375,7 +398,7 @@ namespace DeadlockOfRain
     /// <summary>Tag Team, on the server: Krill, thrown at a first target, lands on an enemy every interval for duration:
     /// damagePct and a stun to it, splashPct to everything else within radius. Each next target is the nearest enemy within
     /// reach he hasn't landed on yet (any enemy once they all have, so he can stay on a lone boss). With no enemy in reach
-    /// for minDuration, or at duration, he leaps back to whoever threw him. Kills by his landings give the thrower the row's
+    /// for minDuration, or at duration, he leaps back to whoever threw him. Every kill the thrower makes (InitTrophies) gives the row's
     /// debuff (the trophies: buffStacks, x bossMult for a boss). His flights and landings reach every player through the relay;
     /// the thrower's Krill stays hidden while the row's buff (krill_away) is on.</summary>
     public sealed class DlrHopper : MonoBehaviour
@@ -397,7 +420,6 @@ namespace DeadlockOfRain
             // no target (a joined player's aim: the server can't see it): look for one a little ahead of the thrower
             h.target = first ? first : h.Nearest(from + aim.normalized * 6f, row.Reach * 0.5f);
             if (h.target) h.HopTo(h.target);
-            GlobalEventManager.onCharacterDeathGlobal += h.OnDeath;
         }
 
         HurtBox Nearest(Vector3 from, float within)
@@ -466,17 +488,27 @@ namespace DeadlockOfRain
             returnAt = age + Flight;
         }
 
-        void OnDeath(DamageReport r)
+        /// <summary>The trophies (Mo & Krill's growing health): every kill the hero makes, by any move, gives the attacker the
+        /// krill_hop row's debuff (buffStacks, x bossMult for a boss), up to the buff's maxStacks. On the server; the stacks sync.</summary>
+        public static void InitTrophies() => GlobalEventManager.onCharacterDeathGlobal += OnKill;
+
+        static void OnKill(DamageReport r)
         {
-            if (r == null || !owner || r.damageInfo == null || r.damageInfo.inflictor != gameObject || row.Debuff == "none") return;
-            int stacks = Mathf.Max(1, (int)row.BuffStacks) * (r.victimBody && r.victimBody.isChampion ? Mathf.Max(1, (int)row.BossMult) : 1);
-            var b = Sheet.Buff(row.Debuff);
-            for (int i = 0; i < stacks; i++) Buffs.AddTimed(owner, row.Debuff, 0f, b != null ? (int)b.MaxStacks : 0);
+            if (r == null || !UnityEngine.Networking.NetworkServer.active) return;
+            var killer = r.attackerBody;
+            var hero = Survivors.HeroOf(killer);
+            if (hero == null) return;
+            foreach (var row in SkillRow.All)
+            {
+                if (row.Hero != hero || row.Kind != "krill_hop" || row.Debuff == "none") continue;
+                int stacks = Mathf.Max(1, (int)row.BuffStacks) * (r.victimBody && r.victimBody.isChampion ? Mathf.Max(1, (int)row.BossMult) : 1);
+                var b = Sheet.Buff(row.Debuff);
+                for (int i = 0; i < stacks; i++) Buffs.AddTimed(killer, row.Debuff, 0f, b != null ? (int)b.MaxStacks : 0);
+            }
         }
 
         void OnDestroy()
         {
-            GlobalEventManager.onCharacterDeathGlobal -= OnDeath;
             // Krill is back (or gone with a dead thrower): Mo shows him and shoots again
             if (owner && row != null) Buffs.Clear(owner, row.Buff);
         }

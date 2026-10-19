@@ -38,6 +38,7 @@ namespace DeadlockOfRain
             Net.Init();
             if (!FirstRun.Started) DeadlockAudio.Init();
             Voice.Init();
+            DlrHopper.InitTrophies();
             FirstRun.Init();
             MeltyTest.Init();
             DpsBench.Init();

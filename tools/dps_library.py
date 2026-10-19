@@ -16,7 +16,7 @@ import json, os, re, sys, datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LIB = os.path.join(ROOT, 'docs', 'dps-library.json')
 MODES = ['all', 'primary', 'secondary', 'utility', 'special', 'equipment']
-VERSION = 'v0.7.0b'  # the build heroes are measured on; bump it when a hero's kit changes
+VERSION = 'v0.7.1c'  # the build heroes are measured on; bump it when a hero's kit changes
 
 def parse(path):
     """-> list of runs; each run = {who: {mode: {'dps', 'total', 'hits', 'enemies'}}}, plus stats and skills per who."""

@@ -270,7 +270,7 @@
       "id": "tag_team_kills",
       "method": "event",
       "target": "RoR2.GlobalEventManager.onCharacterDeathGlobal",
-      "purpose": "Tag Team: kills by Krill's landings give the thrower max-health trophies",
+      "purpose": "Mo & Krill trophies: every kill the hero makes (any move) gives max-health stacks (the krill_hop row's debuff)",
       "reads": "skills.buffStacks, skills.bossMult",
       "side": "server"
     },

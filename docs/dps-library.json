@@ -1269,14 +1269,14 @@
   "DeadlockMoKrill": {
    "name": "Mo & Krill",
    "stats": {
-    "health": 250.0,
+    "health": 200.0,
     "healthPerLevel": 75.0,
     "regen": 1.0,
     "regenPerLevel": 0.2,
     "armor": 25.0,
     "damage": 11.0,
     "damagePerLevel": 2.2,
-    "moveSpeed": 5.0,
+    "moveSpeed": 6.3,
     "jumps": 1,
     "crit": 1.0
    },
@@ -1287,55 +1287,55 @@
     "special": "Tag Team"
    },
    "hero": true,
-   "measuredOn": "v0.7.0b",
+   "measuredOn": "v0.7.1c",
    "dps": {
     "all": {
      "runs": [
-      3252
+      2317
      ],
-     "mean": 3252,
-     "min": 3252,
-     "max": 3252
+     "mean": 2317,
+     "min": 2317,
+     "max": 2317
     },
     "primary": {
      "runs": [
-      448
+      443
      ],
-     "mean": 448,
-     "min": 448,
-     "max": 448
+     "mean": 443,
+     "min": 443,
+     "max": 443
     },
     "secondary": {
      "runs": [
-      645
+      800
      ],
-     "mean": 645,
-     "min": 645,
-     "max": 645
+     "mean": 800,
+     "min": 800,
+     "max": 800
     },
     "utility": {
      "runs": [
-      1617
+      1567
      ],
-     "mean": 1617,
-     "min": 1617,
-     "max": 1617
+     "mean": 1567,
+     "min": 1567,
+     "max": 1567
     },
     "special": {
      "runs": [
-      2100
+      1367
      ],
-     "mean": 2100,
-     "min": 2100,
-     "max": 2100
+     "mean": 1367,
+     "min": 1367,
+     "max": 1367
     },
     "equipment": {
      "runs": [
-      1380
+      3330
      ],
-     "mean": 1380,
-     "min": 1380,
-     "max": 1380
+     "mean": 3330,
+     "min": 3330,
+     "max": 3330
     }
    }
   }
