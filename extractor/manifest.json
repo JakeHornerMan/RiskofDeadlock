@@ -2,6 +2,7 @@
   "heroes": [
     {
       "id": "haze",
+      "key": "hero_haze",
       "vmdl": "models/heroes_staging/haze/haze.vmdl",
       "meshes": [
         "body",
@@ -29,6 +30,7 @@
     },
     {
       "id": "abrams",
+      "key": "hero_atlas",
       "vmdl": "models/heroes_wip/abrams/abrams.vmdl",
       "meshes": [
         "abrams_model",
@@ -56,6 +58,7 @@
     },
     {
       "id": "seven",
+      "key": "hero_gigawatt",
       "vmdl": "models/heroes_staging/gigawatt_prisoner/gigawatt_prisoner.vmdl",
       "meshes": [
         "outer_costume",
@@ -83,6 +86,7 @@
     },
     {
       "id": "infernus",
+      "key": "hero_inferno",
       "vmdl": "models/heroes_wip/inferno/inferno.vmdl",
       "meshes": [
         "inferno",
@@ -110,6 +114,7 @@
     },
     {
       "id": "mokrill",
+      "key": "hero_krill",
       "vmdl": "models/heroes_staging/digger/digger.vmdl",
       "meshes": [
         "body",

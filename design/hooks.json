@@ -83,6 +83,22 @@
       "side": "client"
     },
     {
+      "id": "missing_hero_lock",
+      "method": "harmony-prefix",
+      "target": "RoR2.UserProfile.HasSurvivorUnlocked",
+      "purpose": "a released hero that could not be read from the player's Deadlock keeps a placeholder survivor (Content/MissingHeroes.cs); nobody ever has it unlocked, so it can never be picked",
+      "reads": "heroes.displayName/sortPosition",
+      "side": "client"
+    },
+    {
+      "id": "missing_hero_tile",
+      "method": "harmony-postfix",
+      "target": "RoR2.UI.SurvivorIconController.Rebuild (private)",
+      "purpose": "the placeholder tile keeps its red ! (locked tiles are drawn black) and its hover names the hero, the reason and both version pairs (built with / this PC)",
+      "reads": "heroes.displayName",
+      "side": "client"
+    },
+    {
       "id": "debuff_resist",
       "method": "harmony-prefix",
       "target": "RoR2.CharacterBody.AddTimedBuffInternal(RoR2.BuffDef,float,float) (private)",

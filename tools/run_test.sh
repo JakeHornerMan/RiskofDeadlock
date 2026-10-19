@@ -7,11 +7,14 @@
 #   Needs Steam signed in. Writes the test-mode file %LOCALAPPDATA%\Melty\test\deadlock-of-rain.json and creates the
 #   devshots folder (screenshots in %LOCALAPPDATA%\DeadlockOfRain\devshots). Run tools/lab_restore.sh afterwards.
 #   Waits at most 20 minutes; a healthy run takes about 6-7.
+#   BREAK=infernus tools/run_test.sh haze   marks a hero unreadable on purpose: the others must still build and it must get
+#   a locked red ! tile with both version pairs on hover (check missing-hero-tile). Run it before every release.
 R="/c/Program Files (x86)/Steam/steamapps/common/Risk of Rain 2"
 UM=/c/Users/jakeh/tools/universal-modder/bin/um
 L="$R/BepInEx/LogOutput.log"; P="$USERPROFILE/AppData/LocalLow/Hopoo Games, LLC/Risk of Rain 2/Player.log"
 # a first argument made of hero ids (letters and commas) picks the heroes; anything else is the checks file
 HEROES=""; if [[ "$1" =~ ^[a-z,]+$ ]]; then HEROES=", \"heroes\": \"$1\""; shift; fi
+[ -n "$BREAK" ] && HEROES="$HEROES, \"break\": \"$BREAK\""
 CHECKS="${1:-$(cygpath -aw "$(dirname "$0")/../build")\\checks.txt}"
 # stop any running game first, so the old logs can be removed and never mistaken for this run
 G=$(powershell -NoProfile -Command "(Get-Process -Name \"Risk of Rain 2\" -ErrorAction SilentlyContinue).Id"); [ -n "$G" ] && $UM win kill $G >/dev/null

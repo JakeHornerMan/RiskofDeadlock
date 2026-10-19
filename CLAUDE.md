@@ -98,6 +98,25 @@ Three pieces, linked by generated data:
   alone plays its sounds and visuals through `Relay.*` (never from a state, or players get them twice). Anything the owner
   picks at the start (a lock-on target, a point) goes in the state's `OnSerialize`. Check co-op with `run_coop_test.sh`.
 
+## Fallback system: one hero never blocks the others (creator, 2026-10-19)
+"If 1 character cannot be completed we don't fail the whole system." Keep every layer of this intact:
+- **Extractor** (`extractor/Program.cs`, 1.4.0+): each hero is read on its own (`<id>.tmp`, swapped in only when done); a failed
+  one is logged `HERO FAILED` / `SKIPPED`, left out and listed in `ready.json` `failed`. Icons and sounds can't fail the run either.
+  Exit code 1 only when Deadlock isn't found or **no** hero could be read. Progress lines (`[n/total] Reading <hero>...`,
+  `<hero> ready`, final `Ready: ... | Skipped: ...`) go to stdout, which Melty's setup shows.
+- **Model lookup**: the model comes from Deadlock's own `scripts/heroes.vdata` (`m_strModelName` for the sheet's `deadlockKey`)
+  when it is the same file, then the sheet's `vmdl`, then the same path under the other of `heroes_staging/`/`heroes_wip/`,
+  then the vdata path even if it differs. `ready.json` `modelPaths` says which one was used. `DeadlockExtract.exe --list-models` prints the vdata map.
+- **Plugin**: a failed hero gets a **locked red "!" tile** in character select (`Content/MissingHeroes.cs`: never unlocked,
+  hover gives the reason and both version pairs), a title-screen box, and on Melty a loading-screen summary (`FirstRun.ShowSummary`).
+  Every other hero, its ult and its sounds still load. Placeholders live outside `Survivors.Bodies/Defs`.
+- **Versions**: `tools/package.py` reads the creator's own RoR2 Steam build and Deadlock ClientVersion, ships them as
+  `built-with.txt`, keeps `thunderstore/built-with.json`, and writes the "Built with ..." line into `README.md`,
+  `thunderstore/README.md` and the version's CHANGELOG section. Every problem message shows *built with* vs *this PC* (`Runtime/BuiltWith.cs`).
+  Put the same line in the Melty listing description on every publish. `package.py` refuses a zip when `Plugin.Version` differs or the CHANGELOG has no section.
+- **Test it every release**: `BREAK=infernus bash tools/run_test.sh haze` marks a hero unreadable on purpose; the run must pass
+  `missing-hero-tile` and every other check. After a publish, check Melty `install_outcomes` / `player_logs` for setup failures.
+
 ## Commands
 ```
 python tools/gen.py                      # preflight + generate code/manifest (python tools/preflight.py to check only)

@@ -12,7 +12,7 @@ namespace DeadlockOfRain
     public sealed class Plugin : BaseUnityPlugin
     {
         public const string Guid = "melty.deadlockofrain";
-        public const string Version = "0.7.1";
+        public const string Version = "0.7.2";
         public static Plugin Instance;
         public static ConfigEntry<float> Volume;
         public static ConfigEntry<string> DeadlockFolder;
@@ -27,6 +27,7 @@ namespace DeadlockOfRain
 
             DeadlockFolder = Config.Bind("Deadlock", "Deadlock folder", "", "Only needed if Deadlock is not found by itself: the folder that holds game/citadel/pak01_dir.vpk.");
 
+            BuiltWith.Read();
             // Thunderstore install: read the heroes from Deadlock now; the loading screen waits for it (Survivors.cs)
             if (!FirstRun.Start(DeadlockCache.DefaultDir(), DeadlockFolder.Value)) OpenCache();
 
@@ -49,8 +50,9 @@ namespace DeadlockOfRain
         {
             DeadlockCache.Open(DeadlockCache.DefaultDir());
             Log.Info($"Deadlock of Rain {Version}: Deadlock content from build {DeadlockCache.DeadlockBuild} at {DeadlockCache.Dir}");
+            FirstRun.ShowSummary();
             if (!DeadlockCache.Ready && FirstRun.Problem == null)
-                FirstRun.Problem = "The Deadlock heroes are missing. Install Deadlock (free on Steam) and restart Risk of Rain 2.";
+                FirstRun.Problem = "The Deadlock heroes are missing. Install Deadlock (free on Steam) and restart Risk of Rain 2.\n\n" + BuiltWith.Versions();
         }
 
         void OnDestroy() => DeadlockAudio.Shutdown();

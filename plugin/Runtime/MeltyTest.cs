@@ -26,7 +26,11 @@ namespace DeadlockOfRain
         static float fireUntil;
         /// <summary>The heroes this test run plays (test-mode file "heroes"); null = all of them.</summary>
         static List<string> TestHeroes;
-        static HeroRow[] Tested => Survivors.Released.Where(h => TestHeroes == null || TestHeroes.Contains(h.Id)).ToArray();
+        static HeroRow[] Tested => Survivors.Released.Where(h => (TestHeroes == null || TestHeroes.Contains(h.Id)) && !Broken.Contains(h.Id)).ToArray();
+        /// <summary>Heroes the test marks unreadable on purpose (test-mode file "break": "infernus"): they must get a locked
+        /// red ! tile while every other hero still builds.</summary>
+        static readonly List<string> Broken = new List<string>();
+        static int Expected => Survivors.Released.Count(h => !Broken.Contains(h.Id));
 
         public static bool Active => checksFile != null;
 
@@ -48,6 +52,13 @@ namespace DeadlockOfRain
                 // optional "heroes": "haze,abrams": the test (solo or co-op) plays only these
                 var hm = System.Text.RegularExpressions.Regex.Match(text, "\"heroes\"\\s*:\\s*\"([^\"]*)\"");
                 if (hm.Success) TestHeroes = hm.Groups[1].Value.Split(',').Select(h => h.Trim()).Where(h => h != "").ToList();
+                var bm = System.Text.RegularExpressions.Regex.Match(text, "\"break\"\\s*:\\s*\"([^\"]*)\"");
+                if (bm.Success)
+                    foreach (var id in bm.Groups[1].Value.Split(',').Select(h => h.Trim()).Where(h => h != ""))
+                    {
+                        Broken.Add(id);
+                        DeadlockCache.MarkFailed(id, "broken on purpose by the test");
+                    }
                 if (Coop) CoopTestPatches.Apply(new HarmonyLib.Harmony(Plugin.Guid + ".cooptest"), Joiner);
                 Log.Info("Melty test mode: reporting to " + checksFile + (Coop ? Joiner ? " (co-op test, joining)" : " (co-op test, hosting)" : ""));
                 var go = new GameObject("DeadlockOfRainMeltyTest");
@@ -81,9 +92,24 @@ namespace DeadlockOfRain
             if (Coop) { yield return Joiner ? CoopJoin() : CoopHost(); yield break; }
             // 1. content
             while (!RoR2Application.loadFinished) yield return null;
-            Write("deadlock-content", DeadlockCache.Ready && Survivors.Bodies.Count == Survivors.Released.Length, $"cache ready={DeadlockCache.Ready}, heroes built={Survivors.Bodies.Count}/{Survivors.Released.Length}");
+            Write("deadlock-content", DeadlockCache.Ready && Survivors.Bodies.Count == Expected, $"cache ready={DeadlockCache.Ready}, heroes built={Survivors.Bodies.Count}/{Expected}");
             int listed = Survivors.Released.Count(h => Survivors.Defs.TryGetValue(h.Id, out var d) && SurvivorCatalog.FindSurvivorDefFromBody(d.bodyPrefab) != null);
-            Write("survivors-listed", listed == Survivors.Released.Length, $"{listed}/{Survivors.Released.Length} heroes in the survivor catalog");
+            Write("survivors-listed", listed == Expected, $"{listed}/{Expected} heroes in the survivor catalog");
+            if (Broken.Count > 0)
+            {
+                // each broken hero: a catalog tile nobody can pick, whose hover text names both version pairs
+                var bad = new List<string>();
+                var u = LocalUserManager.GetFirstLocalUser();
+                foreach (var id in Broken)
+                {
+                    if (!MissingHeroes.Defs.TryGetValue(id, out var d) || d.survivorIndex == SurvivorIndex.None) { bad.Add(id + ": no tile"); continue; }
+                    if (u != null && u.userProfile.HasSurvivorUnlocked(d.survivorIndex)) bad.Add(id + ": pickable");
+                    var why = d.unlockableDef ? d.unlockableDef.getHowToUnlockString() : "";
+                    if (!why.Contains("Built with") || !why.Contains("This PC")) bad.Add(id + ": hover text has no versions");
+                    if (Survivors.Bodies.ContainsKey(id)) bad.Add(id + ": still built");
+                }
+                Write("missing-hero-tile", bad.Count == 0, string.Join("; ", bad));
+            }
             if (Survivors.Bodies.Count == 0) yield break;
 
             // 2. start a single-player run as Haze

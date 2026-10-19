@@ -44,6 +44,12 @@
 - VRF 20.1 also exports normal maps (unused: ModelBuilder clears them) and Haze's head-smoke cutout alpha (was an
   opaque black card before).
 
+## Fallback system (2026-10-19, v0.7.2)
+- A player on Deadlock 5977 had no `heroes_wip/inferno/inferno.vmdl`: 0.7.1 skipped Infernus, the others loaded.
+- Extractor 1.4.0 takes each model from `scripts/heroes.vdata` (`m_strModelName`, same file name first), then the sheet
+  path, then heroes_wip <-> heroes_staging; progress lines on stdout. Plugin: a locked red "!" tile per skipped hero,
+  versions (built with / this PC) in every problem message, `built-with.txt` from package.py. `BREAK=<hero> run_test.sh`.
+
 ## Gotchas found
 1. RoR2's CharacterModel keeps ONE material per renderer (it re-applies defaultMaterial), so a multi-material
    SkinnedMeshRenderer only drew submesh 0. Fix: one SkinnedMeshRenderer per material, one RendererInfo each.

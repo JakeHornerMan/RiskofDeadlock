@@ -83,7 +83,23 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
      every other hero loads, and the same title-screen box says "<names> couldn't be read from this Deadlock version; the
      other heroes are ready". This works on Melty starts too (no FirstRun needed). Co-op stays safe: the mod-list entry
      names only the heroes built (§7.7), so a friend missing one is refused at the lobby.
-   - `new Harmony("melty.deadlockofrain").PatchAll(assembly)` applies every `[HarmonyPatch]` class: `LanguagePatch`, `StatsPatch`, `DamagePatch`, `DebuffResistPatch`, `LoadoutSkinRowPatch`, `Equipment.FirePatch`, `Equipment.ClientFirePatch`.
+   - **Since v0.7.2 a skipped hero keeps a locked red "!" tile** (`Content/MissingHeroes.cs`, creator 2026-10-19). It is a
+     Commando-clone body (`Deadlock<Name>MissingBody`, its own asset id) whose `portraitIcon` is a red "!" drawn in code (no
+     Deadlock art), plus a `SurvivorDef` with an `UnlockableDef` (`DeadlockOfRain.Missing.<id>`) that is never granted. Two
+     patches: `UserProfile.HasSurvivorUnlocked` prefix (always false for it, whatever the profile says) and
+     `SurvivorIconController.Rebuild` postfix (keeps the icon white instead of the locked black, title "<Name>: not
+     available" in red, hover body = the reason plus `BuiltWith.Versions()`). The placeholders live in
+     `MissingHeroes.Bodies/Defs/Unlockables`, never in `Survivors.Bodies/Defs`, so the bench, test mode, co-op cycling,
+     equipment and the mod-list entry don't see them. A hero is skipped when it is in `DeadlockCache.Failed` **or** its cache file is missing.
+   - **Versions (v0.7.2, `Runtime/BuiltWith.cs`):** `built-with.txt` beside the DLL (`ror2=<Steam build>`, `deadlock=<ClientVersion>`,
+     `date`, `version`, written by `tools/package.py`) is read first thing in `Awake`. This PC's RoR2 Steam build comes from
+     `steamapps/appmanifest_632360.acf` next to the game; its Deadlock build from `ready.json`. Logged as "Built with ... ;
+     this PC: ...". `BuiltWith.Versions()` (built with / this PC, plus "your Deadlock is older/newer" when the ClientVersions
+     differ) is appended to every problem message: the skipped-hero box, "heroes missing", the Thunderstore extractor failure and the red "!" hover.
+   - **Melty loading summary (v0.7.2):** on a Melty start with a skipped hero, `FirstRun.ShowSummary` (from `Plugin.OpenCache`)
+     opens the same `FirstRunOverlay` box with "N of M heroes ready", one line per released hero (`ready` / `NOT AVAILABLE (why)`)
+     and the versions, for about 12 s. Nothing is shown when every hero loaded.
+   - `new Harmony("melty.deadlockofrain").PatchAll(assembly)` applies every `[HarmonyPatch]` class: `LanguagePatch`, `StatsPatch`, `DamagePatch`, `DebuffResistPatch`, `LoadoutSkinRowPatch`, `MissingHeroes.LockPatch`, `MissingHeroes.IconPatch`, `Equipment.FirePatch`, `Equipment.ClientFirePatch`.
    - `ContentManager.collectContentPackProviders += add => add(new DeadlockContentProvider())`.
    - `Equipment.Init()` subscribes `CharacterBody.onBodyStartGlobal` (starting equipment) and `Run.onRunStartGlobal`.
    - `Buffs.InitHooks()` subscribes the Infernal Resilience heal-back. The other buff effects live in the Harmony patches.
@@ -601,6 +617,8 @@ themselves. Effects run where the skill code runs (the host in single player).
 | tag_team_kills | event | `GlobalEventManager.onCharacterDeathGlobal` (per hopper) | Tag Team's max-health trophies |
 | rider | component | `HeroRuntime` (`riderBone` scaled to 0) | Krill hidden while away |
 | loadout_skins | Harmony postfix | `LoadoutPanelController+Row.FromSkin` (public static on a private nested class) | Default skin entry |
+| missing_hero_lock | Harmony prefix | `UserProfile.HasSurvivorUnlocked` | a skipped hero's placeholder tile is never unlocked (v0.7.2) |
+| missing_hero_tile | Harmony postfix | `SurvivorIconController.Rebuild` (private) | the red "!" stays white, hover names the reason and versions (v0.7.2) |
 
 Private members we touch by reflection, which **can break on a RoR2 update**:
 - `ModelLocator._modelTransform`
@@ -625,6 +643,10 @@ hand-written copy works for local runs). The JSON's `"checks"` value is the file
 An optional `"heroes": "infernus"` (`run_test.sh infernus`, v0.6.3; also the co-op test) plays only those heroes: the run
 starts as the first of them, `ragdoll` counts them, `ult-any-survivor` runs only when Infernus is among them, and the summary
 says `N/N heroes`. The creator wants only the changed heroes tested.
+An optional `"break": "infernus"` (`BREAK=infernus run_test.sh haze`, v0.7.2) calls `DeadlockCache.MarkFailed` for those
+heroes at `Init`: they are skipped as if Deadlock couldn't be read, `deadlock-content`/`survivors-listed` expect the others
+only, and an extra check `missing-hero-tile` passes when each broken hero has a placeholder in the catalog, isn't unlocked,
+isn't built, and its hover text names both version pairs. The `lobby` screenshot shows the red "!" tile.
 
 **Flow:**
 1. Wait for `RoR2Application.loadFinished`. Report `deadlock-content` (cache ready and 4 bodies) and `survivors-listed` (4 in `SurvivorCatalog`).

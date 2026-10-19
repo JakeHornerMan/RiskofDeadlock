@@ -150,6 +150,20 @@ namespace DeadlockOfRain
             catch { }
         }
 
+        /// <summary>Melty build (Melty's setup read Deadlock before the game started): when a hero was skipped, the loading-
+        /// screen box still shows which heroes are ready and which are not, then fades like the Thunderstore one.</summary>
+        public static void ShowSummary()
+        {
+            if (Started || DeadlockCache.Failed.Count == 0) return;
+            foreach (var hero in Survivors.Released)
+                Say(DeadlockCache.Failed.TryGetValue(hero.Id, out var why) ? $"{hero.DisplayName}: NOT AVAILABLE ({why})" : $"{hero.DisplayName}: ready");
+            Say(BuiltWith.Versions().Replace("\n", "  "));
+            Status = $"{Survivors.Released.Length - DeadlockCache.Failed.Count} of {Survivors.Released.Length} heroes ready";
+            progress = 1f;
+            DoneAt = Time.realtimeSinceStartup + 4f;   // 12 s on screen in all
+            FirstRunOverlay.Show(true);
+        }
+
         /// <summary>Called once the process has exited: records why, when it failed.</summary>
         public static void Finish(string cacheDir)
         {
@@ -163,7 +177,7 @@ namespace DeadlockOfRain
             if (code != 0)
                 Problem = File.Exists(Path.Combine(cacheDir, "ready.json"))
                     ? null
-                    : "Reading the heroes from Deadlock failed. Restart to try again; if it keeps failing, the details are in " + Path.Combine(cacheDir, "extract.log") + ".";
+                    : "Reading the heroes from Deadlock failed. Restart to try again; if it keeps failing, the details are in " + Path.Combine(cacheDir, "extract.log") + ".\n\n" + BuiltWith.Versions();
         }
 
         // ---------------------------------------------------------------- finding Deadlock
@@ -288,14 +302,16 @@ namespace DeadlockOfRain
         static FirstRunOverlay instance;
         GUIStyle box, title, text;
         float shownAt;
+        bool summary;   // the Melty summary of a start with a skipped hero (FirstRun.ShowSummary), not the extractor at work
 
-        public static void Show()
+        public static void Show(bool summary = false)
         {
             if (instance) return;
             var go = new GameObject("DeadlockOfRainFirstRun");
             DontDestroyOnLoad(go);
             instance = go.AddComponent<FirstRunOverlay>();
             instance.shownAt = Time.realtimeSinceStartup;
+            instance.summary = summary;
         }
 
         void Update()
@@ -307,7 +323,7 @@ namespace DeadlockOfRain
         void OnGUI()
         {
             // normal starts (the cache is current) finish in about a second: show nothing unless it takes longer or failed
-            if (FirstRun.Quick || FirstRun.DoneAt < 0f && Time.realtimeSinceStartup - shownAt < 3f) return;
+            if (!summary && (FirstRun.Quick || FirstRun.DoneAt < 0f && Time.realtimeSinceStartup - shownAt < 3f)) return;
             if (box == null)
             {
                 var bg = new Texture2D(1, 1); bg.SetPixel(0, 0, new Color(0.06f, 0.05f, 0.04f, 0.88f)); bg.Apply();
@@ -323,10 +339,11 @@ namespace DeadlockOfRain
             GUILayout.BeginArea(new Rect(r.x + 14, r.y + 10, r.width - 28, r.height - 20));
             GUILayout.Label("Deadlock of Rain: " + FirstRun.Status, title);
             float t = (FirstRun.DoneAt >= 0f ? FirstRun.DoneAt : Time.realtimeSinceStartup) - shownAt;
-            GUILayout.Label($"{FirstRun.Progress * 100f:F0} %   ·   {Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00}   ·   first start only: it is not stuck (Abrams alone takes a few minutes)", text);
+            if (summary) GUILayout.Label("A hero that couldn't be read keeps a red ! tile in character select; hover it for why.", text);
+            else GUILayout.Label($"{FirstRun.Progress * 100f:F0} %   ·   {Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00}   ·   first start only: it is not stuck (Abrams alone takes a few minutes)", text);
             GUILayout.Space(6);
             lock (FirstRun.Lines)
-                for (int i = Mathf.Max(0, FirstRun.Lines.Count - 6); i < FirstRun.Lines.Count; i++)
+                for (int i = Mathf.Max(0, FirstRun.Lines.Count - (summary ? 8 : 6)); i < FirstRun.Lines.Count; i++)
                     GUILayout.Label(FirstRun.Lines[i], text);
             GUILayout.EndArea();
             GUI.color = Color.white;

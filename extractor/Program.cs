@@ -2,6 +2,7 @@
 // and writes a local cache that the Risk of Rain 2 plugin loads. Nothing from Deadlock ships with the mod.
 //
 //   DeadlockExtract.exe --deadlock <Deadlock folder> --out <cache folder> [--manifest manifest.json] [--force]
+//   DeadlockExtract.exe --deadlock <Deadlock folder> --list-models     (each hero key's model, from scripts/heroes.vdata)
 //
 // Melty runs this once before the first start (recipe.setup) and again when Deadlock updates; the Thunderstore build's
 // plugin runs it on every start from BepInEx/plugins/.../extract/ (it returns at once when ready.json is current).
@@ -21,13 +22,13 @@ namespace DeadlockExtract;
 
 public static class Program
 {
-    public const string Version = "1.3.0";
+    public const string Version = "1.4.0";
     static StreamWriter? log;
 
     public static int Main(string[] args)
     {
         string? deadlock = null, outDir = null, manifestPath = null;
-        bool force = false;
+        bool force = false, listModels = false;
         for (int i = 0; i < args.Length; i++)
         {
             switch (args[i])
@@ -36,6 +37,7 @@ public static class Program
                 case "--out": outDir = args[++i]; break;
                 case "--manifest": manifestPath = args[++i]; break;
                 case "--force": force = true; break;
+                case "--list-models": listModels = true; break;
             }
         }
         deadlock ??= Environment.GetEnvironmentVariable("DEADLOCKOFRAIN_DEADLOCK");
@@ -46,6 +48,7 @@ public static class Program
         try
         {
             if (deadlock == null) throw new Exception("No Deadlock folder given (--deadlock).");
+            if (listModels) return ListModels(deadlock);
             return Run(deadlock, outDir, manifestPath, force);
         }
         catch (Exception e)
@@ -114,21 +117,28 @@ public static class Program
         // never loads an old copy that no longer matches, and ready.json lists it under "failed".
         var read = new List<string>();
         var failed = new List<object>();
+        var modelPaths = new Dictionary<string, string>();
+        var heroModels = HeroModels(loader);
         foreach (var hero in manifest.Heroes)
         {
-            Progress(outDir, step++, total, hero.Id);
+            Progress(outDir, step, total, hero.Id);
+            Log($"[{++step}/{total}] Reading {hero.Id}...");
             var heroDir = Path.Combine(heroesDir, hero.Id);
             var work = heroDir + ".tmp";
+            var t0 = DateTime.UtcNow;
             try
             {
+                modelPaths[hero.Id] = hero.Vmdl = FindModel(package, hero, heroModels);
                 ExportHero(loader, hero, work);
                 if (Directory.Exists(heroDir)) Directory.Delete(heroDir, true);
                 Directory.Move(work, heroDir);
                 read.Add(hero.Id);
+                Log($"{hero.Id} ready ({(DateTime.UtcNow - t0).TotalSeconds:F0} s)");
             }
             catch (Exception e)
             {
                 Log($"HERO FAILED {hero.Id}: {e.Message}");
+                Log($"{hero.Id} SKIPPED (the other heroes still load)");
                 Log(e.ToString());
                 TryDeleteDir(work);
                 TryDeleteDir(heroDir);
@@ -137,16 +147,23 @@ public static class Program
         }
         if (read.Count == 0 && manifest.Heroes.Count > 0)
             throw new Exception($"none of the {manifest.Heroes.Count} heroes could be read from Deadlock build {build} (see the HERO FAILED lines above)");
-        Progress(outDir, step++, total, "images");
+        Progress(outDir, step, total, "images");
+        Log($"[{++step}/{total}] Reading icons...");
 
         var imagesDir = Path.Combine(outDir, "images");
-        Directory.CreateDirectory(imagesDir);
         int images = 0;
-        foreach (var img in manifest.Images)
-            if (ExportImage(loader, img, Path.Combine(imagesDir, ImageFileName(img)))) images++;
+        // icons and sounds never cost the player the heroes already read: a failure here only leaves them out
+        try
+        {
+            Directory.CreateDirectory(imagesDir);
+            foreach (var img in manifest.Images)
+                if (ExportImage(loader, img, Path.Combine(imagesDir, ImageFileName(img)))) images++;
+        }
+        catch (Exception e) { Log("IMAGES FAILED: " + e); }
         Log($"Images: {images}/{manifest.Images.Count}");
 
-        Progress(outDir, step++, total, "sounds");
+        Progress(outDir, step, total, "sounds");
+        Log($"[{++step}/{total}] Reading sounds...");
         int sounds = 0, voiceGroups = 0;
         try { sounds = ExportSounds(package, loader, manifest.SoundEvents, manifest.VoiceGroups, Path.Combine(outDir, "sounds"), out voiceGroups); }
         catch (Exception e) { Log("SOUNDS FAILED: " + e); }
@@ -159,6 +176,7 @@ public static class Program
             extractor = Version,
             heroes = read.ToArray(),
             failed,
+            modelPaths,
             images,
             soundEvents = sounds,
             voiceGroups,
@@ -167,6 +185,70 @@ public static class Program
         File.WriteAllText(readyPath, readyJson);
         Progress(outDir, total, total, "done");
         Log($"Done: {read.Count}/{manifest.Heroes.Count} heroes" + (failed.Count > 0 ? " (failed: " + string.Join(", ", manifest.Heroes.Select(h => h.Id).Except(read)) + ")" : "") + ": " + readyPath);
+        Log("Ready: " + string.Join(", ", read) + (failed.Count > 0 ? " | Skipped: " + string.Join(", ", manifest.Heroes.Select(h => h.Id).Except(read)) : ""));
+        return 0;
+    }
+
+    /// <summary>Each hero key's model as Deadlock itself names it (scripts/heroes.vdata, m_strModelName). A Deadlock build can
+    /// move a model between heroes_staging/ and heroes_wip/ (a player's build 5977 had no heroes_wip/inferno), so this comes
+    /// first; an unreadable vdata only costs the lookup, and the manifest's fixed paths are used.</summary>
+    static Dictionary<string, string> HeroModels(GameFileLoader loader)
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            var r = loader.LoadFileCompiled("scripts/heroes.vdata");
+            ValveKeyValue.KVObject? root = r?.DataBlock switch
+            {
+                BinaryKV3 kv => kv.Data.Root,
+                KeyValuesOrNTRO kn => kn.Data,
+                _ => null,
+            };
+            if (root == null) { Log("  heroes.vdata not readable; using the manifest's model paths"); return map; }
+            foreach (var child in root.Children)
+                if (child.Value != null && child.Value.TryGetValue("m_strModelName", out var m) && m != null && !m.IsNull)
+                {
+                    var path = Str(m).Replace('\\', '/');
+                    if (path.EndsWith(".vmdl", StringComparison.OrdinalIgnoreCase)) map[child.Key] = path;
+                }
+            Log($"  heroes.vdata: {map.Count} hero models");
+        }
+        catch (Exception e) { Log($"  heroes.vdata not readable ({e.Message}); using the manifest's model paths"); }
+        return map;
+    }
+
+    /// <summary>The model to read for a hero: Deadlock's own path for its key when it is the same model file (the clip and
+    /// mesh names belong to it), then the manifest's, then the manifest's under the other of heroes_staging/ and heroes_wip/,
+    /// and last Deadlock's path even when its file differs (unreleased heroes point at the stand-in gen_man.vmdl, so that one
+    /// never comes first). The first one in this Deadlock install wins.</summary>
+    static string FindModel(Package package, HeroEntry hero, Dictionary<string, string> heroModels)
+    {
+        var tries = new List<string>();
+        heroModels.TryGetValue(hero.Key ?? "", out var own);
+        bool sameFile = own != null && string.Equals(Path.GetFileName(own), Path.GetFileName(hero.Vmdl), StringComparison.OrdinalIgnoreCase);
+        if (sameFile) tries.Add(own!);
+        tries.Add(hero.Vmdl);
+        if (hero.Vmdl.Contains("/heroes_wip/")) tries.Add(hero.Vmdl.Replace("/heroes_wip/", "/heroes_staging/"));
+        else if (hero.Vmdl.Contains("/heroes_staging/")) tries.Add(hero.Vmdl.Replace("/heroes_staging/", "/heroes_wip/"));
+        if (own != null && !sameFile) tries.Add(own);
+        tries = tries.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        foreach (var t in tries)
+            if (package.FindEntry(t + "_c") != null)
+            {
+                Log($"  {hero.Id}: model {t}" + (string.Equals(t, hero.Vmdl, StringComparison.OrdinalIgnoreCase) ? "" : $" (the manifest says {hero.Vmdl})"));
+                return t;
+            }
+        throw new Exception("model not found: " + string.Join(" or ", tries));
+    }
+
+    static int ListModels(string deadlock)
+    {
+        var vpkPath = FindVpk(deadlock);
+        using var package = new Package();
+        package.OptimizeEntriesForBinarySearch(StringComparison.OrdinalIgnoreCase);
+        package.Read(vpkPath);
+        using var loader = new GameFileLoader(package, vpkPath);
+        foreach (var kv in HeroModels(loader).OrderBy(k => k.Key)) Console.WriteLine($"{kv.Key}\t{kv.Value}");
         return 0;
     }
 
@@ -419,6 +501,7 @@ public sealed class Manifest
 public sealed class HeroEntry
 {
     public string Id { get; set; } = "";
+    public string Key { get; set; } = "";   // Deadlock's hero key (hero_inferno), for the heroes.vdata model lookup
     public string Vmdl { get; set; } = "";
     public List<string> Meshes { get; set; } = new();
     public List<string> Clips { get; set; } = new();

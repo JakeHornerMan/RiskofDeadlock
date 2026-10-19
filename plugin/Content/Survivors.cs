@@ -111,9 +111,11 @@ namespace DeadlockOfRain
 
             foreach (var hero in Released)
             {
-                if (DeadlockCache.LoadHero(hero.Id) == null)
+                if (DeadlockCache.Failed.ContainsKey(hero.Id) || DeadlockCache.LoadHero(hero.Id) == null)
                 {
-                    Log.Error("hero " + hero.Id + " skipped: " + (DeadlockCache.Failed.TryGetValue(hero.Id, out var why) ? "Deadlock could not be read for it (" + why + ")" : "no Deadlock content"));
+                    var why = DeadlockCache.Failed.TryGetValue(hero.Id, out var err) ? err : "no Deadlock content for it";
+                    Log.Error("hero " + hero.Id + " skipped: Deadlock could not be read for it (" + why + ")");
+                    MissingHeroes.Add(commando, holder.transform, hero, why);
                     continue;
                 }
                 yield return null;
@@ -488,6 +490,9 @@ namespace DeadlockOfRain
             }
             pack.bodyPrefabs.Add(Survivors.Bodies.Values.ToArray());
             pack.survivorDefs.Add(Survivors.Defs.Values.ToArray());
+            pack.bodyPrefabs.Add(MissingHeroes.Bodies.Values.ToArray());
+            pack.survivorDefs.Add(MissingHeroes.Defs.Values.ToArray());
+            pack.unlockableDefs.Add(MissingHeroes.Unlockables.Values.ToArray());
             pack.skillDefs.Add(Survivors.SkillDefs.Values.ToArray());
             pack.skillFamilies.Add(Survivors.Families.ToArray());
             pack.entityStateTypes.Add(Survivors.StateTypes.ToArray());

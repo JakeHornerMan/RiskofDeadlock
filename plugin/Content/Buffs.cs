@@ -26,7 +26,8 @@ namespace DeadlockOfRain
                 def.canStack = row.CanStack;
                 def.isDebuff = row.IsDebuff;
                 def.isHidden = row.IsHidden;
-                def.iconSprite = DeadlockCache.Sprite(row.Icon);
+                // a buff of a hero left out of this release (heroes.txt) has no icon in the cache: no "missing image" warning
+                if (row.Icon == "none" || System.IO.File.Exists(DeadlockCache.ImageFile(row.Icon))) def.iconSprite = DeadlockCache.Sprite(row.Icon);
                 Defs[row.Id] = def;
             }
         }

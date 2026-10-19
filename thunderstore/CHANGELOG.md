@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.2
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6795 (v0.7.2, 2026-10-19).
+- A hero that can't be read from your Deadlock no longer disappears: its spot in character select shows a red "!" (it can't be picked), and hovering it says why. Every other hero still works.
+- Heroes whose model Deadlock moved to another folder are found anyway (the mod now asks Deadlock's own hero list where each model is).
+- Every problem message names the Risk of Rain 2 and Deadlock versions the mod was built with, and the ones on your PC.
+- The setup shows each hero as it is read (ready or skipped) and a summary at the end.
+
 ## 0.7.1
 - Works with Deadlock's update of 19 October 2026 (the heroes couldn't be read after it).
 - If Deadlock ever changes one hero so it can't be read, only that hero is missing (a message on the title screen says which); the others still work.

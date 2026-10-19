@@ -87,7 +87,7 @@ manifest = {'heroes': [], 'images': [], 'soundEvents': []}
 for hero in h['rows']:
     a = anims[hero['id']]
     clips = sorted({a[c] for c in load('animations')['columns'] if c not in ANIM_RIG_COLUMNS and a[c] != 'none'})
-    manifest['heroes'].append({'id': hero['id'], 'vmdl': hero['vmdl'], 'meshes': hero['meshInclude'], 'clips': clips})
+    manifest['heroes'].append({'id': hero['id'], 'key': hero['deadlockKey'], 'vmdl': hero['vmdl'], 'meshes': hero['meshInclude'], 'clips': clips})
     manifest['images'] += [hero['imageSmall'], hero['imageCard']]
     if hero['passiveIcon'] != 'none': manifest['images'].append(hero['passiveIcon'])
 manifest['images'] += [s['icon'] for s in skills] + [b['icon'] for b in buffs if b['icon'] != 'none']

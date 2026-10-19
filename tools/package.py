@@ -13,8 +13,14 @@ Nothing from Risk of Rain 2 or Deadlock is included: the extractor reads Deadloc
     plugins/DeadlockOfRain.dll, plugins/extract/...    the extractor's asset list is deadlock-manifest.json there
     plugins/heroes.txt                                 the release's heroes (thunderstore/release.json); the plugin
                                                        builds only these, and the manifest is cut down to them
+
+Every zip also holds built-with.txt beside the DLL: the creator's own Risk of Rain 2 Steam build and Deadlock ClientVersion,
+read from this PC's installs at packaging time (thunderstore/built-with.json keeps the last one). The plugin names both
+pairs (built with / this PC) in every problem message, and this script writes the same line into README.md,
+thunderstore/README.md and the version's thunderstore/CHANGELOG.md section. It refuses to package when a version can't be
+read, when plugin/Plugin.cs has another Version, or when CHANGELOG.md has no section for the version.
 """
-import hashlib, io, json, os, sys, zipfile
+import datetime, hashlib, io, json, os, re, sys, zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 args = [a for a in sys.argv[1:] if not a.startswith('--')]
@@ -31,6 +37,57 @@ EXTRACT = {
 
 RELEASE = json.load(open(os.path.join(TS, 'release.json'), encoding='utf-8'))
 SHEET_HEROES = {r['id']: r['displayName'] for r in json.load(open(os.path.join(ROOT, 'design', 'heroes.json'), encoding='utf-8'))['rows']}
+
+
+STEAM = r'C:\Program Files (x86)\Steam'
+ROR2_DIR = os.environ.get('RoR2Dir') or os.path.join(STEAM, 'steamapps', 'common', 'Risk of Rain 2')
+DEADLOCK_DIR = os.environ.get('DEADLOCKOFRAIN_DEADLOCK') or os.path.join(STEAM, 'steamapps', 'common', 'Deadlock')
+BUILT_RE = r'^- Built with Risk of Rain 2 build .*$'
+
+
+def built_with():
+    """The creator's Risk of Rain 2 Steam build (appmanifest_632360.acf) and Deadlock ClientVersion (steam.inf)."""
+    acf = os.path.join(os.path.dirname(os.path.dirname(ROR2_DIR)), 'appmanifest_632360.acf')
+    inf = os.path.join(DEADLOCK_DIR, 'game', 'citadel', 'steam.inf')
+    m = re.search(r'"buildid"\s+"(\d+)"', open(acf, encoding='utf-8').read()) if os.path.exists(acf) else None
+    d = re.search(r'^ClientVersion=(\d+)', open(inf, encoding='utf-8').read(), re.M) if os.path.exists(inf) else None
+    if not m or not d:
+        raise SystemExit(f'cannot read the build versions (Risk of Rain 2: {acf}, Deadlock: {inf}); set RoR2Dir / DEADLOCKOFRAIN_DEADLOCK')
+    bw = {'ror2': m.group(1), 'deadlock': d.group(1), 'date': datetime.date.today().isoformat(), 'version': version}
+    json.dump(bw, open(os.path.join(TS, 'built-with.json'), 'w', encoding='utf-8'), indent=2)
+    return bw
+
+
+def built_with_line(bw):
+    return f'Built with Risk of Rain 2 build {bw["ror2"]} and Deadlock build {bw["deadlock"]} (v{version}, {bw["date"]}).'
+
+
+def stamp_texts(bw):
+    """README.md and thunderstore/README.md: one 'Built with' line under Requirements (replaced on every package);
+    thunderstore/CHANGELOG.md: the line at the top of this version's section, which must exist."""
+    line = '- ' + built_with_line(bw)
+    for f in [os.path.join(ROOT, 'README.md'), os.path.join(TS, 'README.md')]:
+        text = open(f, encoding='utf-8').read()
+        if re.search(BUILT_RE, text, re.M):
+            text = re.sub(BUILT_RE, line, text, flags=re.M)
+        else:
+            head = next((h for h in ['## Requirements\n', '## You need Deadlock installed\n'] if h in text), None)
+            if head is None: raise SystemExit(f'{f} has no "## Requirements" section for the Built with line')
+            text = text.replace(head, head + line + '\n', 1)
+        open(f, 'w', encoding='utf-8', newline='\n').write(text)
+    f = os.path.join(TS, 'CHANGELOG.md')
+    lines = open(f, encoding='utf-8').read().split('\n')
+    if f'## {version}' not in lines:
+        raise SystemExit(f'thunderstore/CHANGELOG.md has no "## {version}" section: write what changed first')
+    i = lines.index(f'## {version}') + 1
+    if i < len(lines) and re.match(BUILT_RE, lines[i]): lines[i] = line
+    else: lines.insert(i, line)
+    open(f, 'w', encoding='utf-8', newline='\n').write('\n'.join(lines))
+
+
+def check_plugin_version():
+    v = re.search(r'Version = "([^"]+)"', open(os.path.join(ROOT, 'plugin', 'Plugin.cs'), encoding='utf-8').read()).group(1)
+    if v != version: raise SystemExit(f'plugin/Plugin.cs says Version = "{v}", not {version}: bump it and rebuild first')
 
 
 def release_manifest():
@@ -92,6 +149,12 @@ def ts_manifest():
     return json.dumps(m, indent=2).encode('utf-8')
 
 
+check_plugin_version()
+BW = built_with()
+stamp_texts(BW)
+BW_TXT = ''.join(f'{k}={v}\n' for k, v in BW.items()).encode('utf-8')
+print(built_with_line(BW))
+
 if thunderstore:
     check_store_text()
     out = os.path.join(ROOT, 'build', f'{RELEASE["name"]}-{version}-thunderstore.zip')
@@ -104,6 +167,7 @@ if thunderstore:
     files.update({'plugins/extract/' + k: v for k, v in EXTRACT.items()})
     generated = {'manifest.json': ts_manifest(), 'icon.png': icon_png(),
                  'plugins/heroes.txt': ''.join(h + '\n' for h in RELEASE['heroes']).encode('utf-8'),
+                 'plugins/built-with.txt': BW_TXT,
                  'plugins/extract/deadlock-manifest.json': release_manifest()}
 else:
     out = os.path.join(ROOT, 'build', f'DeadlockOfRain-{version}.zip')
@@ -114,11 +178,11 @@ else:
         'extract/manifest.json': 'extractor/manifest.json',
     }
     files.update({'extract/' + k: v for k, v in EXTRACT.items()})
-    generated = {}
+    generated = {'plugins/DeadlockOfRain/built-with.txt': BW_TXT}
     if cut:
         del files['extract/manifest.json']
-        generated = {'plugins/DeadlockOfRain/heroes.txt': ''.join(h + '\n' for h in RELEASE['heroes']).encode('utf-8'),
-                     'extract/manifest.json': release_manifest()}
+        generated.update({'plugins/DeadlockOfRain/heroes.txt': ''.join(h + '\n' for h in RELEASE['heroes']).encode('utf-8'),
+                          'extract/manifest.json': release_manifest()})
 
 if os.path.exists(out): os.remove(out)
 with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:

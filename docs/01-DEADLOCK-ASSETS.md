@@ -293,6 +293,16 @@ this cache is "stale" but still a superset of what 0.2.0 needs:
     The exit code is 1 only when **no** hero could be read (or the VPK can't be opened). Before 1.3.0 one bad hero aborted
     the whole run, which is how Deadlock build 6795 (2026-10-19, a new KV3 type 26 that VRF 20.0 didn't know) left
     every player with no heroes at all.
+  - **Since 1.4.0 (v0.7.2) the model path is looked up.** `scripts/heroes.vdata` is read once; for each hero the order is:
+    Deadlock's `m_strModelName` for the manifest `key` (the sheet's `deadlockKey`) when it has the same file name as the
+    sheet's `vmdl`, then the sheet's `vmdl`, then that path with `heroes_wip/` ↔ `heroes_staging/` swapped, then the vdata
+    path even if its file differs. Unreleased heroes point at the stand-in `gen_man.vmdl`, which is why a different file name never comes first. The first
+    path present in the VPK wins; it is logged and written to `ready.json` `modelPaths`. An unreadable vdata only logs a line.
+    Why: a player on Deadlock build 5977 had no `models/heroes_wip/inferno/inferno.vmdl` and lost Infernus (2026-10-19 player log).
+    `DeadlockExtract.exe --deadlock <folder> --list-models` prints the vdata map (68 keys at build 6795).
+  - 1.4.0 also wraps the icon step like the sound step (`IMAGES FAILED` is logged, the heroes stay) and prints progress
+    lines to stdout for Melty's setup screen: `[n/total] Reading <hero>...`, `<hero> ready (N s)` or `<hero> SKIPPED`,
+    and a last line `Ready: haze, abrams | Skipped: infernus`.
   - A failed hero is retried by itself after the next Deadlock update or extractor version, because the stamp changes.
   - A missing clip, image or sound event is only **logged**, and the run still exits 0 (a sound event that throws is caught per event; a crash of the whole sound step leaves the heroes in place).
   - Always read `extract.log`.

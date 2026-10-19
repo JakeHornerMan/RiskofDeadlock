@@ -57,6 +57,21 @@ namespace DeadlockOfRain
             foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(block,
                          "\"id\"\\s*:\\s*\"([^\"]+)\"\\s*,\\s*\"error\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\""))
                 Failed[m.Groups[1].Value] = System.Text.RegularExpressions.Regex.Unescape(m.Groups[2].Value);
+            AnnounceFailed();
+        }
+
+        /// <summary>Test mode ("break": "infernus"): treat a hero as unreadable although its cache is fine, so the skip path
+        /// (red ! tile, title-screen message, loading summary) is tested on every release.</summary>
+        public static void MarkFailed(string id, string why)
+        {
+            Failed[id] = why;
+            FirstRun.Problem = null;
+            AnnounceFailed();
+            FirstRun.ShowSummary();
+        }
+
+        static void AnnounceFailed()
+        {
             if (Failed.Count == 0) return;
             var names = new List<string>();
             foreach (var kv in Failed)
@@ -70,7 +85,8 @@ namespace DeadlockOfRain
                 FirstRun.ProblemHeader = "Deadlock of Rain: " + string.Join(", ", names) + " not available";
                 FirstRun.Problem = string.Join(", ", names) + " couldn't"
                     + $" be read from this Deadlock version (build {DeadlockBuild}); the other heroes are ready to play. "
-                    + "A mod update will bring " + (names.Count == 1 ? "it" : "them") + " back. Details: BepInEx/LogOutput.log.";
+                    + (names.Count == 1 ? "Its" : "Their") + " portrait shows a red ! in character select.\n\n" + BuiltWith.Versions()
+                    + "\n\nDetails: BepInEx/LogOutput.log.";
             }
         }
 

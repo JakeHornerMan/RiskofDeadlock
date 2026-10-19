@@ -35,8 +35,8 @@ Before touching anything:
 
 | Item | State |
 |---|---|
-| Status | **Mo & Krill balance pass v0.7.1c (2026-10-19, built, not tested, the creator is playing it)**: 6.3 m/s, Burrow ×3 speed, Sand Blast 750 % / 22 m/s throw with a new sand look (filled cone, sand wall, hit enemies coated in sand), Dust Devil 450 % ×32; then "a little bit too over powered": Tag Team 1000 % + 300 % splash, base health 200; then Tag Team 400 % + 150 %, 8 s / 20 s, Sand Blast follows slopes, every kill grows his health; then Sand Blast 400 %, Dust Devil 5 s: bench 2227 %/s vs MUL-T 1450, `run_test.sh mokrill` all pass; then Burrow 14 s, Frenzy punch knockback 10: 2425 %/s, all pass, Mo & Krill page and overview republished; then trophies fixed (health above base no longer cut) and shown on the page, 180 health, test all pass. Before: **Mo & Krill added (v0.7.0, 2026-10-19, not released) and reworked after the creator's play-check (v0.7.0b, same day)**: Tag Team on R (30 s), Dust Devil the Q ult (any carrier spins), Burrow 8 s / 3 × 500 % with sink and rise, Frenzy, Sand Blast wind-up and cone. Every test check passes; bench 3252 vs MUL-T 1450 (far above, the creator's numbers, reported). Co-op checked as a joined player (2026-10-19: every move, 88 relayed effects). Waiting on the creator's next play-check and the release. The first four heroes are done |
-| Version | **0.7.1, LIVE on Melty 2026-10-19 15:06 UTC (four heroes)** ( extractor **1.3.0**, VRF 20.1.7467, reads Deadlock build 6795; one hero that can't be read no longer stops the others; §9). Live: **0.6.3** (`plugin/Plugin.cs` then; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). **0.6.3 is LIVE on Melty as "Risk of Deadlock"** (https://melty.gg/m/risk-of-deadlock-2, 2026-10-18), character select screenshots; Infernus' select-screen text still says "Catalyst" (fix in the next release) |
+| Status | **v0.7.2 (2026-10-19): the fallback system and all five heroes for Melty** (§9): extractor 1.4.0 looks each model up in Deadlock's `heroes.vdata` (plus folder fallbacks) and prints per-hero progress; a hero that can't be read keeps a locked red "!" tile; every problem message shows *built with* vs *this PC* versions (`built-with.txt` from `package.py`); Melty loading summary; `BREAK=infernus run_test.sh haze` all pass. Before: **Mo & Krill balance pass v0.7.1c (2026-10-19, built, not tested, the creator is playing it)**: 6.3 m/s, Burrow ×3 speed, Sand Blast 750 % / 22 m/s throw with a new sand look (filled cone, sand wall, hit enemies coated in sand), Dust Devil 450 % ×32; then "a little bit too over powered": Tag Team 1000 % + 300 % splash, base health 200; then Tag Team 400 % + 150 %, 8 s / 20 s, Sand Blast follows slopes, every kill grows his health; then Sand Blast 400 %, Dust Devil 5 s: bench 2227 %/s vs MUL-T 1450, `run_test.sh mokrill` all pass; then Burrow 14 s, Frenzy punch knockback 10: 2425 %/s, all pass, Mo & Krill page and overview republished; then trophies fixed (health above base no longer cut) and shown on the page, 180 health, test all pass. Before: **Mo & Krill added (v0.7.0, 2026-10-19, not released) and reworked after the creator's play-check (v0.7.0b, same day)**: Tag Team on R (30 s), Dust Devil the Q ult (any carrier spins), Burrow 8 s / 3 × 500 % with sink and rise, Frenzy, Sand Blast wind-up and cone. Every test check passes; bench 3252 vs MUL-T 1450 (far above, the creator's numbers, reported). Co-op checked as a joined player (2026-10-19: every move, 88 relayed effects). Waiting on the creator's next play-check and the release. The first four heroes are done |
+| Version | **0.7.2 packaged** (five heroes, extractor 1.4.0, built with RoR2 Steam build 25921972 / Deadlock 6795; going to Melty on the creator's "lets relese all 5 characters to melty!", §9). Before: **0.7.1, LIVE on Melty 2026-10-19 15:06 UTC (four heroes)** ( extractor **1.3.0**, VRF 20.1.7467, reads Deadlock build 6795; one hero that can't be read no longer stops the others; §9). Live: **0.6.3** (`plugin/Plugin.cs` then; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). **0.6.3 is LIVE on Melty as "Risk of Deadlock"** (https://melty.gg/m/risk-of-deadlock-2, 2026-10-18), character select screenshots; Infernus' select-screen text still says "Catalyst" (fix in the next release) |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
 | Installed build | **v0.7.1c dev build, five heroes, the Mo & Krill balance pass** (2026-10-19; the game was started for the creator at their request). Before: **v0.7.1 dev build with all five heroes incl. Mo & Krill** (2026-10-19, no heroes.txt, cache read from Deadlock 6795; BepInEx switched back on for Steam Play after `lab_restore`). Before: **v0.7.0b dev build with Mo & Krill** (2026-10-19, after the play-check feedback, for the next play-check; Melty's live release is still 0.6.3); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
 | Heroes | Haze, Abrams, Seven, Infernus, **Mo & Krill** (v0.7.0); 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
@@ -160,6 +160,9 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
 
 - **Bash heredocs with backslashes/quotes** in this Git-Bash setup: write the Python script to the scratchpad with the
   Write tool and run it, instead of inline heredocs, whenever the text has `\`, `$` or nested quotes.
+  (2026-10-19: even a quoted `<<'PY'` heredoc turned `\n` inside Python strings into real newlines and broke C# strings; use Edit.)
+- **Read player logs before "fixing" a reported crash** (2026-10-19): the pasted v0.6.3 crash was already fixed in the live
+  0.7.1; the real new problem was a moved model on an older Deadlock. Check which version each log is from.
 - A heredoc once turned `\b` into a **backspace byte** in doc 02 (`DeadlockOfRain<BS>ench.json`); fixed in 0.4.1.
   Grep docs for control characters (`grep -c $'\x08'`) after scripted edits.
 - **Burst-gun bug** (fixed 0.4.1, MODLOG 11): the burst counter went to −1 when the magazine ran dry mid-burst; it
@@ -218,7 +221,20 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: Mo & Krill balance pass v0.7.1c (2026-10-19, built; not tested, at the creator's request)
+## 9. Last work: fallback system + five-hero Melty release v0.7.2 (2026-10-19)
+
+A player's Melty logs: v0.6.3 had stopped on Deadlock 6795 (fixed by 0.7.1), and on 0.7.1 the player's Deadlock **build 5977**
+had no `models/heroes_wip/inferno/inferno.vmdl`, so Infernus was skipped (the others loaded: 0.7.1's skip worked). The creator
+asked for a visible red "!" instead of a missing hero, recorded versions, loading progress and more safeguards (CLAUDE.md
+"Fallback system" lists every layer). Done: extractor 1.4.0 (vdata model lookup with folder fallbacks, `--list-models`,
+progress lines, icons can't fail the run); `Content/MissingHeroes.cs` (locked red "!" tile, two Harmony hooks);
+`Runtime/BuiltWith.cs` + `package.py` built-with stamping and release refusals; `FirstRun.ShowSummary`; test mode `"break"` +
+check `missing-hero-tile`; buff icons of unreleased heroes no longer warn. Tests: extractor fault run (Infernus at a wrong
+folder found, a fake hero skipped, exit 0); full cache 5/5 on 6795; `BREAK=infernus run_test.sh haze`: every check pass, red
+"!" in the lobby shot. **Next:** Melty 0.7.2 with all five heroes (full manifest, `setup.done.contains` `|1.4.0|544C18F87BF82B69`),
+test_release, publish, "Built with" line in the listing; later check `player_logs` for the 5977 player.
+
+## 9-prev0000. Mo & Krill balance pass v0.7.1c (2026-10-19, built; not tested, at the creator's request)
 
 After playing: Mo 5 → 6.3 m/s (90 % of Abrams), Burrow `burrowed.moveSpeedAdd` 1 → 2 (×3, ≈19 m/s), Sand Blast 450 → 750 %
 and knockback 8 → 22, Dust Devil 200 → 450 % per tick (14400 % per enemy per use), proc 0.3 → 0.5. Sand Blast's look redone in

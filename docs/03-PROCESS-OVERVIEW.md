@@ -226,6 +226,14 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
    - `extract/{DeadlockExtract.exe, manifest.json, THIRD-PARTY-NOTICES.txt, LICENSE.txt}`
 
    `extract/manifest.json` comes from `extractor/manifest.json`, so it is current. `--release` cuts the zip to `thunderstore/release.json`'s heroes (v0.7.1: the four originals); then `setup.done.contains` uses the hash of the **cut** manifest in the zip. If `extractor/*.cs` changed, publish the exe first.
+   **Since v0.7.2 `package.py` also:** refuses to run if `Plugin.Version` isn't `<ver>` or `thunderstore/CHANGELOG.md` has no
+   `## <ver>` section; reads the creator's RoR2 Steam build (`appmanifest_632360.acf`) and Deadlock ClientVersion
+   (`steam.inf`; env `RoR2Dir` / `DEADLOCKOFRAIN_DEADLOCK` for other folders) and refuses if either is missing; writes them to
+   `thunderstore/built-with.json` and `plugins/.../built-with.txt` in the zip; and puts "- Built with Risk of Rain 2 build X
+   and Deadlock build Y (v<ver>, date)." under Requirements in `README.md` and `thunderstore/README.md` and at the top of the
+   CHANGELOG section. Commit those text changes with the release. Put the same line at the end of the Melty description (`update_mod`).
+   **Before every release:** `BREAK=infernus bash tools/run_test.sh haze`: Infernus is marked unreadable on purpose, and the run
+   must pass `missing-hero-tile` (locked red "!" tile, versions in its hover) and every Haze check.
 2. `inspect_package`: fileName, entries, gameSlugs `["risk-of-rain-2","deadlock"]`, and the README feature text as `says`.
 3. Recipe. Start from the last one and change only the fileName and checks:
 ```json
@@ -266,6 +274,9 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 7. `test_release` (3 runs). **Tell the creator straight away what its `tellCreator` says.** Melty on this PC installs the release, plays it 3 × 8 min in test mode, and reports. Poll with `test_result`. 0.2.0 passed 3/3 (`graduates: true`).
 8. `update_mod` for listing text (description, tagline) when features change. `add_screenshot`/`finish_screenshot` for real in-game shots.
 9. **Ask the creator before `publish`.** Only after a clear yes: `publish`, then `mod_status`. Say "live" only if the server says so; otherwise it is "awaiting review".
+10. **After publishing (since v0.7.2):** check `install_outcomes` and `player_logs` the next session. A setup failure or
+   a "HERO FAILED" line from players shows a Deadlock change before the creator hears about it. The 2026-10-19 Infernus
+   skip on a player's Deadlock 5977 was found this way.
 
 **Status at the time of writing (2026-10-18):**
 - 0.1.0, 0.2.0 and **0.6.3** are draft releases. 0.2.0's test passed; 0.6.3 (release `5e542898-bfa4-4bad-9f8c-631175af83f1`,
