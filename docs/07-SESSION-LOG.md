@@ -566,3 +566,12 @@ On the plan, added: "i would like mo to also enter a frenzy state where move spe
 **Results:** `gen.py` PREFLIGHT CLEAN; build succeeded. Installed and RoR2 started through Steam for the creator. Not tested in game (their request).
 **Not done / open:** their verdict; `run_test.sh mokrill` and the Mo & Krill bench; the kit page republish once the numbers settle.
 **Lessons:** none new.
+
+### 2026-10-19 · Mo & Krill toned down a little · v0.7.1c (dev) · the commit that adds this entry
+**Request (verbatim):** "ok maybe a little bit too over powered now lets dial back the 
+Tag Team gamage from Krill  and also let -50 form mo and krill base health make the changes and open the game again"
+**Questions asked → answers:** none ("dial back" read as about a third: 1500 → 1000 %, splash 500 → 300 %).
+**Done:** Tag Team `damagePct` 1000, `splashPct` 300, description; mokrill `baseMaxHealth` 250 → 200; docs 06, 05 §0, 00.
+**Results:** PREFLIGHT CLEAN, build succeeded, installed, RoR2 started through Steam for the creator (the game was already closed). Not tested in game (their request).
+**Not done / open:** as the entry before: their verdict, then test, bench, page.
+**Lessons:** none new.
