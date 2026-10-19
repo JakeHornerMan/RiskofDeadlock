@@ -604,3 +604,11 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Results:** bench all **2227 %/s** (M1 427, Sand Blast 333, Burrow 1700, Tag Team 1017, Dust Devil 1980) vs MUL-T 1450. `run_test.sh mokrill`: first run spawned below the map (ragdoll at −24 m, every move 0 damage, the environment); second run **every check pass, 1/1 heroes** (covers Sand Blast's slope walking, Tag Team 400 %, trophies code, Dust Devil jump build).
 **Not done / open:** the kit page republish once the creator settles the numbers; Sand Blast hit 25 times in 5 uses (32 before the slope change): watch it in play.
 **Lessons:** none new (a below-the-map spawn is the known environment fault: rerun).
+
+### 2026-10-19 · Burrow 14 s, softer Frenzy punches, test, pages · v0.7.1e (dev) · the commit that adds this entry
+**Request (verbatim):** "burrow cool down timer need to be brough up to 14 seconds and i think tage team mos melee punche need less knock back. please run the test and the update the artifact with all our changes"
+**Questions asked → answers:** none ("less" read as half: 20 → 10 m/s).
+**Done:** Burrow `cooldown` 14; Yellow Canary row `meleeKnock` 10 (the Frenzy punch); library VERSION v0.7.1e; `kit_pages.py` v0.7.1c change list and analysis for Mo & Krill; Mo & Krill page and balance overview republished to their links; docs 06, 05.
+**Results:** `run_test.sh mokrill`: every check pass, 1/1 (punch throws 10.9 m). Bench: first try "no flat spot" on the stage, retry: all **2425 %/s** (M1 443, Sand Blast 333, Burrow 1150, Tag Team 1407, Dust Devil 1905); Tag Team rose (1017 → 1407) because monsters knocked half as far stay in punch reach. Game left closed (the test closed the creator's copy, at their request to test).
+**Not done / open:** the creator's next play.
+**Lessons:** weaker knockback can raise damage: what is not thrown away stays in reach.

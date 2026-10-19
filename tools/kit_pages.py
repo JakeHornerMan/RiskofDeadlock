@@ -82,7 +82,13 @@ CHANGES = {
            ('v0.4.1', ['Cooldowns only, no damage cuts: Lightning Ball 6 → 16 s, Static Charge 7 → 16 s, Power Surge 14 → 30 s',
                        'Shock Rifle fix: the gun froze after a magazine (29 rounds in bursts of 3)']),
            ('v0.4.0', ['Thunderhead moves to Q as an equipment; new R: Power Surge with RoR2 Tesla arcs'])],
- 'mokrill': [('v0.7.0b', ['After the creator’s play-check: Tag Team moves to R on a 30 s cooldown (same damage and timing); no target, no throw and no cooldown',
+ 'mokrill': [('v0.7.1c', ['After the creator’s balance play: runs at 6.3 m/s (90 % of Abrams, was 5); 200 health (was 250)',
+                         'Every kill he makes, with any move, gives +2 max health (+20 for a boss) for the stage, up to +200 (only Tag Team kills before)',
+                         'Burrow: three times as fast underground (was twice); cooldown 14 s (was 8)',
+                         'Sand Blast: 400 % (was 450), throws monsters back harder (22 m/s, was 8); runs up and down slopes and steps; a new sand look: the cone filled in sand on the ground, a tall wall of sand, and every monster it hits coated in sand while Sanded',
+                         'Tag Team: 400 % per landing and 150 % splash (was 1,500 and 500), so a basic monster takes two landings; 8 s (was 10), cooldown 20 s (was 30); Mo’s punches still 600 % but knock monsters back half as far (10 m/s)',
+                         'Dust Devil: 450 % four times a second (was 200) for 5 s (was 8); whoever holds it can jump while spinning']),
+             ('v0.7.0b', ['After the creator’s play-check: Tag Team moves to R on a 30 s cooldown (same damage and timing); no target, no throw and no cooldown',
                          'Frenzy while Krill is away: double speed, punches 600 % (was 300) that throw monsters, a red aura around Mo',
                          'Dust Devil becomes the Q ult: 8 s, 200 % four times a second (6,400 %, the Preon level); any survivor holding it spins',
                          'Burrow: up to 8 s underground (was 4); the pop-out hits 3 × 500 % (was 3 × 100); Mo sinks into the ground and bursts back up',
@@ -110,9 +116,9 @@ RUNS = {
 }
 
 ANALYSIS = {
- 'mokrill': ['After the play-check (0.7.0b) he is far above MUL-T: about 3,250 %/s against 1,450 (it was 1,620). The creator asked for these numbers, so they are kept for now.',
-             'Tag Team on a 30 s R does 63,000 % in one use in the pack (2,100 %/s alone), and Burrow’s 3 × 500 % pop-out is 1,617 %/s alone. Those two make up most of the gap.',
-             'His gun is slower than MUL-T’s nailgun (448 against 876 alone). No healing in the kit: 250 health and 25 armor pay for the big target.'],
+ 'mokrill': ['After the 0.7.1c balance pass he does about 2,425 %/s with every move (one run), against MUL-T’s 1,450: above the ±500 band, about Abrams’ level (2,460). The creator chose to keep it.',
+             'Tag Team (1,407 %/s alone, with Mo’s punches) and Burrow’s pop-out spin (1,150 %/s alone, now every 14 s) are the biggest parts; Sand Blast is 333 %/s and is there for control.',
+             'His gun is slower than MUL-T’s nailgun (443 against 876 alone). No healing in the kit: he starts at 200 health and grows it with every kill.'],
  'haze': ['0.5.1 made Phantom Strike cut every enemy within 5 m of the target. Every cut also gives each of them 5 Fixation, so the whole pack reaches the 10-stack burst together and the bursts splash one another: Phantom Strike alone went from 375 to 4,139 %/s, and she is far above Commando. Not retuned yet: the fix is the creator’s call (Fixation on the target only, or fewer stacks to the others).'],
  'abrams': ['0.5.1: Haymaker locks onto the enemy you aim at and rushes to it, even in the air. It does about what the old lunge did (1,760 %/s alone), and he stays just inside Loader’s band.',
             'Loader is the least steady survivor in the test (2,059 to 3,837 across the library’s runs), so the verdict uses the averages.'],
