@@ -13,6 +13,9 @@ namespace DeadlockOfRain
         public static bool Ready;
         public static string DeadlockBuild = "?";
         public static readonly Dictionary<string, HeroAsset> Heroes = new Dictionary<string, HeroAsset>();
+        /// <summary>Heroes the extractor could not read from this Deadlock build (ready.json "failed", extractor 1.3.0+),
+        /// with its error. The other heroes still load; these are skipped and named in a title-screen message.</summary>
+        public static readonly Dictionary<string, string> Failed = new Dictionary<string, string>();
         static readonly Dictionary<string, Texture2D> images = new Dictionary<string, Texture2D>();
         static readonly Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>();
 
@@ -40,8 +43,35 @@ namespace DeadlockOfRain
                 var b = text.IndexOf('"', a + 1);
                 if (a > 0 && b > a) DeadlockBuild = text.Substring(a + 1, b - a - 1);
             }
+            ReadFailed(text);
             Ready = true;
             return true;
+        }
+
+        static void ReadFailed(string text)
+        {
+            Failed.Clear();
+            var i = text.IndexOf("\"failed\"", StringComparison.Ordinal);
+            if (i < 0) return;
+            var block = text.Substring(i);   // only the failed list has id/error pairs
+            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(block,
+                         "\"id\"\\s*:\\s*\"([^\"]+)\"\\s*,\\s*\"error\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\""))
+                Failed[m.Groups[1].Value] = System.Text.RegularExpressions.Regex.Unescape(m.Groups[2].Value);
+            if (Failed.Count == 0) return;
+            var names = new List<string>();
+            foreach (var kv in Failed)
+            {
+                Log.Error($"{kv.Key}: Deadlock build {DeadlockBuild} could not be read for this hero: {kv.Value}");
+                var row = Array.Find(Sheets.HeroRow.All, h => h.Id == kv.Key);
+                names.Add(row != null ? row.DisplayName : kv.Key);
+            }
+            if (FirstRun.Problem == null)
+            {
+                FirstRun.ProblemHeader = "Deadlock of Rain: " + string.Join(", ", names) + " not available";
+                FirstRun.Problem = string.Join(", ", names) + " couldn't"
+                    + $" be read from this Deadlock version (build {DeadlockBuild}); the other heroes are ready to play. "
+                    + "A mod update will bring " + (names.Count == 1 ? "it" : "them") + " back. Details: BepInEx/LogOutput.log.";
+            }
         }
 
         public static HeroAsset LoadHero(string id)

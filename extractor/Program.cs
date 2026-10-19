@@ -21,7 +21,7 @@ namespace DeadlockExtract;
 
 public static class Program
 {
-    public const string Version = "1.2.0";
+    public const string Version = "1.3.0";
     static StreamWriter? log;
 
     public static int Main(string[] args)
@@ -109,11 +109,34 @@ public static class Program
         var heroesDir = Path.Combine(outDir, "heroes");
         Directory.CreateDirectory(heroesDir);
         int total = manifest.Heroes.Count + 2, step = 0;
+        // Each hero is read on its own (1.3.0): a Deadlock update that breaks one model must not cost the player the others.
+        // A hero is written to <id>.tmp and swapped in only when it finished; a failed one has no folder at all, so the plugin
+        // never loads an old copy that no longer matches, and ready.json lists it under "failed".
+        var read = new List<string>();
+        var failed = new List<object>();
         foreach (var hero in manifest.Heroes)
         {
             Progress(outDir, step++, total, hero.Id);
-            ExportHero(loader, hero, Path.Combine(heroesDir, hero.Id));
+            var heroDir = Path.Combine(heroesDir, hero.Id);
+            var work = heroDir + ".tmp";
+            try
+            {
+                ExportHero(loader, hero, work);
+                if (Directory.Exists(heroDir)) Directory.Delete(heroDir, true);
+                Directory.Move(work, heroDir);
+                read.Add(hero.Id);
+            }
+            catch (Exception e)
+            {
+                Log($"HERO FAILED {hero.Id}: {e.Message}");
+                Log(e.ToString());
+                TryDeleteDir(work);
+                TryDeleteDir(heroDir);
+                failed.Add(new { id = hero.Id, error = e.Message });
+            }
         }
+        if (read.Count == 0 && manifest.Heroes.Count > 0)
+            throw new Exception($"none of the {manifest.Heroes.Count} heroes could be read from Deadlock build {build} (see the HERO FAILED lines above)");
         Progress(outDir, step++, total, "images");
 
         var imagesDir = Path.Combine(outDir, "images");
@@ -124,7 +147,9 @@ public static class Program
         Log($"Images: {images}/{manifest.Images.Count}");
 
         Progress(outDir, step++, total, "sounds");
-        int sounds = ExportSounds(package, loader, manifest.SoundEvents, manifest.VoiceGroups, Path.Combine(outDir, "sounds"), out int voiceGroups);
+        int sounds = 0, voiceGroups = 0;
+        try { sounds = ExportSounds(package, loader, manifest.SoundEvents, manifest.VoiceGroups, Path.Combine(outDir, "sounds"), out voiceGroups); }
+        catch (Exception e) { Log("SOUNDS FAILED: " + e); }
         Log($"Sound events: {sounds}/{manifest.SoundEvents.Count}, voice groups: {voiceGroups}/{manifest.VoiceGroups.Count}");
 
         var readyJson = JsonSerializer.Serialize(new
@@ -132,7 +157,8 @@ public static class Program
             stamp,
             deadlockBuild = build,
             extractor = Version,
-            heroes = manifest.Heroes.Select(h => h.Id).ToArray(),
+            heroes = read.ToArray(),
+            failed,
             images,
             soundEvents = sounds,
             voiceGroups,
@@ -140,8 +166,13 @@ public static class Program
         }, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(readyPath, readyJson);
         Progress(outDir, total, total, "done");
-        Log("Done: " + readyPath);
+        Log($"Done: {read.Count}/{manifest.Heroes.Count} heroes" + (failed.Count > 0 ? " (failed: " + string.Join(", ", manifest.Heroes.Select(h => h.Id).Except(read)) + ")" : "") + ": " + readyPath);
         return 0;
+    }
+
+    static void TryDeleteDir(string dir)
+    {
+        try { if (Directory.Exists(dir)) Directory.Delete(dir, true); } catch { }
     }
 
     public static string ImageFileName(string vtexPath) =>
@@ -242,6 +273,8 @@ public static class Program
         int ok = 0;
         foreach (var name in wanted)
         {
+          try
+          {
             var files = Resolve(events, name, "vsnd_files", 0);
             // Deadlock's "volume" is in decibels (0 = as recorded, -1 a touch quieter, +2 louder); the plugin mixes with a
             // linear gain, so convert (before 1.2.0 the dB number was used as the gain, and every event at 0 dB or below
@@ -260,6 +293,8 @@ public static class Program
             if (outFiles.Count == 0) { Log($"  sound event {name}: none decoded"); continue; }
             index[name] = new { volume = Math.Clamp(volume, 0f, 4f), files = outFiles };
             ok++;
+          }
+          catch (Exception e) { Log($"  sound event {name}: {e.Message}"); }
         }
         voiceOk = ExportVoice(package, loader, voiceGroups, dir, index);
         File.WriteAllText(Path.Combine(dir, "sounds.json"), JsonSerializer.Serialize(index, new JsonSerializerOptions { WriteIndented = true }));

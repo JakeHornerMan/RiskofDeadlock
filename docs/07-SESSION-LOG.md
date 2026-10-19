@@ -542,3 +542,16 @@ On the plan, added: "i would like mo to also enter a frenzy state where move spe
 **Not done / open:** upload (the creator's thunderstore.io team and go-ahead); the Thunderstore exe question; Mo & Krill in a later release; leftover test caches `%LOCALAPPDATA%\DeadlockOfRain\cache.rod-test`, `cache.rod-test2`, `cache.thunderstore-test` (~560 MB) can be deleted.
 **Lessons:** Abrams alone takes 3–4 min to read, so a first start without visible progress looks hung: show progress on screen, not only in a log. C# backslash literals don't survive a bash heredoc: write such patches with the Write tool.
 
+### 2026-10-19 · Deadlock update 6795 broke the heroes for players; fixed here, one hero can no longer stop the others · v0.7.1 · the commit that adds this entry
+**Request (verbatim):** (Melty's progress pasted) "i donk know what the issue is but melty is tring to fix it", "what is the issue"; then "i would prefer we fix it here! and also can we make sure this doesnt happen again, so if 1 character fails they dont all fail. update to the latest deadlock update"; then "straight away upload to melty with the 4original characters".
+**Questions asked → answers:** none (plan approved as written).
+**Done:**
+- `player_logs`: 3 players on 0.6.3, "Unknown KVType for variable 'datatype': 26" on Haze's model with Deadlock build 6795; extractor 1.2.0 aborted, no ready.json, no heroes. Melty had started its own fix (0.6.4 uploaded, untested, unpublished).
+- VRF 20.0.6980 → 20.1.7467 (no code change needed); extractor 1.3.0 reads each hero on its own (`<id>.tmp` swapped in on success, `HERO FAILED` + stack, ready.json `failed`, exit 1 only when no hero was read; a sound event that throws is caught per event, a failed sound step leaves the heroes).
+- Plugin 0.7.1: `DeadlockCache.Failed` from ready.json, `Survivors` names the reason when skipping, title-screen box "<names> couldn't be read from this Deadlock version; the other heroes are ready" (`FirstRun.ProblemHeader`), also on Melty starts.
+- `package.py <ver> --release`: the Melty zip cut to `thunderstore/release.json`'s heroes (heroes.txt + cut manifest), for the four-hero Melty release.
+- Docs 00, 01 (§1, §6.6, §6.7 "after a Deadlock update"), 02 §3, 03 §9, MODLOG, Thunderstore CHANGELOG.
+**Results:** full re-read from 6795: 5/5 heroes, 40 images, 74 sounds, 54 voice groups, 9 min 40 s. Against the old cache: VRF 20.1 also writes normal maps (unused, ModelBuilder clears them); Haze's head-smoke texture now has its cutout alpha (it was an opaque black card); Infernus' glow textures differ only in encoding. Broken-hero test (a bogus Haze model path): Haze in `failed`, Infernus read, exit 0. `run_test.sh haze`: every check pass, 1/1 heroes. Melty zip `DeadlockOfRain-0.7.1.zip` (Haze, Abrams, Seven, Infernus; manifest hash FD43C19E6B46D5A4).
+**Not done / open:** Melty release 0.7.1 (upload and test now, publish on the creator's yes); Thunderstore 0.7.1 zip and re-upload (0.7.0 was rejected, "Invalid submission"); `cache.pre-0.7.1` kept for comparison (can be deleted).
+**Lessons:** a Deadlock update can change Valve's file format overnight: watch `player_logs`, update VRF, and never let one hero's failure take down the rest.
+

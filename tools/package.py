@@ -4,6 +4,8 @@ Nothing from Risk of Rain 2 or Deadlock is included: the extractor reads Deadloc
   python tools/package.py <version>                 Melty zip
     plugins/DeadlockOfRain/   -> {game}/BepInEx/plugins/DeadlockOfRain
     extract/                  -> {localappdata}/DeadlockOfRain/extract   (the recipe runs it before the first start)
+  python tools/package.py <version> --release       the same Melty zip cut down to thunderstore/release.json's heroes
+    (plugins/DeadlockOfRain/heroes.txt + a cut extractor manifest), e.g. the four originals without Mo & Krill
 
   python tools/package.py <version> --thunderstore  Thunderstore zip (r2modman installs plugins/ into
     BepInEx/plugins/<team>-DeadlockOfRain/; the plugin runs plugins/extract/DeadlockExtract.exe itself, FirstRun.cs)
@@ -18,6 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 args = [a for a in sys.argv[1:] if not a.startswith('--')]
 version = args[0] if args else '0.1.0'
 thunderstore = '--thunderstore' in sys.argv
+cut = '--release' in sys.argv
 TS = os.path.join(ROOT, 'thunderstore')
 EXTRACT = {
     'DeadlockExtract.exe': 'build/extract/DeadlockExtract.exe',
@@ -112,6 +115,10 @@ else:
     }
     files.update({'extract/' + k: v for k, v in EXTRACT.items()})
     generated = {}
+    if cut:
+        del files['extract/manifest.json']
+        generated = {'plugins/DeadlockOfRain/heroes.txt': ''.join(h + '\n' for h in RELEASE['heroes']).encode('utf-8'),
+                     'extract/manifest.json': release_manifest()}
 
 if os.path.exists(out): os.remove(out)
 with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:

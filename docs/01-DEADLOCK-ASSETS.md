@@ -30,13 +30,13 @@ Related documents:
 
 | Thing | Version | Where it is recorded |
 |---|---|---|
-| Deadlock | `ClientVersion=6774` (Source 2) | `game/citadel/steam.inf`; also in `cache/ready.json` → `deadlockBuild` |
-| ValveResourceFormat (VRF) NuGet | **20.0.6980** | `extractor/DeadlockExtract.csproj` |
+| Deadlock | `ClientVersion=6795` (Source 2; 6774 until the update of 2026-10-19) | `game/citadel/steam.inf`; also in `cache/ready.json` → `deadlockBuild` |
+| ValveResourceFormat (VRF) NuGet | **20.1.7467** (20.0.6980 until v0.7.1: it can't read build 6795, "Unknown KVType 26") | `extractor/DeadlockExtract.csproj` |
 | VRF CLI (Source2Viewer-CLI) for exploring | 20.0 (`cli-windows-x64.zip` from the VRF GitHub release `20.0`) | `C:\Users\jakeh\tools\vrf-cli\Source2Viewer-CLI.exe` (dev machine only) |
 | NLayer (MP3 decoder) | 1.16.0 | `extractor/DeadlockExtract.csproj` |
 | .NET SDK for the extractor | **net10.0**. VRF 20 needs it; net8 does not compile against it. | csproj `TargetFramework` |
 | SharpGLTF, SkiaSharp, ValvePak, ValveKeyValue | transitive deps of VRF | `THIRD-PARTY-NOTICES.txt` |
-| Extractor version | `1.2.0` (`Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels) | `extractor/Program.cs`; also part of the cache stamp |
+| Extractor version | `1.3.0` (`Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1) | `extractor/Program.cs`; also part of the cache stamp |
 
 A Deadlock update can change asset paths, clip names, mesh names or sound event names. **Section 9** explains how to
 re-validate everything after an update.
@@ -286,15 +286,22 @@ this cache is "stale" but still a superset of what 0.2.0 needs:
   `ready.json` is not deleted**, so a forced run that fails partway leaves the old "complete" marker in place. Delete it
   by hand if a forced run fails. `ready.json` is written **last**.
 - **What is fatal and what is not:**
-  - A missing `vmdl` (or a VRF exception while exporting a hero) aborts the whole run: exit 1, no new `ready.json`.
-  - A missing clip, image or sound event is only **logged**, and the run still exits 0.
+  - **Since 1.3.0 (v0.7.1) each hero is read on its own.** A missing `vmdl` or a VRF exception while exporting a hero logs
+    `HERO FAILED <id>: <message>` plus the stack trace, removes that hero's folder (it is written to `heroes/<id>.tmp` and
+    swapped in only when finished, so an old copy is never left behind) and carries on. `ready.json` lists the heroes read
+    in `heroes` and the others in `failed: [{id, error}]`; the plugin skips those and names them on the title screen (doc 02 §3).
+    The exit code is 1 only when **no** hero could be read (or the VPK can't be opened). Before 1.3.0 one bad hero aborted
+    the whole run, which is how Deadlock build 6795 (2026-10-19, a new KV3 type 26 that VRF 20.0 didn't know) left
+    every player with no heroes at all.
+  - A failed hero is retried by itself after the next Deadlock update or extractor version, because the stamp changes.
+  - A missing clip, image or sound event is only **logged**, and the run still exits 0 (a sound event that throws is caught per event; a crash of the whole sound step leaves the heroes in place).
   - Always read `extract.log`.
 - **What gets wiped:** `heroes/<id>/` and `sounds/` are wiped and rewritten on each run. `images/` is **not**, so old PNGs linger (harmless).
 - Melty's recipe `setup.done.file` is this `ready.json`. That's why the game waits for extraction on first start.
 - **Thunderstore build (2026-10-19):** the plugin itself runs the exe on every start (`plugin/Runtime/FirstRun.cs`, doc 02 §3); the
   stamp check above makes that a ~1 s no-op once the cache is current. While working, the exe writes `progress.txt`
-  (`<done> <total> <step>`, one step per hero, then images, then sounds) for the loading screen. The output itself is
-  unchanged, so `Version` stays 1.2.0 (a release's cut-down manifest gives it its own stamp, §5).
+  (`<done> <total> <step>`, one step per hero, then images, then sounds) for the loading screen. The output itself was
+  unchanged by that, so `Version` stayed 1.2.0 (a release's cut-down manifest gives it its own stamp, §5); 1.3.0 is the per-hero change above.
 - The plugin reads `deadlockBuild` for its log line only. It does **not** re-check the stamp.
 
 ### 6.7 Building and publishing the extractor exe
@@ -304,6 +311,11 @@ dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=
   -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=none -o ../build/extract
 ```
 This gives one self-contained `build/extract/DeadlockExtract.exe` (about 45.8 MB), so players need no .NET install.
+
+**After a Deadlock update** players report "Unknown KVType" / "UnexpectedMagicException" (`player_logs` on Melty): Valve changed
+the resource format. Update the VRF `PackageReference` to the newest on NuGet
+(`https://api.nuget.org/v3-flatcontainer/valveresourceformat/index.json`), publish the exe, rerun it with `--force` on the
+updated Deadlock and compare the cache with the old one before releasing.
 `tools/package.py` copies it into the zip as `extract/DeadlockExtract.exe` with `manifest.json`,
 `THIRD-PARTY-NOTICES.txt` and `LICENSE.txt`. The Thunderstore zip (`--thunderstore`) puts it in `plugins/extract/` with
 the manifest renamed `deadlock-manifest.json` (Thunderstore's own `manifest.json` sits at the zip root); the plugin

@@ -36,7 +36,7 @@ Before touching anything:
 | Item | State |
 |---|---|
 | Status | **Mo & Krill added (v0.7.0, 2026-10-19, not released) and reworked after the creator's play-check (v0.7.0b, same day)**: Tag Team on R (30 s), Dust Devil the Q ult (any carrier spins), Burrow 8 s / 3 × 500 % with sink and rise, Frenzy, Sand Blast wind-up and cone. Every test check passes; bench 3252 vs MUL-T 1450 (far above, the creator's numbers, reported). Co-op checked as a joined player (2026-10-19: every move, 88 relayed effects). Waiting on the creator's next play-check and the release. The first four heroes are done |
-| Version | **0.6.3** (`plugin/Plugin.cs`; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). **0.6.3 is LIVE on Melty as "Risk of Deadlock"** (https://melty.gg/m/risk-of-deadlock-2, 2026-10-18), character select screenshots; Infernus' select-screen text still says "Catalyst" (fix in the next release) |
+| Version | **0.7.1 in the repo** (2026-10-19: extractor **1.3.0**, VRF 20.1.7467, reads Deadlock build 6795; one hero that can't be read no longer stops the others; §9). Live: **0.6.3** (`plugin/Plugin.cs` then; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). **0.6.3 is LIVE on Melty as "Risk of Deadlock"** (https://melty.gg/m/risk-of-deadlock-2, 2026-10-18), character select screenshots; Infernus' select-screen text still says "Catalyst" (fix in the next release) |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
 | Installed build | **v0.7.0b dev build with Mo & Krill** (2026-10-19, after the play-check feedback, for the next play-check; Melty's live release is still 0.6.3); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
 | Heroes | Haze, Abrams, Seven, Infernus, **Mo & Krill** (v0.7.0); 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
@@ -45,7 +45,7 @@ Before touching anything:
 | Balance now | v0.5.1 heroes-only run vs the library (doc 05 §3.1): **Haze 6550 vs Commando 1222 (far above: Phantom Strike's area spreads Fixation)**, Abrams 2460 vs Loader 2951 (inside), **Seven 3164 vs Artificer 4013 (below: the bouncing ball leaves the pack)**, Infernus 1149 vs Engineer 1611 (inside, just; v0.6.3, doc 05 §3.3). Not retuned; the creator decides |
 | Bench rule | **Bench our heroes only** (`run_bench.sh 30 <ids>`, the default); vanilla numbers come from `docs/dps-library.json` (creator, 2026-10-17; CLAUDE.md). Every base-game and Survivors of the Void survivor is stored (3 runs each, also listed in doc 06); the Seekers of the Storm three are not (expansion off) |
 | Sounds | Every move's Deadlock sounds and the voice-line triggers are listed in doc 06 "Sounds" (mirrors `design/sounds.json` / `voice.json`) |
-| Thunderstore | **"Risk of Deadlock" 0.7.0 package built (2026-10-19, not uploaded)**: one mod, first release **Haze, Abrams, Seven, Infernus** (`thunderstore/release.json`; Mo & Krill later); `package.py 0.7.0 --thunderstore`; the plugin finds Deadlock and extracts on the first start (`FirstRun.cs`; doc 03 §6b). The co-op mod-list entry names the built heroes. No Deadlock files in it. Waiting on the creator's thunderstore.io account/team and go-ahead to upload |
+| Thunderstore | **0.7.0 uploaded by the creator and rejected ("Invalid submission", reason not given; ask the moderators on the RoR2 modding Discord). 0.7.1 package (new extractor) is the one to upload next.** Earlier: "Risk of Deadlock" 0.7.0 package built (2026-10-19): one mod, first release **Haze, Abrams, Seven, Infernus** (`thunderstore/release.json`; Mo & Krill later); `package.py 0.7.0 --thunderstore`; the plugin finds Deadlock and extracts on the first start (`FirstRun.cs`; doc 03 §6b). The co-op mod-list entry names the built heroes. No Deadlock files in it. Waiting on the creator's thunderstore.io account/team and go-ahead to upload |
 | Pages | Five claude.ai Artifacts, redesigned (links at the top of doc 06); all five shared "anyone with the link" (2026-10-18) and linked from the Melty listing |
 | Voice lines | `design/voice.json` + `Runtime/Voice.cs` (doc 02 §8). Not yet heard in a real run: unselect (teleporter finish), multikill and idle lines; the test only proves select/skill lines play. Release needs a forced re-extract (new voice files) and the recipe check `voice-lines` |
 | Open | RoR2 survivor portraits fail to render (§9); pickup figure size and Haymaker wave vfx not seen in game; the bench is noisy for Loader/Artificer (a steadier multi-run bench would help) |
@@ -191,6 +191,9 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
   copy them aside first if you still need to look); 2026-10-19 the game sat open through three fix-and-rerun rounds.
 
 ---
+- **A Deadlock update can break the extractor** (2026-10-19, build 6795: VRF "Unknown KVType"): check `player_logs` on Melty,
+  update the VRF NuGet, publish the exe, re-read with `--force`, compare the cache with the old one. Since extractor 1.3.0 one
+  unreadable hero no longer takes the others down, so players keep most heroes while a fix is made.
 - **Test only the heroes you changed** (`run_test.sh <hero>`). Every unasked game launch costs the creator's patience; say up front how many runs you need and why, and clear leftover test files before a bench (a stale test-mode file wrecked one bench run).
 
 ## 8. Where everything is recorded (the record-keeping system)
@@ -215,7 +218,16 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: "Risk of Deadlock" first Thunderstore release, four heroes (2026-10-19, built; not uploaded)
+## 9. Last work: Deadlock update 6795 broke the heroes; fixed in v0.7.1 (2026-10-19, built and tested; not released)
+
+Deadlock's update of 2026-10-19 (build 6795) made VRF 20.0 throw "Unknown KVType 26" on Haze's model, the extractor
+aborted, and every Melty player on 0.6.3 got no heroes (3 players, `player_logs`). Melty started its own fix (0.6.4,
+uploaded, not tested or published); the creator wanted it fixed here. Done: VRF 20.1.7467, extractor 1.3.0 reads each hero
+on its own (ready.json `failed`), the plugin skips and names unreadable heroes on the title screen, version 0.7.1.
+All five heroes read from 6795 (9 min 40 s); the broken-hero test kept the other hero. **Next:** the creator picks the
+Melty release (0.7.1 with Mo & Krill, or a fix-only 0.6.x) and the Thunderstore re-upload as 0.7.1.
+
+## 9-prev000. "Risk of Deadlock" first Thunderstore release, four heroes (2026-10-19, built; uploaded and rejected)
 
 One mod with every hero of the release (the creator dropped the per-hero idea "so online always works"); the first
 release is Haze, Abrams, Seven and Infernus (`thunderstore/release.json` → `heroes.txt`, a cut-down extractor manifest,

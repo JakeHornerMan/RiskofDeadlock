@@ -23,6 +23,7 @@ namespace DeadlockOfRain
         static int lastDone = -1;
         static long logPos;
         public static string Problem;   // shown on the title screen when the heroes could not be loaded
+        public static string ProblemHeader = "Deadlock of Rain: no Deadlock heroes";
 
         public static bool Running => proc != null && !proc.HasExited;
 
@@ -268,7 +269,7 @@ namespace DeadlockOfRain
         {
             yield return new WaitForSecondsRealtime(1f);
             if (Problem == null) yield break;
-            Survivors.Tokens["DLR_FIRSTRUN_HEADER"] = "Deadlock of Rain: no Deadlock heroes";
+            Survivors.Tokens["DLR_FIRSTRUN_HEADER"] = ProblemHeader;
             Survivors.Tokens["DLR_FIRSTRUN_TEXT"] = Problem;
             Survivors.Tokens["DLR_FIRSTRUN_OK"] = "OK";
             Problem = null;   // once per start

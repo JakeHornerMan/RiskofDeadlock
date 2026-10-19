@@ -2,8 +2,8 @@
 
 ## Versions
 - Risk of Rain 2 1.5.0#1210 (Unity 2021.3.45, Mono), BepInEx 5.4.23.5 (Melty installs it)
-- Deadlock ClientVersion 6774 (Oct 09 2026), Source 2
-- ValveResourceFormat 20.0.6980 (.NET 10), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
+- Deadlock ClientVersion 6795 (update of 2026-10-19; 6774 before), Source 2
+- ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
 ## Route
 - RoR2 is the primary game: a BepInEx plugin built on RoR2's own ContentManager API (no R2API).
@@ -36,6 +36,13 @@
   `plugins/extract/DeadlockExtract.exe` itself (`FirstRun.cs`), the loading screen waits; no Deadlock files ship.
 - First release "Risk of Deadlock" = Haze, Abrams, Seven, Infernus (`thunderstore/release.json` → `heroes.txt`, cut manifest).
   Mod-list entry `melty.deadlockofrain;<version>;<built hero ids>`: other heroes, or none, can't join.
+
+## Deadlock update 6795 (2026-10-19, v0.7.1)
+- VRF 20.0.6980 threw "Unknown KVType for variable 'datatype': 26" on Haze's model; extractor 1.2.0 aborted the whole run,
+  so 3 Melty players on 0.6.3 got no heroes. VRF 20.1.7467 reads all five; extractor 1.3.0 reads each hero on its own
+  (`HERO FAILED`, ready.json `failed`), the plugin skips and names the missing ones.
+- VRF 20.1 also exports normal maps (unused: ModelBuilder clears them) and Haze's head-smoke cutout alpha (was an
+  opaque black card before).
 
 ## Gotchas found
 1. RoR2's CharacterModel keeps ONE material per renderer (it re-applies defaultMaterial), so a multi-material

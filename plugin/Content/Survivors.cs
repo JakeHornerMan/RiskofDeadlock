@@ -111,7 +111,11 @@ namespace DeadlockOfRain
 
             foreach (var hero in Released)
             {
-                if (DeadlockCache.LoadHero(hero.Id) == null) { Log.Error("hero " + hero.Id + " skipped: no Deadlock content"); continue; }
+                if (DeadlockCache.LoadHero(hero.Id) == null)
+                {
+                    Log.Error("hero " + hero.Id + " skipped: " + (DeadlockCache.Failed.TryGetValue(hero.Id, out var why) ? "Deadlock could not be read for it (" + why + ")" : "no Deadlock content"));
+                    continue;
+                }
                 yield return null;
                 var body = BuildBody(commando, hero, kinds);
                 Bodies[hero.Id] = body;

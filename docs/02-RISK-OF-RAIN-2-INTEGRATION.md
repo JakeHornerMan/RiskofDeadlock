@@ -77,7 +77,12 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
      lines. Hidden on normal starts (the exe ends within 3 s); fades 8 s after the work ends or Deadlock isn't found.
    - Otherwise (Melty build) `Plugin.OpenCache()` → `DeadlockCache.Open(dir)`: no `ready.json` means an error is logged and no heroes are built (the game still runs).
    - When the heroes can't be loaded, `FirstRun.Problem` holds why; `FirstRun.Init` shows it once in a `SimpleDialogBox` on
-     the title screen (tokens `DLR_FIRSTRUN_*`).
+     the title screen (tokens `DLR_FIRSTRUN_*`, header `FirstRun.ProblemHeader`).
+   - **Some heroes unreadable (v0.7.1, extractor 1.3.0):** `DeadlockCache.Open` reads `ready.json`'s `failed` list into
+     `DeadlockCache.Failed`; `Survivors` skips those heroes ("hero X skipped: Deadlock could not be read for it (...)"),
+     every other hero loads, and the same title-screen box says "<names> couldn't be read from this Deadlock version; the
+     other heroes are ready". This works on Melty starts too (no FirstRun needed). Co-op stays safe: the mod-list entry
+     names only the heroes built (§7.7), so a friend missing one is refused at the lobby.
    - `new Harmony("melty.deadlockofrain").PatchAll(assembly)` applies every `[HarmonyPatch]` class: `LanguagePatch`, `StatsPatch`, `DamagePatch`, `DebuffResistPatch`, `LoadoutSkinRowPatch`, `Equipment.FirePatch`, `Equipment.ClientFirePatch`.
    - `ContentManager.collectContentPackProviders += add => add(new DeadlockContentProvider())`.
    - `Equipment.Init()` subscribes `CharacterBody.onBodyStartGlobal` (starting equipment) and `Run.onRunStartGlobal`.
