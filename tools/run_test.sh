@@ -15,6 +15,8 @@ L="$R/BepInEx/LogOutput.log"; P="$USERPROFILE/AppData/LocalLow/Hopoo Games, LLC/
 # a first argument made of hero ids (letters and commas) picks the heroes; anything else is the checks file
 HEROES=""; if [[ "$1" =~ ^[a-z,]+$ ]]; then HEROES=", \"heroes\": \"$1\""; shift; fi
 [ -n "$BREAK" ] && HEROES="$HEROES, \"break\": \"$BREAK\""
+# STAGE=blackbeach tools/run_test.sh haze   moves the run to that stage first (Distant Roost broke the test spot before 0.7.2)
+[ -n "$STAGE" ] && HEROES="$HEROES, \"stage\": \"$STAGE\""
 CHECKS="${1:-$(cygpath -aw "$(dirname "$0")/../build")\\checks.txt}"
 # stop any running game first, so the old logs can be removed and never mistaken for this run
 G=$(powershell -NoProfile -Command "(Get-Process -Name \"Risk of Rain 2\" -ErrorAction SilentlyContinue).Id"); [ -n "$G" ] && $UM win kill $G >/dev/null

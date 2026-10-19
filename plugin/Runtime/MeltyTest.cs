@@ -30,6 +30,7 @@ namespace DeadlockOfRain
         /// <summary>Heroes the test marks unreadable on purpose (test-mode file "break": "infernus"): they must get a locked
         /// red ! tile while every other hero still builds.</summary>
         static readonly List<string> Broken = new List<string>();
+        static string TestStage;
         static int Expected => Survivors.Released.Count(h => !Broken.Contains(h.Id));
 
         public static bool Active => checksFile != null;
@@ -52,6 +53,9 @@ namespace DeadlockOfRain
                 // optional "heroes": "haze,abrams": the test (solo or co-op) plays only these
                 var hm = System.Text.RegularExpressions.Regex.Match(text, "\"heroes\"\\s*:\\s*\"([^\"]*)\"");
                 if (hm.Success) TestHeroes = hm.Groups[1].Value.Split(',').Select(h => h.Trim()).Where(h => h != "").ToList();
+                // optional "stage": "blackbeach": the run moves to that stage before the heroes are tested (STAGE= in run_test.sh)
+                var sm = System.Text.RegularExpressions.Regex.Match(text, "\"stage\"\\s*:\\s*\"([^\"]+)\"");
+                if (sm.Success) TestStage = sm.Groups[1].Value.Trim();
                 var bm = System.Text.RegularExpressions.Regex.Match(text, "\"break\"\\s*:\\s*\"([^\"]*)\"");
                 if (bm.Success)
                     foreach (var id in bm.Groups[1].Value.Split(',').Select(h => h.Trim()).Where(h => h != ""))
@@ -128,6 +132,15 @@ namespace DeadlockOfRain
             t0 = Time.unscaledTime;
             while ((user.cachedBody == null || !Run.instance) && Time.unscaledTime - t0 < 120f) yield return null;
             if (!user.cachedBody) { foreach (var h in tested) Write(h.Id + "-plays", false, "the run did not start"); yield break; }
+            if (TestStage != null && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != TestStage)
+            {
+                Log.Info($"Melty test: moving the run to stage {TestStage}");
+                var old = user.cachedBody;
+                UnityEngine.Networking.NetworkManager.singleton.ServerChangeScene(TestStage);
+                t0 = Time.unscaledTime;
+                while ((UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != TestStage || !user.cachedBody || user.cachedBody == old) && Time.unscaledTime - t0 < 90f) yield return null;
+            }
+            Log.Info($"Melty test: stage {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
             yield return new WaitForSeconds(4f);
             // leave the drop pod so the hero stands in the open
             var first = user.cachedBody;
@@ -160,11 +173,13 @@ namespace DeadlockOfRain
                 // stand in the open, away from the drop pod
                 if (hero == tested[0])
                 {
-                    var away = body.footPosition + body.inputBank.aimDirection.normalized * 14f;
-                    if (Physics.Raycast(away + Vector3.up * 30f, Vector3.down, out var gh, 80f, LayerIndex.world.mask)) TeleportHelper.TeleportBody(body, gh.point + Vector3.up * 0.5f, false);
-                    yield return new WaitForSeconds(0.5f);
-                    arena = body.footPosition;
                     arenaForward = body.inputBank.aimDirection; arenaForward.y = 0; arenaForward.Normalize();
+                    var spot = FindArena(body.footPosition, ref arenaForward);
+                    TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+                    if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+                    yield return new WaitForSeconds(0.5f);
+                    arena = spot;
+                    Log.Info($"Melty test: arena at {arena}, facing {arenaForward}");
                 }
 
                 // scale: capsule follows Deadlock's relative height (or copies capsuleFrom's: Mo moves with MUL-T's), model uses
@@ -698,6 +713,47 @@ namespace DeadlockOfRain
 
             public override string ToString() =>
                 $"damage {Damage:F0}, stun {Stun}, burn {Burn}, enemy buffs [{string.Join(",", EnemyBuffs)}], self buffs [{string.Join(",", SelfBuffs)}], healed {Healed:F0}, moved {Moved:F1} m, cloak {Cloak}, disarm {Disarm}, pulled {Pulled:F1} m, hidden {Hidden}, spun {Spun:F0} deg";
+        }
+
+        /// <summary>The flat spot every skill starts from: ground under it, and level ground (within 1.5 m) at the targets' places
+        /// 6-12 m ahead and 2 m to the side. Tries 14 m ahead of the landing first (as before), then the landing itself, then the
+        /// stage's walkable ground nodes nearest the landing in eight directions. Before 0.7.2 the spot 14 m ahead was taken
+        /// unchecked; on one stage Melty's seed picks it hung over a drop, so the hero and targets fell to y = -207 and every
+        /// hit check failed (two Melty test runs, 2026-10-19).</summary>
+        static Vector3 FindArena(Vector3 landing, ref Vector3 forward)
+        {
+            var dirs = new List<Vector3> { forward };
+            for (int i = 1; i < 8; i++) dirs.Add(Quaternion.Euler(0f, 45f * i, 0f) * forward);
+            var candidates = new List<Vector3> { landing + forward * 14f, landing };
+            var graph = SceneInfo.instance ? SceneInfo.instance.groundNodes : null;
+            if (graph)
+                foreach (var n in graph.FindNodesInRange(landing, 0f, 80f, HullMask.Human).Take(80))
+                    if (graph.GetNodePosition(n, out var np)) candidates.Add(np);
+            foreach (var c in candidates)
+            {
+                if (!Ground(c, 30f, 60f, out var g)) continue;
+                foreach (var dir in dirs)
+                {
+                    var right = Vector3.Cross(Vector3.up, dir);
+                    bool flat = true;
+                    foreach (var at in new[] { g + dir * 6f, g + dir * 10f, g + dir * 11.5f + right * 2f })
+                        if (!Ground(at, 2f, 4f, out var tg) || Mathf.Abs(tg.y - g.y) > 1.5f
+                            || Physics.Linecast(g + Vector3.up * 1f, tg + Vector3.up * 1f, LayerIndex.world.mask)) { flat = false; break; }
+                    if (!flat) continue;
+                    forward = dir;
+                    return g;
+                }
+            }
+            Log.Warn("Melty test: no flat arena found near the landing; using the landing spot");
+            return landing;
+        }
+
+        static bool Ground(Vector3 at, float above, float depth, out Vector3 point)
+        {
+            point = at;
+            if (!Physics.Raycast(at + Vector3.up * above, Vector3.down, out var hit, above + depth, LayerIndex.world.mask)) return false;
+            point = hit.point;
+            return true;
         }
 
         /// <summary>Puts two sturdy Lemurians in front of the hero, aims the camera at the first, fires the skill through its

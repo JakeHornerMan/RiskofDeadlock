@@ -231,7 +231,8 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
    (`steam.inf`; env `RoR2Dir` / `DEADLOCKOFRAIN_DEADLOCK` for other folders) and refuses if either is missing; writes them to
    `thunderstore/built-with.json` and `plugins/.../built-with.txt` in the zip; and puts "- Built with Risk of Rain 2 build X
    and Deadlock build Y (v<ver>, date)." under Requirements in `README.md` and `thunderstore/README.md` and at the top of the
-   CHANGELOG section. Commit those text changes with the release. Put the same line at the end of the Melty description (`update_mod`).
+   CHANGELOG section. Commit those text changes with the release. A **full** zip now ships `heroes.txt` listing every
+   sheet hero as well, so a player updating from a cut release (0.7.1's four) gets the new list even if old files stay behind. Put the same line at the end of the Melty description (`update_mod`).
    **Before every release:** `BREAK=infernus bash tools/run_test.sh haze`: Infernus is marked unreadable on purpose, and the run
    must pass `missing-hero-tile` (locked red "!" tile, versions in its hover) and every Haze check.
 2. `inspect_package`: fileName, entries, gameSlugs `["risk-of-rain-2","deadlock"]`, and the README feature text as `says`.
