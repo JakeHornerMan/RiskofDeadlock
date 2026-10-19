@@ -72,6 +72,7 @@ docs/03-PROCESS-OVERVIEW.md           this file
 docs/05-DAMAGE-COMPARISON.md         DPS benchmark vs Commando: variables, results, balance suggestions, retest flags (§0)
 docs/06-CURRENT-ABILITIES.md         every survivor's current abilities, numbers and DPS (living; updated with every ability change)
 docs/07-SESSION-LOG.md               every creator request, question, answer and result, session by session
+docs/09-PUBLIC-EXE-BUILD.md         why the extractor is an exe, the public GitHub build and release steps, the DLL fallback plan
 docs/08-NEW-HERO-PLAYBOOK.md         adding a new hero in one go: order of work and definition of done
 docs/dps-library.json                stored DPS of every vanilla survivor and our heroes (never re-bench vanilla)
 docs/04-ABILITY-REDESIGN-PROPOSALS.md planning: current kit + 2 alternatives (abilities and passive) per hero, from the Deadlock and RoR2 wikis

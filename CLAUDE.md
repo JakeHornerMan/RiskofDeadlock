@@ -31,6 +31,7 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 6. `docs/06-CURRENT-ABILITIES.md`: every survivor's current abilities, numbers and DPS (keep it in sync).
 7. `docs/08-NEW-HERO-PLAYBOOK.md`: **adding a new hero in one go** (the four heroes are done; this is the next job):
    intake questions, sound and voice, Unity-built effects, tests, bench, pages, definition of done.
+8. `docs/09-PUBLIC-EXE-BUILD.md`: why the extractor is an exe, how GitHub builds it in public (releases `extractor-X.Y.Z`), and the DLL fallback plan.
 `MODLOG.md` is the short journal of versions, lab notes and gotchas.
 
 ## Standing rules

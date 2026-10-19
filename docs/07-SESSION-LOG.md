@@ -677,3 +677,7 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Results:** `STAGE=blackbeach` and `STAGE=blackbeach2 run_test.sh haze`: targets at 10 m, pass. Melty test `3dd01dab-…`: run 1 (Siphoned Forest) and run 2 (Distant Roost) every check pass, 5/5 heroes, reviews pass, `graduates: true`. Published; Melty's safety review was checking it when this was written.
 **Not done / open:** confirm 0.7.2 went live (`mod_status`); check `player_logs` for the Deadlock 5977 player; Melty still flags "players hit bugs" (the "fix all bugs" pass, if the creator wants it).
 **Lessons:** a test that fails the same way at the same coordinates is a test bug: look at the recording before calling it bad luck, and don't guess what the picture shows (the hero was on a slope, not under the floor).
+
+### 2026-10-19 · Write-up of the public exe build · docs only · the commit that adds this entry
+**Request (verbatim):** "ok please write some documentation on what we just did!"
+**Done:** `docs/09-PUBLIC-EXE-BUILD.md`: why, the options weighed, what was built, the first release, how to release and verify, and the DLL fallback plan in full as an appendix, since the plan file was overwritten. Linked from CLAUDE.md, doc 03 layout and doc 00 §9.

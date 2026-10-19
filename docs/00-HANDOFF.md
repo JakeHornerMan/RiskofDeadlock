@@ -236,7 +236,7 @@ Done:
 - `package.py --thunderstore` accepts only the GitHub-built exe.
 - "About DeadlockExtract.exe" section in both READMEs.
 
-**Next:** the creator sends Harb the release link and re-uploads to Thunderstore. If Harb refuses any exe, the DLL plan is the fallback.
+Full write-up: `docs/09-PUBLIC-EXE-BUILD.md`. **Next:** the creator sends Harb the release link and re-uploads to Thunderstore. If Harb refuses any exe, the DLL plan is the fallback.
 
 ## 9-prev00000. Fallback system + five-hero Melty release v0.7.2 (2026-10-19)
 
