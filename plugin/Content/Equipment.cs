@@ -165,13 +165,14 @@ namespace DeadlockOfRain
             if (!machine) machine = EntityStateMachine.FindByCustomName(body.gameObject, "Weapon");
             if (!machine) machine = body.GetComponent<EntityStateMachine>();
             if (!machine) return false;
-            // a lock-on ult (Tag Team) needs an enemy under the crosshair: none, no throw and no charge spent (only where the
-            // aim is known: the server's own bodies, or the owner's client)
-            if (row.Kind == "ult_krill" && !DlrState.AimTargetOf(body, row.Range)) return false;
             var state = (DlrState)System.Activator.CreateInstance(type);
             state.RowOverride = row;
+            bool ok;
+            // Q underground: Burrow holds the Body machine (Frozen), so Dust Devil takes over directly and Mo bursts out
+            // of the ground into it
+            if (machine.state is States.Burrow && state is States.UltDevil devil) { devil.FromBurrow = true; machine.SetNextState(state); ok = true; }
             // false while another ult (or a stun) holds the machine: no charge is spent
-            bool ok = machine.SetInterruptState(state, InterruptPriority.PrioritySkill);
+            else ok = machine.SetInterruptState(state, InterruptPriority.PrioritySkill);
             // the ult speaks with its own hero's voice, whoever fired it (design/voice.json)
             if (ok && body.isPlayerControlled && body.hasEffectiveAuthority) Voice.SkillLine(row);
             return ok;

@@ -129,6 +129,9 @@ Tell the creator the count first: normally **3 launches** (test, bench, portrait
 - RoR2's dust material is opaque: keep dust particles small and few (doc 02 gotcha 18).
 - A display name with spaces or `&`: object names go through `Survivors.CodeName`.
 - Launches used: 4 test runs (one landed on a ledge), 1 bench + portraits together (`PORTRAITS=1 run_bench.sh 30 <hero>`), 1 co-op.
+- Play-check pass (v0.7.0b): moving a move between R and Q is a sheet swap plus a kind rename (`ult_` = the equipment ult, so an R lock-on is `krill_hop`); an R lock-on refunds its stock (`RefundStock`) instead of the equipment's pre-check; an any-carrier ult needs a look for bodies without the hero's clip (Dust Devil turns the carrier's yaw), checked on Commando in test mode.
+- Effects: look at every devshot for black blobs (opaque `mat_dust`, dark tints) and for lines that vanish on bright ground; a wind-up's first screenshot is taken during the wind-up.
+- Launches: 4 test runs (one on the Distant Roost ledge), 1 bench. Run `lab_restore.sh` straight after each run (copy the devshots aside first if you need them).
 
 ## 8. Definition of done
 - [ ] `PREFLIGHT CLEAN`, build clean, cache rebuilt with the new content.

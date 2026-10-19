@@ -321,7 +321,7 @@
       "hit": "MoKrill.Sandblast.Impact",
       "end": "none",
       "reload": "none",
-      "castLayer": "none",
+      "castLayer": "MoKrill.Sandblast.Impact",
       "hitLayer": "none",
       "tick": "none",
       "tickFinal": "none",

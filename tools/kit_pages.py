@@ -82,7 +82,13 @@ CHANGES = {
            ('v0.4.1', ['Cooldowns only, no damage cuts: Lightning Ball 6 → 16 s, Static Charge 7 → 16 s, Power Surge 14 → 30 s',
                        'Shock Rifle fix: the gun froze after a magazine (29 rounds in bursts of 3)']),
            ('v0.4.0', ['Thunderhead moves to Q as an equipment; new R: Power Surge with RoR2 Tesla arcs'])],
- 'mokrill': [('v0.7.0', ['New hero, matched to MUL-T: Yellow Canary (a fixed 4-pellet triangle), Sand Blast (a cone of sand that stops monsters attacking), Burrow (dig under the ground, burst out in a spin), Dust Devil (a sand tornado that pulls enemies in), Tag Team (Q: Krill hops from enemy to enemy for 10 s, and Mo punches while he is away)', 'Heavyweight: monsters can’t knock him back'])],
+ 'mokrill': [('v0.7.0b', ['After the creator’s play-check: Tag Team moves to R on a 30 s cooldown (same damage and timing); no target, no throw and no cooldown',
+                         'Frenzy while Krill is away: double speed, punches 600 % (was 300) that throw monsters, a red aura around Mo',
+                         'Dust Devil becomes the Q ult: 8 s, 200 % four times a second (6,400 %, the Preon level); any survivor holding it spins',
+                         'Burrow: up to 8 s underground (was 4); the pop-out hits 3 × 500 % (was 3 × 100); Mo sinks into the ground and bursts back up',
+                         'Sand Blast: a 0.4 s wind-up with the cone drawn on the ground, a heavier throw and wave, and it shoves monsters back',
+                         'Gets up to speed twice as fast (acceleration 80, top speed still 5 m/s)']),
+             ('v0.7.0', ['New hero, matched to MUL-T: Yellow Canary (a fixed 4-pellet triangle), Sand Blast (a cone of sand that stops monsters attacking), Burrow (dig under the ground, burst out in a spin), Dust Devil (a sand tornado that pulls enemies in), Tag Team (Q: Krill hops from enemy to enemy for 10 s, and Mo punches while he is away)', 'Heavyweight: monsters can’t knock him back'])],
  'infernus': [('v0.6.3', ['Flame Gun 50 → 75 % per bullet', 'Flame Dash: one tap runs the full 5 s (no holding), laying pockets of fire (twice the old size) that burn for 5 s and build Afterburn on enemies inside; overlapping pockets stack']), ('v0.6.2', ['Concussive Combustion: a timer ticks once a second through the fuse, faster on the last second, on anyone holding the item']), ('v0.6.1', ['Napalm: Right Click shows where the flask will land, Left Click throws it; same arc, three times as far (45 → 78 m/s)', 'Flame Dash: hold for up to 5 s (was 3); cooldown 13 s (was 8)', 'Concussive Combustion: a yellow ring on the ground shows the blast range during the fuse, on anyone holding the item', 'Falls as a ragdoll on death']),
             ('v0.6.0', ['Co-op: up to 4 players; every move works the same when a friend joins your game and plays Infernus']),
             ('v0.5.1', ['Flame Gun: louder, with a heavier shot layered under his own, and muzzle smoke and a flash', 'Napalm: a visible bottle flies from him to the target']),
@@ -104,8 +110,9 @@ RUNS = {
 }
 
 ANALYSIS = {
- 'mokrill': ['First bench (0.7.0): about 170 %/s above MUL-T, inside the band, close to the design’s estimate of 1,600. Dust Devil gathers the pack around him, so Burrow’s pop-out spin and every later tornado hit all twelve.',
-             'His gun is slower than MUL-T’s nailgun (443 against 876 alone); Sand Blast (510 alone) and the pull carry him. No healing in the kit: 250 health and 25 armor pay for the big target.'],
+ 'mokrill': ['After the play-check (0.7.0b) he is far above MUL-T: about 3,250 %/s against 1,450 (it was 1,620). The creator asked for these numbers, so they are kept for now.',
+             'Tag Team on a 30 s R does 63,000 % in one use in the pack (2,100 %/s alone), and Burrow’s 3 × 500 % pop-out is 1,617 %/s alone. Those two make up most of the gap.',
+             'His gun is slower than MUL-T’s nailgun (448 against 876 alone). No healing in the kit: 250 health and 25 armor pay for the big target.'],
  'haze': ['0.5.1 made Phantom Strike cut every enemy within 5 m of the target. Every cut also gives each of them 5 Fixation, so the whole pack reaches the 10-stack burst together and the bursts splash one another: Phantom Strike alone went from 375 to 4,139 %/s, and she is far above Commando. Not retuned yet: the fix is the creator’s call (Fixation on the target only, or fewer stacks to the others).'],
  'abrams': ['0.5.1: Haymaker locks onto the enemy you aim at and rushes to it, even in the air. It does about what the old lunge did (1,760 %/s alone), and he stays just inside Loader’s band.',
             'Loader is the least steady survivor in the test (2,059 to 3,837 across the library’s runs), so the verdict uses the averages.'],
@@ -236,9 +243,12 @@ def maths(r):
     if k == 'burrow':
         tot = r['burst'] * d
         return [f"{n(r['burst'])} × {n(d)} % = {n(tot)} % to everything within {n(r['radius'])} m as he pops out", f"every {n(cd)} s"], tot / cd
-    if k == 'dust_devil':
-        ticks = r['duration'] / r['interval']; tot = ticks * d; cyc = cd + r['duration'] if r['cooldownOnEnd'] else cd
-        return [f"{n(ticks)} × {n(d)} % = {n(tot)} % to everything within {n(r['radius'])} m, pulling from {n(r['range'])} m", f"every {n(cyc)} s ({n(r['duration'])} s spin + {n(cd)} s cooldown)"], tot / cyc
+    if k == 'krill_hop':
+        hops = r['duration'] / r['interval']; tot = hops * d
+        return [f"{n(hops)} landings × {n(d)} % = {n(tot)} % over the enemies he lands on, plus {n(r['splashPct'])} % to everything within {n(r['radius'])} m of each", f"every {n(cd)} s"], tot / cd
+    if k == 'ult_devil':
+        ticks = r['duration'] / r['interval']; tot = ticks * d
+        return [f"{n(ticks)} × {n(d)} % = {n(tot)} % to everything within {n(r['radius'])} m, pulling from {n(r['range'])} m", f"every {n(cd)} s"], tot / cd
     if k == 'self_buff':
         return ['no damage: invisibility and speed'], 0
     return [], None

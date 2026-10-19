@@ -1284,58 +1284,58 @@
     "primary": "Yellow Canary",
     "secondary": "Sand Blast",
     "utility": "Burrow",
-    "special": "Dust Devil"
+    "special": "Tag Team"
    },
    "hero": true,
-   "measuredOn": "v0.7.0",
+   "measuredOn": "v0.7.0b",
    "dps": {
     "all": {
      "runs": [
-      1620
+      3252
      ],
-     "mean": 1620,
-     "min": 1620,
-     "max": 1620
+     "mean": 3252,
+     "min": 3252,
+     "max": 3252
     },
     "primary": {
      "runs": [
-      443
+      448
      ],
-     "mean": 443,
-     "min": 443,
-     "max": 443
+     "mean": 448,
+     "min": 448,
+     "max": 448
     },
     "secondary": {
      "runs": [
-      510
+      645
      ],
-     "mean": 510,
-     "min": 510,
-     "max": 510
+     "mean": 645,
+     "min": 645,
+     "max": 645
     },
     "utility": {
      "runs": [
-      370
+      1617
      ],
-     "mean": 370,
-     "min": 370,
-     "max": 370
+     "mean": 1617,
+     "min": 1617,
+     "max": 1617
     },
     "special": {
      "runs": [
-      382
+      2100
      ],
-     "mean": 382,
-     "min": 382,
-     "max": 382
+     "mean": 2100,
+     "min": 2100,
+     "max": 2100
     },
     "equipment": {
      "runs": [
-      2700
+      1380
      ],
-     "mean": 2700,
-     "min": 2700,
-     "max": 2700
+     "mean": 1380,
+     "min": 1380,
+     "max": 1380
     }
    }
   }

@@ -201,7 +201,7 @@ namespace DeadlockOfRain
 
                 // every skill must measurably do what its sheet row's expect column says
                 bool gun = false; int abilities = 0; bool ultFired = false;
-                bool passive = true; string passiveWhy = "";
+                bool passive = true; string passiveWhy = "", kitWhy = "";
                 foreach (var slot in new[] { "primary", "secondary", "utility", "special", "equipment" })
                 {
                     body = master.GetBody();
@@ -215,14 +215,19 @@ namespace DeadlockOfRain
                     else if (slot == "equipment") { ultFired = ok; if (!ok) ultsWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
                     else { if (ok) abilities++; else abilitiesWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
                     if (slot == "equipment" && !result.Charged) equipWhy += $"{hero.Id}: Q did not start a 120 s cooldown; ";
-                    // a melee M1 while the ult's buff is on (Mo punches while Krill is away): hold M1 now, it must hit
-                    if (slot == "equipment" && row.Extra == "punch")
+                    // a melee M1 while the move's buff is on (Mo's Frenzy while Krill is away): hold M1 now; it must hit, throw
+                    // the target, and the hero must run at the buff's speed
+                    if (row.Extra == "punch")
                     {
                         body = master.GetBody();
                         var punch = new Effects();
                         yield return Punches(body, punch);
-                        Log.Info($"Melty test: {hero.Id} punches while {row.Name} runs: {punch}");
-                        if (punch.Damage <= 0f) { ultFired = false; ultsWhy += $"{row.Id}: no punch damage while it ran; "; }
+                        var gunRow = Sheet.SkillOf(hero.Id, "primary");
+                        float wantSpeed = 1f + BuffRow.All.Where(br => br.Melee).Sum(br => br.MoveSpeedAdd);
+                        Log.Info($"Melty test: {hero.Id} punches while {row.Name} runs: {punch}, speed x{punch.Speed:F2} (want x{wantSpeed:F2}), target thrown {punch.Knocked:F1} m");
+                        if (punch.Damage <= 0f) kitWhy += $"{row.Id}: no punch damage while it ran; ";
+                        if (punch.Speed < wantSpeed * 0.9f) kitWhy += $"{row.Id}: speed x{punch.Speed:F2} while it ran, want x{wantSpeed:F2}; ";
+                        if (gunRow.MeleeKnock > 0 && punch.Knocked < 2f) kitWhy += $"{row.Id}: punched target moved only {punch.Knocked:F1} m; ";
                     }
                 }
                 // Heavyweight (immuneToForce): a big push moves the hero less than 0.2 m
@@ -236,6 +241,48 @@ namespace DeadlockOfRain
                     float pushed = Vector3.Distance(p0, body.footPosition);
                     Log.Info($"Melty test: {hero.Id} heavyweight: a 30 m/s push moved him {pushed:F2} m");
                     if (pushed > 0.2f) { passive = false; passiveWhy = $"pushed {pushed:F2} m"; }
+                }
+                // a lock-on R (Tag Team) with nothing to lock on: nothing happens and the charge stays
+                var rLock = Sheet.SkillOf(hero.Id, "special");
+                if (rLock.Kind == "krill_hop")
+                {
+                    body = master.GetBody();
+                    KillTargets();
+                    yield return new WaitForSeconds(0.5f);
+                    var up = Vector3.up * 0.9f + body.transform.forward * 0.1f;
+                    AimCamera(body, up);
+                    for (int f = 0; f < 10; f++) { body.inputBank.aimDirection = up; yield return null; }
+                    var rs = body.skillLocator.special;
+                    rs.Reset();
+                    rs.ExecuteIfReady();
+                    yield return new WaitForSeconds(0.4f);
+                    Log.Info($"Melty test: {hero.Id} R with no target: stock {rs.stock}/{rs.maxStock}, krill away {HeroRuntime.Melee(body)}");
+                    if (rs.stock < 1 || HeroRuntime.Melee(body)) kitWhy += $"{rLock.Id}: fired with no target (stock {rs.stock}); ";
+                }
+                // Q underground (Burrow then Dust Devil): Mo bursts out into the tornado, visible again
+                var dig = Sheet.SkillOf(hero.Id, "utility");
+                var q = Sheet.SkillOf(hero.Id, "equipment");
+                if (dig.Kind == "burrow" && q.Kind == "ult_devil")
+                {
+                    body = master.GetBody();
+                    var us = body.skillLocator.utility;
+                    us.Reset();
+                    us.ExecuteIfReady();
+                    yield return new WaitForSeconds(States.Burrow.SinkDelay + States.Burrow.SinkTime + 0.3f);
+                    var cm = body.modelLocator && body.modelLocator.modelTransform ? body.modelLocator.modelTransform.GetComponent<CharacterModel>() : null;
+                    bool under = cm && cm.invisibilityCount > 0;
+                    var qInv = body.inventory; var qDef = Equipment.OfHero(hero.Id);
+                    if (qInv && qDef) qInv.SetEquipment(new EquipmentState(qDef.equipmentIndex, Run.FixedTimeStamp.now, 1), qInv.activeEquipmentLocation);
+                    yield return new WaitForFixedUpdate(); yield return new WaitForFixedUpdate();
+                    if (body.equipmentSlot) body.equipmentSlot.ExecuteIfReady();
+                    yield return new WaitForSeconds(0.4f);
+                    var bm = EntityStateMachine.FindByCustomName(body.gameObject, "Body");
+                    bool spinning = bm && bm.state is States.UltDevil;
+                    bool shown = cm && cm.invisibilityCount == 0;
+                    Log.Info($"Melty test: {hero.Id} Q underground: was under {under}, now {(bm ? bm.state.GetType().Name : "?")}, visible {shown}");
+                    if (!under || !spinning || !shown) kitWhy += $"{q.Id} underground: under {under}, spinning {spinning}, visible {shown}; ";
+                    if (bm) bm.SetNextStateToMain();
+                    yield return new WaitForSeconds(0.5f);
                 }
                 // a heal-back passive (Abrams' Infernal Resilience) gives part of a hit back over the next seconds
                 if (hero.DamageHealBack > 0f)
@@ -260,8 +307,8 @@ namespace DeadlockOfRain
                     if (anim.GunDrift > 0.02f) { handOk = false; handWhy += $"{hero.Id}: gun moved {anim.GunDrift * 100f:F1} cm in the hand; "; }
                 }
 
-                bool plays = gun && abilities == 3 && ultFired && passive;
-                Write(hero.Id + "-plays", plays, $"gun={gun}, abilities={abilities}/3, ult={ultFired}, passive={passive} {passiveWhy}; {gunsWhy}{abilitiesWhy}{ultsWhy}".Trim());
+                bool plays = gun && abilities == 3 && ultFired && passive && kitWhy == "";
+                Write(hero.Id + "-plays", plays, $"gun={gun}, abilities={abilities}/3, ult={ultFired}, passive={passive} {passiveWhy}; {gunsWhy}{abilitiesWhy}{ultsWhy}{kitWhy}".Trim());
                 if (plays) heroes++;
 
                 // level-up growth matches the sheet (no items in a fresh run)
@@ -284,11 +331,11 @@ namespace DeadlockOfRain
                 TeamManager.instance.GiveTeamExperience(TeamIndex.Player, (ulong)Mathf.Max(100f, TeamManager.instance.GetTeamNextLevelExperience(TeamIndex.Player) - TeamManager.instance.GetTeamExperience(TeamIndex.Player) + 1f));
                 yield return new WaitForSeconds(1f);
             }
-            // the ult belongs to the equipment: Commando holding Concussive Combustion gets the same blast and ring
-            string anyWhy = "";
+            // the ult belongs to the equipment: Commando holding Concussive Combustion gets the same blast and ring, and
+            // Commando holding Dust Devil spins in the same tornado
+            string anyWhy = ""; bool anyTested = false;
             // (only when its hero is among the tested ones)
-            var bomb = SkillRow.All.FirstOrDefault(r => r.Kind == "ult_selfbomb" && tested.Any(h => h.Id == r.Hero));
-            if (bomb != null)
+            foreach (var bomb in SkillRow.All.Where(r => (r.Kind == "ult_selfbomb" || r.Kind == "ult_devil") && tested.Any(h => h.Id == r.Hero)).ToList())
             {
                 master.TransformBody("CommandoBody");
                 yield return new WaitForSeconds(1.5f);
@@ -301,13 +348,16 @@ namespace DeadlockOfRain
                     // Commando is several levels up by now and the blast can kill the targets before they are stunned:
                     // the blast landing is what shows the ult works on him
                     var miss = res.Missing(bomb).Where(m => m != "enemy_stun").ToList();
+                    // Dust Devil on a carrier without the tornado clip turns the whole model (two turns a second)
+                    if (bomb.Kind == "ult_devil" && res.Spun < 720f) miss.Add($"spin ({res.Spun:F0} deg)");
                     Log.Info($"Melty test: Commando with {bomb.Id}: {res} -> {(miss.Count == 0 ? "ok" : "MISSING " + string.Join(", ", miss))}");
-                    if (miss.Count > 0) anyWhy = "Commando: no " + string.Join(", ", miss);
+                    if (miss.Count > 0) anyWhy += $"Commando with {bomb.Id}: no " + string.Join(", ", miss) + "; ";
                 }
-                else anyWhy = "could not become Commando";
+                else anyWhy += "could not become Commando; ";
                 KillTargets();
+                anyTested = true;
             }
-            if (bomb != null) Write("ult-any-survivor", anyWhy == "", anyWhy);
+            if (anyTested) Write("ult-any-survivor", anyWhy == "", anyWhy);
             Write("ragdoll", ragdolls == tested.Length, ragdollWhy);
 
             var lb = master.GetBody();
@@ -534,6 +584,10 @@ namespace DeadlockOfRain
         internal sealed class Effects
         {
             public float Damage, Healed, Moved, Pulled;
+            /// <summary>Degrees the hero's facing turned in all (Dust Devil spinning a carrier); its speed over the sheet's base
+            /// speed and how far a punched target was thrown (Mo's Frenzy).</summary>
+            public float Spun, Speed, Knocked;
+            float lastYaw = float.NaN;
             public bool Stun, Burn, Cloak, Charged, Disarm, Hidden; // Charged: the equipment went on its cooldown
             public readonly HashSet<string> EnemyBuffs = new HashSet<string>(), SelfBuffs = new HashSet<string>();
             readonly Dictionary<CharacterBody, float> startGap = new Dictionary<CharacterBody, float>();
@@ -546,6 +600,11 @@ namespace DeadlockOfRain
                 if (b.hasCloakBuff) Cloak = true;
                 var cm = b.modelLocator && b.modelLocator.modelTransform ? b.modelLocator.modelTransform.GetComponent<CharacterModel>() : null;
                 if (cm && cm.invisibilityCount > 0) Hidden = true;
+                if (b.characterDirection)
+                {
+                    if (!float.IsNaN(lastYaw)) Spun += Mathf.Abs(Mathf.DeltaAngle(lastYaw, b.characterDirection.yaw));
+                    lastYaw = b.characterDirection.yaw;
+                }
                 foreach (var kv in Buffs.Defs) if (b.HasBuff(kv.Value)) SelfBuffs.Add(kv.Key);
                 foreach (var t in targets)
                 {
@@ -588,7 +647,7 @@ namespace DeadlockOfRain
             }
 
             public override string ToString() =>
-                $"damage {Damage:F0}, stun {Stun}, burn {Burn}, enemy buffs [{string.Join(",", EnemyBuffs)}], self buffs [{string.Join(",", SelfBuffs)}], healed {Healed:F0}, moved {Moved:F1} m, cloak {Cloak}, disarm {Disarm}, pulled {Pulled:F1} m, hidden {Hidden}";
+                $"damage {Damage:F0}, stun {Stun}, burn {Burn}, enemy buffs [{string.Join(",", EnemyBuffs)}], self buffs [{string.Join(",", SelfBuffs)}], healed {Healed:F0}, moved {Moved:F1} m, cloak {Cloak}, disarm {Disarm}, pulled {Pulled:F1} m, hidden {Hidden}, spun {Spun:F0} deg";
         }
 
         /// <summary>Puts two sturdy Lemurians in front of the hero, aims the camera at the first, fires the skill through its
@@ -693,8 +752,8 @@ namespace DeadlockOfRain
                     var b = body;
                     if (!b) break;
                     fx.Poll(b, start, targets);
-                    // dev screenshots through the skill: early, middle, late
-                    if (shots < 3 && Time.time - t0 > new[] { 0.5f, 1.4f, 2.3f }[shots]) { Shot(shots == 0 ? row.Id : row.Id + "_" + (shots + 1)); shots++; }
+                    // dev screenshots through the skill: early (a wind-up: during it, to catch the telegraph), middle, late
+                    if (shots < 3 && Time.time - t0 > new[] { row.MinDuration > 0f && row.Kind == "cone_wave" ? row.MinDuration * 0.6f : 0.5f, 1.4f, 2.3f }[shots]) { Shot(shots == 0 ? row.Id : row.Id + "_" + (shots + 1)); shots++; }
                     yield return null;
                 }
             }
@@ -712,7 +771,7 @@ namespace DeadlockOfRain
         /// <summary>How far in front of the hero the test's targets stand: guns, the leap, the blink and Tag Team's throw
         /// from 10 m, everything else 6 m.</summary>
         internal static float TargetDistance(SkillRow row) =>
-            row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "ult_krill" ? 10f : 6f;
+            row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "krill_hop" ? 10f : 6f;
 
         /// <summary>Hold M1 for 1.5 s against the targets still standing (Tag Team's Krill is away: Mo punches), measuring damage.</summary>
         IEnumerator Punches(CharacterBody body, Effects fx)
@@ -724,15 +783,19 @@ namespace DeadlockOfRain
             try
             {
                 var aimAt = targets.FirstOrDefault(x => x && x.healthComponent && x.healthComponent.alive);
+                var st = Sheet.Stats(Survivors.HeroOf(body));
+                if (st != null) fx.Speed = body.moveSpeed / Mathf.Max(0.1f, st.BaseMoveSpeed);
                 // walk up to the target: the punch reaches a few metres
                 if (aimAt) TeleportHelper.TeleportBody(body, aimAt.footPosition - (aimAt.footPosition - body.footPosition).normalized * (body.radius + aimAt.radius + 1f), false);
                 yield return new WaitForSeconds(0.2f);
+                var aimFrom = aimAt ? aimAt.footPosition : Vector3.zero;
                 fireBody = body; fireUntil = Time.time + 1.5f;
                 body.skillLocator.primary.ExecuteIfReady();
                 float t0 = Time.time;
                 while (Time.time - t0 < 1.6f)
                 {
                     if (aimAt && body) body.inputBank.aimDirection = (aimAt.corePosition - body.inputBank.aimOrigin).normalized;
+                    if (aimAt) fx.Knocked = Mathf.Max(fx.Knocked, Vector3.Distance(aimFrom, aimAt.footPosition));
                     if (Time.time - t0 > 0.6f && Time.time - t0 < 0.65f) Shot(Survivors.HeroOf(body) + "_punch");
                     yield return null;
                 }

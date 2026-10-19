@@ -14,7 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
-| – | – | nothing open (v0.6.3 Flame Gun 75 % and Flame Dash pockets covered by the Infernus-only run of 2026-10-18, §3.3; Mo & Krill's first run 2026-10-19, §3.4) | – | – |
+| – | – | nothing open (v0.6.3 Flame Gun 75 % and Flame Dash pockets covered by the Infernus-only run of 2026-10-18, §3.3; Mo & Krill's play-check pass (Tag Team on R, Dust Devil on Q, Burrow 3 × 500 %, Frenzy punch 600 %, Sand Blast wind-up and shove) covered by the Mo & Krill-only run of 2026-10-19, §3.5) | – | – |
 
 ## 1. The question
 The creator's hypothesis: **Commando, using every ability the moment it is ready while shooting constantly for 30 s
@@ -141,6 +141,21 @@ New hero matched to MUL-T (creator's spec: "aiming for 1,450 %/s", balanced band
 - The gun is half MUL-T's nailgun alone (443 against 876); Sand Blast and the pull carry him. Levers if a later run misses the band
   (spec): above 1,950 Dust Devil 50 → 40 %, then Sand Blast 450 → 350 %; below 950 Yellow Canary 40 → 50 %.
 - Q (Tag Team) one use: 81,000 % on the 12 (just for fun).
+
+### 3.5 v0.7.0b Mo & Krill after the creator's play-check (Mo & Krill-only run, 2026-10-19)
+The creator's notes: Tag Team to R on a 30 s cooldown ("don't change any damage or timing numbers"), Dust Devil to the Q ult at
+the Preon level (8 s, 32 × 200 %), Burrow 8 s with a 3 × 500 % pop-out, a Frenzy punch of 600 % with knockback, Sand Blast
+wind-up and shove, acceleration 80. Library `VERSION` v0.7.0b (the v0.7.0 run dropped).
+
+| Hero | %/s | M1 / M2 / Shift / R alone | RoR2 match (library) | Gap | Verdict (±500) |
+|---|---|---|---|---|---|
+| Mo & Krill | **3252** (was 1620) | 448 / **645** / **1617** / **2100** (R is now Tag Team) | MUL-T 1450 | +1802 | **far above** |
+
+- Expected, and reported, not retuned: the creator set these numbers. Tag Team on a 30 s R lands 20 × 1,500 % plus splashes in
+  one use (63,000 % on the pack); Burrow's pop-out is 5× as strong and the stilled pack stands inside its 8 m.
+- Sand Blast rose (510 → 645) because the shove pushes the pack together along the cone.
+- Q (Dust Devil) one use: 41,400 % on the 12 (1,380 %/s over the 30 s pass).
+- Levers if the creator wants him back in the band: Tag Team's cooldown (30 → 60 s halves its share), Burrow 500 → 200 %.
 
 Each move alone in the last full run (%/s, hero vs match):
 

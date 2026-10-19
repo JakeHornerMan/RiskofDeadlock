@@ -582,7 +582,7 @@
     },
     {
       "id": "krill_away",
-      "name": "Krill Away",
+      "name": "Frenzy",
       "icon": "panorama/images/hud/abilities/grappler/grappler_combo_psd.vtex",
       "color": "#9A6BD0",
       "canStack": false,
@@ -590,7 +590,7 @@
       "isHidden": false,
       "maxStacks": 1,
       "duration": 10,
-      "moveSpeedAdd": 0,
+      "moveSpeedAdd": 1.0,
       "attackSpeedAdd": 0,
       "armorAdd": 0,
       "regenAdd": 0,
@@ -612,7 +612,7 @@
       "disarm": false,
       "noGun": false,
       "melee": true,
-      "notes": "on whoever threw Krill (Tag Team) until he is back: Krill is hidden and M1 punches"
+      "notes": "on whoever threw Krill (Tag Team) until he is back: Krill is hidden, Mo moves twice as fast and M1 punches (Frenzy, red aura)"
     },
     {
       "id": "tag_team_health",

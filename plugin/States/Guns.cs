@@ -243,6 +243,9 @@ namespace DeadlockOfRain.States
             if (victim.teamComponent.teamIndex == owner.teamComponent.teamIndex) return;
             var row = Survivors.RowFor(owner.skillLocator ? owner.skillLocator.primary : null);
             if (row == null || !row.Kind.StartsWith("gun_")) return;
+            // Mo's Frenzy punch (a melee buff is on): the enemy is thrown away from him, bosses a quarter as far
+            if (row.MeleeKnock > 0 && HeroRuntime.Melee(owner))
+                Fx.KnockBack(owner, victim.healthComponent, victim.corePosition - owner.corePosition, row.MeleeKnock * (victim.isChampion ? 0.25f : 1f));
             if (row.Buff != "none")
             {
                 bool fired = Buffs.Stack(owner, victim, row.Buff, info.crit);

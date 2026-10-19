@@ -52,7 +52,7 @@ def ref(sheet, rid, col, val, valid, allow_none=True):
         bad(f'{sheet}[{rid}].{col}: "{val}" does not resolve')
 
 # 2. references
-EXTRA_FLAGS = {'pierce': 'projectile', 'shockwave': 'heavy_melee', 'punch': 'ult_krill'}
+EXTRA_FLAGS = {'pierce': 'projectile', 'shockwave': 'heavy_melee', 'punch': 'krill_hop'}
 for r in sheets['stats']['rows']: ref('stats', r['hero'], 'hero', r['hero'], heroes, False)
 for r in sheets['animations']['rows']: ref('animations', r['hero'], 'hero', r['hero'], heroes, False)
 # a sounds row is a skill's, or "<skill>/<part>": an extra sound set of that skill (Mo's footsteps, the punch)
@@ -157,7 +157,7 @@ for r in skills.values():
         # no upper limit: the ults are pickups any survivor can carry and are left out of balance
         if r['kind'] == 'ult_dance': total = r['duration'] / r['interval'] * r['damagePct']
         elif r['kind'] == 'ult_zone': total = r['duration'] / r['interval'] * r['damagePct']  # per target: every tick strikes up to chainCount enemies
-        elif r['kind'] == 'ult_krill': total = r['duration'] / r['interval'] * r['damagePct']  # Krill lands every interval for duration
+        elif r['kind'] == 'ult_devil': total = r['duration'] / r['interval'] * r['damagePct']  # every interval, everything within radius
         else: total = r['damagePct']
         if total < 6000:
             bad(f'skills[{r["id"]}]: equipment ult total {total:.0f}% below the Preon level of 6000')

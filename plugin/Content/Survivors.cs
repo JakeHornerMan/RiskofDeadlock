@@ -63,7 +63,7 @@ namespace DeadlockOfRain
 
         /// <summary>Movement skills run on the Body machine (they steer the character), everything else on Weapon.</summary>
         public static string MachineFor(string kind) =>
-            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "dust_devil" ? "Body" : "Weapon";
+            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "ult_devil" ? "Body" : "Weapon";
 
         public static Type StateFor(string kind) => kindTypes != null && kindTypes.TryGetValue(kind, out var t) ? t : null;
         static Dictionary<string, Type> kindTypes;
@@ -338,6 +338,7 @@ namespace DeadlockOfRain
         Transform rider;
         Vector3 riderScale = Vector3.one;
         bool riderHidden;
+        GameObject frenzy;
         float nextStep, airTime;
         bool wasGrounded = true;
 
@@ -377,7 +378,13 @@ namespace DeadlockOfRain
             if (rider)
             {
                 bool hide = Melee(body);
-                if (hide != riderHidden) { riderHidden = hide; rider.localScale = hide ? Vector3.zero : riderScale; }
+                if (hide != riderHidden)
+                {
+                    riderHidden = hide; rider.localScale = hide ? Vector3.zero : riderScale;
+                    // Mo's Frenzy while Krill is away: a red aura around him (read from the synced buff: every player sees it)
+                    if (hide) frenzy = Vfx.Play("mokrill_punch", "frenzy", body.footPosition, body.radius, body.transform);
+                    else { Vfx.Stop(frenzy, 0.6f); frenzy = null; }
+                }
                 else if (hide) rider.localScale = Vector3.zero;
             }
             if (steps == null || !body || !body.characterMotor || !body.healthComponent || !body.healthComponent.alive) return;

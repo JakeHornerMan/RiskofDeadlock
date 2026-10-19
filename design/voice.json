@@ -499,8 +499,8 @@
       "skill": "mokrill_tag_team",
       "kills": 0,
       "group": "krill/krill_use_power4",
-      "chance": 1.0,
-      "gap": 0
+      "chance": 0.5,
+      "gap": 20
     },
     {
       "id": "mokrill_streak4",

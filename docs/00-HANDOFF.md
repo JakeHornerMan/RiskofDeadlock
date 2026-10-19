@@ -35,10 +35,10 @@ Before touching anything:
 
 | Item | State |
 |---|---|
-| Status | **Mo & Krill added (v0.7.0, 2026-10-19, not released)**: every test check passes, bench 1620 vs MUL-T 1450 (inside). Waiting on the creator's stage play-check, a co-op rerun and the release. The first four heroes are done |
+| Status | **Mo & Krill added (v0.7.0, 2026-10-19, not released) and reworked after the creator's play-check (v0.7.0b, same day)**: Tag Team on R (30 s), Dust Devil the Q ult (any carrier spins), Burrow 8 s / 3 × 500 % with sink and rise, Frenzy, Sand Blast wind-up and cone. Every test check passes; bench 3252 vs MUL-T 1450 (far above, the creator's numbers, reported). Waiting on the creator's next play-check, a co-op rerun and the release. The first four heroes are done |
 | Version | **0.6.3** (`plugin/Plugin.cs`; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). **0.6.3 is LIVE on Melty as "Risk of Deadlock"** (https://melty.gg/m/risk-of-deadlock-2, 2026-10-18), character select screenshots; Infernus' select-screen text still says "Catalyst" (fix in the next release) |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
-| Installed build | **v0.7.0 dev build with Mo & Krill** (2026-10-19, for the creator's play-check; Melty's live release is still 0.6.3); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
+| Installed build | **v0.7.0b dev build with Mo & Krill** (2026-10-19, after the play-check feedback, for the next play-check; Melty's live release is still 0.6.3); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
 | Heroes | Haze, Abrams, Seven, Infernus, **Mo & Krill** (v0.7.0); 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
 | Test | **`run_test.sh <hero>` tests only the given heroes (creator's rule, CLAUDE.md).** v0.6.3: Infernus pass (in a 4-hero run before the filter existed), Abrams 1/1 pass (2026-10-18); the co-op test was skipped for the pockets (creator impatient with game runs); `run_coop_test.sh infernus` passes (one earlier run missed the joined Combustion, unexplained) |
 | Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, within **±500 %/s**, comparing **means over every bench run** of the current build (`RUNS` in `tools/kit_pages.py`; doc 05 §3.0) |
@@ -185,6 +185,9 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
   it act; give test/bench mode its own path (Napalm throws by itself after 0.8 s and ignores the cancel there).
 - `run_test.sh` sometimes lands on a **ledge** (hero ~15 m above where the summoned targets fall): nearly every check
   fails, including moves nobody touched. The stage is random, so run it again; if in doubt, run the previous commit at once.
+  Distant Roost has a cliff-edge spawn that does the same to lock-on moves (targets below the edge: "no target").
+- `run_test.sh` leaves the game open when it finishes: run `lab_restore.sh` straight away (it deletes the devshots, so
+  copy them aside first if you still need to look); 2026-10-19 the game sat open through three fix-and-rerun rounds.
 
 ---
 - **Test only the heroes you changed** (`run_test.sh <hero>`). Every unasked game launch costs the creator's patience; say up front how many runs you need and why, and clear leftover test files before a bench (a stale test-mode file wrecked one bench run).
@@ -211,7 +214,21 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: Mo & Krill, the fifth hero (2026-10-19, built and tested; not released)
+## 9. Last work: Mo & Krill play-check pass (v0.7.0b, 2026-10-19, built and tested; not released)
+
+The creator's notes after playing him (doc 07): Tag Team to R (30 s, numbers unchanged, no target = R stays ready), Dust
+Devil to the Q ult (8 s, 32 × 200 %, any carrier spins), Burrow 8 s with a 3 × 500 % pop-out and a visible sink and rise,
+Sand Blast 0.4 s wind-up with the cone drawn on the ground, a heavier throw and an 8 m/s shove, acceleration 80 (top speed
+still 5), and a Frenzy while Krill is away (×2 speed, 600 % punches that throw monsters, red aura). Kinds renamed
+`ult_krill` → `krill_hop`, `dust_devil` → `ult_devil`. `run_test.sh mokrill`: every check pass (new: frenzy speed and
+knockback, no-target R, Q underground, Dust Devil on Commando). Bench 3252 vs MUL-T 1450 (far above: reported, not
+retuned). Pages republished.
+
+**Next:** the creator plays him again; rerun `run_coop_test.sh mokrill` when the PC has memory to spare; a release when
+asked (recipe `mokrill-plays`, drop one check; forced re-extract; `test.minutes` +2). Repo public: still waiting on whether
+to push the unpushed commits first.
+
+## 9-prev. Mo & Krill, the fifth hero (2026-10-19, built and tested; not released)
 
 From the creator's spec (doc 07). Sheets, four new kinds (`burrow`, `cone_wave`, `dust_devil`, `ult_krill`), the gun pattern and
 punch, prefix-aware gun rig (Krill holds the gun), `modelScale` plus MUL-T's capsule and camera, Heavyweight, effects, tests.

@@ -39,11 +39,11 @@ namespace DeadlockOfRain
                     case "abrams_haymaker": return AbramsHaymaker(moment, at, radius, follow, to, angle);
                     case "seven_surge": return SevenSurge(moment, at, follow);
                     case "mokrill_gun": return MokrillGun(moment, at, follow);
-                    case "mokrill_sand": return MokrillSand(moment, at, radius, follow, to);
+                    case "mokrill_sand": return MokrillSand(moment, at, radius, follow, to, angle, life);
                     case "mokrill_burrow": return MokrillBurrow(moment, at, radius, follow);
                     case "mokrill_devil": return MokrillDevil(moment, at, radius, follow, angle);
                     case "mokrill_krill": return MokrillKrill(moment, at, radius, to);
-                    case "mokrill_punch": return MokrillPunch(moment, at);
+                    case "mokrill_punch": return MokrillPunch(moment, at, radius, follow);
                 }
             }
             catch (System.Exception e) { Log.Warn($"vfx {id}/{moment}: {e.Message}"); }
@@ -710,11 +710,13 @@ namespace DeadlockOfRain
         }
 
         // ------------------------------------------------------------------ Mo & Krill (colours from Deadlock's own particles)
-        // mat_dust is RoR2's opaque dust: keep its particles small and few, or they hide the screen (Dust Devil's first build did)
+        // mat_dust is RoR2's opaque dust: keep its particles small, few and light-coloured, or they hide the screen (Dust Devil's
+        // first build did) and turn into black blobs (dark tints, or seen from the unlit side); big clouds use mat_smoke
         static readonly Color sandTan = new Color32(236, 218, 186, 255), sandDark = new Color32(185, 166, 132, 255), sandEdge = new Color32(220, 170, 114, 255),
             moOrange = new Color32(226, 132, 32, 255), moLight = new Color32(255, 145, 28, 255), dirt = new Color32(141, 88, 60, 255),
             crack = new Color32(51, 46, 41, 220), hotCrack = new Color32(237, 107, 20, 255), krillOrange = new Color32(255, 147, 65, 255),
-            krillArc = new Color32(254, 215, 118, 255), tracerHot = new Color32(255, 212, 85, 255), smokeGrey = new Color32(156, 156, 156, 160);
+            krillArc = new Color32(254, 215, 118, 255), tracerHot = new Color32(255, 212, 85, 255), smokeGrey = new Color32(156, 156, 156, 160),
+            frenzyRed = new Color32(232, 38, 28, 255), frenzyEmber = new Color32(255, 92, 40, 255);
 
         static GameObject MokrillGun(string moment, Vector3 at, Transform follow)
         {
@@ -734,15 +736,44 @@ namespace DeadlockOfRain
             return null;
         }
 
-        static GameObject MokrillSand(string moment, Vector3 at, float radius, Transform follow, Vector3? to)
+        static GameObject MokrillSand(string moment, Vector3 at, float radius, Transform follow, Vector3? to, float spreadDeg, float windUp)
         {
             switch (moment)
             {
+                case "telegraph":
+                {
+                    // the wind-up: the cone on the ground (edges and far end following the terrain, faint cross lines) and a
+                    // bright line sweeping out from Mo; it stays while the wave runs along it, then fades
+                    var end = to ?? at + Vector3.forward;
+                    var dir = end - at; dir.y = 0;
+                    float range = dir.magnitude;
+                    var root = Root(at, windUp + 1.2f, null);
+                    var m = root.AddComponent<ConeMarker>();
+                    m.Origin = at; m.Dir = dir.normalized; m.Range = range; m.Near = radius * 0.5f;
+                    m.Tan = Mathf.Tan(spreadDeg * Mathf.Deg2Rad); m.Sweep = Mathf.Max(0.1f, windUp);
+                    return root;
+                }
+                case "gather":
+                {
+                    // Mo scooping up sand: grains drawn in to his hands and an orange glow growing until the throw
+                    var root = Root(at, 0f, follow);
+                    var ps = Particles(root, "mat_spark", sandEdge, rate: 90, life: 0.35f, speed: 0f, size: 0.09f, shapeRadius: 2.2f, stretch: 0.2f);
+                    var vel = ps.velocityOverLifetime; vel.enabled = true; vel.space = ParticleSystemSimulationSpace.Local;
+                    vel.radial = new ParticleSystem.MinMaxCurve(-2.2f / 0.35f);
+                    vel.x = new ParticleSystem.MinMaxCurve(0f); vel.y = new ParticleSystem.MinMaxCurve(0f); vel.z = new ParticleSystem.MinMaxCurve(0f);
+                    Particles(root, "mat_dust", sandTan, rate: 10, life: 0.4f, speed: 0.5f, size: 0.5f, shapeRadius: 0.8f);
+                    var glow = Light(root, moLight, 6f, 0.5f, Vector3.zero);
+                    var g = glow.gameObject.AddComponent<GrowLight>(); g.To = 5f; g.Over = 0.4f;
+                    return root;
+                }
                 case "cast":
-                    // the throw: an orange ring and light at Mo's hands, a spray of sand along the throw
-                    Ring(at, moOrange, 0.3f, 2.5f, 0.3f, 0.3f, true);
-                    Flash(at, moLight, 8f, 0.25f, 3f);
-                    if (to.HasValue) Burst(at, "mat_dust", sandTan, 6, 0.5f, 6f, 0.7f, shapeRadius: 0.6f);
+                    // the throw: a shockwave ring and a flash at Mo's hands, a heavy spray of sand and grit along the throw, a shake
+                    Ring(at, moOrange, 0.3f, 4f, 0.35f, 0.5f, true);
+                    Ring(at - Vector3.up * 1f, sandEdge, 0.5f, radius, 0.4f, 0.4f);
+                    Flash(at, moLight, 14f, 0.3f, 6f);
+                    Burst(at, "mat_smoke", sandTan, 10, 0.6f, 9f, 1.4f, shapeRadius: 0.8f);
+                    Burst(at, "mat_spark", sandEdge, 30, 0.5f, 14f, 0.1f, shapeRadius: 0.5f, gravity: 1f);
+                    Shake(at, 18f, 2.5f, 0.3f);
                     return null;
                 case "loop":
                 {
@@ -751,9 +782,11 @@ namespace DeadlockOfRain
                     var wave = new GameObject("wave"); wave.transform.SetParent(root.transform, false);
                     foreach (var ps in new[]
                     {
-                        Particles(wave, "mat_dust", sandTan, rate: 150, life: 0.45f, speed: 1.5f, size: 1.1f, world: true),
-                        Particles(wave, "mat_smoke", sandDark, rate: 60, life: 0.7f, speed: 1f, size: 1.6f, world: true),
-                        Particles(wave, "mat_spark", sandEdge, rate: 140, life: 0.4f, speed: 4f, size: 0.07f, world: true, gravity: 1f),
+                        Particles(wave, "mat_smoke", sandTan, rate: 160, life: 0.5f, speed: 2.5f, size: 2f, world: true),
+                        Particles(wave, "mat_dust", sandTan, rate: 60, life: 0.4f, speed: 2f, size: 0.5f, world: true),
+                        Particles(wave, "mat_smoke", sandDark, rate: 80, life: 0.8f, speed: 1.5f, size: 2f, world: true),
+                        Particles(wave, "mat_spark", sandEdge, rate: 220, life: 0.45f, speed: 6f, size: 0.09f, world: true, gravity: 1f, stretch: 0.15f),
+                        Particles(wave, "mat_spark", dirt, rate: 50, life: 0.7f, speed: 7f, size: 0.2f, world: true, gravity: 2.5f, upward: true),
                     })
                     {
                         var sh = ps.shape; sh.shapeType = ParticleSystemShapeType.Box; sh.scale = new Vector3(radius, 0.6f, 0.8f);
@@ -762,14 +795,18 @@ namespace DeadlockOfRain
                     foreach (var side in new[] { "edgeL", "edgeR" })
                     {
                         var e = new GameObject(side); e.transform.SetParent(root.transform, false);
-                        Trail(e, sandEdge, 0.35f, 0.35f);
+                        Trail(e, sandEdge, 0.45f, 0.45f);
+                        Particles(e, "mat_smoke", sandTan, rate: 25, life: 0.4f, speed: 2f, size: 1.2f, world: true, upward: true);
                     }
+                    Light(root, moLight, 8f, 1.5f, Vector3.up);
                     return root;
                 }
                 case "hit":
-                    // a sand puff and an orange flash on each enemy the wave catches, then sand circling it while it is Sanded
-                    Burst(at, "mat_dust", sandTan, 4, 0.6f, 3f, 0.7f, shapeRadius: 0.4f);
-                    Burst(at, "mat_glow", moOrange, 2, 0.15f, 0f, 1.5f);
+                    // a burst of sand and grit and an orange flash on each enemy the wave catches, then sand circling it while
+                    // it is Sanded
+                    Burst(at, "mat_smoke", sandTan, 7, 0.7f, 5f, 1.4f, shapeRadius: 0.5f);
+                    Burst(at, "mat_spark", sandEdge, 14, 0.4f, 9f, 0.08f, gravity: 1.5f);
+                    Burst(at, "mat_glow", moOrange, 2, 0.2f, 0f, 2.2f);
                     if (follow && !follow.GetComponent<SandedFx>()) follow.gameObject.AddComponent<SandedFx>();
                     return null;
             }
@@ -798,18 +835,26 @@ namespace DeadlockOfRain
             switch (moment)
             {
                 case "cast":
-                    // digging in: a burst of dirt and debris, dust, a dark patch
-                    Burst(at, "mat_dust", sandDark, 10, 0.9f, 5f, 1.1f, shapeRadius: 1.2f, flat: true);
-                    Burst(at, "mat_spark", dirt, 24, 0.9f, 8f, 0.15f, gravity: 2.5f, upward: true);
-                    Burst(at + Vector3.up * 0.1f, "mat_dust", crack, 4, 1.2f, 0.5f, 1.4f, shapeRadius: 0.5f, flat: true);
+                    // digging in: a burst of dirt and debris thrown up as he starts to sink, dust, a dark patch, a thump
+                    Burst(at, "mat_smoke", sandTan, 14, 1f, 6f, 1.8f, shapeRadius: 1.4f, flat: true);
+                    Burst(at, "mat_spark", dirt, 40, 1f, 10f, 0.14f, gravity: 2.5f, upward: true);
+                    Burst(at, "mat_dust", sandTan, 8, 0.8f, 5f, 0.45f, shapeRadius: 1f, gravity: 2f, upward: true);
+                    Ring(at + Vector3.up * 0.2f, sandDark, 0.5f, 3.5f, 0.35f, 0.4f);
+                    Shake(at, 12f, 1.5f, 0.25f);
+                    return null;
+                case "under":
+                    // the ground closing over him: dirt falling in, a ring drawing shut
+                    Burst(at, "mat_spark", dirt, 20, 0.6f, 4f, 0.12f, shapeRadius: 1.2f, gravity: 3f, upward: true);
+                    Burst(at, "mat_smoke", sandTan, 6, 0.8f, 1.5f, 1.5f, shapeRadius: 1f, flat: true);
+                    Ring(at + Vector3.up * 0.15f, crack, 2.5f, 0.3f, 0.3f, 0.35f);
                     return null;
                 case "loop":
                 {
                     // the mound travelling with him: dust boiling up, a dark crack trail, rock chunks bobbing, faint orange streaks
                     var root = Root(at, 0f, follow);
-                    Particles(root, "mat_dust", sandTan, rate: 18, life: 0.8f, speed: 1.6f, size: 0.9f, shapeRadius: 1.0f, world: true, upward: true);
-                    Particles(root, "mat_dust", crack, rate: 12, life: 1.5f, speed: 0.1f, size: 0.9f, shapeRadius: 0.8f, world: true, flat: true);
-                    Particles(root, "mat_spark", dirt, rate: 35, life: 0.6f, speed: 3.5f, size: 0.22f, shapeRadius: 0.9f, world: true, upward: true, gravity: 2f);
+                    Particles(root, "mat_smoke", sandTan, rate: 18, life: 0.8f, speed: 1.6f, size: 1.4f, shapeRadius: 1.0f, world: true, upward: true);
+                    Particles(root, "mat_dust", sandTan, rate: 10, life: 0.6f, speed: 2f, size: 0.4f, shapeRadius: 0.8f, world: true, upward: true, gravity: 2f);
+                    Particles(root, "mat_spark", dirt, rate: 35, life: 0.6f, speed: 3.5f, size: 0.14f, shapeRadius: 0.9f, world: true, upward: true, gravity: 2f);
                     Particles(root, "mat_glow", new Color32(162, 93, 34, 255), rate: 12, life: 0.4f, speed: 0.5f, size: 0.8f, shapeRadius: 0.8f, world: true, flat: true);
                     return root;
                 }
@@ -817,11 +862,14 @@ namespace DeadlockOfRain
                     // bursting out: glowing cracks and an orange ring at the spin's reach, a flash, tan smoke and debris, a shake
                     Ring(at + Vector3.up * 0.2f, hotCrack, 0.5f, radius, 0.45f, 0.8f);
                     Ring(at + Vector3.up * 0.2f, new Color32(254, 132, 62, 255), 0.5f, radius * 0.6f, 0.3f, 0.5f);
-                    Burst(at, "mat_dust", sandTan, 16, 1.2f, radius * 0.8f, 1.6f, shapeRadius: 1.5f, flat: true);
-                    Burst(at, "mat_spark", dirt, 40, 1.1f, 12f, 0.2f, gravity: 2.5f, upward: true);
+                    Burst(at, "mat_smoke", sandTan, 16, 1.2f, radius * 0.8f, 2.2f, shapeRadius: 1.5f, flat: true);
+                    Burst(at, "mat_spark", dirt, 50, 1.1f, 13f, 0.15f, gravity: 2.5f, upward: true);
+                    // a fountain of rock chunks and a column of dust thrown straight up where he breaks out
+                    Burst(at, "mat_dust", sandTan, 14, 1.4f, 16f, 0.4f, shapeRadius: 0.8f, gravity: 3f, upward: true);
+                    Burst(at + Vector3.up * 0.5f, "mat_smoke", sandTan, 10, 1f, 9f, 2f, shapeRadius: 0.6f, upward: true);
                     Burst(at + Vector3.up * 0.1f, "mat_glow", hotCrack, 3, 0.4f, 0f, radius * 0.7f);
-                    Flash(at + Vector3.up * 1.5f, moLight, radius * 2f, 0.4f, 6f);
-                    Shake(at, radius * 2.5f, 2.5f, 0.4f);
+                    Flash(at + Vector3.up * 1.5f, moLight, radius * 2.5f, 0.5f, 8f);
+                    Shake(at, radius * 3f, 4f, 0.5f);
                     return null;
             }
             return null;
@@ -843,10 +891,10 @@ namespace DeadlockOfRain
                         var arm = new GameObject("arm" + i); arm.transform.SetParent(spin.transform, false);
                         float a = i * 90f * Mathf.Deg2Rad;
                         arm.transform.localPosition = new Vector3(Mathf.Cos(a), 0.6f + i * 0.9f, Mathf.Sin(a)) * 1f + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * (1.2f + i * 0.5f);
-                        Particles(arm, "mat_dust", new Color32(214, 183, 125, 255), rate: 14, life: 0.5f, speed: 0.4f, size: 0.6f + i * 0.2f, world: true);
+                        Particles(arm, "mat_smoke", new Color32(214, 183, 125, 255), rate: 18, life: 0.5f, speed: 0.4f, size: 1f + i * 0.3f, world: true);
                         Trail(arm, sandEdge, 0.3f, 0.25f);
                     }
-                    Particles(root, "mat_dust", sandTan, rate: 16, life: 0.8f, speed: 2.5f, size: 1.1f, shapeRadius: 2f, world: true, flat: true);
+                    Particles(root, "mat_smoke", sandTan, rate: 16, life: 0.8f, speed: 2.5f, size: 1.6f, shapeRadius: 2f, world: true, flat: true);
                     var dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                     Object.Destroy(dome.GetComponent<Collider>());
                     dome.transform.SetParent(root.transform, false);
@@ -866,7 +914,7 @@ namespace DeadlockOfRain
                 }
                 case "cast":
                 case "end":
-                    Burst(at, "mat_dust", sandTan, 10, 0.8f, 6f, 1.1f, shapeRadius: 1.5f, flat: true);
+                    Burst(at, "mat_smoke", sandTan, 10, 0.8f, 6f, 1.6f, shapeRadius: 1.5f, flat: true);
                     Ring(at + Vector3.up * 0.3f, sandEdge, 0.5f, radius, 0.35f, 0.5f);
                     return null;
                 case "hit":
@@ -920,12 +968,35 @@ namespace DeadlockOfRain
             return null;
         }
 
-        static GameObject MokrillPunch(string moment, Vector3 at)
+        static GameObject MokrillPunch(string moment, Vector3 at, float radius, Transform follow)
         {
-            if (moment != "hit") return null;
-            Burst(at, "mat_dust", sandTan, 3, 0.5f, 4f, 0.6f, shapeRadius: 0.3f);
-            Burst(at, "mat_glow", moOrange, 2, 0.15f, 0f, 1.6f);
-            Burst(at, "mat_spark", krillOrange, 10, 0.3f, 8f, 0.07f);
+            switch (moment)
+            {
+                case "hit":
+                    // a Frenzy punch landing: a red-orange flash, a burst of sparks and dust, a small shockwave
+                    Burst(at, "mat_dust", sandTan, 4, 0.5f, 5f, 0.7f, shapeRadius: 0.3f);
+                    Burst(at, "mat_glow", frenzyRed, 2, 0.2f, 0f, 2.4f);
+                    Burst(at, "mat_spark", frenzyEmber, 18, 0.35f, 11f, 0.08f);
+                    Ring(at, frenzyEmber, 0.3f, 2.5f, 0.25f, 0.3f, true);
+                    Flash(at, frenzyRed, 6f, 0.15f, 4f);
+                    return null;
+                case "frenzy":
+                {
+                    // Mo's Frenzy (Krill is away): red embers rising around him, a pulsing red ring at his feet, a red glow
+                    var root = Root(at, 0f, follow);
+                    var feet = new GameObject("feet"); feet.transform.SetParent(root.transform, false);
+                    if (follow) feet.transform.localPosition = at - follow.position;
+                    float r = Mathf.Max(1f, radius);
+                    Particles(feet, "mat_glow", frenzyEmber, rate: 30, life: 0.9f, speed: 2.5f, size: 0.3f, shapeRadius: r, world: true, upward: true);
+                    Particles(feet, "mat_spark", frenzyRed, rate: 45, life: 0.5f, speed: 4f, size: 0.07f, shapeRadius: r, world: true, upward: true, stretch: 0.2f);
+                    Particles(feet, "mat_glow", frenzyRed, rate: 6, life: 0.5f, speed: 0f, size: r * 2.2f);
+                    var ring = new GameObject("ring"); ring.transform.SetParent(feet.transform, false); ring.transform.localPosition = Vector3.up * 0.1f;
+                    Circle(ring.transform, frenzyRed, r * 1.3f, 0.15f);
+                    ring.AddComponent<Pulse>().Speed = 4f;
+                    Light(feet, frenzyRed, r * 5f, 2.5f, Vector3.up * 1.5f).gameObject.AddComponent<Flicker>();
+                    return root;
+                }
+            }
             return null;
         }
 
@@ -987,6 +1058,16 @@ namespace DeadlockOfRain
             m = new Material(b);
             if (m.HasProperty("_TintColor")) m.SetColor("_TintColor", tint);
             if (m.HasProperty("_Color")) m.SetColor("_Color", tint);
+            tinted[key] = m;
+            return m;
+        }
+
+        /// <summary>A plain alpha-blended colour (Unity's built-in sprite shader) for lines that must read on bright ground.</summary>
+        static Material Solid(Color tint)
+        {
+            string key = "solid|" + ColorUtility.ToHtmlStringRGBA(tint);
+            if (tinted.TryGetValue(key, out var m) && m) return m;
+            m = new Material(Shader.Find("Sprites/Default")) { color = tint };
             tinted[key] = m;
             return m;
         }
@@ -1188,6 +1269,92 @@ namespace DeadlockOfRain
             var life = go.GetComponent<VfxLife>();
             if (life) { life.Following = false; }
             Object.Destroy(go, linger);
+        }
+
+        /// <summary>Sand Blast's cone on the ground for the wind-up: its outline (the edges widen by Tan per metre from Near at
+        /// Mo, out to Range, every point dropped onto the terrain), faint cross lines, and a bright line sweeping out over
+        /// Sweep seconds; then it fades while the wave runs along it.</summary>
+        sealed class ConeMarker : MonoBehaviour
+        {
+            public Vector3 Origin, Dir; public float Range, Near, Tan, Sweep;
+            LineRenderer outline, sweep; readonly List<LineRenderer> hatch = new List<LineRenderer>();
+            readonly List<float> centreY = new List<float>();
+            float age;
+            const float Step = 0.5f, Width = 0.28f, HatchWidth = 0.1f;
+
+            /// <summary>The ground under a point of the cone, looked for from a few metres above the centre line there.</summary>
+            Vector3 Ground(float along, float side)
+            {
+                var right = Vector3.Cross(Vector3.up, Dir);
+                var p = Origin + Dir * along + right * side;
+                int i = Mathf.Clamp(Mathf.RoundToInt(along / Step), 0, centreY.Count - 1);
+                p.y = centreY.Count > 0 ? centreY[i] : Origin.y;
+                if (Physics.Raycast(p + Vector3.up * 4f, Vector3.down, out var hit, 10f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) p = hit.point;
+                return p + Vector3.up * 0.12f;
+            }
+
+            /// <summary>The centre line's height every Step metres, each looked for from just above the last (up slopes and down).</summary>
+            void MarchCentre()
+            {
+                float y = Origin.y;
+                for (float d = 0f; d <= Range + Step; d += Step)
+                {
+                    var p = Origin + Dir * d; p.y = y;
+                    if (Physics.Raycast(p + Vector3.up * 3f, Vector3.down, out var hit, 9f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) y = hit.point.y;
+                    centreY.Add(y);
+                }
+            }
+
+            float Half(float d) => Near + d * Tan;
+
+            LineRenderer World(Color c, float width, int points, bool solid)
+            {
+                var go = new GameObject("line"); go.transform.SetParent(transform, false);
+                var lr = go.AddComponent<LineRenderer>();
+                lr.useWorldSpace = true;
+                // the outline is drawn solid (alpha-blended, no glow): an additive line vanishes on snow and sand
+                lr.sharedMaterial = solid ? Solid(c) : Mat("mat_tracer", c);
+                lr.startColor = lr.endColor = c;
+                lr.widthMultiplier = width;
+                lr.positionCount = points;
+                return lr;
+            }
+
+            void Start()
+            {
+                MarchCentre();
+                const int steps = 12;
+                var pts = new List<Vector3>();
+                for (int i = 0; i <= steps; i++) { float d = Range * i / steps; pts.Add(Ground(d, -Half(d))); }
+                for (int i = 1; i < steps; i++) { float s = Mathf.Lerp(-Half(Range), Half(Range), (float)i / steps); pts.Add(Ground(Range, s)); }
+                for (int i = steps; i >= 0; i--) { float d = Range * i / steps; pts.Add(Ground(d, Half(d))); }
+                outline = World(moOrange, Width, pts.Count, true);
+                outline.loop = true;
+                outline.SetPositions(pts.ToArray());
+                for (float d = 2.5f; d < Range - 0.5f; d += 2.5f)
+                {
+                    var h = World(new Color(moOrange.r, moOrange.g, moOrange.b, 0.45f), HatchWidth, 5, true);
+                    for (int i = 0; i < 5; i++) h.SetPosition(i, Ground(d, Mathf.Lerp(-Half(d), Half(d), i / 4f)));
+                    hatch.Add(h);
+                }
+                sweep = World(tracerHot, 0.35f, 5, false);
+                Update();
+            }
+
+            void Update()
+            {
+                age += Time.deltaTime;
+                // sweep out over the wind-up, easing out; afterwards everything fades over a second
+                float t = Mathf.Clamp01(age / Sweep), d = Range * (1f - (1f - t) * (1f - t));
+                if (sweep)
+                {
+                    for (int i = 0; i < 5; i++) sweep.SetPosition(i, Ground(d, Mathf.Lerp(-Half(d), Half(d), i / 4f)));
+                    sweep.widthMultiplier = age < Sweep ? 0.35f : 0f;
+                }
+                float fade = Mathf.Clamp01(1f - (age - Sweep) / 1f);
+                if (outline) outline.widthMultiplier = Width * fade;
+                foreach (var h in hatch) if (h) h.widthMultiplier = HatchWidth * fade;
+            }
         }
 
         sealed class Spin : MonoBehaviour

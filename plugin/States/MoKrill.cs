@@ -2,20 +2,32 @@ using System.Collections.Generic;
 using EntityStates;
 using RoR2;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace DeadlockOfRain.States
 {
     // ---------------- Mo & Krill: Burrow (Shift) ----------------
-    // Mo digs in: the model is hidden (he can still be hit, as in Deadlock) and the row's buff makes him faster and
-    // armoured with no gun; a dirt mound follows him. Each hit he takes costs 1 m/s for 1.5 s. He pops out at duration, on
-    // Shift or Jump after minDuration, or when he walks off a ledge (BurrowPop, a state of its own so every player sees it);
-    // R underground bursts straight into Dust Devil.
+    // Mo digs in: he sinks into the ground, then the model is hidden (he can still be hit, as in Deadlock) and the row's
+    // buff makes him faster and armoured with no gun; a dirt mound follows him. Each hit he takes costs 1 m/s for 1.5 s. He
+    // bursts out at duration, on Shift or Jump after minDuration, or when he walks off a ledge (BurrowPop, a state of its
+    // own so every player sees it); Q underground (Dust Devil, Equipment.Fire) bursts straight into the tornado.
     [Kind("burrow")]
     public sealed class Burrow : DlrState
     {
+        /// <summary>When the model starts sinking (after the dig-in clip's first moment) and how long it takes to go under.</summary>
+        public const float SinkDelay = 0.1f, SinkTime = 0.45f;
+
         GameObject mound; int loop; bool hidden; float lastHealth, airborne;
         readonly List<float> hitsTaken = new List<float>();
         CharacterModel model;
+        Transform modelBase; Vector3 baseLocal;
+
+        /// <summary>How far down the model goes to be out of sight: his capsule's height and a little more.</summary>
+        public static float Depth(CharacterBody b)
+        {
+            var cap = b ? b.GetComponent<CapsuleCollider>() : null;
+            return (cap ? cap.height : 2.5f) + 0.5f;
+        }
 
         public override void OnEnter()
         {
@@ -25,7 +37,18 @@ namespace DeadlockOfRain.States
             if (anim) anim.Gesture("utility");
             if (Server) Buffs.AddTimed(characterBody, row.Buff, row.Duration + 1f);
             model = characterBody.modelLocator && characterBody.modelLocator.modelTransform ? characterBody.modelLocator.modelTransform.GetComponent<CharacterModel>() : null;
+            modelBase = characterBody.modelLocator ? characterBody.modelLocator.modelBaseTransform : null;
+            if (modelBase) baseLocal = modelBase.localPosition;
             lastHealth = healthComponent ? healthComponent.health : 0f;
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            // digging in: the model sinks into the ground (easing in), then goes out of sight
+            if (hidden || !modelBase) return;
+            float t = Mathf.Clamp01((age - SinkDelay) / SinkTime);
+            modelBase.localPosition = baseLocal + Vector3.down * Depth(characterBody) * t * t;
         }
 
         void Hide()
@@ -33,12 +56,15 @@ namespace DeadlockOfRain.States
             if (hidden) return;
             hidden = true;
             if (model) model.invisibilityCount++;
+            if (modelBase) modelBase.localPosition = baseLocal;
+            Vfx.Play(row.Vfx, "under", characterBody.footPosition, row.Radius);
             loop = Fx.Loop(row.Id, transform.position);
             mound = Vfx.Play(row.Vfx, "loop", characterBody.footPosition, row.Radius, transform);
         }
 
         void Show()
         {
+            if (modelBase) modelBase.localPosition = baseLocal;
             if (!hidden) return;
             hidden = false;
             if (model) model.invisibilityCount--;
@@ -49,8 +75,7 @@ namespace DeadlockOfRain.States
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            // the dig-in clip shows for a moment, then he is under the ground
-            if (!hidden && fixedAge >= 0.25f) Hide();
+            if (!hidden && fixedAge >= SinkDelay + SinkTime) Hide();
             if (!isAuthority || !characterMotor) return;
             bool bot = MeltyTest.Active || DpsBench.Active;
             // sprint adds nothing underground: the buff already doubles his speed
@@ -67,17 +92,8 @@ namespace DeadlockOfRain.States
             if (characterDirection && mv.sqrMagnitude > 0.01f) characterDirection.forward = mv;
             airborne = characterMotor.isGrounded ? 0f : airborne + Time.fixedDeltaTime;
 
-            // R underground: straight into Dust Devil (the pop-out becomes the tornado)
-            var r = skillLocator ? skillLocator.special : null;
-            var rRow = Survivors.RowFor(r);
-            if (!bot && fixedAge > 0.25f && inputBank && inputBank.skill4.justPressed && r && rRow != null && rRow.Kind == "dust_devil" && r.stock > 0)
-            {
-                r.DeductStock(1);
-                outer.SetNextState(new DustDevil { activatorSkillSlot = r, FromBurrow = true });
-                return;
-            }
             bool early = fixedAge >= row.MinDuration && inputBank && (inputBank.skill3.justPressed || inputBank.jump.justPressed);
-            if (fixedAge >= row.Duration || early || airborne > 0.15f && fixedAge > 0.3f || bot && fixedAge >= 1.2f)
+            if (fixedAge >= row.Duration || early || airborne > 0.15f && fixedAge > SinkDelay + SinkTime || bot && fixedAge >= 1.2f)
                 outer.SetNextState(new BurrowPop { RowOverride = row });
         }
 
@@ -91,18 +107,35 @@ namespace DeadlockOfRain.States
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Frozen;
     }
 
-    /// <summary>Burrow, part 2: Mo bursts out of the ground in a spin: burst hits of damagePct every interval within radius,
-    /// each enemy slowed (the row's debuff) and, on the first hit, knocked up (bosses only if bossMult > 0).</summary>
+    /// <summary>Burrow, part 2: Mo bursts up out of the ground in a spin (the model rises from below): once he breaks the
+    /// surface, burst hits of damagePct every interval within radius, each enemy slowed (the row's debuff) and, on the first
+    /// hit, knocked up (bosses only if bossMult > 0).</summary>
     public sealed class BurrowPop : DlrState
     {
-        int hits; float next;
+        const float RiseTime = 0.3f;
+        int hits; float next = RiseTime * 0.5f;
+        Transform modelBase; Vector3 baseLocal;
 
         public override void OnEnter()
         {
             base.OnEnter();
             Sound("hit");
             Vfx.Play(row.Vfx, "hit", characterBody.footPosition, row.Radius);
-            if (anim) anim.Override("special", row.Interval * row.Burst + 0.2f);
+            if (anim) anim.Override("special", RiseTime * 0.5f + row.Interval * row.Burst + 0.2f);
+            modelBase = characterBody.modelLocator ? characterBody.modelLocator.modelBaseTransform : null;
+            if (modelBase) { baseLocal = modelBase.localPosition; Rise(); }
+        }
+
+        void Rise()
+        {
+            float t = Mathf.Clamp01(age / RiseTime), e = 1f - (1f - t) * (1f - t);
+            modelBase.localPosition = baseLocal + Vector3.down * Burrow.Depth(characterBody) * (1f - e);
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            if (modelBase) Rise();
         }
 
         public override void FixedUpdate()
@@ -126,11 +159,12 @@ namespace DeadlockOfRain.States
                         }
                     }
             }
-            if (isAuthority && fixedAge >= row.Interval * row.Burst + 0.1f) outer.SetNextStateToMain();
+            if (isAuthority && fixedAge >= RiseTime * 0.5f + row.Interval * row.Burst + 0.1f) outer.SetNextStateToMain();
         }
 
         public override void OnExit()
         {
+            if (modelBase) modelBase.localPosition = baseLocal;
             Sound("end");
             if (anim) anim.StopOverride();
             base.OnExit();
@@ -140,21 +174,36 @@ namespace DeadlockOfRain.States
     }
 
     // ---------------- Mo & Krill: Sand Blast (M2) ----------------
-    /// <summary>A wave of sand along the ground (DlrSandWave) in Deadlock's cone: radius wide at Mo, widening by spreadDeg
-    /// either side, out to range at speed. On the Weapon machine, so it works while Mo is burrowed or spinning.</summary>
+    /// <summary>Mo winds up for minDuration while the cone shows on the ground, then throws a wave of sand along it
+    /// (DlrSandWave) in Deadlock's cone: radius wide at Mo, widening by spreadDeg either side, out to range at speed. The
+    /// direction is fixed at the start (sent with the state) so the cone shown is the cone hit. On the Weapon machine, so it
+    /// works while Mo is burrowed.</summary>
     [Kind("cone_wave")]
     public sealed class ConeWave : DlrState
     {
+        Vector3 dir; bool thrown; GameObject marker, gather;
+
         public override void OnEnter()
         {
             base.OnEnter();
-            Sound("cast");
             if (anim) anim.Gesture("secondary");
             characterBody.SetAimTimer(2f);
-            var dir = ThrowDir; dir.y = 0;
+            dir = ThrowDir; dir.y = 0;
             if (dir.sqrMagnitude < 0.01f) dir = characterDirection ? characterDirection.forward : transform.forward;
             dir.Normalize();
-            Vfx.Play(row.Vfx, "cast", characterBody.corePosition + dir * characterBody.radius, row.Radius, null, characterBody.corePosition + dir * 5f);
+            var foot = characterBody.footPosition;
+            marker = Vfx.Play(row.Vfx, "telegraph", foot, row.Radius, null, foot + dir * row.Range, row.SpreadDeg, row.MinDuration);
+            gather = Vfx.Play(row.Vfx, "gather", characterBody.corePosition + dir * characterBody.radius, row.Radius, transform);
+            if (row.MinDuration <= 0f) Throw();
+        }
+
+        void Throw()
+        {
+            thrown = true;
+            Sound("cast");
+            Vfx.Stop(gather, 0.5f);
+            var from = characterBody.corePosition + dir * characterBody.radius;
+            Vfx.Play(row.Vfx, "cast", from, row.Radius, null, characterBody.corePosition + dir * 5f);
             // every machine runs the wave; only the server's deals damage
             DlrSandWave.Launch(characterBody, row, characterBody.footPosition, dir, Server);
         }
@@ -162,20 +211,30 @@ namespace DeadlockOfRain.States
         public override void FixedUpdate()
         {
             base.FixedUpdate();
+            if (!thrown && fixedAge >= row.MinDuration) Throw();
             if (isAuthority && fixedAge >= row.Duration) outer.SetNextStateToMain();
+        }
+
+        public override void OnExit()
+        {
+            // cut short (a stun) before the throw: the cone goes with it
+            if (!thrown) Vfx.Stop(marker, 0.2f);
+            Vfx.Stop(gather, 0.3f);
+            base.OnExit();
         }
     }
 
-    // ---------------- Mo & Krill: Dust Devil (R) ----------------
-    /// <summary>Mo spins as a sand tornado for duration: he keeps walking (no sprint, no jump), everything within range is
-    /// pulled toward him (bosses at bossMult), everything within radius takes damagePct every interval. R again stops it;
-    /// the cooldown starts when it ends (cooldownOnEnd).</summary>
-    [Kind("dust_devil")]
-    public sealed class DustDevil : DlrState
+    // ---------------- Mo & Krill: Dust Devil (Q, the ult equipment) ----------------
+    /// <summary>The carrier spins as a sand tornado for duration: it keeps walking (no sprint, no jump), everything within
+    /// range is pulled toward it (bosses at bossMult), everything within radius takes damagePct every interval. Mo plays
+    /// Deadlock's tornado clip; any other carrier (no special_loop clip) has its whole model turned two times a second.</summary>
+    [Kind("ult_devil")]
+    public sealed class UltDevil : UltState
     {
-        /// <summary>Started from Burrow (R underground): the pop-out turns straight into the tornado.</summary>
+        const float SpinDegPerSec = 720f;
+        /// <summary>Started from Burrow (Q underground): Mo bursts out of the ground straight into the tornado.</summary>
         public bool FromBurrow;
-        GameObject fx; int loop; float nextTick;
+        GameObject fx; int loop; float nextTick, yaw; bool clip;
 
         public override void OnEnter()
         {
@@ -185,8 +244,19 @@ namespace DeadlockOfRain.States
             if (FromBurrow) Vfx.Play(Sheet.SkillOf(row.Hero, "utility").Vfx, "hit", characterBody.footPosition, row.Radius);
             Vfx.Play(row.Vfx, "cast", characterBody.footPosition, row.Radius);
             fx = Vfx.Play(row.Vfx, "loop", characterBody.footPosition, row.Radius, transform, null, row.Range);
-            if (anim) anim.Override("special_loop", row.Duration, true);
+            clip = anim && anim.HasClip("special_loop");
+            if (clip) anim.Override("special_loop", row.Duration, true);
+            if (characterDirection) { characterDirection.moveVector = Vector3.zero; yaw = characterDirection.yaw; }
             if (Server) Buffs.AddTimed(characterBody, row.Buff, row.Duration + 0.5f);
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            // a carrier without the tornado clip turns on the spot, model only: the camera and the aim stay put
+            if (clip || !characterDirection) return;
+            yaw = Mathf.Repeat(yaw + SpinDegPerSec * Time.deltaTime, 360f);
+            characterDirection.yaw = yaw;
         }
 
         public override void FixedUpdate()
@@ -197,7 +267,7 @@ namespace DeadlockOfRain.States
                 characterBody.isSprinting = false;
                 characterMotor.moveDirection = inputBank ? inputBank.moveVector : Vector3.zero;
                 var face = GetAimRay().direction; face.y = 0;
-                if (characterDirection && face.sqrMagnitude > 0.01f) characterDirection.forward = face.normalized;
+                if (clip && characterDirection && face.sqrMagnitude > 0.01f) characterDirection.forward = face.normalized;
             }
             if (Server) Fx.Pull(characterBody, characterBody.corePosition, row.Radius * 0.5f, row.Range, row.Speed, row.BossMult);
             if (fixedAge >= nextTick)
@@ -212,10 +282,7 @@ namespace DeadlockOfRain.States
                     if (Server) Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, at);
                 }
             }
-            if (!isAuthority) return;
-            bool bot = MeltyTest.Active || DpsBench.Active;
-            bool stop = !bot && fixedAge > 0.3f && inputBank && inputBank.skill4.justPressed;
-            if (stop || fixedAge >= row.Duration) outer.SetNextStateToMain();
+            if (isAuthority && fixedAge >= row.Duration) outer.SetNextStateToMain();
         }
 
         public override void OnExit()
@@ -225,23 +292,40 @@ namespace DeadlockOfRain.States
             Vfx.Stop(fx, 0.8f);
             Vfx.Play(row.Vfx, "end", characterBody.footPosition, row.Radius);
             if (anim) anim.StopOverride();
+            // a spun carrier faces where it aims again
+            if (!clip && characterDirection && inputBank) characterDirection.forward = inputBank.aimDirection;
             if (Server) Buffs.Clear(characterBody, row.Buff);
             base.OnExit();
         }
 
-        public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.PrioritySkill;
+        public override void OnSerialize(NetworkWriter writer)
+        {
+            base.OnSerialize(writer);
+            writer.Write(FromBurrow);
+        }
+
+        public override void OnDeserialize(NetworkReader reader)
+        {
+            base.OnDeserialize(reader);
+            FromBurrow = reader.ReadBoolean();
+        }
     }
 
-    // ---------------- Mo & Krill: Tag Team (Q, the ult equipment) ----------------
-    /// <summary>Throws Krill at the enemy under the crosshair (range); the server's DlrHopper does the hopping. Any carrier:
-    /// on Mo his Krill is hidden while the row's buff is on (and Mo punches), on anyone else a Krill appears.</summary>
-    [Kind("ult_krill")]
-    public sealed class UltKrill : UltState
+    // ---------------- Mo & Krill: Tag Team (R) ----------------
+    /// <summary>Throws Krill at the enemy under the crosshair (range); the server's DlrHopper does the hopping. No enemy
+    /// there: nothing is thrown and the charge comes back. Krill is hidden while the row's buff is on, and Mo is in a
+    /// Frenzy: twice as fast, and the M1 punches.</summary>
+    [Kind("krill_hop")]
+    public sealed class KrillHop : DlrState
     {
+        bool thrown;
+
         public override void OnEnter()
         {
             base.OnEnter();
             var target = LockOn(row.Range);
+            if (!target) { RefundStock(); return; }
+            thrown = true;
             Sound("cast");
             if (anim) anim.Override("ult_start", 0.5f);
             characterBody.SetAimTimer(2f);
@@ -253,13 +337,15 @@ namespace DeadlockOfRain.States
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (isAuthority && fixedAge >= 0.5f) outer.SetNextStateToMain();
+            if (isAuthority && (!thrown || fixedAge >= 0.5f)) outer.SetNextStateToMain();
         }
 
         public override void OnExit()
         {
-            if (anim) anim.StopOverride();
+            if (thrown && anim) anim.StopOverride();
             base.OnExit();
         }
+
+        public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.PrioritySkill;
     }
 }

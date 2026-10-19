@@ -58,15 +58,15 @@
       "figure": "all"
     },
     {
-      "id": "eq_mokrill_tag_team",
+      "id": "eq_mokrill_dust_devil",
       "hero": "mokrill",
-      "skill": "mokrill_tag_team",
-      "pickupText": "Throw Krill: he leaps from enemy to enemy for 10s, then comes back.",
-      "lore": "Mo throws, Krill lands. Whatever Krill lands on stops moving for a while.",
+      "skill": "mokrill_dust_devil",
+      "pickupText": "Spin into a sand tornado for 8s, pulling enemies in and grinding them down.",
+      "lore": "Mo digs, Mo spins. The desert goes where Mo goes, and so does everything standing in it.",
       "canDrop": true,
       "enigmaCompatible": true,
       "randomTrigger": true,
-      "figure": "rider"
+      "figure": "all"
     }
   ]
 }

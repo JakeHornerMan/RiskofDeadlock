@@ -22,6 +22,7 @@
 
 ## Balance
 - 0.7.0 (2026-10-19, not released): Mo & Krill, matched to MUL-T: 250 +75 health, 25 armor, 5 m/s. Yellow Canary 4 x 40 % fixed pattern; Sand Blast 450 % cone, Sanded = DisableAllSkills 2 s; Burrow 4 s x2 speed +100 armor, pop-out 3 x 100 %; Dust Devil 16 x 50 %, pull 16 m; Tag Team 20 x 1500 % hops. Bench 1620 vs MUL-T 1450 (inside).
+- 0.7.0b (2026-10-19, not released, after the creator's play-check): Tag Team to R (30 s, numbers unchanged, no target = no cooldown); Dust Devil to the Q ult (8 s, 32 x 200 % = 6400 %, any carrier spins); Burrow 8 s, pop-out 3 x 500 %, sinks and rises; Frenzy while Krill is away (x2 speed, punch 600 %, knockback 20 m/s, red aura); Sand Blast 0.4 s wind-up with a ground cone, shove 8 m/s; acceleration 80. Bench 3252 vs MUL-T 1450 (far above, the creator's numbers).
 - 0.4.2: each hero within ±500 %/s of its RoR2 match (means over bench runs; doc 05 §3.0).
 - 0.5.1: playtest feel pass (Haymaker lock-on rush, Phantom Strike 5 m area, bouncing 10 m Lightning Ball); benched once and reported, not retuned.
 - 0.6.3: Abrams Shoulder Charge vfx abrams_charge (visual). run_test.sh takes heroes (test only the changed ones); run_bench.sh clears a leftover test-mode file. Bench Infernus 1149 vs Engineer 1611 (inside, just).

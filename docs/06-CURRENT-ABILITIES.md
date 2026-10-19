@@ -117,21 +117,21 @@ bench's run.
 | Q | **Concussive Combustion** (equipment) | Becomes a bomb, fire gathering on him; a yellow ring on the ground shows the blast's reach, with a ring sweeping inward each second as a countdown and a timer ticking along (on whoever holds the item); can move while it builds; the blast stuns and leaves burning ground. | 6800 % in 18 m after a 3 s fuse, stun 2 s, each kill heals 10 % of max health | 120 s | 2720 · 326 (not balanced; one use: 81600 % on 12 enemies) |
 
 
-## Mo & Krill: the tunnel rats (main moves at once: **1620 %/s**, one v0.7.0 run; match MUL-T 1450 (library): **inside** ±500, doc 05 §3.4)
+## Mo & Krill: the tunnel rats (main moves at once: **3252 %/s**, one v0.7.0b run; match MUL-T 1450 (library): **far above** (+1802), kept on the creator's numbers, doc 05 §3.5)
 
 Size (creator, 2026-10-19: "Abrams' height, about 2× wide"): Deadlock's model scaled evenly by `modelScale` 1.262 to Abrams' height
 (≈2.2 m in RoR2, about 1.9 m wide); he moves with **MUL-T's capsule** (`capsuleFrom`), so he fits wherever MUL-T does; his hurtbox
 follows the model (a bigger target). MUL-T's camera, 15 % further back and 1.2 m to the right; 1.6× interaction reach.
-Stats: 250 +75 health, 25 armor, 1 +0.2 regen, 11 +2.2 damage, **5 m/s** with half the usual acceleration, 1 jump.
+Stats: 250 +75 health, 25 armor, 1 +0.2 regen, 11 +2.2 damage, **5 m/s** (acceleration 80 like the others since the play-check: he gets up to speed fast), 1 jump.
 
 | Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
 |---|---|---|---|---|---|
 | Passive | **Heavyweight** | Monsters can't knock Mo back, push or pull him (vanilla ImmuneToPhysicsForces). Krill rides on him and holds the gun. Heavy footsteps and a thud and shake after a fall. | – | – | – |
-| M1 | **Yellow Canary** | Krill fires 4 pellets in Deadlock's fixed pattern (a centre pellet and a triangle of three around it, ≈2.5° out), the same every shot. While Krill is away (Tag Team) Mo **punches** instead. No shots while burrowed or spinning. | 4 × 40 %, 4 shots/s, 20 shells, 2 s reload, proc 0.5, falloff from 20 m; punch 300 %, 2/s, 5 m | – | **443** · 49 |
-| M2 | **Sand Blast** | A wave of sand races along the ground in Deadlock's cone (5 m wide at Mo, ≈15 m at 20 m), hitting everything it passes. Hit monsters are **Sanded**: their skills are locked (RoR2's DisableAllSkills) and they are slowed. Works while burrowed or spinning. | 450 %, 20 m, 89 m/s; Sanded 2 s (1 s bosses), −30 % speed | 7 s | **510** · 56 |
-| Shift | **Burrow** | Mo digs in (model hidden, a dirt mound travels with him; he can still be hit): twice as fast with +100 armor, each hit taken costs 1 m/s for 1.5 s. He bursts out at 4 s, on Shift or Jump, or off a ledge, in a spin: 3 hits within 8 m, knocking monsters up (not bosses) and slowing them. **R underground** bursts straight into Dust Devil. | 4 s, ×2 speed, +100 armor; spin 3 × 100 %, 8 m, slow 50 % 2 s, knock-up 12 m/s | 8 s (from the start) | **370** · 41 |
-| R | **Dust Devil** | Mo spins as a sand tornado (Deadlock's own `ability_tornado_idle` clip: arms out) for 4 s, walking at his normal speed; every enemy within 16 m is pulled in (bosses at ¼), everything within 8 m takes damage four times a second. R again stops it. | 16 × 50 %, 8 m, pull 14 m/s from 16 m (none inside 4 m), proc 0.3 | 12 s (after the spin) | **382** · 42 |
-| Q | **Tag Team** (equipment) | Mo throws Krill at the enemy you aim at (40 m; no target, no throw and no charge spent). For 10 s Krill leaps to a new enemy every 0.5 s (nearest within 25 m he hasn't hit), stunning it and splashing around it, then leaps back. Each kill gives the thrower +2 max health (+20 for a boss) **for the stage**, up to +200. On any survivor a Krill appears and does the same. | 1500 % + 500 % within 4 m, 1 s stun, 20 landings | 120 s | 2700 · 297 (not balanced; one use: 81000 % on 12 enemies) |
+| M1 | **Yellow Canary** | Krill fires 4 pellets in Deadlock's fixed pattern (a centre pellet and a triangle of three around it, ≈2.5° out), the same every shot. While Krill is away (Tag Team) Mo is in a **Frenzy** and **punches** instead: twice as fast, each punch throws the monster away from him (bosses a quarter as far), a red aura around him. No shots while burrowed or spinning. | 4 × 40 %, 4 shots/s, 20 shells, 2 s reload, proc 0.5, falloff from 20 m; Frenzy punch **600 %**, 2/s, 5 m, knockback 20 m/s; Frenzy ×2 speed | – | **448** · 49 |
+| M2 | **Sand Blast** | Mo winds up for 0.4 s while the cone is drawn on the ground in orange (following the terrain, a bright line sweeping out), then a wave of sand races along it (5 m wide at Mo, ≈15 m at 20 m), hitting everything it passes and shoving it back. Hit monsters are **Sanded**: their skills are locked (RoR2's DisableAllSkills) and they are slowed. Works while burrowed. | 450 %, 20 m, 89 m/s, shove 8 m/s (not bosses); Sanded 2 s (1 s bosses), −30 % speed | 7 s | **645** · 71 |
+| Shift | **Burrow** | Mo sinks into the ground (0.45 s), then travels under it (model hidden, a dirt mound follows him; he can still be hit): twice as fast with +100 armor, each hit taken costs 1 m/s for 1.5 s. He bursts back up (the model rising out of the ground) at 8 s, on Shift or Jump, or off a ledge, in a spin: 3 hits within 8 m, knocking monsters up (not bosses) and slowing them. **Q underground** bursts straight into Dust Devil. | **8 s**, ×2 speed, +100 armor; spin **3 × 500 %**, 8 m, slow 50 % 2 s, knock-up 12 m/s | 8 s (from the start) | **1617** · 178 |
+| R | **Tag Team** | Mo throws Krill at the enemy you aim at (40 m; no target, no throw and R stays ready). For 10 s Krill leaps to a new enemy every 0.5 s (nearest within 25 m he hasn't hit), stunning it and splashing around it, then leaps back; meanwhile Mo is in a Frenzy (M1). Each kill gives +2 max health (+20 for a boss) **for the stage**, up to +200. | 1500 % + 500 % within 4 m, 1 s stun, 20 landings | **30 s** | **2100** · 231 (one use: 63000 % on 12 enemies) |
+| Q | **Dust Devil** (equipment) | Spin as a sand tornado for 8 s, walking at normal speed; every enemy within 16 m is pulled in (bosses at ¼), everything within 8 m takes damage four times a second. Mo plays Deadlock's own `ability_tornado_idle` clip (arms out); **any other survivor holding it spins** (the whole model turns twice a second). | 32 × 200 % = 6400 % (Preon level), 8 m, pull 14 m/s from 16 m (none inside 4 m), proc 0.3 | 120 s | 1380 · 152 (not balanced; one use: 41400 % on 12 enemies) |
 
 Not in the kit: Scorn (its heal would repeat Abrams' Siphon Life) and Deadlock's innate (two headshot heads, tunnel vents).
 
@@ -165,10 +165,10 @@ heavier; **gain** scales the whole row. In co-op every player hears each sound o
 | Infernus | Q | Concussive Combustion | `Inferno.FireBomb.Cast` | – | – | `Inferno.FireBomb.Explode` | – | – | 1.0 |
 | Mo & Krill | M1 | Yellow Canary | `MoKrill.Wpn.Fire` | – | – | – | `MoKrill.Wpn.Reload.Start` | – | 1.0 |
 | Mo & Krill | M1 (Krill away) | Punch | `MoKrill.Melee.Swing` | – | `MoKrill.Combo.Hit` | – | – | – | 1.0 |
-| Mo & Krill | M2 | Sand Blast | `MoKrill.Sandblast.Cast` | – | `MoKrill.Sandblast.Impact` | – | – | – | 1.0 |
+| Mo & Krill | M2 | Sand Blast | `MoKrill.Sandblast.Cast` + layer `MoKrill.Sandblast.Impact` (at the throw, after the wind-up) | – | `MoKrill.Sandblast.Impact` | – | – | – | 1.0 |
 | Mo & Krill | Shift | Burrow | `MoKrill.Burrow.Modifier.Start` | `MoKrill.Burrow.Travel.Lp` | `MoKrill.Burrow.Spin` (pop-out) | `MoKrill.Burrow.Spin.End` | – | – | 1.0 |
-| Mo & Krill | R | Dust Devil | `MoKrill.Burrow.Spin` | `MoKrill.Burrow.Spin.Lp` | – | `MoKrill.Burrow.Spin.End` | – | – | 1.0 |
-| Mo & Krill | Q | Tag Team | `MoKrill.Combo.Channel.Start` | – | `MoKrill.Combo.Hit` (each landing) | `MoKrill.Combo.Cast` (Krill back) | – | – | 1.0 |
+| Mo & Krill | Q | Dust Devil | `MoKrill.Burrow.Spin` | `MoKrill.Burrow.Spin.Lp` | – | `MoKrill.Burrow.Spin.End` | – | – | 1.0 |
+| Mo & Krill | R | Tag Team | `MoKrill.Combo.Channel.Start` | – | `MoKrill.Combo.Hit` (each landing) | `MoKrill.Combo.Cast` (Krill back) | – | – | 1.0 |
 | Mo & Krill | – | Footsteps / landing | `MoKrill.Footstep` (one per stride) | – | `MoKrill.JumpLand` (after a fall over 0.6 s) | – | – | – | 0.7 |
 
 Fuse ticks (v0.6.2, columns `tick` / `tickFinal`): Concussive Combustion plays `Ratking.ScrapGrenade.Timer` at 0 s and 1 s and
@@ -192,7 +192,7 @@ are never written out here or on the pages. When each hero speaks:
   Abrams' Haymaker and Infernus' Torment Pulse, which use a grunt instead of a line; Q every time. An ult used by another survivor speaks in its own hero's voice.
 - **Kill streaks:** 4, 7 and 10 kills in quick succession (gaps under 1.5 s).
 - **Idle:** after 2–5 min of silence.
-- Mo & Krill: Krill does the talking (Mo is silent in Deadlock): select, unselect, Sand Blast (`use_power3`) and Burrow (`use_power2`) 40 %, Tag Team every time; Dust Devil is silent (his `use_power1` lines are about Scorn).
+- Mo & Krill: Krill does the talking (Mo is silent in Deadlock): select, unselect, Sand Blast (`use_power3`) and Burrow (`use_power2`) 40 %, Tag Team (R) 50 % at most every 20 s; Dust Devil (Q) is silent (his `use_power1` lines are about Scorn).
 - Only the local player hears their own hero's voice.
 
 ---

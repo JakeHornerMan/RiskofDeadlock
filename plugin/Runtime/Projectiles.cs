@@ -362,6 +362,8 @@ namespace DeadlockOfRain
                 if (!damage) continue;
                 Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, at);
                 if (row.Buff != "none" && b) Buffs.Apply(owner, b, row.Buff, row.BossMult);
+                // the sand shoves what it hits back along the cone (bosses stand firm)
+                if (row.Knockback > 0 && b && !b.isChampion) Fx.KnockBack(owner, hb.healthComponent, dir, row.Knockback);
             }
             dist = next;
             if (blocked || dist >= row.Range) Destroy(gameObject);
