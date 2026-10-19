@@ -178,7 +178,10 @@ else:
         'extract/manifest.json': 'extractor/manifest.json',
     }
     files.update({'extract/' + k: v for k, v in EXTRACT.items()})
-    generated = {'plugins/DeadlockOfRain/built-with.txt': BW_TXT}
+    # heroes.txt every time: a full zip lists every sheet hero, so an update overwrites an older release's cut-down list
+    # (0.7.1 shipped four) even if the installer leaves old files behind
+    generated = {'plugins/DeadlockOfRain/built-with.txt': BW_TXT,
+                 'plugins/DeadlockOfRain/heroes.txt': ''.join(h + '\n' for h in SHEET_HEROES).encode('utf-8')}
     if cut:
         del files['extract/manifest.json']
         generated.update({'plugins/DeadlockOfRain/heroes.txt': ''.join(h + '\n' for h in RELEASE['heroes']).encode('utf-8'),
