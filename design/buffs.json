@@ -454,7 +454,7 @@
       "isHidden": false,
       "maxStacks": 1,
       "duration": 4,
-      "moveSpeedAdd": 1.0,
+      "moveSpeedAdd": 2.0,
       "attackSpeedAdd": 0,
       "armorAdd": 100,
       "regenAdd": 0,

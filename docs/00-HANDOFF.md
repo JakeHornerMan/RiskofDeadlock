@@ -35,10 +35,10 @@ Before touching anything:
 
 | Item | State |
 |---|---|
-| Status | **Mo & Krill added (v0.7.0, 2026-10-19, not released) and reworked after the creator's play-check (v0.7.0b, same day)**: Tag Team on R (30 s), Dust Devil the Q ult (any carrier spins), Burrow 8 s / 3 × 500 % with sink and rise, Frenzy, Sand Blast wind-up and cone. Every test check passes; bench 3252 vs MUL-T 1450 (far above, the creator's numbers, reported). Co-op checked as a joined player (2026-10-19: every move, 88 relayed effects). Waiting on the creator's next play-check and the release. The first four heroes are done |
+| Status | **Mo & Krill balance pass v0.7.1c (2026-10-19, built, not tested, the creator is playing it)**: 6.3 m/s, Burrow ×3 speed, Sand Blast 750 % / 22 m/s throw with a new sand look (filled cone, sand wall, hit enemies coated in sand), Dust Devil 450 % ×32. Before: **Mo & Krill added (v0.7.0, 2026-10-19, not released) and reworked after the creator's play-check (v0.7.0b, same day)**: Tag Team on R (30 s), Dust Devil the Q ult (any carrier spins), Burrow 8 s / 3 × 500 % with sink and rise, Frenzy, Sand Blast wind-up and cone. Every test check passes; bench 3252 vs MUL-T 1450 (far above, the creator's numbers, reported). Co-op checked as a joined player (2026-10-19: every move, 88 relayed effects). Waiting on the creator's next play-check and the release. The first four heroes are done |
 | Version | **0.7.1, LIVE on Melty 2026-10-19 15:06 UTC (four heroes)** ( extractor **1.3.0**, VRF 20.1.7467, reads Deadlock build 6795; one hero that can't be read no longer stops the others; §9). Live: **0.6.3** (`plugin/Plugin.cs` then; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). **0.6.3 is LIVE on Melty as "Risk of Deadlock"** (https://melty.gg/m/risk-of-deadlock-2, 2026-10-18), character select screenshots; Infernus' select-screen text still says "Catalyst" (fix in the next release) |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
-| Installed build | **v0.7.1 dev build with all five heroes incl. Mo & Krill** (2026-10-19, no heroes.txt, cache read from Deadlock 6795; BepInEx switched back on for Steam Play after `lab_restore`). Before: **v0.7.0b dev build with Mo & Krill** (2026-10-19, after the play-check feedback, for the next play-check; Melty's live release is still 0.6.3); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
+| Installed build | **v0.7.1c dev build, five heroes, the Mo & Krill balance pass** (2026-10-19; the game was started for the creator at their request). Before: **v0.7.1 dev build with all five heroes incl. Mo & Krill** (2026-10-19, no heroes.txt, cache read from Deadlock 6795; BepInEx switched back on for Steam Play after `lab_restore`). Before: **v0.7.0b dev build with Mo & Krill** (2026-10-19, after the play-check feedback, for the next play-check; Melty's live release is still 0.6.3); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
 | Heroes | Haze, Abrams, Seven, Infernus, **Mo & Krill** (v0.7.0); 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
 | Test | **`run_test.sh <hero>` tests only the given heroes (creator's rule, CLAUDE.md).** v0.6.3: Infernus pass (in a 4-hero run before the filter existed), Abrams 1/1 pass (2026-10-18); the co-op test was skipped for the pockets (creator impatient with game runs); `run_coop_test.sh infernus` passes (one earlier run missed the joined Combustion, unexplained) |
 | Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, within **±500 %/s**, comparing **means over every bench run** of the current build (`RUNS` in `tools/kit_pages.py`; doc 05 §3.0) |
@@ -218,7 +218,18 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: Deadlock update 6795 broke the heroes; fixed in v0.7.1 (2026-10-19, built and tested; not released)
+## 9. Last work: Mo & Krill balance pass v0.7.1c (2026-10-19, built; not tested, at the creator's request)
+
+After playing: Mo 5 → 6.3 m/s (90 % of Abrams), Burrow `burrowed.moveSpeedAdd` 1 → 2 (×3, ≈19 m/s), Sand Blast 450 → 750 %
+and knockback 8 → 22, Dust Devil 200 → 450 % per tick (14400 % per enemy per use), proc 0.3 → 0.5. Sand Blast's look redone in
+`Vfx.MokrillSand`: the wind-up cone filled with sand colour (`ConeMarker.Fill`), a 2.5 m wall of opaque sand with grains and
+settling dust (`SetWave` keeps each part's height), a spray from his hands (`Spray`), bigger hits, and each Sanded enemy's
+model coated with `mat_sand_overlay` (Bison's snow overlay tinted sand, a `TemporaryOverlay` added and removed by `SandedFx`).
+The creator said "dont do the test just open the game and let me play": no `run_test.sh`, no bench; the game was started
+for them. **Next:** their verdict on the numbers and the sand look (the overlay's tint is unverified in game); then
+`run_test.sh mokrill`, bench Mo & Krill only, clear the doc 05 flag, republish the Mo & Krill page.
+
+## 9-prev000a. Deadlock update 6795 broke the heroes; fixed in v0.7.1 (2026-10-19, built and tested; not released)
 
 Deadlock's update of 2026-10-19 (build 6795) made VRF 20.0 throw "Unknown KVType 26" on Haze's model, the extractor
 aborted, and every Melty player on 0.6.3 got no heroes (3 players, `player_logs`). Melty started its own fix (0.6.4,

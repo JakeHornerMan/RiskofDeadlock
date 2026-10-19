@@ -556,3 +556,13 @@ On the plan, added: "i would like mo to also enter a frenzy state where move spe
 **Not done / open:** confirm 0.7.1 live; Thunderstore 0.7.1 zip and re-upload (0.7.0 was rejected, "Invalid submission"); `cache.pre-0.7.1` kept for comparison (can be deleted).
 **Lessons:** a Deadlock update can change Valve's file format overnight: watch `player_logs`, update VRF, and never let one hero's failure take down the rest.
 
+### 2026-10-19 · Mo & Krill balance pass and Sand Blast look · v0.7.1c (dev) · the commit that adds this entry
+**Request (verbatim):** "we were working on https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa fe thing to note. let increase thier speed even more like 90% of abhrams. lets make under the ground movement really fast in Burrow.Sand Blast need a visual overhaul i need to see what it is hitting make it very obvious its sand ffs also increase damage and knockback! Dust Devil need some good damage out put it a fucking ult"; then "when you are done with the change dont do the test just open the game and let me play to see the balance".
+**Questions asked → answers:** none (plan with the numbers approved as written).
+**Done:**
+- Sheets: mokrill `baseMoveSpeed` 5 → 6.3; `burrowed.moveSpeedAdd` 1 → 2 (Burrow ×3, row `moveSpeedMult` 3); Sand Blast 450 → 750 %, knockback 8 → 22; Dust Devil 200 → 450 %, proc 0.3 → 0.5; descriptions; new material row `mat_sand_overlay`; `mokrill_sand` notes.
+- `Vfx.cs`: filled sand cone under the outline (`ConeMarker.Fill`, fades with it); tall opaque sand wall with forward grains and settling dust trail; `Spray` from Mo's hands on the throw; bigger hit bursts with a ring and flash; `SandedFx` coats the enemy's model (TemporaryOverlay) while Sanded and removes it after.
+- Docs 06, 05 §0 (retest flag), 00 §1/§9.
+**Results:** `gen.py` PREFLIGHT CLEAN; build succeeded. Installed and RoR2 started through Steam for the creator. Not tested in game (their request).
+**Not done / open:** their verdict; `run_test.sh mokrill` and the Mo & Krill bench; the kit page republish once the numbers settle.
+**Lessons:** none new.

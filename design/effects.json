@@ -234,6 +234,13 @@
       "notes": "spark particles"
     },
     {
+      "id": "mat_sand_overlay",
+      "kind": "material",
+      "addressable": "RoR2/Base/Bison/matSnowyOverlay.mat",
+      "scaleWithRadius": false,
+      "notes": "Bison's snow coat, tinted sand: drawn over a Sanded enemy's whole model (TemporaryOverlay) so you see who the sand hit"
+    },
+    {
       "id": "mat_area",
       "kind": "material",
       "addressable": "RoR2/Base/Common/VFX/matAreaIndicatorIntersectionOnly.mat",
@@ -399,7 +406,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
-      "notes": "Sand Blast: an orange ring and light at Mo's hands (cast); a tan wave of sand racing along the ground and widening with the cone, edge streaks and flecks, moved by the wave (loop); a sand puff and orange flash on each enemy hit (hit); sand grains circling a Sanded enemy's head (sanded)"
+      "notes": "Sand Blast: the cone filled with sand colour on the ground plus its outline during the wind-up (telegraph); a ring, flash and a heavy spray of sand out of Mo's hands (cast); a tall wall of sand racing along the ground and widening with the cone, grains flying forward and dust settling behind it (loop); a big sand explosion and flash on each enemy hit, then its whole model coated in sand and sand swirling round it while Sanded (hit)"
     },
     {
       "id": "mokrill_burrow",
