@@ -612,3 +612,11 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Results:** `run_test.sh mokrill`: every check pass, 1/1 (punch throws 10.9 m). Bench: first try "no flat spot" on the stage, retry: all **2425 %/s** (M1 443, Sand Blast 333, Burrow 1150, Tag Team 1407, Dust Devil 1905); Tag Team rose (1017 → 1407) because monsters knocked half as far stay in punch reach. Game left closed (the test closed the creator's copy, at their request to test).
 **Not done / open:** the creator's next play.
 **Lessons:** weaker knockback can raise damage: what is not thrown away stays in reach.
+
+### 2026-10-19 · Mods off on Steam Play after tests; lab_restore keeps BepInEx on · v0.7.1e (dev) · the commit that adds this entry
+**Request (verbatim):** "play the game! and why the fuck do the mods not start when i press play on steam!"
+**Questions asked → answers:** none.
+**Done:** cause: `lab_restore.sh` removed `winhttp.dll` after every test and bench (copying Melty's between-launch state), so Steam's Play started RoR2 without BepInEx; Melty also does this between its own launches. `lab_restore.sh` now keeps BepInEx on (restores `winhttp.dll` if missing); `MELTY_OFF=1` for the old behaviour. Doc 03 §4. Game started for the creator.
+**Results:** five heroes built, no errors in the log.
+**Not done / open:** if Melty launches the game it may switch BepInEx off again (its own behaviour).
+**Lessons:** after any test, check `winhttp.dll` is there before telling the creator a build is ready for Steam Play.

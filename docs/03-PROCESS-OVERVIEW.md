@@ -176,7 +176,7 @@ On another PC, build the plugin with `dotnet build plugin -c Release -p:RoR2Dir=
    - `<hero>_aim*.png` (side render)
    - one per skill id
    - `lobby.png`, `lineup_cam.png`
-4. `bash tools/lab_restore.sh` when done. It closes the game (every copy), removes the test file, devshots, the co-op step files and `build/checks.txt`, empties `join=` in `melty.properties`, and removes the `winhttp.dll` copy. It then lists `BepInEx/plugins` so you can see Left4Rain and DeadlockOfRain are both there.
+4. `bash tools/lab_restore.sh` when done. It closes the game (every copy), removes the test file, devshots, the co-op step files and `build/checks.txt`, empties `join=` in `melty.properties`, and **leaves BepInEx on** (puts `winhttp.dll` back if missing) so Steam's Play loads the mods (creator, 2026-10-19); `MELTY_OFF=1` removes the `winhttp.dll` copy the way Melty does. It then lists `BepInEx/plugins` so you can see Left4Rain and DeadlockOfRain are both there.
 
 **Co-op test** (`bash tools/run_coop_test.sh`, about 12–15 min; doc 02 §10.2): two copies of the game on this PC.
 - The host starts through Steam with `{ "checks": ..., "coop": true }` in the test file; it hosts (`host 1`, loopback) and writes
