@@ -596,3 +596,11 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Results:** PREFLIGHT CLEAN, build succeeded; the creator had the game open and the running game locks the DLL, so it is not installed yet (the game was not closed). Not tested in game.
 **Not done / open:** as before.
 **Lessons:** none new.
+
+### 2026-10-19 · Sand Blast 400 %, Dust Devil 5 s, bench and test again · v0.7.1c (dev) · the commit that adds this entry
+**Request (verbatim):** "ok snad blast need to be brought down to 400, and Dust Devil shoudl only last 5 seconds!"; "re run the test after!"
+**Questions asked → answers:** none.
+**Done:** Sand Blast `damagePct` 400; Dust Devil `duration` 5 (20 × 450 % = 9000 % per enemy, above the 6000 floor); descriptions; bench merged into the library; docs 06, 05 §0.
+**Results:** bench all **2227 %/s** (M1 427, Sand Blast 333, Burrow 1700, Tag Team 1017, Dust Devil 1980) vs MUL-T 1450. `run_test.sh mokrill`: first run spawned below the map (ragdoll at −24 m, every move 0 damage, the environment); second run **every check pass, 1/1 heroes** (covers Sand Blast's slope walking, Tag Team 400 %, trophies code, Dust Devil jump build).
+**Not done / open:** the kit page republish once the creator settles the numbers; Sand Blast hit 25 times in 5 uses (32 before the slope change): watch it in play.
+**Lessons:** none new (a below-the-map spawn is the known environment fault: rerun).
