@@ -578,7 +578,7 @@ Tag Team gamage from Krill  and also let -50 form mo and krill base health make 
 
 ### 2026-10-19 · Tag Team nerf, Sand Blast on slopes, health from every kill, bench · v0.7.1c (dev) · the commit that adds this entry
 **Request (verbatim):** "ok let really amke sure Tag Team Krill nerfed so he need like 2 bounces on a basic enemy to kill them, no nerf to mo and his punching!, also let bring the cool down to 20 seconds and the duration to 8....can we plase make sure Sand Blast travels upat and  angle r down angle or along any floor to damaage enemys please!"; "please run damage testing and suggest edits to fix!"; (pasted the Tag Team page text) "also is ot only tage team that increase health? it shoudl be all kill that increase their health pool that why it starts low!", "all kill by that character!"
-**Questions asked → answers:** none yet (suggestions asked after the bench).
+**Questions asked → answers:** after the bench, fix the +867 over MUL-T (Burrow 3×300 % recommended, or Burrow 3×350 % + Sand Blast 600 %, or leave it) → "Leave it as is". Game started again for the creator with this build.
 **Done:**
 - Tag Team 400 % + 150 % splash (level 1: 44 per landing, a Lemurian/Beetle has 80), duration 8, cooldown 20; `krill_away` 8 s. Frenzy punches unchanged.
 - `DlrSandWave` walks the ground in 0.5 m steps (rises up to 1.2 m per step, any drop; a higher rise is a wall) and checks each enemy's height against the ground it passed (±4 m), so it climbs and descends slopes and hits there.
