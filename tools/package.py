@@ -9,6 +9,8 @@ Nothing from Risk of Rain 2 or Deadlock is included: the extractor reads Deadloc
     BepInEx/plugins/<team>-DeadlockOfRain/; the plugin runs plugins/extract/DeadlockExtract.exe itself, FirstRun.cs)
     manifest.json, icon.png, README.md, CHANGELOG.md   Thunderstore's own files (thunderstore/)
     plugins/DeadlockOfRain.dll, plugins/extract/...    the extractor's asset list is deadlock-manifest.json there
+    plugins/heroes.txt                                 the release's heroes (thunderstore/release.json); the plugin
+                                                       builds only these, and the manifest is cut down to them
 """
 import hashlib, io, json, os, sys, zipfile
 
@@ -24,8 +26,33 @@ EXTRACT = {
 }
 
 
+RELEASE = json.load(open(os.path.join(TS, 'release.json'), encoding='utf-8'))
+SHEET_HEROES = {r['id']: r['displayName'] for r in json.load(open(os.path.join(ROOT, 'design', 'heroes.json'), encoding='utf-8'))['rows']}
+
+
+def release_manifest():
+    """extractor/manifest.json cut down to the release's heroes (owners from tools/gen.py; unowned entries stay)."""
+    m = json.load(open(os.path.join(ROOT, 'extractor', 'manifest.json'), encoding='utf-8'))
+    owners = json.load(open(os.path.join(ROOT, 'extractor', 'manifest_owners.json'), encoding='utf-8'))
+    keep = set(RELEASE['heroes'])
+    used = lambda e: e not in owners or bool(keep & set(owners[e]))
+    m['heroes'] = [h for h in m['heroes'] if h['id'] in keep]
+    for k in ['images', 'soundEvents', 'soundEventFiles', 'voiceGroups']:
+        m[k] = [e for e in m[k] if used(e)]
+    return json.dumps(m, indent=2).encode('utf-8')
+
+
+def check_store_text():
+    """The store README/CHANGELOG are written by hand for each release: refuse to package one naming a hero not in it."""
+    for f in ['README.md', 'CHANGELOG.md']:
+        text = open(os.path.join(TS, f), encoding='utf-8').read()
+        for hid, name in SHEET_HEROES.items():
+            if hid not in RELEASE['heroes'] and name in text:
+                raise SystemExit(f'thunderstore/{f} mentions {name}, who is not in thunderstore/release.json')
+
+
 def icon_png():
-    """256x256 icon: the five heroes from our own in-game renders (build/pages/img, tools/portraits.py); no Deadlock art."""
+    """256x256 icon: the release's heroes from our own in-game renders (build/pages/img, tools/portraits.py); no Deadlock art."""
     from PIL import Image
     # warm sandstorm glow behind them (brass over near-black), so dark outfits still read
     canvas = Image.new('RGBA', (256, 256))
@@ -35,9 +62,16 @@ def icon_png():
             d = min(1.0, (((x - 128) / 150) ** 2 + ((y - 120) / 130) ** 2) ** 0.5)
             k = (1 - d) ** 1.6
             px[x, y] = (int(24 + 190 * k), int(18 + 120 * k), int(16 + 60 * k), 255)
-    # (hero, centre x, height) back to front; Mo & Krill in the middle, the rest at the sides
-    heroes = [('mokrill', 128, 150), ('seven', 34, 172), ('abrams', 222, 178), ('haze', 84, 186), ('infernus', 176, 184)]
-    for h, cx, tall in heroes:
+    # side by side, the outer ones a little smaller and drawn first, so the middle overlaps them
+    ids = RELEASE['heroes']
+    n = len(ids)
+    placed = []
+    for i, h in enumerate(ids):
+        mid = abs(i - (n - 1) / 2) / max(1, (n - 1) / 2)          # 0 in the middle, 1 at the edges
+        cx = round(256 * (i + 0.5) / n)
+        tall = round((150 if h == 'mokrill' else 196) - 22 * mid)
+        placed.append((mid, h, cx, tall))
+    for _, h, cx, tall in sorted(placed, reverse=True):
         im = Image.open(os.path.join(ROOT, 'build', 'pages', 'img', h + '.webp')).convert('RGBA')
         im = im.crop(im.getbbox())
         w = round(im.width * tall / im.height)
@@ -51,20 +85,23 @@ def icon_png():
 def ts_manifest():
     m = json.load(open(os.path.join(TS, 'manifest.json'), encoding='utf-8'))
     m['version_number'] = version
+    m['name'] = RELEASE['name']
     return json.dumps(m, indent=2).encode('utf-8')
 
 
 if thunderstore:
-    out = os.path.join(ROOT, 'build', f'DeadlockOfRain-{version}-thunderstore.zip')
+    check_store_text()
+    out = os.path.join(ROOT, 'build', f'{RELEASE["name"]}-{version}-thunderstore.zip')
     files = {
         'README.md': 'thunderstore/README.md',
         'CHANGELOG.md': 'thunderstore/CHANGELOG.md',
         'plugins/DeadlockOfRain.dll': 'plugin/bin/Release/netstandard2.1/DeadlockOfRain.dll',
         'plugins/LICENSE.txt': 'LICENSE.txt',
-        'plugins/extract/deadlock-manifest.json': 'extractor/manifest.json',
     }
     files.update({'plugins/extract/' + k: v for k, v in EXTRACT.items()})
-    generated = {'manifest.json': ts_manifest(), 'icon.png': icon_png()}
+    generated = {'manifest.json': ts_manifest(), 'icon.png': icon_png(),
+                 'plugins/heroes.txt': ''.join(h + '\n' for h in RELEASE['heroes']).encode('utf-8'),
+                 'plugins/extract/deadlock-manifest.json': release_manifest()}
 else:
     out = os.path.join(ROOT, 'build', f'DeadlockOfRain-{version}.zip')
     files = {

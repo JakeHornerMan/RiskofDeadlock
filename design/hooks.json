@@ -222,7 +222,7 @@
       "id": "mod_list",
       "method": "event",
       "target": "RoR2.NetworkModCompatibilityHelper.networkModList",
-      "purpose": "co-op: add melty.deadlockofrain;<version>, so only players with the same version can join each other (RoR2's own mod-mismatch kick)",
+      "purpose": "co-op: add melty.deadlockofrain;<version>;<built hero ids> at the end of content loading, so only players with the same version and the same heroes can join each other (RoR2's own mod-mismatch kick)",
       "reads": "none",
       "side": "both"
     },

@@ -1,0 +1,521 @@
+{
+  "Ability.Melee.Impact.Heavy.NPC": [
+    "abrams"
+  ],
+  "Abrams.A1.SiphonLife.Cast": [
+    "abrams"
+  ],
+  "Abrams.A1.SiphonLife.End": [
+    "abrams"
+  ],
+  "Abrams.A1.SiphonLife.Loop": [
+    "abrams"
+  ],
+  "Abrams.A4.Leap.Cast": [
+    "abrams"
+  ],
+  "Abrams.A4.Leap.Descend": [
+    "abrams"
+  ],
+  "Abrams.A4.Leap.Float.Lp": [
+    "abrams"
+  ],
+  "Abrams.A4.Leap.Impact": [
+    "abrams"
+  ],
+  "Abrams.Charge.Cast": [
+    "abrams"
+  ],
+  "Abrams.Charge.HitEnemy": [
+    "abrams"
+  ],
+  "Abrams.Charge.Wall.Impact": [
+    "abrams"
+  ],
+  "Abrams.Melee.Swing.Charged": [
+    "abrams"
+  ],
+  "Abrams.Wpn.Fire.Main": [
+    "abrams"
+  ],
+  "Abrams.Wpn.Impact": [
+    "abrams"
+  ],
+  "Gigawatt.LightningBall.Cast": [
+    "seven"
+  ],
+  "Gigawatt.LightningBall.Damage": [
+    "seven"
+  ],
+  "Gigawatt.LightningBall.Proj.Explo": [
+    "seven"
+  ],
+  "Gigawatt.LightningBall.Proj.Lp": [
+    "seven"
+  ],
+  "Gigawatt.PowerSurge.Cast": [
+    "seven"
+  ],
+  "Gigawatt.PowerSurge.ChainMod.Proc": [
+    "seven"
+  ],
+  "Gigawatt.PowerSurge.End": [
+    "seven"
+  ],
+  "Gigawatt.PowerSurge.Lp": [
+    "seven"
+  ],
+  "Gigawatt.StaticCharge.Cast": [
+    "seven"
+  ],
+  "Gigawatt.StaticCharge.Lp": [
+    "seven"
+  ],
+  "Gigawatt.StaticCharge.Proc": [
+    "seven"
+  ],
+  "Gigawatt.StormCloud.Bolt.Detonate": [
+    "seven"
+  ],
+  "Gigawatt.StormCloud.Cast": [
+    "seven"
+  ],
+  "Gigawatt.StormCloud.End": [
+    "seven"
+  ],
+  "Gigawatt.StormCloud.Lp": [
+    "seven"
+  ],
+  "Haze.BulletFlurry.Cast.Delay": [
+    "haze"
+  ],
+  "Haze.BulletFlurry.Modifier.End": [
+    "haze"
+  ],
+  "Haze.BulletFlurry.Modifier.Lp": [
+    "haze"
+  ],
+  "Haze.Finesse.Dagger.Cast": [
+    "haze"
+  ],
+  "Haze.Finesse.Dagger.Projectile.Hit": [
+    "haze"
+  ],
+  "Haze.Smoke.Bomb.Cast": [
+    "haze"
+  ],
+  "Haze.Smoke.Bomb.End": [
+    "haze"
+  ],
+  "Haze.Wpn.Fire.Main": [
+    "haze"
+  ],
+  "Haze.Wpn.Reload.Start": [
+    "haze"
+  ],
+  "Inferno.FireBomb.Cast": [
+    "infernus"
+  ],
+  "Inferno.FireBomb.Explode": [
+    "infernus"
+  ],
+  "Inferno.FlameDash.Modifier.Lp": [
+    "infernus"
+  ],
+  "Inferno.FlameDash.Modifier.Start": [
+    "infernus"
+  ],
+  "Inferno.FlameDash.Modifier.Stop": [
+    "infernus"
+  ],
+  "Inferno.Incend.Cast": [
+    "infernus"
+  ],
+  "Inferno.Incend.Hit": [
+    "infernus"
+  ],
+  "Infernus.FlameDash.Hit": [
+    "infernus"
+  ],
+  "Infernus.Wpn.Fire": [
+    "infernus"
+  ],
+  "Infernus.Wpn.Impact": [
+    "infernus"
+  ],
+  "Infernus.Wpn.Reload.Start": [
+    "infernus"
+  ],
+  "MoKrill.Burrow.Modifier.Start": [
+    "mokrill"
+  ],
+  "MoKrill.Burrow.Spin": [
+    "mokrill"
+  ],
+  "MoKrill.Burrow.Spin.End": [
+    "mokrill"
+  ],
+  "MoKrill.Burrow.Spin.Lp": [
+    "mokrill"
+  ],
+  "MoKrill.Burrow.Travel.Lp": [
+    "mokrill"
+  ],
+  "MoKrill.Combo.Cast": [
+    "mokrill"
+  ],
+  "MoKrill.Combo.Channel.Start": [
+    "mokrill"
+  ],
+  "MoKrill.Combo.Duration.Lp": [
+    "mokrill"
+  ],
+  "MoKrill.Combo.Hit": [
+    "mokrill"
+  ],
+  "MoKrill.Footstep": [
+    "mokrill"
+  ],
+  "MoKrill.JumpLand": [
+    "mokrill"
+  ],
+  "MoKrill.Melee.Swing": [
+    "mokrill"
+  ],
+  "MoKrill.Sandblast.Cast": [
+    "mokrill"
+  ],
+  "MoKrill.Sandblast.Impact": [
+    "mokrill"
+  ],
+  "MoKrill.Wpn.Fire": [
+    "mokrill"
+  ],
+  "MoKrill.Wpn.Reload.Start": [
+    "mokrill"
+  ],
+  "Mods.Armor.Phantom.Strike.Cast": [
+    "haze"
+  ],
+  "Mods.Armor.Phantom.Strike.Hit": [
+    "haze"
+  ],
+  "Mods.Tech.TormentPulse.Proc": [
+    "infernus"
+  ],
+  "Ratking.ScrapGrenade.Timer": [
+    "infernus"
+  ],
+  "Ratking.ScrapGrenade.Timer.Final": [
+    "infernus"
+  ],
+  "Seven.Wpn.Fire": [
+    "seven"
+  ],
+  "Seven.Wpn.Impact": [
+    "seven"
+  ],
+  "Seven.Wpn.Reload.Start": [
+    "seven"
+  ],
+  "Warden.Wpn.Fire": [
+    "infernus"
+  ],
+  "atlas/atlas_happy": [
+    "abrams"
+  ],
+  "atlas/atlas_hunt": [
+    "abrams"
+  ],
+  "atlas/atlas_killstreak_high": [
+    "abrams"
+  ],
+  "atlas/atlas_killstreak_mid": [
+    "abrams"
+  ],
+  "atlas/atlas_killstreak_start": [
+    "abrams"
+  ],
+  "atlas/atlas_select": [
+    "abrams"
+  ],
+  "atlas/atlas_unselect": [
+    "abrams"
+  ],
+  "atlas/atlas_use_power1": [
+    "abrams"
+  ],
+  "atlas/atlas_use_power2": [
+    "abrams"
+  ],
+  "atlas/atlas_use_power4": [
+    "abrams"
+  ],
+  "atlas/emote/atlas_effort_melee_big": [
+    "abrams"
+  ],
+  "gigawatt/gigawatt_happy": [
+    "seven"
+  ],
+  "gigawatt/gigawatt_hunt": [
+    "seven"
+  ],
+  "gigawatt/gigawatt_killstreak_high": [
+    "seven"
+  ],
+  "gigawatt/gigawatt_killstreak_mid": [
+    "seven"
+  ],
+  "gigawatt/gigawatt_killstreak_start": [
+    "seven"
+  ],
+  "gigawatt/gigawatt_select": [
+    "seven"
+  ],
+  "gigawatt/gigawatt_unselect": [
+    "seven"
+  ],
+  "gigawatt/gigawatt_use_power1": [
+    "seven"
+  ],
+  "gigawatt/gigawatt_use_power2": [
+    "seven"
+  ],
+  "gigawatt/gigawatt_use_power3": [
+    "seven"
+  ],
+  "gigawatt/gigawatt_use_power4": [
+    "seven"
+  ],
+  "haze/haze_happy": [
+    "haze"
+  ],
+  "haze/haze_hunt": [
+    "haze"
+  ],
+  "haze/haze_killstreak_high": [
+    "haze"
+  ],
+  "haze/haze_killstreak_mid": [
+    "haze"
+  ],
+  "haze/haze_killstreak_start": [
+    "haze"
+  ],
+  "haze/haze_select": [
+    "haze"
+  ],
+  "haze/haze_unselect": [
+    "haze"
+  ],
+  "haze/haze_use_phantom_strike": [
+    "haze"
+  ],
+  "haze/haze_use_power1": [
+    "haze"
+  ],
+  "haze/haze_use_power2": [
+    "haze"
+  ],
+  "haze/haze_use_power4": [
+    "haze"
+  ],
+  "inferno/emote/inferno_effort_general": [
+    "infernus"
+  ],
+  "inferno/inferno_happy": [
+    "infernus"
+  ],
+  "inferno/inferno_hunt": [
+    "infernus"
+  ],
+  "inferno/inferno_killstreak_high": [
+    "infernus"
+  ],
+  "inferno/inferno_killstreak_mid": [
+    "infernus"
+  ],
+  "inferno/inferno_killstreak_start": [
+    "infernus"
+  ],
+  "inferno/inferno_select": [
+    "infernus"
+  ],
+  "inferno/inferno_unselect": [
+    "infernus"
+  ],
+  "inferno/inferno_use_power1": [
+    "infernus"
+  ],
+  "inferno/inferno_use_power2": [
+    "infernus"
+  ],
+  "inferno/inferno_use_power4": [
+    "infernus"
+  ],
+  "krill/krill_happy": [
+    "mokrill"
+  ],
+  "krill/krill_hunt": [
+    "mokrill"
+  ],
+  "krill/krill_killstreak_high": [
+    "mokrill"
+  ],
+  "krill/krill_killstreak_mid": [
+    "mokrill"
+  ],
+  "krill/krill_killstreak_start": [
+    "mokrill"
+  ],
+  "krill/krill_select": [
+    "mokrill"
+  ],
+  "krill/krill_unselect": [
+    "mokrill"
+  ],
+  "krill/krill_use_power2": [
+    "mokrill"
+  ],
+  "krill/krill_use_power3": [
+    "mokrill"
+  ],
+  "krill/krill_use_power4": [
+    "mokrill"
+  ],
+  "panorama/images/heroes/bull_card_psd.vtex": [
+    "abrams"
+  ],
+  "panorama/images/heroes/bull_sm_psd.vtex": [
+    "abrams"
+  ],
+  "panorama/images/heroes/digger_card_psd.vtex": [
+    "mokrill"
+  ],
+  "panorama/images/heroes/digger_sm_psd.vtex": [
+    "mokrill"
+  ],
+  "panorama/images/heroes/gigawatt_card_psd.vtex": [
+    "seven"
+  ],
+  "panorama/images/heroes/gigawatt_sm_psd.vtex": [
+    "seven"
+  ],
+  "panorama/images/heroes/guns/bull_gun_psd.vtex": [
+    "abrams"
+  ],
+  "panorama/images/heroes/guns/digger_gun_psd.vtex": [
+    "mokrill"
+  ],
+  "panorama/images/heroes/guns/gigawatt_gun_psd.vtex": [
+    "seven"
+  ],
+  "panorama/images/heroes/guns/haze_gun_psd.vtex": [
+    "haze"
+  ],
+  "panorama/images/heroes/guns/inferno_gun_psd.vtex": [
+    "infernus"
+  ],
+  "panorama/images/heroes/haze_card_psd.vtex": [
+    "haze"
+  ],
+  "panorama/images/heroes/haze_sm_psd.vtex": [
+    "haze"
+  ],
+  "panorama/images/heroes/inferno_card_psd.vtex": [
+    "infernus"
+  ],
+  "panorama/images/heroes/inferno_sm_psd.vtex": [
+    "infernus"
+  ],
+  "panorama/images/hud/abilities/bull_beef_psd.vtex": [
+    "abrams"
+  ],
+  "panorama/images/hud/abilities/bull_charge_psd.vtex": [
+    "abrams"
+  ],
+  "panorama/images/hud/abilities/bull_drain_psd.vtex": [
+    "abrams"
+  ],
+  "panorama/images/hud/abilities/bull_jump_psd.vtex": [
+    "abrams"
+  ],
+  "panorama/images/hud/abilities/giga_ball_psd.vtex": [
+    "seven"
+  ],
+  "panorama/images/hud/abilities/giga_chain_psd.vtex": [
+    "seven"
+  ],
+  "panorama/images/hud/abilities/giga_static_psd.vtex": [
+    "seven"
+  ],
+  "panorama/images/hud/abilities/giga_storm_psd.vtex": [
+    "seven"
+  ],
+  "panorama/images/hud/abilities/grappler/grappler_combo_psd.vtex": [
+    "mokrill"
+  ],
+  "panorama/images/hud/abilities/grappler/grappler_regen_psd.vtex": [
+    "mokrill"
+  ],
+  "panorama/images/hud/abilities/grappler/grappler_spin_psd.vtex": [
+    "mokrill"
+  ],
+  "panorama/images/hud/abilities/grappler/grappler_throw_sand_psd.vtex": [
+    "mokrill"
+  ],
+  "panorama/images/hud/abilities/haze/haze_bullet_flurry_psd.vtex": [
+    "haze"
+  ],
+  "panorama/images/hud/abilities/haze/haze_fixation_psd.vtex": [
+    "haze"
+  ],
+  "panorama/images/hud/abilities/haze/haze_sleep_dagger_psd.vtex": [
+    "haze"
+  ],
+  "panorama/images/hud/abilities/haze/haze_smoke_bomb_psd.vtex": [
+    "haze"
+  ],
+  "panorama/images/hud/abilities/inferno_bomb_psd.vtex": [
+    "infernus"
+  ],
+  "panorama/images/hud/abilities/inferno_dash_psd.vtex": [
+    "infernus"
+  ],
+  "panorama/images/hud/abilities/inferno_deflect_psd.vtex": [
+    "infernus"
+  ],
+  "panorama/images/hud/abilities/inferno_molotov_psd.vtex": [
+    "infernus"
+  ],
+  "panorama/images/items/spirit/torment_pulse_psd.vtex": [
+    "infernus"
+  ],
+  "panorama/images/items/vitality/phantom_strike_psd.vtex": [
+    "haze"
+  ],
+  "panorama/images/items/vitality/unstoppable_psd.vtex": [
+    "mokrill"
+  ],
+  "panorama/images/items/weapon/melee_charge_psd.vtex": [
+    "abrams"
+  ],
+  "panorama/images/items/weapon/tesla_bullets_psd.vtex": [
+    "seven"
+  ],
+  "soundevents/hero/abrams.vsndevts": [
+    "abrams"
+  ],
+  "soundevents/hero/gigawatt.vsndevts": [
+    "seven"
+  ],
+  "soundevents/hero/haze.vsndevts": [
+    "haze"
+  ],
+  "soundevents/hero/inferno.vsndevts": [
+    "infernus"
+  ],
+  "soundevents/hero/krill.vsndevts": [
+    "mokrill"
+  ]
+}

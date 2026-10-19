@@ -34,6 +34,8 @@
 ## Thunderstore (2026-10-19)
 - RoR2 has no Steam Workshop; Thunderstore is the hub. `package.py <ver> --thunderstore`; the plugin runs
   `plugins/extract/DeadlockExtract.exe` itself (`FirstRun.cs`), the loading screen waits; no Deadlock files ship.
+- First release "Risk of Deadlock" = Haze, Abrams, Seven, Infernus (`thunderstore/release.json` → `heroes.txt`, cut manifest).
+  Mod-list entry `melty.deadlockofrain;<version>;<built hero ids>`: other heroes, or none, can't join.
 
 ## Gotchas found
 1. RoR2's CharacterModel keeps ONE material per renderer (it re-applies defaultMaterial), so a multi-material

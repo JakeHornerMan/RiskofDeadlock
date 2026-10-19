@@ -66,7 +66,7 @@ namespace DeadlockOfRain
             Directory.CreateDirectory(coopDir);
             foreach (var f in new[] { StepFile, AckFile }) if (File.Exists(f)) File.Delete(f);
             while (!RoR2Application.loadFinished) yield return null;
-            Write("deadlock-content", DeadlockCache.Ready && Survivors.Bodies.Count == HeroRow.All.Length, $"cache ready={DeadlockCache.Ready}, heroes built={Survivors.Bodies.Count}");
+            Write("deadlock-content", DeadlockCache.Ready && Survivors.Bodies.Count == Survivors.Released.Length, $"cache ready={DeadlockCache.Ready}, heroes built={Survivors.Bodies.Count}/{Survivors.Released.Length}");
             if (Survivors.Bodies.Count == 0) yield break;
 
             // 1. host a game others can join (the copy on this PC joins through loopback)

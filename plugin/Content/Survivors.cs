@@ -46,6 +46,22 @@ namespace DeadlockOfRain
         /// bench, the body catalog and console commands want one word).</summary>
         public static string CodeName(HeroRow hero) => System.Text.RegularExpressions.Regex.Replace(hero.DisplayName, "[^A-Za-z0-9]", "");
 
+        static HeroRow[] released;
+        /// <summary>The heroes this build ships: the ids in heroes.txt beside the DLL (a Thunderstore release, written by
+        /// tools/package.py from thunderstore/release.json), or every hero row when there is no such file (Melty, dev).</summary>
+        public static HeroRow[] Released
+        {
+            get
+            {
+                if (released != null) return released;
+                var file = System.IO.Path.Combine(Plugin.PluginDir ?? "", "heroes.txt");
+                if (!System.IO.File.Exists(file)) return released = HeroRow.All;
+                var ids = new HashSet<string>(System.IO.File.ReadAllLines(file).Select(l => l.Trim()).Where(l => l.Length > 0));
+                foreach (var h in HeroRow.All) if (!ids.Contains(h.Id)) Log.Info($"{h.DisplayName}: not in this release (heroes.txt)");
+                return released = HeroRow.All.Where(h => ids.Contains(h.Id)).ToArray();
+            }
+        }
+
         public static bool IsHero(CharacterBody b, string id) { var h = b ? b.GetComponent<DeadlockHero>() : null; return h && h.HeroId == id; }
         public static string HeroOf(CharacterBody b) { var h = b ? b.GetComponent<DeadlockHero>() : null; return h ? h.HeroId : null; }
 
@@ -93,7 +109,7 @@ namespace DeadlockOfRain
             Fx.Preload();
             yield return null;
 
-            foreach (var hero in HeroRow.All)
+            foreach (var hero in Released)
             {
                 if (DeadlockCache.LoadHero(hero.Id) == null) { Log.Error("hero " + hero.Id + " skipped: no Deadlock content"); continue; }
                 yield return null;
@@ -474,6 +490,7 @@ namespace DeadlockOfRain
             pack.buffDefs.Add(Buffs.Defs.Values.ToArray());
             pack.equipmentDefs.Add(Equipment.Defs.Values.ToArray());
             if (Net.RelayDef != null) pack.effectDefs.Add(new[] { Net.RelayDef });
+            Net.RegisterModList();
             args.ReportProgress(1f);
         }
 

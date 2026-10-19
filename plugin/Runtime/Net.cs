@@ -26,11 +26,19 @@ namespace DeadlockOfRain
 
         public static void Init()
         {
-            // RoR2 refuses players whose mod list differs (KICK_REASON_MOD_MISMATCH): the same version on every PC
-            var id = Plugin.Guid + ";" + Plugin.Version;
+            MeltyJoin.Init();
+        }
+
+        /// <summary>RoR2 refuses players whose mod list differs (KICK_REASON_MOD_MISMATCH). Our entry names the version and the
+        /// heroes actually built, because bodies and equipment are numbered by catalog position: a player with other heroes
+        /// (another release, or none because Deadlock is missing) must be turned away, not let into a game that disagrees.
+        /// Called at the end of content loading, once the heroes are known (the list is read when a lobby is joined).</summary>
+        public static void RegisterModList()
+        {
+            var id = Plugin.Guid + ";" + Plugin.Version + ";" + string.Join(",", Survivors.Released.Where(h => Survivors.Bodies.ContainsKey(h.Id)).Select(h => h.Id));
             if (!NetworkModCompatibilityHelper.networkModList.Contains(id))
                 NetworkModCompatibilityHelper.networkModList = NetworkModCompatibilityHelper.networkModList.Concat(new[] { id });
-            MeltyJoin.Init();
+            Log.Info("Mod list entry: " + id);
         }
 
         public static void Build(Transform holder)

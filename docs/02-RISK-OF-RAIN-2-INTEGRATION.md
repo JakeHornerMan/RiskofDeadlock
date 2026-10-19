@@ -68,6 +68,13 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
      HKCU\Software\Valve\Steam`, `C:\Program Files (x86)\Steam`, then every library in `libraryfolders.vdf`; Deadlock is
      `steamapps/common/Deadlock` with `game/citadel/pak01_dir.vpk`) and starts the extractor as a hidden child process.
      The cache is then opened on the loading screen (step 2), and `DeadlockAudio.Init` waits for it too.
+     Every place it looks is logged (`found Deadlock` / `not here`, Steam's registry path, the libraries in each
+     `libraryfolders.vdf`); while the exe runs, its `extract.log` lines are copied into the BepInEx log as
+     `[DeadlockExtract] ...` with a `Reading Deadlock: step n/total` line per step and the total time at the end.
+   - **On screen:** `FirstRunOverlay` (IMGUI, so it draws while RoR2's UI is still loading; needs
+     `UnityEngine.IMGUIModule` in the csproj) shows a box at the bottom left of the loading screen: the step, the
+     percentage (it creeps within a step, so Abrams' ~4 min never looks frozen), the elapsed time and the last six
+     lines. Hidden on normal starts (the exe ends within 3 s); fades 8 s after the work ends or Deadlock isn't found.
    - Otherwise (Melty build) `Plugin.OpenCache()` → `DeadlockCache.Open(dir)`: no `ready.json` means an error is logged and no heroes are built (the game still runs).
    - When the heroes can't be loaded, `FirstRun.Problem` holds why; `FirstRun.Init` shows it once in a `SimpleDialogBox` on
      the title screen (tokens `DLR_FIRSTRUN_*`).
@@ -79,7 +86,8 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
    - `MeltyTest.Init()` activates only if `%LOCALAPPDATA%\Melty\test\risk-of-deadlock-2.json` (Melty's, named after the listing slug) or `deadlock-of-rain.json` (written by our tools) exists.
 2. **`DeadlockContentProvider.LoadStaticContentAsync`**, during RoR2's content loading. If `FirstRun` started the
    extractor, it first yields while the process runs (the loading bar follows `progress.txt`, up to 45 % of our share),
-   then `FirstRun.Finish`, `Plugin.OpenCache()` and `DeadlockAudio.Init()`. If the cache is ready it runs
+   then `FirstRun.Finish`, `Plugin.OpenCache()` and `DeadlockAudio.Init()`. Only `Survivors.Released` heroes are built:
+   the ids in `heroes.txt` beside the DLL (a Thunderstore release) or every row (Melty, dev). If the cache is ready it runs
    `Survivors.Build()` (an IEnumerator, stepped while reporting progress), then adds to the `ContentPack`:
    `bodyPrefabs`, `survivorDefs`, `skillDefs`, `skillFamilies`, `entityStateTypes` (every non-abstract EntityState in our
    assembly), `buffDefs` and `equipmentDefs` (built at the end of `Survivors.Build` by `Equipment.Build`). `GenerateContentPackAsync` copies it. RoR2 then assigns catalog indices itself.
@@ -470,8 +478,11 @@ doesn't have for a joined player). Firing breaks Smoke Bomb on the server (`Brea
 **Equipment ults.** Already written for this (§7.5): the server spends the charge; the ult state starts where the body has
 authority and is networked from there.
 
-**Joining.** `Net.Init` adds `melty.deadlockofrain;<version>` to `NetworkModCompatibilityHelper.networkModList`, so RoR2's
-own mod check refuses a player with another version (or without the mashup). `MeltyJoin` is Melty's contract
+**Joining.** `Net.RegisterModList` (end of `LoadStaticContentAsync`) adds `melty.deadlockofrain;<version>;<built hero ids>`
+(e.g. `...;0.7.0;haze,abrams,seven,infernus`) to `NetworkModCompatibilityHelper.networkModList`, so RoR2's own mod check
+refuses a player with another version, without the mashup, **or with other heroes built** (another release's hero list,
+or none because Deadlock is missing: bodies and equipment are numbered by catalog position, so such a player would
+otherwise join a game that disagrees on what each body and item is). The BepInEx log prints the entry. `MeltyJoin` is Melty's contract
 (`%LOCALAPPDATA%\DeadlockOfRain\melty.log` and `melty.properties`):
 - the log is emptied at start; whenever this player owns a Steam lobby (Multiplayer, Host), it writes
   `Melty join address: <lobby id>.steamlobby` (one line per lobby);

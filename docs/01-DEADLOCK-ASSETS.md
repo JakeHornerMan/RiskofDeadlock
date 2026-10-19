@@ -152,6 +152,12 @@ Melty runs the extractor again, which rebuilds because the stamp differs.
 
 ---
 
+**Release subsets (2026-10-19).** `gen.py` also writes `extractor/manifest_owners.json`: each image, sound event, sound
+event file and voice group → the hero(es) whose sheet rows use it (sound rows like `mokrill_gun/step` count for their
+base skill's hero; shared buff icons have no owner and are always kept). `package.py --thunderstore` uses it to cut the
+manifest down to `thunderstore/release.json`'s heroes. A cut manifest hashes differently, so its stamp differs from the
+full manifest's and switching between the two re-extracts.
+
 ## 6. DeadlockExtract.exe: step by step (`extractor/Program.cs`)
 
 Command line (exactly as Melty's recipe runs it):
@@ -288,7 +294,7 @@ this cache is "stale" but still a superset of what 0.2.0 needs:
 - **Thunderstore build (2026-10-19):** the plugin itself runs the exe on every start (`plugin/Runtime/FirstRun.cs`, doc 02 §3); the
   stamp check above makes that a ~1 s no-op once the cache is current. While working, the exe writes `progress.txt`
   (`<done> <total> <step>`, one step per hero, then images, then sounds) for the loading screen. The output itself is
-  unchanged, so `Version` stays 1.2.0 and Melty and Thunderstore players share the same stamp.
+  unchanged, so `Version` stays 1.2.0 (a release's cut-down manifest gives it its own stamp, §5).
 - The plugin reads `deadlockBuild` for its log line only. It does **not** re-check the stamp.
 
 ### 6.7 Building and publishing the extractor exe

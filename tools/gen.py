@@ -2,6 +2,7 @@
 
   plugin/Generated/Sheets.g.cs   one C# class per sheet, one static instance per row (built from that row's columns)
   extractor/manifest.json        what the extractor reads from the player's Deadlock install
+  extractor/manifest_owners.json which hero uses each manifest entry (package.py cuts a release down to its heroes)
 
 Run tools/preflight.py first; gen refuses to run on a sheet with problems.
 """
@@ -96,4 +97,20 @@ manifest['soundEventFiles'] = sorted({hero['soundevents'] for hero in h['rows']}
 # voice lines: every numbered take of each group, sounds/vo/<group>_NN.vsnd (design/voice.json)
 manifest['voiceGroups'] = sorted({r['group'] for r in load('voice')['rows']})
 json.dump(manifest, open(os.path.join(ROOT, 'extractor', 'manifest.json'), 'w', encoding='utf-8'), indent=2)
+# which hero(es) use each image, sound event and voice group, so tools/package.py can cut the manifest down to a
+# release's heroes (thunderstore/release.json); an entry with no owner (shared buff icons) is always kept
+skill_hero = {s['id']: s['hero'] for s in skills}
+owners = {}
+def own(entry, hero):
+    owners.setdefault(entry, set()).add(hero)
+for hero in h['rows']:
+    for c in ['imageSmall', 'imageCard', 'passiveIcon', 'soundevents']:
+        if hero[c] != 'none': own(hero[c], hero['id'])
+for s in skills: own(s['icon'], s['hero'])
+for r in sounds:
+    for c in ['cast', 'loop', 'hit', 'end', 'reload', 'castLayer', 'hitLayer', 'tick', 'tickFinal']:
+        base = r['skill'].split('/')[0]   # 'mokrill_gun/step': a variant of the gun row
+        if r[c] != 'none' and base in skill_hero: own(r[c], skill_hero[base])
+for r in load('voice')['rows']: own(r['group'], r['hero'])
+json.dump({k: sorted(v) for k, v in sorted(owners.items())}, open(os.path.join(ROOT, 'extractor', 'manifest_owners.json'), 'w', encoding='utf-8'), indent=2)
 print(f'gen: wrote plugin/Generated/Sheets.g.cs and extractor/manifest.json ({len(manifest["images"])} images, {len(manifest["soundEvents"])} sound events, {len(manifest["voiceGroups"])} voice groups)')

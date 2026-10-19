@@ -26,7 +26,7 @@ namespace DeadlockOfRain
         static float fireUntil;
         /// <summary>The heroes this test run plays (test-mode file "heroes"); null = all of them.</summary>
         static List<string> TestHeroes;
-        static HeroRow[] Tested => HeroRow.All.Where(h => TestHeroes == null || TestHeroes.Contains(h.Id)).ToArray();
+        static HeroRow[] Tested => Survivors.Released.Where(h => TestHeroes == null || TestHeroes.Contains(h.Id)).ToArray();
 
         public static bool Active => checksFile != null;
 
@@ -81,9 +81,9 @@ namespace DeadlockOfRain
             if (Coop) { yield return Joiner ? CoopJoin() : CoopHost(); yield break; }
             // 1. content
             while (!RoR2Application.loadFinished) yield return null;
-            Write("deadlock-content", DeadlockCache.Ready && Survivors.Bodies.Count == HeroRow.All.Length, $"cache ready={DeadlockCache.Ready}, heroes built={Survivors.Bodies.Count}");
-            int listed = HeroRow.All.Count(h => Survivors.Defs.TryGetValue(h.Id, out var d) && SurvivorCatalog.FindSurvivorDefFromBody(d.bodyPrefab) != null);
-            Write("survivors-listed", listed == HeroRow.All.Length, $"{listed}/{HeroRow.All.Length} heroes in the survivor catalog");
+            Write("deadlock-content", DeadlockCache.Ready && Survivors.Bodies.Count == Survivors.Released.Length, $"cache ready={DeadlockCache.Ready}, heroes built={Survivors.Bodies.Count}/{Survivors.Released.Length}");
+            int listed = Survivors.Released.Count(h => Survivors.Defs.TryGetValue(h.Id, out var d) && SurvivorCatalog.FindSurvivorDefFromBody(d.bodyPrefab) != null);
+            Write("survivors-listed", listed == Survivors.Released.Length, $"{listed}/{Survivors.Released.Length} heroes in the survivor catalog");
             if (Survivors.Bodies.Count == 0) yield break;
 
             // 2. start a single-player run as Haze
@@ -372,11 +372,13 @@ namespace DeadlockOfRain
             Write("four-slots", slotsOk, slotsWhy);
             Write("level-stats", levelOk && lb && lb.level > 1, levelWhy == "" ? "level did not rise" : levelWhy);
             Write("hero-scale", scaleOk, scaleWhy);
-            var missingVoice = VoiceRow.All.Where(v => !DeadlockAudio.Has("vo:" + v.Group)).Select(v => v.Group).Distinct().ToList();
+            // only this build's heroes (a release's heroes.txt leaves the others out of the cache)
+            var built = new HashSet<string>(Survivors.Released.Select(h => h.Id));
+            var missingVoice = VoiceRow.All.Where(v => built.Contains(v.Hero) && !DeadlockAudio.Has("vo:" + v.Group)).Select(v => v.Group).Distinct().ToList();
             Write("voice-lines", missingVoice.Count == 0 && Voice.Spoken > 0,
                 missingVoice.Count > 0 ? "not in the cache: " + string.Join(", ", missingVoice.Take(5)) : Voice.Spoken == 0 ? "no voice line played" : "");
             // every sound event the sheet names (design/sounds.json) made it into the cache
-            var missingSound = SoundRow.All.SelectMany(s => new[] { s.Cast, s.Loop, s.Hit, s.End, s.Reload, s.CastLayer, s.HitLayer, s.Tick, s.TickFinal })
+            var missingSound = SoundRow.All.Where(s => Sheet.Skill(s.Skill.Split('/')[0]) is var k && (k == null || built.Contains(k.Hero))).SelectMany(s => new[] { s.Cast, s.Loop, s.Hit, s.End, s.Reload, s.CastLayer, s.HitLayer, s.Tick, s.TickFinal })
                                            .Where(e => e != "none" && !DeadlockAudio.Has(e)).Distinct().ToList();
             Write("sound-events", missingSound.Count == 0, "not in the cache: " + string.Join(", ", missingSound.Take(5)));
             Log.Info($"Melty test finished: {heroes}/{tested.Length} heroes: every skill did what its sheet expects; Deadlock sounds played: {DeadlockAudio.Played}");
