@@ -40,6 +40,9 @@ Deadlock's assets from the player's own install; nothing from either game ships.
   same commit as the work. New general lessons also go in doc 00 §7.
 - **Ask before big changes.** The creator wants research and clarifying questions first (AskUserQuestion, recommended
   option first); read free-text answers closely, they often change the plan.
+- **Every artifact from this project is public** (creator, 2026-10-19: "alway make the artifacts public"). Sharing is set in the
+  page's Share menu, which only the creator can use: after publishing a new page, ask them to set it to "Anyone with the link",
+  and add its link to `README.md` ("Hero pages") and the top of doc 06.
 - **Pages show no Deadlock art files.** The kit pages (claude.ai Artifacts) use our own in-game renders
   (`PORTRAITS=1 bash tools/run_bench.sh 0`), never hero cards or icons copied from the VPK.
 - **Update the docs with every change.** Any change to code, design sheets, tools, recipe, versions or decisions must

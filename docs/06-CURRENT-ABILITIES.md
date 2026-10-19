@@ -4,9 +4,9 @@
 > behaviour, passive, ult equipment) updates this page **and** adds a "retest needed" row to doc 05 §0, in the same
 > commit (CLAUDE.md standing rule). After `bash tools/run_bench.sh`, the DPS columns here and in doc 05 are refreshed together.
 
-**Pages (claude.ai Artifacts, shared "anyone with the link" since 2026-10-18; linked from the Melty listing):** [Haze](https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p) ·
+**Pages (claude.ai Artifacts, shared "anyone with the link" since 2026-10-18; linked from the Melty listing and the README):** [Haze](https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p) ·
 [Abrams](https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG) · [Seven](https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m) ·
-[Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) · [Mo & Krill](https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa) (new, private until the creator shares it) · [Balance vs Commando](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3).
+[Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) · [Mo & Krill](https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa) (shared by the creator) · [Balance vs Commando](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3).
 Built by `python tools/kit_pages.py` into `build/pages/`. Republish each page to its link whenever this doc or doc 05 changes.
 
 **Version:** 0.7.0 in progress (2026-10-19: Mo & Krill added; not released). 0.6.3 (2026-10-18; Flame Gun 75 %, Flame Dash a 5 s run laying Afterburn fire pockets. 0.6.2: Combustion fuse ticks. 0.6.1: Napalm aimed throw, Flame Dash 5 s / 13 s, Combustion range ring, ragdoll deaths).

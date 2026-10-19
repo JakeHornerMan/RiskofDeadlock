@@ -2,6 +2,15 @@
 
 Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus or Mo & Krill** from Deadlock, using their real models, animations, guns, abilities, icons and sounds, read from your own Deadlock install.
 
+## Hero pages
+Every hero's abilities, numbers and measured damage against their Risk of Rain 2 match, with our own in-game pictures:
+- [Haze](https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p) (matched to Commando)
+- [Abrams](https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG) (matched to Loader)
+- [Seven](https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m) (matched to Artificer)
+- [Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) (matched to Engineer)
+- [Mo & Krill](https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa) (matched to MUL-T)
+- [Balance overview](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3): every hero next to every Risk of Rain 2 survivor
+
 ## Features
 - Five new survivors on the character select screen: Haze, Abrams, Seven, Infernus and Mo & Krill.
 - Their models, animations, ability icons, portraits and sounds come from **your own Deadlock install**. Nothing from Deadlock is in this download.
@@ -9,7 +18,7 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus or Mo & Krill** from Dead
   - **Left Click:** their Deadlock gun, with its magazine and reload.
   - **Right Click and Shift:** two Deadlock abilities.
   - **R:** a new move from a Deadlock item, melee attack or ability.
-  - **Q (equipment):** their Deadlock ultimate. Every hero starts the run holding their own (120 s cooldown, about as strong as the Preon Accumulator). Swap it for another equipment and it stays on the ground; anyone, Commando included, can find the four ults in chests. The pickup is a little figure of the hero.
+  - **Q (equipment):** their Deadlock ultimate. Every hero starts the run holding their own (120 s cooldown, about as strong as the Preon Accumulator). Swap it for another equipment and it stays on the ground; anyone, Commando included, can find the five ults in chests. The pickup is a little figure of the hero.
   - **Haze:** Twin SMGs, Sleep Dagger, Smoke Bomb, Phantom Strike (blink behind a target, three dagger slashes that cut everything around it); Q Bullet Dance. Passive: Fixation (every hit stacks it, crits stack 3, every 10 stacks bursts and splashes nearby enemies).
   - **Abrams:** Shotgun, Siphon Life (works like a Mired Urn), Shoulder Charge, Haymaker (locks onto an enemy, even one in the air, and rushes into a heavy punch); Q Seismic Impact (hover, aim the slam, crash down). Passive: Infernal Resilience.
   - **Seven:** Shock Rifle, Lightning Ball, Static Charge, Power Surge (his shots arc Tesla lightning); Q Thunderhead (a storm with a Warbanner). Passive: Capacitor (hits build Static that discharges).
@@ -25,7 +34,7 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus or Mo & Krill** from Dead
 
 ## Requirements
 - Risk of Rain 2 and Deadlock, both installed (for co-op, on every player's PC).
-- On first start, the bundled DeadlockExtract tool reads the four heroes from your Deadlock folder into `%LOCALAPPDATA%\DeadlockOfRain\cache`. This takes a few minutes and happens once per Deadlock update.
+- On first start, the bundled DeadlockExtract tool reads the five heroes from your Deadlock folder into `%LOCALAPPDATA%\DeadlockOfRain\cache`. This takes a few minutes and happens once per Deadlock update.
 - Melty does all of this for you: press Play.
 
 ## How it is built
@@ -36,7 +45,7 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus or Mo & Krill** from Dead
 - `plugin/`: the BepInEx 5 plugin.
   - It registers the survivors through RoR2's own content-pack API (no R2API).
   - It builds the models from the cache and plays the Deadlock animation clips.
-  - It runs the 16 skills and the 4 ult equipments, and the gun rig (guns held in the hands and aimed at the crosshair).
+  - It runs the 20 skills and the 5 ult equipments, and the gun rig (guns held in the hands and aimed at the crosshair).
   - It plays Deadlock sounds through a small Windows audio mixer, because RoR2 turns Unity audio off.
 
 ## Credits
