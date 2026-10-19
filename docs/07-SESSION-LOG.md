@@ -657,6 +657,11 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 - README and store README "About DeadlockExtract.exe" section.
 - Docs 00, 01, 03, CLAUDE.md, MODLOG.
 - Pushed `main` and the tag `extractor-1.4.0`.
+**Results:**
+- GitHub's build passed: https://github.com/JakeHornerMan/RiskofDeadlock/releases/tag/extractor-1.4.0, SHA-256 `175b8845…0475a1`.
+- `fetch_extractor.py 1.4.0` hash OK.
+- The GitHub exe read Haze on Deadlock 6795 in 37 s, exit 0, and its `haze.dlm` is byte-identical to the local build's.
+- `package.py 0.7.2 --thunderstore` packs that exe (same hash in the zip).
 **Not done / open:**
 - The creator's reply to Harb and the Thunderstore re-upload.
 - The DLL plan is kept only as notes (the plan file and this entry); it is the fallback if any exe is refused.
