@@ -1265,9 +1265,82 @@
      "max": 2720
     }
    }
+  },
+  "DeadlockMoKrill": {
+   "name": "Mo & Krill",
+   "stats": {
+    "health": 250.0,
+    "healthPerLevel": 75.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 25.0,
+    "damage": 11.0,
+    "damagePerLevel": 2.2,
+    "moveSpeed": 5.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Yellow Canary",
+    "secondary": "Sand Blast",
+    "utility": "Burrow",
+    "special": "Dust Devil"
+   },
+   "hero": true,
+   "measuredOn": "v0.7.0",
+   "dps": {
+    "all": {
+     "runs": [
+      1620
+     ],
+     "mean": 1620,
+     "min": 1620,
+     "max": 1620
+    },
+    "primary": {
+     "runs": [
+      443
+     ],
+     "mean": 443,
+     "min": 443,
+     "max": 443
+    },
+    "secondary": {
+     "runs": [
+      510
+     ],
+     "mean": 510,
+     "min": 510,
+     "max": 510
+    },
+    "utility": {
+     "runs": [
+      370
+     ],
+     "mean": 370,
+     "min": 370,
+     "max": 370
+    },
+    "special": {
+     "runs": [
+      382
+     ],
+     "mean": 382,
+     "min": 382,
+     "max": 382
+    },
+    "equipment": {
+     "runs": [
+      2700
+     ],
+     "mean": 2700,
+     "min": 2700,
+     "max": 2700
+    }
+   }
   }
  },
  "about": "Stored DPS library (Deadlock of Rain). Main moves and each move alone, % of damage stat per second, measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, 30 s per pass, perfect aim, every move used when ready, no equipment except the \"equipment\" pass). \"all\" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are tagged with the build they were measured on. Built by tools/dps_library.py.",
- "updated": "2026-10-18",
+ "updated": "2026-10-19",
  "runsPerSurvivor": 3
 }

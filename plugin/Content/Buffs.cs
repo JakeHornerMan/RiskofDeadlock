@@ -49,6 +49,8 @@ namespace DeadlockOfRain
         {
             var d = Get(id);
             if (!b || !d || !NetworkServer.active) return;
+            // duration 0: a permanent stack (on the body until it goes: Tag Team's trophies last the stage)
+            if (duration <= 0f) { if (max <= 0 || b.GetBuffCount(d) < max) b.AddBuff(d); return; }
             if (max > 0 && b.GetBuffCount(d) >= max)
             {
                 // refresh: drop the oldest timed stack and add a new one
@@ -59,15 +61,24 @@ namespace DeadlockOfRain
             b.AddTimedBuff(d, duration);
         }
 
-        /// <summary>A one-stack debuff (Napalm, Fixation Slow...) from its row: refreshed, owner recorded, withBuff applied too.</summary>
-        public static void Apply(CharacterBody owner, CharacterBody victim, string id)
+        /// <summary>A one-stack debuff (Napalm, Fixation Slow...) from its row: refreshed, owner recorded, withBuff applied too.
+        /// A disarm buff (Sanded) also locks the victim's skills for as long (vanilla DisableAllSkills: it can move but not attack);
+        /// bossMult shortens it on bosses.</summary>
+        public static void Apply(CharacterBody owner, CharacterBody victim, string id, float bossMult = 1f)
         {
             var row = Sheet.Buff(id);
             if (row == null || !victim || !NetworkServer.active) return;
+            float duration = row.Duration * (victim.isChampion ? bossMult : 1f);
+            if (duration <= 0f) return;
             Clear(victim, id);
-            AddTimed(victim, id, row.Duration);
+            AddTimed(victim, id, duration);
             SetOwner(owner, victim, id);
-            if (row.WithBuff != "none" && row.WithBuff != id) Apply(owner, victim, row.WithBuff);
+            if (row.Disarm && DLC2Content.Buffs.DisableAllSkills)
+            {
+                victim.ClearTimedBuffs(DLC2Content.Buffs.DisableAllSkills);
+                victim.AddTimedBuff(DLC2Content.Buffs.DisableAllSkills, duration);
+            }
+            if (row.WithBuff != "none" && row.WithBuff != id) Apply(owner, victim, row.WithBuff, bossMult);
         }
 
         /// <summary>One hit's worth of a stacking debuff (Fixation, Static, Afterburn build-up): a crit adds critStacks, and the
@@ -193,19 +204,22 @@ namespace DeadlockOfRain
         static void Postfix(CharacterBody __instance)
         {
             var b = __instance;
-            float moveAdd = 0, attackAdd = 0, armorAdd = 0, regenAdd = 0, slowResist = 0;
+            float moveAdd = 0, attackAdd = 0, armorAdd = 0, regenAdd = 0, slowResist = 0, healthAdd = 0;
             foreach (var row in BuffRow.All)
             {
-                if (row.MoveSpeedAdd == 0 && row.AttackSpeedAdd == 0 && row.ArmorAdd == 0 && row.RegenAdd == 0 && row.SlowResist == 0) continue;
+                if (row.MoveSpeedAdd == 0 && row.AttackSpeedAdd == 0 && row.ArmorAdd == 0 && row.RegenAdd == 0 && row.SlowResist == 0 && row.MaxHealthAdd == 0) continue;
                 var d = Buffs.Get(row.Id);
                 if (!d) continue;
                 int n = b.GetBuffCount(d);
                 if (n <= 0) continue;
                 int k = row.CanStack ? n : 1;
                 moveAdd += row.MoveSpeedAdd * k; attackAdd += row.AttackSpeedAdd * k; armorAdd += row.ArmorAdd * k; regenAdd += row.RegenAdd * k;
+                healthAdd += row.MaxHealthAdd * k;
                 slowResist = Mathf.Max(slowResist, row.SlowResist);
             }
-            if (moveAdd == 0 && attackAdd == 0 && armorAdd == 0 && regenAdd == 0 && slowResist == 0) return;
+            if (moveAdd == 0 && attackAdd == 0 && armorAdd == 0 && regenAdd == 0 && slowResist == 0 && healthAdd == 0) return;
+            // flat max health (Tag Team's trophies)
+            if (healthAdd != 0) Set(b, "maxHealth", b.maxHealth + healthAdd);
             // move speed: positive adds like vanilla speed buffs, negative like slows
             float ms = b.moveSpeed;
             if (moveAdd > 0) ms *= 1f + moveAdd;

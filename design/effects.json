@@ -379,6 +379,55 @@
       "addressable": "none",
       "scaleWithRadius": false,
       "notes": "Sleep Dagger in flight: a violet glow and trail that always shows, with or without the knife model"
+    },
+    {
+      "id": "tracer_mokrill",
+      "kind": "tracer",
+      "addressable": "RoR2/Base/Captain/TracerCaptainShotgun.prefab",
+      "scaleWithRadius": false,
+      "notes": "Yellow Canary pellets: Captain's shotgun tracer (golden); our mokrill_gun draws the orange smoke and the hits"
+    },
+    {
+      "id": "mokrill_gun",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "Yellow Canary: a hot orange puff and smoke wisp at Krill's muzzle on each shot (muzzle); dirt sparks where a pellet lands (hit)"
+    },
+    {
+      "id": "mokrill_sand",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "Sand Blast: an orange ring and light at Mo's hands (cast); a tan wave of sand racing along the ground and widening with the cone, edge streaks and flecks, moved by the wave (loop); a sand puff and orange flash on each enemy hit (hit); sand grains circling a Sanded enemy's head (sanded)"
+    },
+    {
+      "id": "mokrill_burrow",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "Burrow: a dirt burst with debris where he digs in (cast); the travelling mound: a dark crack trail, dust, bobbing rock chunks and faint orange streaks following him underground (loop); pop-out: glowing ground cracks, an orange ring at the spin's radius, an impact flash, tan smoke, a light and a camera shake (hit)"
+    },
+    {
+      "id": "mokrill_devil",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "Dust Devil: a twisting column of sand around Mo, swirling dust, a ground dome at the damage radius and dust streaks flowing inward from the pull radius (loop); a burst of sand as it starts and ends (cast, end); a small sand puff on enemies it ticks (hit)"
+    },
+    {
+      "id": "mokrill_krill",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "Tag Team: Krill (the little figure) flying in an arc with an orange trail to each enemy (hop), an orange ring, electric arcs, a flash and a splash ring where he lands (hit), a puff where he is thrown and returns (cast, end)"
+    },
+    {
+      "id": "mokrill_punch",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "Mo's punch while Krill is away: a dust burst and an orange flash on each enemy hit"
     }
   ]
 }

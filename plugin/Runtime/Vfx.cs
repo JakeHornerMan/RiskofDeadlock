@@ -38,6 +38,12 @@ namespace DeadlockOfRain
                     case "haze_dagger": return HazeDagger(moment, at, follow);
                     case "abrams_haymaker": return AbramsHaymaker(moment, at, radius, follow, to, angle);
                     case "seven_surge": return SevenSurge(moment, at, follow);
+                    case "mokrill_gun": return MokrillGun(moment, at, follow);
+                    case "mokrill_sand": return MokrillSand(moment, at, radius, follow, to);
+                    case "mokrill_burrow": return MokrillBurrow(moment, at, radius, follow);
+                    case "mokrill_devil": return MokrillDevil(moment, at, radius, follow, angle);
+                    case "mokrill_krill": return MokrillKrill(moment, at, radius, to);
+                    case "mokrill_punch": return MokrillPunch(moment, at);
                 }
             }
             catch (System.Exception e) { Log.Warn($"vfx {id}/{moment}: {e.Message}"); }
@@ -701,6 +707,266 @@ namespace DeadlockOfRain
                 }
             }
             return null;
+        }
+
+        // ------------------------------------------------------------------ Mo & Krill (colours from Deadlock's own particles)
+        // mat_dust is RoR2's opaque dust: keep its particles small and few, or they hide the screen (Dust Devil's first build did)
+        static readonly Color sandTan = new Color32(236, 218, 186, 255), sandDark = new Color32(185, 166, 132, 255), sandEdge = new Color32(220, 170, 114, 255),
+            moOrange = new Color32(226, 132, 32, 255), moLight = new Color32(255, 145, 28, 255), dirt = new Color32(141, 88, 60, 255),
+            crack = new Color32(51, 46, 41, 220), hotCrack = new Color32(237, 107, 20, 255), krillOrange = new Color32(255, 147, 65, 255),
+            krillArc = new Color32(254, 215, 118, 255), tracerHot = new Color32(255, 212, 85, 255), smokeGrey = new Color32(156, 156, 156, 160);
+
+        static GameObject MokrillGun(string moment, Vector3 at, Transform follow)
+        {
+            switch (moment)
+            {
+                case "muzzle":
+                    // a hot orange puff and a wisp of grey smoke at Krill's muzzle
+                    Burst(at, "mat_glow", tracerHot, 2, 0.08f, 0f, 0.5f);
+                    Burst(at, "mat_smoke", smokeGrey, 2, 0.5f, 0.6f, 0.4f);
+                    return null;
+                case "hit":
+                    // dirt sparks where a pellet lands
+                    Burst(at, "mat_spark", krillOrange, 5, 0.25f, 5f, 0.06f, gravity: 1.5f);
+                    Burst(at, "mat_dust", sandDark, 1, 0.5f, 0.5f, 0.6f);
+                    return null;
+            }
+            return null;
+        }
+
+        static GameObject MokrillSand(string moment, Vector3 at, float radius, Transform follow, Vector3? to)
+        {
+            switch (moment)
+            {
+                case "cast":
+                    // the throw: an orange ring and light at Mo's hands, a spray of sand along the throw
+                    Ring(at, moOrange, 0.3f, 2.5f, 0.3f, 0.3f, true);
+                    Flash(at, moLight, 8f, 0.25f, 3f);
+                    if (to.HasValue) Burst(at, "mat_dust", sandTan, 6, 0.5f, 6f, 0.7f, shapeRadius: 0.6f);
+                    return null;
+                case "loop":
+                {
+                    // the wave: a low wall of tan sand racing along the ground; SetWave moves it, turns it and sets its width
+                    var root = Root(at, 0f, null);
+                    var wave = new GameObject("wave"); wave.transform.SetParent(root.transform, false);
+                    foreach (var ps in new[]
+                    {
+                        Particles(wave, "mat_dust", sandTan, rate: 150, life: 0.45f, speed: 1.5f, size: 1.1f, world: true),
+                        Particles(wave, "mat_smoke", sandDark, rate: 60, life: 0.7f, speed: 1f, size: 1.6f, world: true),
+                        Particles(wave, "mat_spark", sandEdge, rate: 140, life: 0.4f, speed: 4f, size: 0.07f, world: true, gravity: 1f),
+                    })
+                    {
+                        var sh = ps.shape; sh.shapeType = ParticleSystemShapeType.Box; sh.scale = new Vector3(radius, 0.6f, 0.8f);
+                    }
+                    // the cone's edges: sand streaks at both ends of the front
+                    foreach (var side in new[] { "edgeL", "edgeR" })
+                    {
+                        var e = new GameObject(side); e.transform.SetParent(root.transform, false);
+                        Trail(e, sandEdge, 0.35f, 0.35f);
+                    }
+                    return root;
+                }
+                case "hit":
+                    // a sand puff and an orange flash on each enemy the wave catches, then sand circling it while it is Sanded
+                    Burst(at, "mat_dust", sandTan, 4, 0.6f, 3f, 0.7f, shapeRadius: 0.4f);
+                    Burst(at, "mat_glow", moOrange, 2, 0.15f, 0f, 1.5f);
+                    if (follow && !follow.GetComponent<SandedFx>()) follow.gameObject.AddComponent<SandedFx>();
+                    return null;
+            }
+            return null;
+        }
+
+        /// <summary>Move Sand Blast's wave (moment loop) to its front, facing along the cone, halfWidth to each side.</summary>
+        public static void SetWave(GameObject wave, Vector3 front, Vector3 dir, float halfWidth)
+        {
+            if (!wave) return;
+            wave.transform.position = front + Vector3.up * 0.4f;
+            if (dir.sqrMagnitude > 0.01f) wave.transform.rotation = Quaternion.LookRotation(dir);
+            var w = wave.transform.Find("wave");
+            if (w)
+                foreach (var ps in w.GetComponentsInChildren<ParticleSystem>())
+                {
+                    var sh = ps.shape; sh.scale = new Vector3(halfWidth * 2f, 0.6f, 0.8f);
+                    var em = ps.emission; em.rateMultiplier = Mathf.Max(1f, halfWidth / 2.5f);
+                }
+            var l = wave.transform.Find("edgeL"); if (l) l.localPosition = new Vector3(-halfWidth, 0.2f, 0f);
+            var r = wave.transform.Find("edgeR"); if (r) r.localPosition = new Vector3(halfWidth, 0.2f, 0f);
+        }
+
+        static GameObject MokrillBurrow(string moment, Vector3 at, float radius, Transform follow)
+        {
+            switch (moment)
+            {
+                case "cast":
+                    // digging in: a burst of dirt and debris, dust, a dark patch
+                    Burst(at, "mat_dust", sandDark, 10, 0.9f, 5f, 1.1f, shapeRadius: 1.2f, flat: true);
+                    Burst(at, "mat_spark", dirt, 24, 0.9f, 8f, 0.15f, gravity: 2.5f, upward: true);
+                    Burst(at + Vector3.up * 0.1f, "mat_dust", crack, 4, 1.2f, 0.5f, 1.4f, shapeRadius: 0.5f, flat: true);
+                    return null;
+                case "loop":
+                {
+                    // the mound travelling with him: dust boiling up, a dark crack trail, rock chunks bobbing, faint orange streaks
+                    var root = Root(at, 0f, follow);
+                    Particles(root, "mat_dust", sandTan, rate: 18, life: 0.8f, speed: 1.6f, size: 0.9f, shapeRadius: 1.0f, world: true, upward: true);
+                    Particles(root, "mat_dust", crack, rate: 12, life: 1.5f, speed: 0.1f, size: 0.9f, shapeRadius: 0.8f, world: true, flat: true);
+                    Particles(root, "mat_spark", dirt, rate: 35, life: 0.6f, speed: 3.5f, size: 0.22f, shapeRadius: 0.9f, world: true, upward: true, gravity: 2f);
+                    Particles(root, "mat_glow", new Color32(162, 93, 34, 255), rate: 12, life: 0.4f, speed: 0.5f, size: 0.8f, shapeRadius: 0.8f, world: true, flat: true);
+                    return root;
+                }
+                case "hit":
+                    // bursting out: glowing cracks and an orange ring at the spin's reach, a flash, tan smoke and debris, a shake
+                    Ring(at + Vector3.up * 0.2f, hotCrack, 0.5f, radius, 0.45f, 0.8f);
+                    Ring(at + Vector3.up * 0.2f, new Color32(254, 132, 62, 255), 0.5f, radius * 0.6f, 0.3f, 0.5f);
+                    Burst(at, "mat_dust", sandTan, 16, 1.2f, radius * 0.8f, 1.6f, shapeRadius: 1.5f, flat: true);
+                    Burst(at, "mat_spark", dirt, 40, 1.1f, 12f, 0.2f, gravity: 2.5f, upward: true);
+                    Burst(at + Vector3.up * 0.1f, "mat_glow", hotCrack, 3, 0.4f, 0f, radius * 0.7f);
+                    Flash(at + Vector3.up * 1.5f, moLight, radius * 2f, 0.4f, 6f);
+                    Shake(at, radius * 2.5f, 2.5f, 0.4f);
+                    return null;
+            }
+            return null;
+        }
+
+        static GameObject MokrillDevil(string moment, Vector3 at, float radius, Transform follow, float pull)
+        {
+            switch (moment)
+            {
+                case "loop":
+                {
+                    // the tornado: a twisting column of sand around Mo, dust swirling at its foot, the damage ring on the
+                    // ground (area dome) and dust streaming inward from the pull's edge
+                    var root = Root(at, 0f, follow);
+                    var spin = new GameObject("spin"); spin.transform.SetParent(root.transform, false);
+                    spin.AddComponent<Spin>().DegPerSec = 720f;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        var arm = new GameObject("arm" + i); arm.transform.SetParent(spin.transform, false);
+                        float a = i * 90f * Mathf.Deg2Rad;
+                        arm.transform.localPosition = new Vector3(Mathf.Cos(a), 0.6f + i * 0.9f, Mathf.Sin(a)) * 1f + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * (1.2f + i * 0.5f);
+                        Particles(arm, "mat_dust", new Color32(214, 183, 125, 255), rate: 14, life: 0.5f, speed: 0.4f, size: 0.6f + i * 0.2f, world: true);
+                        Trail(arm, sandEdge, 0.3f, 0.25f);
+                    }
+                    Particles(root, "mat_dust", sandTan, rate: 16, life: 0.8f, speed: 2.5f, size: 1.1f, shapeRadius: 2f, world: true, flat: true);
+                    var dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    Object.Destroy(dome.GetComponent<Collider>());
+                    dome.transform.SetParent(root.transform, false);
+                    dome.transform.localScale = Vector3.one * radius * 2f;
+                    dome.GetComponent<MeshRenderer>().sharedMaterial = Mat("mat_area", sandEdge);
+                    if (pull > radius)
+                    {
+                        // streaks from the pull's edge flowing toward him (particles thrown inward from a ring)
+                        var edge = new GameObject("pull"); edge.transform.SetParent(root.transform, false); edge.transform.localPosition = Vector3.up * 0.6f;
+                        var ps = Particles(edge, "mat_spark", sandEdge, rate: 120, life: 0.7f, speed: 0f, size: 0.12f, shapeRadius: pull, world: false, ring: true, stretch: 0.25f);
+                        var vel = ps.velocityOverLifetime; vel.enabled = true; vel.space = ParticleSystemSimulationSpace.Local;
+                        vel.radial = new ParticleSystem.MinMaxCurve(-pull / 0.7f);
+                        vel.x = new ParticleSystem.MinMaxCurve(0f); vel.y = new ParticleSystem.MinMaxCurve(0f); vel.z = new ParticleSystem.MinMaxCurve(0f);
+                    }
+                    Light(root, moLight, radius * 1.5f, 1.2f, Vector3.up * 2f);
+                    return root;
+                }
+                case "cast":
+                case "end":
+                    Burst(at, "mat_dust", sandTan, 10, 0.8f, 6f, 1.1f, shapeRadius: 1.5f, flat: true);
+                    Ring(at + Vector3.up * 0.3f, sandEdge, 0.5f, radius, 0.35f, 0.5f);
+                    return null;
+                case "hit":
+                    Burst(at, "mat_dust", sandTan, 2, 0.35f, 2f, 0.5f, shapeRadius: 0.3f);
+                    return null;
+            }
+            return null;
+        }
+
+        static GameObject MokrillKrill(string moment, Vector3 at, float radius, Vector3? to)
+        {
+            switch (moment)
+            {
+                case "cast":
+                    Burst(at, "mat_glow", krillOrange, 3, 0.2f, 0f, 1.2f);
+                    Burst(at, "mat_dust", sandTan, 4, 0.5f, 3f, 0.6f);
+                    return null;
+                case "hop":
+                {
+                    // Krill flying in an arc from where he took off (to) to where he lands (at), tumbling, with an orange trail;
+                    // radius carries the flight time
+                    var from = to ?? at;
+                    float time = Mathf.Max(0.1f, radius);
+                    var root = Root(from, time + 0.05f, null);
+                    var fig = Equipment.FigureFor("mokrill_krill");
+                    if (fig)
+                    {
+                        var k = Object.Instantiate(fig, root.transform);
+                        k.SetActive(true);
+                        k.transform.localPosition = Vector3.zero;
+                        k.transform.localScale = Vector3.one * 0.6f;
+                        var spin = k.AddComponent<Spin>(); spin.DegPerSec = 540f;
+                    }
+                    Trail(root, krillOrange, 0.4f, 0.3f);
+                    Particles(root, "mat_spark", krillArc, rate: 60, life: 0.3f, speed: 1f, size: 0.08f, world: true);
+                    var arc = root.AddComponent<ArcMover>(); arc.From = from; arc.To = at; arc.Time = time; arc.Height = 2f + Vector3.Distance(from, at) * 0.15f;
+                    return null;
+                }
+                case "hit":
+                    // the landing: an orange ring, electric arcs, a flash, the splash's reach on the ground
+                    Ring(at, krillOrange, 0.3f, radius, 0.35f, 0.4f);
+                    Burst(at, "mat_spark", krillArc, 20, 0.35f, 9f, 0.08f);
+                    for (int i = 0; i < 3; i++) Bolt(at, at + Random.onUnitSphere * radius * 0.6f, new Color32(255, 155, 34, 255), 0.15f, 0.15f, 5);
+                    Burst(at, "mat_glow", krillOrange, 2, 0.2f, 0f, radius);
+                    Flash(at, krillOrange, radius * 3f, 0.25f, 5f);
+                    return null;
+                case "end":
+                    Burst(at, "mat_dust", sandTan, 5, 0.5f, 3f, 0.6f);
+                    return null;
+            }
+            return null;
+        }
+
+        static GameObject MokrillPunch(string moment, Vector3 at)
+        {
+            if (moment != "hit") return null;
+            Burst(at, "mat_dust", sandTan, 3, 0.5f, 4f, 0.6f, shapeRadius: 0.3f);
+            Burst(at, "mat_glow", moOrange, 2, 0.15f, 0f, 1.6f);
+            Burst(at, "mat_spark", krillOrange, 10, 0.3f, 8f, 0.07f);
+            return null;
+        }
+
+        /// <summary>Sand circling a Sanded enemy's head while the buff lasts (read from the synced buff, so every player sees it).</summary>
+        sealed class SandedFx : MonoBehaviour
+        {
+            CharacterBody body; GameObject root; float idle;
+            void Start()
+            {
+                body = GetComponent<CharacterBody>();
+                if (!body) { Destroy(this); return; }
+                float r = Mathf.Max(0.6f, body.radius);
+                var head = body.corePosition + Vector3.up * r;
+                root = Root(head, 0f, body.coreTransform ? body.coreTransform : transform);
+                var spin = new GameObject("spin"); spin.transform.SetParent(root.transform, false); spin.transform.localPosition = Vector3.up * r;
+                spin.AddComponent<Spin>().DegPerSec = 300f;
+                Particles(spin, "mat_dust", sandTan, rate: 25, life: 0.5f, speed: 0.2f, size: 0.5f, shapeRadius: r, ring: true);
+                Particles(spin, "mat_spark", sandEdge, rate: 30, life: 0.4f, speed: 0.3f, size: 0.06f, shapeRadius: r, ring: true);
+            }
+            void Update()
+            {
+                if (!body || !body.healthComponent || !body.healthComponent.alive) { Done(); return; }
+                bool on = false;
+                foreach (var row in BuffRow.All) if (row.Disarm && Buffs.Count(body, row.Id) > 0) { on = true; break; }
+                if (!on) { idle += Time.deltaTime; if (idle > 0.3f) Done(); } else idle = 0f;
+            }
+            void Done() { Stop(root); Destroy(this); }
+            void OnDestroy() { if (root) Stop(root); }
+        }
+
+        /// <summary>Moves an object along a parabola from From to To over Time seconds, Height above the straight line at its top.</summary>
+        sealed class ArcMover : MonoBehaviour
+        {
+            public Vector3 From, To; public float Time = 0.3f, Height = 2f;
+            float age;
+            void Update()
+            {
+                age += UnityEngine.Time.deltaTime;
+                float t = Mathf.Clamp01(age / Time);
+                transform.position = Vector3.Lerp(From, To, t) + Vector3.up * Height * 4f * t * (1f - t);
+            }
         }
 
         // ------------------------------------------------------------------ building blocks

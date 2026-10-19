@@ -52,13 +52,17 @@ def ref(sheet, rid, col, val, valid, allow_none=True):
         bad(f'{sheet}[{rid}].{col}: "{val}" does not resolve')
 
 # 2. references
-EXTRA_FLAGS = {'pierce': 'projectile', 'shockwave': 'heavy_melee'}
+EXTRA_FLAGS = {'pierce': 'projectile', 'shockwave': 'heavy_melee', 'punch': 'ult_krill'}
 for r in sheets['stats']['rows']: ref('stats', r['hero'], 'hero', r['hero'], heroes, False)
 for r in sheets['animations']['rows']: ref('animations', r['hero'], 'hero', r['hero'], heroes, False)
-for r in sheets['sounds']['rows']: ref('sounds', r['skill'], 'skill', r['skill'], skills, False)
+# a sounds row is a skill's, or "<skill>/<part>": an extra sound set of that skill (Mo's footsteps, the punch)
+for r in sheets['sounds']['rows']: ref('sounds', r['skill'], 'skill', r['skill'].split('/')[0], skills, False)
 for r in sheets['skills']['rows']:
     ref('skills', r['id'], 'hero', r['hero'], heroes, False)
     ref('skills', r['id'], 'buff', r['buff'], buffs)
+    ref('skills', r['id'], 'debuff', r['debuff'], buffs)
+    ref('skills', r['id'], 'pattern', r['pattern'], {'krill'})
+    if r['meleePct'] > 0 and r['slot'] != 'primary': bad(f'skills[{r["id"]}].meleePct: only a gun row punches')
     ref('skills', r['id'], 'effect', r['effect'], effects, False)
     ref('skills', r['id'], 'vfx', r['vfx'], effects)
     # extra: an effects row the kind spawns, or a behaviour flag for one kind
@@ -74,7 +78,7 @@ for r in sheets['skills']['rows']:
     for e in r['expect']:
         kind, _, arg = e.partition(':')
         if kind in ('enemy_debuff', 'self_buff'): ref('skills', r['id'], 'expect', arg, buffs, False)
-        elif kind not in ('enemy_damage', 'enemy_stun', 'enemy_burn', 'self_heal', 'self_move', 'self_cloak') or arg:
+        elif kind not in ('enemy_damage', 'enemy_stun', 'enemy_burn', 'enemy_disarm', 'enemy_pulled', 'self_heal', 'self_move', 'self_cloak', 'self_hidden') or arg:
             bad(f'skills[{r["id"]}].expect: "{e}" is not a known effect')
 for b in buffs.values():
     ref('buffs', b['id'], 'triggerBuff', b['triggerBuff'], buffs)
@@ -112,6 +116,7 @@ equipment = sheets['equipment']['rows']
 for e in equipment:
     ref('equipment', e['id'], 'hero', e['hero'], heroes, False)
     ref('equipment', e['id'], 'skill', e['skill'], skills, False)
+    ref('equipment', e['id'], 'figure', e['figure'], {'all', 'rider'}, False)
     sk = skills.get(e['skill'])
     if sk and (sk['slot'] != 'equipment' or sk['hero'] != e['hero']):
         bad(f'equipment[{e["id"]}].skill: "{e["skill"]}" must be the equipment-slot skill of {e["hero"]}')
@@ -152,6 +157,7 @@ for r in skills.values():
         # no upper limit: the ults are pickups any survivor can carry and are left out of balance
         if r['kind'] == 'ult_dance': total = r['duration'] / r['interval'] * r['damagePct']
         elif r['kind'] == 'ult_zone': total = r['duration'] / r['interval'] * r['damagePct']  # per target: every tick strikes up to chainCount enemies
+        elif r['kind'] == 'ult_krill': total = r['duration'] / r['interval'] * r['damagePct']  # Krill lands every interval for duration
         else: total = r['damagePct']
         if total < 6000:
             bad(f'skills[{r["id"]}]: equipment ult total {total:.0f}% below the Preon level of 6000')
@@ -200,7 +206,7 @@ if ev:
             if r[c] != 'none' and r[c] not in events: bad(f'sounds[{r["skill"]}].{c}: event "{r[c]}" not in Deadlock soundevents')
 else:
     bad('dev listing tools/dev/sound_events.txt missing: sound events unverified')
-ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'clothParents', 'ragdollBones', 'ragdollThickness'}  # animations columns that are not clip names
+ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'clothParents', 'ragdollBones', 'ragdollThickness', 'rigPrefix', 'loopSecondary'}  # animations columns that are not clip names
 for r in sheets['animations']['rows']:
     if r['gunArms'] not in ('R', 'LR'): bad(f'animations[{r["hero"]}].gunArms: "{r["gunArms"]}" must be R or LR')
     if r['aimPose'] == 'none': bad(f'animations[{r["hero"]}].aimPose: the gun rig needs a holding pose clip')
@@ -232,8 +238,10 @@ else:
 # 7. scale sanity
 anchor = heroes[sheets['heroes']['anchorHero']]
 for h in heroes.values():
-    want = round(h['sourceHeight'] / anchor['sourceHeight'], 3)
-    if abs(want - h['heightScale']) > 0.002: bad(f'heroes[{h["id"]}].heightScale: {h["heightScale"]} but sourceHeight ratio is {want}')
+    want = round(h['sourceHeight'] * h['modelScale'] / anchor['sourceHeight'], 3)
+    if abs(want - h['heightScale']) > 0.002: bad(f'heroes[{h["id"]}].heightScale: {h["heightScale"]} but sourceHeight x modelScale ratio is {want}')
+    if h['modelScale'] <= 0: bad(f'heroes[{h["id"]}].modelScale: must be > 0')
+    if h['riderBone'] != 'none' and not any(b['melee'] for b in buffs.values()): bad(f'heroes[{h["id"]}].riderBone: no melee buff ever hides it')
 
 cells = sum(len(s['rows']) * len(s['columns']) for s in sheets.values())
 if problems:

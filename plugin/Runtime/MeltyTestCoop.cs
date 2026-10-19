@@ -145,7 +145,7 @@ namespace DeadlockOfRain
                     KillTargets(); QuietStage();
                     var fwd = arenaForward;
                     var r = Vector3.Cross(Vector3.up, fwd);
-                    float d = row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" ? 10f : 6f;
+                    float d = TargetDistance(row);
                     foreach (var at in new[] { body.footPosition + fwd * d, body.footPosition + fwd * (d + 1.5f) + r * 2f })
                     {
                         var p = at;
@@ -188,18 +188,7 @@ namespace DeadlockOfRain
                         {
                             var b = master.GetBody();
                             if (!b) break;
-                            fx.Moved = Mathf.Max(fx.Moved, Vector3.Distance(start, b.corePosition));
-                            if (b.hasCloakBuff) fx.Cloak = true;
-                            foreach (var kv in Buffs.Defs) if (b.HasBuff(kv.Value)) fx.SelfBuffs.Add(kv.Key);
-                            foreach (var t in targets)
-                            {
-                                if (!t || !t.healthComponent || !t.healthComponent.alive) continue;
-                                foreach (var kv in Buffs.Defs) if (t.HasBuff(kv.Value)) fx.EnemyBuffs.Add(kv.Key);
-                                var esm = EntityStateMachine.FindByCustomName(t.gameObject, "Body");
-                                if (esm && esm.state is EntityStates.StunState) fx.Stun = true;
-                                var dc = DotController.FindDotController(t.gameObject);
-                                if (dc && dc.HasDotActive(DotController.DotIndex.Burn)) fx.Burn = true;
-                            }
+                            fx.Poll(b, start, targets);
                             if (row.Slot == "equipment" && !fx.Charged && b.inventory)
                                 fx.Charged = b.inventory.currentEquipmentState.charges == 0 && b.equipmentSlot && b.equipmentSlot.cooldownTimer > 100f;
                             if (shots < 2 && Time.time - tf > new[] { 0.7f, 1.6f }[shots]) { Shot(row.Id + "_host" + (shots + 1)); shots++; }

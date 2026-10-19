@@ -313,4 +313,170 @@ namespace DeadlockOfRain
             }
         }
     }
+    /// <summary>Sand Blast: a front of sand racing along the ground from the hero at speed out to range, in Deadlock's cone
+    /// (radius wide at the start, spreadDeg either side). Every enemy the front passes inside the cone is hit once: damagePct
+    /// and the row's buff (Sanded: no attacks; bosses bossMult as long). A wall in front of the centre stops it.</summary>
+    public sealed class DlrSandWave : MonoBehaviour
+    {
+        CharacterBody owner; SkillRow row; Vector3 origin, dir; float dist; bool damage; GameObject vfx;
+        readonly HashSet<HealthComponent> hit = new HashSet<HealthComponent>();
+
+        public static void Launch(CharacterBody owner, SkillRow row, Vector3 from, Vector3 dir, bool damage)
+        {
+            var go = new GameObject("DlrSandWave_" + row.Id);
+            go.transform.position = from;
+            var w = go.AddComponent<DlrSandWave>();
+            w.owner = owner; w.row = row; w.origin = from; w.dir = dir.normalized; w.damage = damage;
+            w.vfx = Vfx.Play(row.Vfx, "loop", from, row.Radius, null, from + dir);
+        }
+
+        float HalfWidth(float d) => row.Radius * 0.5f + d * Mathf.Tan(row.SpreadDeg * Mathf.Deg2Rad);
+
+        void FixedUpdate()
+        {
+            if (!owner) { Destroy(gameObject); return; }
+            float step = row.Speed * Time.fixedDeltaTime;
+            // the centre line runs into a wall: the wave ends there
+            var p = origin + dir * dist + Vector3.up * 1f;
+            bool blocked = Physics.Raycast(p, dir, out var wall, step, LayerIndex.world.mask, QueryTriggerInteraction.Ignore);
+            float next = Mathf.Min(row.Range, blocked ? dist + wall.distance : dist + step);
+            // the front hugs the ground (slopes, steps)
+            var front = origin + dir * next;
+            if (Physics.Raycast(front + Vector3.up * 4f, Vector3.down, out var g, 10f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) front = g.point;
+            transform.position = front;
+            Vfx.SetWave(vfx, front, dir, HalfWidth(next));
+            foreach (var hb in Fx.Enemies(owner, origin + dir * (next * 0.5f), next * 0.5f + HalfWidth(next) + 2f))
+            {
+                if (hit.Contains(hb.healthComponent)) continue;
+                var b = hb.healthComponent.body;
+                var at = b ? b.corePosition : hb.transform.position;
+                var rel = at - origin; rel.y = 0;
+                float along = Vector3.Dot(rel, dir);
+                if (along < -1f || along > next + 1f) continue;
+                float side = (rel - dir * along).magnitude;
+                if (side > HalfWidth(Mathf.Max(0f, along)) + (b ? b.radius : 0.5f)) continue;
+                hit.Add(hb.healthComponent);
+                // the hit, and sand circling the Sanded enemy for as long as the debuff lasts
+                Vfx.Play(row.Vfx, "hit", at, 1f, b ? b.transform : null);
+                Fx.Sound(row.Id, "hit", at);
+                if (!damage) continue;
+                Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, at);
+                if (row.Buff != "none" && b) Buffs.Apply(owner, b, row.Buff, row.BossMult);
+            }
+            dist = next;
+            if (blocked || dist >= row.Range) Destroy(gameObject);
+        }
+
+        void OnDestroy() => Vfx.Stop(vfx, 0.8f);
+    }
+
+    /// <summary>Tag Team, on the server: Krill, thrown at a first target, lands on an enemy every interval for duration:
+    /// damagePct and a stun to it, splashPct to everything else within radius. Each next target is the nearest enemy within
+    /// reach he hasn't landed on yet (any enemy once they all have, so he can stay on a lone boss). With no enemy in reach
+    /// for minDuration, or at duration, he leaps back to whoever threw him. Kills by his landings give the thrower the row's
+    /// debuff (the trophies: buffStacks, x bossMult for a boss). His flights and landings reach every player through the relay;
+    /// the thrower's Krill stays hidden while the row's buff (krill_away) is on.</summary>
+    public sealed class DlrHopper : MonoBehaviour
+    {
+        const float Flight = 0.3f;
+        CharacterBody owner; SkillRow row; HurtBox target; Vector3 pos;
+        float age, nextHop, landAt = -1f, idle, returnAt = -1f;
+        readonly HashSet<HealthComponent> landed = new HashSet<HealthComponent>();
+
+        public static void Throw(CharacterBody owner, SkillRow row, Vector3 from, HurtBox first, Vector3 aim)
+        {
+            if (!owner || row == null || !UnityEngine.Networking.NetworkServer.active) return;
+            var go = new GameObject("DlrHopper_" + row.Id);
+            go.transform.position = from;
+            var h = go.AddComponent<DlrHopper>();
+            h.owner = owner; h.row = row; h.pos = from;
+            Buffs.Clear(owner, row.Buff);
+            Buffs.AddTimed(owner, row.Buff, row.Duration + 2f);
+            // no target (a joined player's aim: the server can't see it): look for one a little ahead of the thrower
+            h.target = first ? first : h.Nearest(from + aim.normalized * 6f, row.Reach * 0.5f);
+            if (h.target) h.HopTo(h.target);
+            GlobalEventManager.onCharacterDeathGlobal += h.OnDeath;
+        }
+
+        HurtBox Nearest(Vector3 from, float within)
+        {
+            HurtBox any = null;
+            foreach (var hb in Fx.Enemies(owner, from, within))
+            {
+                if (!hb.healthComponent.body) continue;
+                if (!landed.Contains(hb.healthComponent)) return hb;
+                if (!any) any = hb;
+            }
+            return any;
+        }
+
+        Vector3 Point(HurtBox hb) => hb && hb.healthComponent && hb.healthComponent.body ? hb.healthComponent.body.corePosition : hb ? hb.transform.position : pos;
+
+        void HopTo(HurtBox hb)
+        {
+            target = hb;
+            var to = Point(hb);
+            // the flight: Krill in an arc from where he is to the next enemy (moment hop: at = landing, to = take-off)
+            Relay.Vfx(row.Vfx, "hop", to, Flight, null, pos);
+            landAt = age + Flight;
+        }
+
+        void FixedUpdate()
+        {
+            age += Time.fixedDeltaTime;
+            if (!owner || !owner.healthComponent || !owner.healthComponent.alive) { Destroy(gameObject); return; }
+            if (returnAt >= 0f)
+            {
+                if (age >= returnAt) Destroy(gameObject);
+                return;
+            }
+            if (landAt >= 0f && age >= landAt) Land();
+            if (landAt >= 0f) return;
+            if (age >= row.Duration) { Return(); return; }
+            if (age < nextHop) return;
+            var next = Nearest(pos, row.Reach);
+            if (next) { idle = 0f; HopTo(next); }
+            else if ((idle += Time.fixedDeltaTime) >= row.MinDuration) Return();
+        }
+
+        void Land()
+        {
+            landAt = -1f;
+            nextHop = age + Mathf.Max(0.05f, row.Interval - Flight);
+            if (!target || !target.healthComponent || !target.healthComponent.alive) return;
+            pos = Point(target);
+            landed.Add(target.healthComponent);
+            Fx.Hit(owner, target, row.DamagePct / 100f, row.ProcCoefficient, pos, default, DamageColorIndex.Default, gameObject);
+            Fx.Stun(target.healthComponent, row.StunDuration);
+            foreach (var hb in Fx.Enemies(owner, pos, row.Radius))
+                if (hb.healthComponent != target.healthComponent) Fx.Hit(owner, hb, row.SplashPct / 100f, row.ProcCoefficient, pos, default, DamageColorIndex.Default, gameObject);
+            Relay.Vfx(row.Vfx, "hit", pos, row.Radius);
+            Relay.Sound(row.Id, "hit", pos);
+            MeltyTest.Report("krill-lands", true, owner.baseNameToken);
+        }
+
+        void Return()
+        {
+            var to = owner.corePosition;
+            Relay.Vfx(row.Vfx, "hop", to, Flight, null, pos);
+            Relay.Vfx(row.Vfx, "end", to);
+            Relay.Sound(row.Id, "end", to);
+            returnAt = age + Flight;
+        }
+
+        void OnDeath(DamageReport r)
+        {
+            if (r == null || !owner || r.damageInfo == null || r.damageInfo.inflictor != gameObject || row.Debuff == "none") return;
+            int stacks = Mathf.Max(1, (int)row.BuffStacks) * (r.victimBody && r.victimBody.isChampion ? Mathf.Max(1, (int)row.BossMult) : 1);
+            var b = Sheet.Buff(row.Debuff);
+            for (int i = 0; i < stacks; i++) Buffs.AddTimed(owner, row.Debuff, 0f, b != null ? (int)b.MaxStacks : 0);
+        }
+
+        void OnDestroy()
+        {
+            GlobalEventManager.onCharacterDeathGlobal -= OnDeath;
+            // Krill is back (or gone with a dead thrower): Mo shows him and shoots again
+            if (owner && row != null) Buffs.Clear(owner, row.Buff);
+        }
+    }
 }

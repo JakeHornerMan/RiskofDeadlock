@@ -26,7 +26,7 @@ SKILLS = sheet('skills'); BUFFS = {r['id']: r for r in sheet('buffs')}
 EQUIP = {r['hero']: r for r in sheet('equipment')}
 LINKS = {'haze': 'https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p', 'abrams': 'https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG',
          'seven': 'https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m', 'infernus': 'https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF',
-         'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
+         'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
 SLOTS = ['primary', 'secondary', 'utility', 'special']
 KEY = {'primary': 'M1', 'secondary': 'M2', 'utility': 'Shift', 'special': 'R', 'equipment': 'Q'}
 KIND_LABEL = {'primary': 'Weapon', 'secondary': 'Ability', 'utility': 'Ability', 'special': 'Ability · new in 0.4'}
@@ -53,6 +53,11 @@ VANILLA = {
         'secondary': ('Pressure Mines', 'Place mines that explode when enemies come near.'),
         'utility': ('Bubble Shield', 'A shield that blocks enemies and their shots; no damage.'),
         'special': ('TR12 Gauss Auto-Turret', 'Place a turret that inherits your items.')}),
+ 'ToolbotBody': dict(name='MUL-T', who='Toolbot',
+   kit={'primary': ('Auto-Nailgun', 'Fire nails for 70% each, faster the longer you hold.'),
+        'secondary': ('Blast Canister', 'Launch a canister for 220% that bursts into bomblets, stunning.'),
+        'utility': ('Transport Mode', 'Charge forward, knocking enemies back for 250%.'),
+        'special': ('Power Mode', 'Switch tools; no damage of its own.')}),
 }
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
@@ -77,6 +82,7 @@ CHANGES = {
            ('v0.4.1', ['Cooldowns only, no damage cuts: Lightning Ball 6 → 16 s, Static Charge 7 → 16 s, Power Surge 14 → 30 s',
                        'Shock Rifle fix: the gun froze after a magazine (29 rounds in bursts of 3)']),
            ('v0.4.0', ['Thunderhead moves to Q as an equipment; new R: Power Surge with RoR2 Tesla arcs'])],
+ 'mokrill': [('v0.7.0', ['New hero, matched to MUL-T: Yellow Canary (a fixed 4-pellet triangle), Sand Blast (a cone of sand that stops monsters attacking), Burrow (dig under the ground, burst out in a spin), Dust Devil (a sand tornado that pulls enemies in), Tag Team (Q: Krill hops from enemy to enemy for 10 s, and Mo punches while he is away)', 'Heavyweight: monsters can’t knock him back'])],
  'infernus': [('v0.6.3', ['Flame Gun 50 → 75 % per bullet', 'Flame Dash: one tap runs the full 5 s (no holding), laying pockets of fire (twice the old size) that burn for 5 s and build Afterburn on enemies inside; overlapping pockets stack']), ('v0.6.2', ['Concussive Combustion: a timer ticks once a second through the fuse, faster on the last second, on anyone holding the item']), ('v0.6.1', ['Napalm: Right Click shows where the flask will land, Left Click throws it; same arc, three times as far (45 → 78 m/s)', 'Flame Dash: hold for up to 5 s (was 3); cooldown 13 s (was 8)', 'Concussive Combustion: a yellow ring on the ground shows the blast range during the fuse, on anyone holding the item', 'Falls as a ragdoll on death']),
             ('v0.6.0', ['Co-op: up to 4 players; every move works the same when a friend joins your game and plays Infernus']),
             ('v0.5.1', ['Flame Gun: louder, with a heavier shot layered under his own, and muzzle smoke and a flash', 'Napalm: a visible bottle flies from him to the target']),
@@ -98,6 +104,8 @@ RUNS = {
 }
 
 ANALYSIS = {
+ 'mokrill': ['First bench (0.7.0): about 170 %/s above MUL-T, inside the band, close to the design’s estimate of 1,600. Dust Devil gathers the pack around him, so Burrow’s pop-out spin and every later tornado hit all twelve.',
+             'His gun is slower than MUL-T’s nailgun (443 against 876 alone); Sand Blast (510 alone) and the pull carry him. No healing in the kit: 250 health and 25 armor pay for the big target.'],
  'haze': ['0.5.1 made Phantom Strike cut every enemy within 5 m of the target. Every cut also gives each of them 5 Fixation, so the whole pack reaches the 10-stack burst together and the bursts splash one another: Phantom Strike alone went from 375 to 4,139 %/s, and she is far above Commando. Not retuned yet: the fix is the creator’s call (Fixation on the target only, or fewer stacks to the others).'],
  'abrams': ['0.5.1: Haymaker locks onto the enemy you aim at and rushes to it, even in the air. It does about what the old lunge did (1,760 %/s alone), and he stays just inside Loader’s band.',
             'Loader is the least steady survivor in the test (2,059 to 3,837 across the library’s runs), so the verdict uses the averages.'],
@@ -223,6 +231,14 @@ def maths(r):
         return [f"{n(d)} % every {n(r['interval'])} s × {n(r['duration'])} s = {n(tot)} % to each enemy within {n(r['radius'])} m", f"every {n(cd)} s"], tot / cd
     if k == 'power_surge':
         return [f"{n(d)} % per arc, up to {n(r['chainCount'])} more enemies, once per gun burst, for {n(r['duration'])} s", f"every {n(cd)} s"], None
+    if k == 'cone_wave':
+        return [f"{n(d)} % to every enemy in a {n(r['range'])} m cone ({n(r['radius'])} m wide at the start), Sanded", f"every {n(cd)} s"], d / cd
+    if k == 'burrow':
+        tot = r['burst'] * d
+        return [f"{n(r['burst'])} × {n(d)} % = {n(tot)} % to everything within {n(r['radius'])} m as he pops out", f"every {n(cd)} s"], tot / cd
+    if k == 'dust_devil':
+        ticks = r['duration'] / r['interval']; tot = ticks * d; cyc = cd + r['duration'] if r['cooldownOnEnd'] else cd
+        return [f"{n(ticks)} × {n(d)} % = {n(tot)} % to everything within {n(r['radius'])} m, pulling from {n(r['range'])} m", f"every {n(cyc)} s ({n(r['duration'])} s spin + {n(cd)} s cooldown)"], tot / cyc
     if k == 'self_buff':
         return ['no damage: invisibility and speed'], 0
     return [], None
@@ -399,7 +415,8 @@ def match_of(hid):
     return body, VANILLA.get(body, dict(name=body, who=body.replace('Body', ''), kit={}))
 
 def hero_who(hid):
-    return 'Deadlock' + next(h['displayName'] for h in HEROES if h['id'] == hid)
+    # the body name: Deadlock + the display name in letters only ("Mo & Krill" -> DeadlockMoKrill)
+    return 'Deadlock' + re.sub(r'[^A-Za-z0-9]', '', next(h['displayName'] for h in HEROES if h['id'] == hid))
 
 def verdict(val, base):
     if val is None or not base: return 'unknown', 0

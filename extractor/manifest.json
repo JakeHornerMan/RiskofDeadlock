@@ -107,14 +107,45 @@
         "weapon_run_w",
         "weapon_stand_idle"
       ]
+    },
+    {
+      "id": "mokrill",
+      "vmdl": "models/heroes_staging/digger/digger.vmdl",
+      "meshes": [
+        "body",
+        "rider",
+        "hat"
+      ],
+      "clips": [
+        "ability_burrow_intro_in_ground",
+        "ability_burrow_spinning_start",
+        "ability_throw_sand",
+        "ability_tornado_cast",
+        "ability_tornado_idle",
+        "burrowing_loop",
+        "item_throw",
+        "jump_in_air_loop",
+        "jump_start",
+        "melee_quick_1",
+        "melee_quick_2",
+        "primary_stand_reload",
+        "weapon_run_e",
+        "weapon_run_n",
+        "weapon_run_s",
+        "weapon_run_w",
+        "weapon_stand_idle"
+      ]
     }
   ],
   "images": [
     "panorama/images/heroes/bull_card_psd.vtex",
     "panorama/images/heroes/bull_sm_psd.vtex",
+    "panorama/images/heroes/digger_card_psd.vtex",
+    "panorama/images/heroes/digger_sm_psd.vtex",
     "panorama/images/heroes/gigawatt_card_psd.vtex",
     "panorama/images/heroes/gigawatt_sm_psd.vtex",
     "panorama/images/heroes/guns/bull_gun_psd.vtex",
+    "panorama/images/heroes/guns/digger_gun_psd.vtex",
     "panorama/images/heroes/guns/gigawatt_gun_psd.vtex",
     "panorama/images/heroes/guns/haze_gun_psd.vtex",
     "panorama/images/heroes/guns/inferno_gun_psd.vtex",
@@ -130,6 +161,10 @@
     "panorama/images/hud/abilities/giga_chain_psd.vtex",
     "panorama/images/hud/abilities/giga_static_psd.vtex",
     "panorama/images/hud/abilities/giga_storm_psd.vtex",
+    "panorama/images/hud/abilities/grappler/grappler_combo_psd.vtex",
+    "panorama/images/hud/abilities/grappler/grappler_regen_psd.vtex",
+    "panorama/images/hud/abilities/grappler/grappler_spin_psd.vtex",
+    "panorama/images/hud/abilities/grappler/grappler_throw_sand_psd.vtex",
     "panorama/images/hud/abilities/haze/haze_bullet_flurry_psd.vtex",
     "panorama/images/hud/abilities/haze/haze_fixation_psd.vtex",
     "panorama/images/hud/abilities/haze/haze_sleep_dagger_psd.vtex",
@@ -140,6 +175,7 @@
     "panorama/images/hud/abilities/inferno_molotov_psd.vtex",
     "panorama/images/items/spirit/torment_pulse_psd.vtex",
     "panorama/images/items/vitality/phantom_strike_psd.vtex",
+    "panorama/images/items/vitality/unstoppable_psd.vtex",
     "panorama/images/items/weapon/melee_charge_psd.vtex",
     "panorama/images/items/weapon/tesla_bullets_psd.vtex"
   ],
@@ -193,6 +229,22 @@
     "Infernus.Wpn.Fire",
     "Infernus.Wpn.Impact",
     "Infernus.Wpn.Reload.Start",
+    "MoKrill.Burrow.Modifier.Start",
+    "MoKrill.Burrow.Spin",
+    "MoKrill.Burrow.Spin.End",
+    "MoKrill.Burrow.Spin.Lp",
+    "MoKrill.Burrow.Travel.Lp",
+    "MoKrill.Combo.Cast",
+    "MoKrill.Combo.Channel.Start",
+    "MoKrill.Combo.Duration.Lp",
+    "MoKrill.Combo.Hit",
+    "MoKrill.Footstep",
+    "MoKrill.JumpLand",
+    "MoKrill.Melee.Swing",
+    "MoKrill.Sandblast.Cast",
+    "MoKrill.Sandblast.Impact",
+    "MoKrill.Wpn.Fire",
+    "MoKrill.Wpn.Reload.Start",
     "Mods.Armor.Phantom.Strike.Cast",
     "Mods.Armor.Phantom.Strike.Hit",
     "Mods.Tech.TormentPulse.Proc",
@@ -207,7 +259,8 @@
     "soundevents/hero/abrams.vsndevts",
     "soundevents/hero/gigawatt.vsndevts",
     "soundevents/hero/haze.vsndevts",
-    "soundevents/hero/inferno.vsndevts"
+    "soundevents/hero/inferno.vsndevts",
+    "soundevents/hero/krill.vsndevts"
   ],
   "voiceGroups": [
     "atlas/atlas_happy",
@@ -253,6 +306,16 @@
     "inferno/inferno_unselect",
     "inferno/inferno_use_power1",
     "inferno/inferno_use_power2",
-    "inferno/inferno_use_power4"
+    "inferno/inferno_use_power4",
+    "krill/krill_happy",
+    "krill/krill_hunt",
+    "krill/krill_killstreak_high",
+    "krill/krill_killstreak_mid",
+    "krill/krill_killstreak_start",
+    "krill/krill_select",
+    "krill/krill_unselect",
+    "krill/krill_use_power2",
+    "krill/krill_use_power3",
+    "krill/krill_use_power4"
   ]
 }

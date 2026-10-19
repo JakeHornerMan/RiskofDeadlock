@@ -42,6 +42,10 @@ namespace DeadlockOfRain
         public static float CommandoHeight;
         static GameObject holder;
 
+        /// <summary>The display name in letters and digits only, for object and catalog names ("Mo & Krill" -> MoKrill; the
+        /// bench, the body catalog and console commands want one word).</summary>
+        public static string CodeName(HeroRow hero) => System.Text.RegularExpressions.Regex.Replace(hero.DisplayName, "[^A-Za-z0-9]", "");
+
         public static bool IsHero(CharacterBody b, string id) { var h = b ? b.GetComponent<DeadlockHero>() : null; return h && h.HeroId == id; }
         public static string HeroOf(CharacterBody b) { var h = b ? b.GetComponent<DeadlockHero>() : null; return h ? h.HeroId : null; }
 
@@ -59,7 +63,7 @@ namespace DeadlockOfRain
 
         /// <summary>Movement skills run on the Body machine (they steer the character), everything else on Weapon.</summary>
         public static string MachineFor(string kind) =>
-            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" ? "Body" : "Weapon";
+            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "dust_devil" ? "Body" : "Weapon";
 
         public static Type StateFor(string kind) => kindTypes != null && kindTypes.TryGetValue(kind, out var t) ? t : null;
         static Dictionary<string, Type> kindTypes;
@@ -97,11 +101,11 @@ namespace DeadlockOfRain
                 Bodies[hero.Id] = body;
                 var display = ModelBuilder.Build(hero, true);
                 display.transform.SetParent(holder.transform, false);
-                display.name = "Deadlock" + hero.DisplayName + "Display";
+                display.name = "Deadlock" + CodeName(hero) + "Display";
 
                 var sd = ScriptableObject.CreateInstance<SurvivorDef>();
-                ((ScriptableObject)sd).name = "Deadlock" + hero.DisplayName;
-                sd.cachedName = "Deadlock" + hero.DisplayName;
+                ((ScriptableObject)sd).name = "Deadlock" + CodeName(hero);
+                sd.cachedName = "Deadlock" + CodeName(hero);
                 sd.bodyPrefab = body;
                 sd.displayPrefab = display;
                 sd.displayNameToken = Sheet.Token("name", hero.Id);
@@ -123,7 +127,7 @@ namespace DeadlockOfRain
         static GameObject BuildBody(GameObject commando, HeroRow hero, Dictionary<string, Type> kinds)
         {
             var body = UnityEngine.Object.Instantiate(commando, holder.transform);
-            body.name = "Deadlock" + hero.DisplayName + "Body";
+            body.name = "Deadlock" + CodeName(hero) + "Body";
             var ni = body.GetComponent<NetworkIdentity>();
             if (ni)
             {
@@ -172,6 +176,10 @@ namespace DeadlockOfRain
             // size: capsule and camera follow the hero's Deadlock height relative to Haze (= Commando)
             var capsule = body.GetComponent<CapsuleCollider>();
             float h = capsule.height * hero.HeightScale, r = capsule.radius * hero.WidthScale, y = capsule.center.y * hero.HeightScale;
+            // capsuleFrom: a huge hero (Mo & Krill) moves with a vanilla body's capsule (MUL-T's), so it fits wherever that one does
+            var capFrom = VanillaBody(hero.CapsuleFrom);
+            var capSrc = capFrom ? capFrom.GetComponent<CapsuleCollider>() : null;
+            if (capSrc) { h = capSrc.height; r = capSrc.radius; y = capSrc.center.y; }
             capsule.height = h; capsule.radius = Mathf.Min(r, h * 0.5f); capsule.center = new Vector3(0, y, 0);
             var kcm = body.GetComponent<KinematicCharacterMotor>();
             if (kcm)
@@ -182,16 +190,28 @@ namespace DeadlockOfRain
             }
             if (cb.aimOriginTransform) cb.aimOriginTransform.localPosition = Vector3.Scale(cb.aimOriginTransform.localPosition, new Vector3(1, hero.HeightScale, 1));
             var ctp = body.GetComponent<CameraTargetParams>();
-            if (ctp && ctp.cameraParams)
+            // cameraFrom: a vanilla body's camera (MUL-T's, further back), pushed back by cameraScale and right by cameraRight
+            var camFrom = VanillaBody(hero.CameraFrom);
+            var camSrc = camFrom ? camFrom.GetComponent<CameraTargetParams>() : null;
+            if (ctp && (camSrc && camSrc.cameraParams || ctp.cameraParams))
             {
-                var cp = UnityEngine.Object.Instantiate(ctp.cameraParams);
+                var cp = UnityEngine.Object.Instantiate(camSrc && camSrc.cameraParams ? camSrc.cameraParams : ctp.cameraParams);
                 cp.name = "ccpDeadlock" + hero.DisplayName;
                 var d = cp.data;
-                d.idealLocalCameraPos.value = d.idealLocalCameraPos.value * Mathf.Lerp(1f, hero.HeightScale, 0.8f);
-                d.pivotVerticalOffset.value = d.pivotVerticalOffset.value * hero.HeightScale;
+                if (!camSrc)
+                {
+                    d.idealLocalCameraPos.value = d.idealLocalCameraPos.value * Mathf.Lerp(1f, hero.HeightScale, 0.8f);
+                    d.pivotVerticalOffset.value = d.pivotVerticalOffset.value * hero.HeightScale;
+                }
+                var pos = d.idealLocalCameraPos.value * hero.CameraScale;
+                pos.x += hero.CameraRight;
+                d.idealLocalCameraPos.value = pos;
                 cp.data = d;
                 ctp.cameraParams = cp;
             }
+            // a wide hero reaches chests, shrines and the teleporter from the edge of his body
+            var interactor = body.GetComponent<Interactor>();
+            if (interactor) interactor.maxInteractionDistance *= hero.InteractRange;
 
             // skills: Commando's four slots get the hero's four families (gun, two abilities, the new R); the Deadlock
             // ultimate is not a skill but the hero's equipment (Q, Equipment.cs)
@@ -257,12 +277,12 @@ namespace DeadlockOfRain
             def.fullRestockOnAssign = true;
             def.isCombatSkill = true;
             def.mustKeyPress = !primary;
-            bool movement = row.Kind.StartsWith("dash") || row.Kind == "self_buff" && row.Buff == "smoke";
+            bool movement = row.Kind.StartsWith("dash") || row.Kind == "burrow" || row.Kind == "self_buff" && row.Buff == "smoke";
             def.cancelSprintingOnActivation = !movement;
             def.canceledFromSprinting = false;
             def.hideCooldown = false;
             def.hideStockCount = primary;
-            def.beginSkillCooldownOnSkillEnd = false;
+            def.beginSkillCooldownOnSkillEnd = row.CooldownOnEnd;
             SkillDefs[row.Id] = def;
             RowOfSkill[def] = row;
             Tokens[def.skillNameToken] = row.Name;
@@ -288,10 +308,19 @@ namespace DeadlockOfRain
             foreach (var b in BuffRow.All) Tokens[Sheet.Token("buff", b.Id)] = b.Name;
         }
 
+        /// <summary>A vanilla survivor's body prefab by name (ToolbotBody), for a hero that copies its capsule or camera; null for none.</summary>
+        static GameObject VanillaBody(string name)
+        {
+            if (string.IsNullOrEmpty(name) || name == "none") return null;
+            try { return Addressables.LoadAssetAsync<GameObject>("RoR2/Base/" + name.Replace("Body", "") + "/" + name + ".prefab").WaitForCompletion(); }
+            catch (Exception e) { Log.Warn($"vanilla body {name}: {e.Message}"); return null; }
+        }
+
         public static SkillRow RowFor(GenericSkill gs) => gs && gs.skillDef && RowOfSkill.TryGetValue(gs.skillDef, out var r) ? r : null;
     }
 
-    /// <summary>Per-body runtime state for the hero kits: magazine and reload, queued heals, smoke timer.</summary>
+    /// <summary>Per-body runtime state for the hero kits: magazine and reload, queued heals, smoke timer; Heavyweight, the
+    /// rider shown or hidden (Krill on Mo), heavy footsteps and the landing thud.</summary>
     public sealed class HeroRuntime : MonoBehaviour
     {
         public int Ammo = -1;
@@ -304,7 +333,76 @@ namespace DeadlockOfRain
         int clip;
         CharacterBody body;
 
+        HeroRow hero;
+        SoundRow steps;
+        Transform rider;
+        Vector3 riderScale = Vector3.one;
+        bool riderHidden;
+        float nextStep, airTime;
+        bool wasGrounded = true;
+
         void Awake() => body = GetComponent<CharacterBody>();
+
+        void Start()
+        {
+            hero = Sheet.Hero(Survivors.HeroOf(body));
+            if (hero == null) return;
+            // Heavyweight: monsters' hits can't push, pull or knock the hero (jump pads and his own moves still move him)
+            if (hero.ImmuneToForce && NetworkServer.active && !body.HasBuff(RoR2Content.Buffs.ImmuneToPhysicsForces)) body.AddBuff(RoR2Content.Buffs.ImmuneToPhysicsForces);
+            var gun = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Slot == "primary");
+            steps = gun != null ? Sheet.Sound(gun.Id + "/step") : null;
+            var model = body.modelLocator ? body.modelLocator.modelTransform : null;
+            if (model && hero.RiderBone != "none")
+                foreach (var tr in model.GetComponentsInChildren<Transform>(true)) if (tr.name == hero.RiderBone) { rider = tr; riderScale = tr.localScale; break; }
+        }
+
+        /// <summary>A buff with melee=true is on (Krill is away): the M1 punches and the rider is hidden.</summary>
+        public static bool Melee(CharacterBody b)
+        {
+            if (!b) return false;
+            foreach (var r in BuffRow.All) if (r.Melee && Buffs.Count(b, r.Id) > 0) return true;
+            return false;
+        }
+
+        /// <summary>A buff with noGun=true is on (burrowed, spinning): the gun can't fire.</summary>
+        public static bool NoGun(CharacterBody b)
+        {
+            if (!b) return false;
+            foreach (var r in BuffRow.All) if (r.NoGun && Buffs.Count(b, r.Id) > 0) return true;
+            return false;
+        }
+
+        void LateUpdate()
+        {
+            if (rider)
+            {
+                bool hide = Melee(body);
+                if (hide != riderHidden) { riderHidden = hide; rider.localScale = hide ? Vector3.zero : riderScale; }
+                else if (hide) rider.localScale = Vector3.zero;
+            }
+            if (steps == null || !body || !body.characterMotor || !body.healthComponent || !body.healthComponent.alive) return;
+            var m = body.characterMotor;
+            bool grounded = m.isGrounded;
+            if (!grounded) airTime += Time.deltaTime;
+            else
+            {
+                // a heavy landing after a real fall: the thud and a short shake
+                if (!wasGrounded && airTime > 0.6f)
+                {
+                    Fx.Sound(steps.Skill, "hit", body.footPosition);
+                    ShakeEmitter.CreateSimpleShakeEmitter(body.footPosition, new Wave { amplitude = 2f, frequency = 25f }, 0.3f, 12f, true);
+                }
+                airTime = 0f;
+                // footsteps paced by how fast he walks (one every 0.55 s at 5 m/s)
+                var v = m.velocity; v.y = 0;
+                if (v.magnitude > 1f && Time.time >= nextStep)
+                {
+                    nextStep = Time.time + 0.55f * 5f / Mathf.Max(2f, v.magnitude);
+                    Fx.Sound(steps.Skill, "cast", body.footPosition);
+                }
+            }
+            wasGrounded = grounded;
+        }
 
         public void BeginReload(SkillRow gun, float attackSpeed)
         {

@@ -40,6 +40,15 @@ namespace DeadlockOfRain.States
             if (t >= nextShot && burstLeft == 0 && isAuthority)
             {
                 if (!(inputBank && inputBank.skill1.down) && !MeltyTest.WantsFire(characterBody)) { outer.SetNextStateToMain(); return; }
+                // Burrowed or spinning (a noGun buff): no shots, but a held button keeps the state for when it ends
+                if (HeroRuntime.NoGun(characterBody)) return;
+                // Krill is away (a melee buff): Mo punches with the gun row's melee numbers instead of firing
+                if (row.MeleePct > 0 && HeroRuntime.Melee(characterBody))
+                {
+                    nextShot = t + 1f / Mathf.Max(0.1f, row.MeleeRate * attackSpeedStat);
+                    Punch();
+                    return;
+                }
                 if (rt != null && rt.Reloading) return;
                 if (rt != null && rt.Ammo <= 0) { StartReload(); return; }
                 nextShot = t + row.Interval / attackSpeedStat;
@@ -62,11 +71,13 @@ namespace DeadlockOfRain.States
             Relay.Reload(characterBody);
         }
 
-        /// <summary>What another player's machine plays for one of this hero's shots: sound, flash, muzzle visual, recoil.</summary>
+        /// <summary>What another player's machine plays for one of this hero's shots: sound, flash, muzzle visual, recoil
+        /// (or, while Krill is away, Mo's punch).</summary>
         public static void ShotFx(CharacterBody body, bool left)
         {
             var row = Survivors.RowFor(body.skillLocator ? body.skillLocator.primary : null);
             if (row == null) return;
+            if (row.MeleePct > 0 && HeroRuntime.Melee(body)) { PunchFx(body, row, left); return; }
             var anim = DeadlockAnimator.Of(body);
             if (anim) anim.Recoil(row.Pellets > 1 ? 9f : 3f);
             Fx.Sound(row.Id, "cast", body.transform.position);
@@ -92,6 +103,50 @@ namespace DeadlockOfRain.States
             Fx.Sound(row.Id, "reload", body.transform.position);
         }
 
+        /// <summary>Mo's punch (Krill is away): a short, wide bullet from the aim origin out to the gun row's reach, so it is
+        /// the owner's hit like any shot (RoR2 sends its damage to the server); every player sees and hears it.</summary>
+        void Punch()
+        {
+            if (rt != null) rt.AltMuzzle = !rt.AltMuzzle;
+            bool alt = rt != null && rt.AltMuzzle;
+            PunchFx(characterBody, row, alt);
+            Relay.Shot(characterBody, alt);
+            var aim = GetAimRay();
+            new BulletAttack
+            {
+                owner = gameObject, weapon = gameObject,
+                origin = aim.origin, aimVector = aim.direction,
+                minSpread = 0f, maxSpread = 0f, bulletCount = 1,
+                damage = damageStat * row.MeleePct / 100f, procCoefficient = 1f, force = 400f,
+                isCrit = RollCrit(), radius = 2.5f, smartCollision = true,
+                maxDistance = row.Reach + characterBody.radius, falloffModel = BulletAttack.FalloffModel.None,
+                hitEffectPrefab = null, tracerEffectPrefab = null,
+                damageType = new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Primary },
+            }.Fire();
+            MeltyTest.Report("punch", true, characterBody.baseNameToken);
+        }
+
+        /// <summary>The punch's swing (alternating fists), and its hit sound and dust on whatever stands in reach in front.</summary>
+        static void PunchFx(CharacterBody body, SkillRow row, bool alt)
+        {
+            var anim = DeadlockAnimator.Of(body);
+            if (anim) anim.Gesture(alt ? "melee_alt" : "melee", 1.4f);
+            var snd = row.Id + "/punch";
+            Fx.Sound(snd, "cast", body.corePosition);
+            var fwd = body.inputBank ? body.inputBank.aimDirection : body.transform.forward;
+            var front = body.corePosition + fwd.normalized * (body.radius + row.Reach * 0.5f);
+            foreach (var hb in Fx.Enemies(body, front, row.Reach * 0.6f, 3))
+            {
+                var at = hb.healthComponent.body ? hb.healthComponent.body.corePosition : hb.transform.position;
+                Fx.Sound(snd, "hit", at);
+                Vfx.Play("mokrill_punch", "hit", at);
+            }
+        }
+
+        /// <summary>Pellet directions for a fixed pattern (pattern krill: Deadlock's Yellow Canary, a centre pellet and three
+        /// corners of a triangle, spreadDeg out, the same every shot).</summary>
+        static readonly Vector2[] KrillPattern = { new Vector2(0f, 0f), new Vector2(0f, -0.66f), new Vector2(-0.5f, 0.5f), new Vector2(0.5f, 0.5f) };
+
         void FireOne()
         {
             if (rt != null)
@@ -109,7 +164,30 @@ namespace DeadlockOfRain.States
             ShotFx(characterBody, left);
             Relay.Shot(characterBody, left);
             var aim = GetAimRay();
-            if (isAuthority)
+            if (isAuthority && row.Pattern == "krill")
+            {
+                // one bullet per pellet along its fixed offset (Deadlock's offsets; a corner sits spreadDeg off the centre)
+                var up = Vector3.Cross(aim.direction, Vector3.Cross(Vector3.up, aim.direction)).normalized;
+                var side = Vector3.Cross(Vector3.up, aim.direction).normalized;
+                bool crit = RollCrit();
+                foreach (var o in KrillPattern)
+                {
+                    var dir = Quaternion.AngleAxis(o.x * row.SpreadDeg / 0.7f, up) * Quaternion.AngleAxis(-o.y * row.SpreadDeg / 0.7f, side) * aim.direction;
+                    new BulletAttack
+                    {
+                        owner = gameObject, weapon = gameObject,
+                        origin = aim.origin, aimVector = dir,
+                        minSpread = 0f, maxSpread = 0f, bulletCount = 1,
+                        damage = damageStat * Coef, procCoefficient = row.ProcCoefficient, force = 100f,
+                        tracerEffectPrefab = Fx.Prefab(row.Effect), muzzleName = "MuzzleRight", hitEffectPrefab = null,
+                        isCrit = crit, radius = 0.3f, smartCollision = true, maxDistance = row.Range,
+                        falloffModel = BulletAttack.FalloffModel.Buckshot,
+                        hitCallback = PelletHit,
+                        damageType = new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Primary },
+                    }.Fire();
+                }
+            }
+            else if (isAuthority)
             {
                 var ba = new BulletAttack
                 {
@@ -136,6 +214,13 @@ namespace DeadlockOfRain.States
                 ba.Fire();
             }
             MeltyTest.Report("gun-fires", true, characterBody.baseNameToken);
+        }
+
+        /// <summary>A pattern pellet landed: the row's hit visual (dirt sparks), then RoR2's own hit handling.</summary>
+        bool PelletHit(BulletAttack attack, ref BulletAttack.BulletHit hit)
+        {
+            if (row != null) Vfx.Play(row.Vfx, "hit", hit.point);
+            return BulletAttack.defaultHitCallback(attack, ref hit);
         }
 
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Skill;

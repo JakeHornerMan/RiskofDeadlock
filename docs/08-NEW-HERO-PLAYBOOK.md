@@ -122,6 +122,14 @@ Tell the creator the count first: normally **3 launches** (test, bench, portrait
 - Release (doc 03 §6, only when asked): recipe `<hero>-plays` (drop `four-slots`; the recipe is at the 12-check cap),
   `test.minutes` +2, a forced re-extract for players' old caches.
 
+## 7b. Lessons from Mo & Krill (the fifth hero, 2026-10-19)
+- A hero bigger than the rest: scale the model evenly (`modelScale`) and copy a vanilla body's capsule (`capsuleFrom`) and camera (`cameraFrom`); keep `heightScale = sourceHeight × modelScale / anchor`.
+- A second character on the model (Krill): his bones carry a prefix (`rigPrefix`) for the gun rig; hide him by scaling his root bone (`riderBone`), not by disabling renderers (CharacterModel re-enables them).
+- Extra sound sets for one skill: sounds rows named `<skill>/<part>`.
+- RoR2's dust material is opaque: keep dust particles small and few (doc 02 gotcha 18).
+- A display name with spaces or `&`: object names go through `Survivors.CodeName`.
+- Launches used: 4 test runs (one landed on a ledge), 1 bench + portraits together (`PORTRAITS=1 run_bench.sh 30 <hero>`), 1 co-op.
+
 ## 8. Definition of done
 - [ ] `PREFLIGHT CLEAN`, build clean, cache rebuilt with the new content.
 - [ ] `run_test.sh <hero>`: every check passes (including `ragdoll`, `sound-events`, `voice-lines`), `1/1 heroes`.

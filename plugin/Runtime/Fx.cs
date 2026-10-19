@@ -146,14 +146,44 @@ namespace DeadlockOfRain
             hc.TakeDamageForce(push * mass, true, true);
         }
 
+        /// <summary>Dust Devil's pull, one physics tick: every enemy between rMin and rMax of center is drawn toward it, hardest at
+        /// the edge and easing to nothing at rMin (so they circle inside the damage ring rather than pile onto the centre); speed
+        /// m/s at the edge, scaled by mass so big and small enemies come alike, bosses at bossMult. Flyers too (RoR2 moves
+        /// rigidbody monsters by the same force). Server only.</summary>
+        public static int Pull(CharacterBody owner, Vector3 center, float rMin, float rMax, float speed, float bossMult)
+        {
+            if (!owner || !UnityEngine.Networking.NetworkServer.active) return 0;
+            int n = 0;
+            foreach (var hb in Enemies(owner, center, rMax))
+            {
+                var b = hb.healthComponent.body;
+                if (!b) continue;
+                var to = center - b.corePosition; to.y *= b.isFlying ? 1f : 0f;
+                float d = to.magnitude;
+                if (d <= rMin || d < 0.01f) continue;
+                float k = Mathf.Clamp01((d - rMin) / Mathf.Max(0.1f, rMax - rMin)) * (b.isChampion ? bossMult : 1f);
+                if (k <= 0f) continue;
+                float mass = b.characterMotor ? b.characterMotor.mass : b.rigidbody ? b.rigidbody.mass : 100f;
+                // top the enemy's speed toward the centre up to speed x k (its own friction slows it again between ticks)
+                var dir = to / d;
+                var vel = b.characterMotor ? b.characterMotor.velocity : b.rigidbody ? b.rigidbody.velocity : Vector3.zero;
+                float dv = speed * k - Vector3.Dot(vel, dir);
+                if (dv <= 0f) continue;
+                hb.healthComponent.TakeDamageForce(dir * dv * mass, false, false);
+                n++;
+            }
+            return n;
+        }
+
         /// <summary>Server-side direct damage to one hurtbox (used by ticks, chains and custom projectiles).</summary>
-        public static void Hit(CharacterBody owner, HurtBox target, float coefficient, float proc, Vector3 at, DamageTypeCombo type = default, DamageColorIndex color = DamageColorIndex.Default)
+        /// <param name="inflictor">what dealt it (default the owner): Tag Team's hopping Krill, so his kills can be told apart.</param>
+        public static void Hit(CharacterBody owner, HurtBox target, float coefficient, float proc, Vector3 at, DamageTypeCombo type = default, DamageColorIndex color = DamageColorIndex.Default, GameObject inflictor = null)
         {
             if (!owner || !target || !target.healthComponent || !UnityEngine.Networking.NetworkServer.active) return;
             var info = new DamageInfo
             {
                 attacker = owner.gameObject,
-                inflictor = owner.gameObject,
+                inflictor = inflictor ? inflictor : owner.gameObject,
                 damage = owner.damage * coefficient,
                 crit = owner.RollCrit(),
                 position = at,

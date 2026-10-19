@@ -35,11 +35,11 @@ Before touching anything:
 
 | Item | State |
 |---|---|
-| Status | **The four heroes are done** (creator, 2026-10-18). Next: a new hero, one shot, via doc 08 |
+| Status | **Mo & Krill added (v0.7.0, 2026-10-19, not released)**: every test check passes, bench 1620 vs MUL-T 1450 (inside). Waiting on the creator's stage play-check, a co-op rerun and the release. The first four heroes are done |
 | Version | **0.6.3** (`plugin/Plugin.cs`; Flame Gun 75 %, Flame Dash 5 s run with Afterburn fire pockets, Abrams charge vfx; 0.6.2: Combustion fuse ticks; 0.6.1: Napalm aimed throw, Combustion ring, ragdolls, Flame Dash 5 s/13 s), extractor **1.2.0** (sound volumes read as dB). **0.6.3 is LIVE on Melty as "Risk of Deadlock"** (https://melty.gg/m/risk-of-deadlock-2, 2026-10-18), character select screenshots; Infernus' select-screen text still says "Catalyst" (fix in the next release) |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
-| Installed build | **v0.6.3** (2026-10-18); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
-| Heroes | Haze, Abrams, Seven, Infernus; 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
+| Installed build | **v0.7.0 dev build with Mo & Krill** (2026-10-19, for the creator's play-check; Melty's live release is still 0.6.3); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
+| Heroes | Haze, Abrams, Seven, Infernus, **Mo & Krill** (v0.7.0); 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
 | Test | **`run_test.sh <hero>` tests only the given heroes (creator's rule, CLAUDE.md).** v0.6.3: Infernus pass (in a 4-hero run before the filter existed), Abrams 1/1 pass (2026-10-18); the co-op test was skipped for the pockets (creator impatient with game runs); `run_coop_test.sh infernus` passes (one earlier run missed the joined Combustion, unexplained) |
 | Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, within **±500 %/s**, comparing **means over every bench run** of the current build (`RUNS` in `tools/kit_pages.py`; doc 05 §3.0) |
 | Balance now | v0.5.1 heroes-only run vs the library (doc 05 §3.1): **Haze 6550 vs Commando 1222 (far above: Phantom Strike's area spreads Fixation)**, Abrams 2460 vs Loader 2951 (inside), **Seven 3164 vs Artificer 4013 (below: the bouncing ball leaves the pack)**, Infernus 1149 vs Engineer 1611 (inside, just; v0.6.3, doc 05 §3.3). Not retuned; the creator decides |
@@ -211,7 +211,18 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: v0.6.1–0.6.3 Infernus requests, ragdolls, fuse ticks, fire pockets, Abrams charge vfx (2026-10-18, done)
+## 9. Last work: Mo & Krill, the fifth hero (2026-10-19, built and tested; not released)
+
+From the creator's spec (doc 07). Sheets, four new kinds (`burrow`, `cone_wave`, `dust_devil`, `ult_krill`), the gun pattern and
+punch, prefix-aware gun rig (Krill holds the gun), `modelScale` plus MUL-T's capsule and camera, Heavyweight, effects, tests.
+`run_test.sh mokrill`: all checks pass. Bench 1620 vs MUL-T 1450. Kit page published (private) and every page republished.
+
+**Next:** the creator play-checks the stages (snags; collider = MUL-T's) and shares the Mo & Krill page; rerun
+`run_coop_test.sh mokrill` when the PC has memory to spare (the first run was stopped by Claude Code for low memory after the
+join); then a 0.7.0 release when asked (recipe `mokrill-plays`, drop one check; forced re-extract; `test.minutes` +2). The
+creator also asked to make the GitHub repo public: waiting on whether to push the unpushed commits first.
+
+## 9-prev2. v0.6.1–0.6.3 Infernus requests, ragdolls, fuse ticks, fire pockets, Abrams charge vfx (2026-10-18, done)
 
 The creator played 0.6.0 from Steam (BepInEx re-enabled by copying `winhttp.dll`; Melty may switch it off again). Napalm
 is now aimed (Right Click readies, marker shows the landing, Left Click throws; same arc ×3 as far), Combustion shows its

@@ -112,12 +112,16 @@ namespace DeadlockOfRain.States
 
         /// <summary>The living enemy closest to the crosshair within range (and angle degrees of the aim), in line of sight; null if none.
         /// Lock-on moves (Phantom Strike, Haymaker) cast only on a target.</summary>
-        protected HurtBox AimTarget(float range, float angle = 15f)
+        protected HurtBox AimTarget(float range, float angle = 15f) => AimTargetOf(characterBody, range, angle);
+
+        /// <summary>The same search for any body (Tag Team's check before it spends the equipment).</summary>
+        public static HurtBox AimTargetOf(CharacterBody body, float range, float angle = 15f)
         {
-            var aim = GetAimRay();
+            if (!body || !body.inputBank) return null;
+            var aim = body.inputBank.GetAimRay();
             var search = new BullseyeSearch
             {
-                teamMaskFilter = TeamMask.GetEnemyTeams(teamComponent.teamIndex),
+                teamMaskFilter = TeamMask.GetEnemyTeams(body.teamComponent.teamIndex),
                 filterByLoS = true,
                 searchOrigin = aim.origin,
                 searchDirection = aim.direction,
@@ -126,7 +130,7 @@ namespace DeadlockOfRain.States
                 sortMode = BullseyeSearch.SortMode.Angle,
             };
             search.RefreshCandidates();
-            search.FilterOutGameObject(gameObject);
+            search.FilterOutGameObject(body.gameObject);
             return search.GetResults().FirstOrDefault(h => h && h.healthComponent && h.healthComponent.alive && h.healthComponent.body);
         }
 

@@ -1,6 +1,6 @@
 {
   "sheet": "equipment",
-  "about": "The heroes' Deadlock ultimates as RoR2 equipment (Q). One row per equipment; its numbers, kind, sounds and effects are the skill row it names (skills slot equipment, cooldown 120). hero: who starts every run holding it. canDrop/enigmaCompatible/randomTrigger follow the Preon Accumulator (anyone can find it in chests, the Artifact of Enigma and Bottled Chaos can fire it). The pickup is a small figure of the hero; the HUD and logbook icon is the skill's Deadlock icon.",
+  "about": "The heroes' Deadlock ultimates as RoR2 equipment (Q). One row per equipment; its numbers, kind, sounds and effects are the skill row it names (skills slot equipment, cooldown 120). hero: who starts every run holding it. canDrop/enigmaCompatible/randomTrigger follow the Preon Accumulator (anyone can find it in chests, the Artifact of Enigma and Bottled Chaos can fire it). The pickup is a small figure of the hero; the HUD and logbook icon is the skill's Deadlock icon. figure: which part of the hero's model the pickup figure shows: all, or a material-name filter (rider: just Krill).",
   "columns": [
     "id",
     "hero",
@@ -9,7 +9,8 @@
     "lore",
     "canDrop",
     "enigmaCompatible",
-    "randomTrigger"
+    "randomTrigger",
+    "figure"
   ],
   "rows": [
     {
@@ -20,7 +21,8 @@
       "lore": "Haze never misses twice. The second shot is for the one who saw the first.",
       "canDrop": true,
       "enigmaCompatible": true,
-      "randomTrigger": true
+      "randomTrigger": true,
+      "figure": "all"
     },
     {
       "id": "eq_abrams_seismic",
@@ -30,7 +32,8 @@
       "lore": "\"Case closed.\" The crater was the only evidence left.",
       "canDrop": true,
       "enigmaCompatible": true,
-      "randomTrigger": true
+      "randomTrigger": true,
+      "figure": "all"
     },
     {
       "id": "eq_seven_thunderhead",
@@ -40,7 +43,8 @@
       "lore": "The storm follows Seven the way a dog follows its master: loyal, loud, and dangerous to strangers.",
       "canDrop": true,
       "enigmaCompatible": true,
-      "randomTrigger": true
+      "randomTrigger": true,
+      "figure": "all"
     },
     {
       "id": "eq_infernus_combustion",
@@ -50,7 +54,19 @@
       "lore": "Infernus doesn't run from fires. He is the fire.",
       "canDrop": true,
       "enigmaCompatible": true,
-      "randomTrigger": true
+      "randomTrigger": true,
+      "figure": "all"
+    },
+    {
+      "id": "eq_mokrill_tag_team",
+      "hero": "mokrill",
+      "skill": "mokrill_tag_team",
+      "pickupText": "Throw Krill: he leaps from enemy to enemy for 10s, then comes back.",
+      "lore": "Mo throws, Krill lands. Whatever Krill lands on stops moving for a while.",
+      "canDrop": true,
+      "enigmaCompatible": true,
+      "randomTrigger": true,
+      "figure": "rider"
     }
   ]
 }

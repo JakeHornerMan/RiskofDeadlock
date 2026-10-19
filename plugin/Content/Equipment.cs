@@ -20,6 +20,16 @@ namespace DeadlockOfRain
 
         internal const float FigurePadding = 2.2f;
 
+        /// <summary>The pickup figure of the equipment whose skill draws this vfx (Tag Team's flying Krill).</summary>
+        public static GameObject FigureFor(string vfx)
+        {
+            foreach (var kv in rowOf)
+#pragma warning disable CS0618
+                if (kv.Value.Vfx == vfx && kv.Key.pickupModelPrefab) return kv.Key.pickupModelPrefab;
+#pragma warning restore CS0618
+            return null;
+        }
+
         public static SkillRow RowOf(EquipmentDef def) => def && rowOf.TryGetValue(def, out var r) ? r : null;
 
         /// <summary>The equipment a hero starts with (null for any other body).</summary>
@@ -58,7 +68,7 @@ namespace DeadlockOfRain
                 def.colorIndex = ColorCatalog.ColorIndex.Equipment;
 #pragma warning disable CS0618 // the direct-reference fields are still read when no Addressables reference is set
                 def.pickupIconSprite = DeadlockCache.Sprite(skill.Icon);
-                def.pickupModelPrefab = PickupModel(hero, holder);
+                def.pickupModelPrefab = PickupModel(hero, holder, e.Figure);
 #pragma warning restore CS0618
                 Defs[e.Id] = def;
                 rowOf[def] = skill;
@@ -71,10 +81,11 @@ namespace DeadlockOfRain
         }
 
         /// <summary>The pickup: a small statue of the hero in their idle pose (the model baked into one static mesh, centred, so
-        /// RoR2's pickup display can size and spin it like any item model).</summary>
-        static GameObject PickupModel(HeroRow hero, Transform holder)
+        /// RoR2's pickup display can size and spin it like any item model). figure "rider": only the parts whose material
+        /// says rider (Krill without Mo, also the Krill that flies in Tag Team).</summary>
+        static GameObject PickupModel(HeroRow hero, Transform holder, string figure)
         {
-            var model = ModelBuilder.Build(hero, true);
+            var model = ModelBuilder.Build(hero, true, figure == "all" ? null : figure);
             if (!model) return null;
             try
             {
@@ -154,6 +165,9 @@ namespace DeadlockOfRain
             if (!machine) machine = EntityStateMachine.FindByCustomName(body.gameObject, "Weapon");
             if (!machine) machine = body.GetComponent<EntityStateMachine>();
             if (!machine) return false;
+            // a lock-on ult (Tag Team) needs an enemy under the crosshair: none, no throw and no charge spent (only where the
+            // aim is known: the server's own bodies, or the owner's client)
+            if (row.Kind == "ult_krill" && !DlrState.AimTargetOf(body, row.Range)) return false;
             var state = (DlrState)System.Activator.CreateInstance(type);
             state.RowOverride = row;
             // false while another ult (or a stun) holds the machine: no charge is spent

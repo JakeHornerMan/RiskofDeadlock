@@ -6,10 +6,10 @@
 
 **Pages (claude.ai Artifacts, shared "anyone with the link" since 2026-10-18; linked from the Melty listing):** [Haze](https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p) ·
 [Abrams](https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG) · [Seven](https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m) ·
-[Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) · [Balance vs Commando](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3).
+[Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) · [Mo & Krill](https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa) (new, private until the creator shares it) · [Balance vs Commando](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3).
 Built by `python tools/kit_pages.py` into `build/pages/`. Republish each page to its link whenever this doc or doc 05 changes.
 
-**Version:** 0.6.3 (2026-10-18; Flame Gun 75 %, Flame Dash a 5 s run laying Afterburn fire pockets. 0.6.2: Combustion fuse ticks. 0.6.1: Napalm aimed throw, Flame Dash 5 s / 13 s, Combustion range ring, ragdoll deaths).
+**Version:** 0.7.0 in progress (2026-10-19: Mo & Krill added; not released). 0.6.3 (2026-10-18; Flame Gun 75 %, Flame Dash a 5 s run laying Afterburn fire pockets. 0.6.2: Combustion fuse ticks. 0.6.1: Napalm aimed throw, Flame Dash 5 s / 13 s, Combustion range ring, ragdoll deaths).
 
 **DPS source:** the stored library `docs/dps-library.json` (doc 05 §6): every vanilla survivor measured 3 times on
 2026-10-17 and **never re-measured**; Haze, Abrams and Seven from the v0.5.1 heroes-only run, Infernus from his v0.6.3 run (2026-10-18).
@@ -25,7 +25,7 @@ How to read the DPS:
 - **Balance** compares the main moves (M1, M2, Shift, R) together, without equipment, with the hero's **own RoR2 match** (the
   survivor its stats are built on): balanced = within **±500 %/s** of the match, comparing the **means over every bench run of
   the current build** (doc 05 §3.0; one run is too noisy). Haze → Commando, Abrams → Loader,
-  Seven → Artificer, Infernus → Engineer.
+  Seven → Artificer, Infernus → Engineer, Mo & Krill → MUL-T.
 - Per-ability DPS below is the library entry of each survivor (means of 3 runs; one run for Haze, Abrams, Seven); single runs swing ±10 %.
 - **Q (equipment)** is **not balanced** (any survivor can carry it): its column is one use, spread over 30 s, plus its total, for fun.
 - Passives have no number of their own: they are inside their gun's (and other skills') numbers.
@@ -117,7 +117,25 @@ bench's run.
 | Q | **Concussive Combustion** (equipment) | Becomes a bomb, fire gathering on him; a yellow ring on the ground shows the blast's reach, with a ring sweeping inward each second as a countdown and a timer ticking along (on whoever holds the item); can move while it builds; the blast stuns and leaves burning ground. | 6800 % in 18 m after a 3 s fuse, stun 2 s, each kill heals 10 % of max health | 120 s | 2720 · 326 (not balanced; one use: 81600 % on 12 enemies) |
 
 
-## Sounds (all four heroes)
+## Mo & Krill: the tunnel rats (main moves at once: **1620 %/s**, one v0.7.0 run; match MUL-T 1450 (library): **inside** ±500, doc 05 §3.4)
+
+Size (creator, 2026-10-19: "Abrams' height, about 2× wide"): Deadlock's model scaled evenly by `modelScale` 1.262 to Abrams' height
+(≈2.2 m in RoR2, about 1.9 m wide); he moves with **MUL-T's capsule** (`capsuleFrom`), so he fits wherever MUL-T does; his hurtbox
+follows the model (a bigger target). MUL-T's camera, 15 % further back and 1.2 m to the right; 1.6× interaction reach.
+Stats: 250 +75 health, 25 armor, 1 +0.2 regen, 11 +2.2 damage, **5 m/s** with half the usual acceleration, 1 jump.
+
+| Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
+|---|---|---|---|---|---|
+| Passive | **Heavyweight** | Monsters can't knock Mo back, push or pull him (vanilla ImmuneToPhysicsForces). Krill rides on him and holds the gun. Heavy footsteps and a thud and shake after a fall. | – | – | – |
+| M1 | **Yellow Canary** | Krill fires 4 pellets in Deadlock's fixed pattern (a centre pellet and a triangle of three around it, ≈2.5° out), the same every shot. While Krill is away (Tag Team) Mo **punches** instead. No shots while burrowed or spinning. | 4 × 40 %, 4 shots/s, 20 shells, 2 s reload, proc 0.5, falloff from 20 m; punch 300 %, 2/s, 5 m | – | **443** · 49 |
+| M2 | **Sand Blast** | A wave of sand races along the ground in Deadlock's cone (5 m wide at Mo, ≈15 m at 20 m), hitting everything it passes. Hit monsters are **Sanded**: their skills are locked (RoR2's DisableAllSkills) and they are slowed. Works while burrowed or spinning. | 450 %, 20 m, 89 m/s; Sanded 2 s (1 s bosses), −30 % speed | 7 s | **510** · 56 |
+| Shift | **Burrow** | Mo digs in (model hidden, a dirt mound travels with him; he can still be hit): twice as fast with +100 armor, each hit taken costs 1 m/s for 1.5 s. He bursts out at 4 s, on Shift or Jump, or off a ledge, in a spin: 3 hits within 8 m, knocking monsters up (not bosses) and slowing them. **R underground** bursts straight into Dust Devil. | 4 s, ×2 speed, +100 armor; spin 3 × 100 %, 8 m, slow 50 % 2 s, knock-up 12 m/s | 8 s (from the start) | **370** · 41 |
+| R | **Dust Devil** | Mo spins as a sand tornado (Deadlock's own `ability_tornado_idle` clip: arms out) for 4 s, walking at his normal speed; every enemy within 16 m is pulled in (bosses at ¼), everything within 8 m takes damage four times a second. R again stops it. | 16 × 50 %, 8 m, pull 14 m/s from 16 m (none inside 4 m), proc 0.3 | 12 s (after the spin) | **382** · 42 |
+| Q | **Tag Team** (equipment) | Mo throws Krill at the enemy you aim at (40 m; no target, no throw and no charge spent). For 10 s Krill leaps to a new enemy every 0.5 s (nearest within 25 m he hasn't hit), stunning it and splashing around it, then leaps back. Each kill gives the thrower +2 max health (+20 for a boss) **for the stage**, up to +200. On any survivor a Krill appears and does the same. | 1500 % + 500 % within 4 m, 1 s stun, 20 landings | 120 s | 2700 · 297 (not balanced; one use: 81000 % on 12 enemies) |
+
+Not in the kit: Scorn (its heal would repeat Abrams' Siphon Life) and Deadlock's innate (two headshot heads, tunnel vents).
+
+## Sounds (every hero)
 Every sound is the hero's own Deadlock sound, read from the player's install (doc 01 §6.5) and played by our mixer
 (doc 02, sound). The source of truth is `design/sounds.json`; this table mirrors it. **Start** plays when the move starts, **loop** while
 it lasts, **hit** on each hit, **end** when it ends, **reload** on a reload; a **layer** plays under the start or hit to make it
@@ -145,6 +163,13 @@ heavier; **gain** scales the whole row. In co-op every player hears each sound o
 | Infernus | Shift | Flame Dash | `Inferno.FlameDash.Modifier.Start` | `Inferno.FlameDash.Modifier.Lp` | `Infernus.FlameDash.Hit` | `Inferno.FlameDash.Modifier.Stop` | – | – | 1.0 |
 | Infernus | R | Torment Pulse | `Mods.Tech.TormentPulse.Proc` | – | `Mods.Tech.TormentPulse.Proc` | – | – | – | 1.0 |
 | Infernus | Q | Concussive Combustion | `Inferno.FireBomb.Cast` | – | – | `Inferno.FireBomb.Explode` | – | – | 1.0 |
+| Mo & Krill | M1 | Yellow Canary | `MoKrill.Wpn.Fire` | – | – | – | `MoKrill.Wpn.Reload.Start` | – | 1.0 |
+| Mo & Krill | M1 (Krill away) | Punch | `MoKrill.Melee.Swing` | – | `MoKrill.Combo.Hit` | – | – | – | 1.0 |
+| Mo & Krill | M2 | Sand Blast | `MoKrill.Sandblast.Cast` | – | `MoKrill.Sandblast.Impact` | – | – | – | 1.0 |
+| Mo & Krill | Shift | Burrow | `MoKrill.Burrow.Modifier.Start` | `MoKrill.Burrow.Travel.Lp` | `MoKrill.Burrow.Spin` (pop-out) | `MoKrill.Burrow.Spin.End` | – | – | 1.0 |
+| Mo & Krill | R | Dust Devil | `MoKrill.Burrow.Spin` | `MoKrill.Burrow.Spin.Lp` | – | `MoKrill.Burrow.Spin.End` | – | – | 1.0 |
+| Mo & Krill | Q | Tag Team | `MoKrill.Combo.Channel.Start` | – | `MoKrill.Combo.Hit` (each landing) | `MoKrill.Combo.Cast` (Krill back) | – | – | 1.0 |
+| Mo & Krill | – | Footsteps / landing | `MoKrill.Footstep` (one per stride) | – | `MoKrill.JumpLand` (after a fall over 0.6 s) | – | – | – | 0.7 |
 
 Fuse ticks (v0.6.2, columns `tick` / `tickFinal`): Concussive Combustion plays `Ratking.ScrapGrenade.Timer` at 0 s and 1 s and
 `Ratking.ScrapGrenade.Timer.Final` at 2 s (cut at the blast), in time with its ring closing in. No other move has a fuse.
@@ -155,6 +180,8 @@ Notes:
 - Volumes come from Deadlock (its `volume` is decibels, read correctly since extractor 1.2.0), times the row's gain, times
   RoR2's SFX volume.
 - Concussive Combustion's cast is itself a 3 s build-up that rises to the bang; the ticks sit on top of it.
+- Mo & Krill's extra sound sets are rows named `<skill>/<part>` (`mokrill_gun/punch`, `mokrill_gun/step`, v0.7.0).
+- Dust Devil reuses Burrow's spin sounds (Deadlock has no tornado move of its own).
 - Bullet Dance's hits replay Haze's gun shot; Seismic Impact plays its `hit` (the descend) as the dive starts and `end` on landing.
 
 ### Voice lines
@@ -165,11 +192,12 @@ are never written out here or on the pages. When each hero speaks:
   Abrams' Haymaker and Infernus' Torment Pulse, which use a grunt instead of a line; Q every time. An ult used by another survivor speaks in its own hero's voice.
 - **Kill streaks:** 4, 7 and 10 kills in quick succession (gaps under 1.5 s).
 - **Idle:** after 2–5 min of silence.
+- Mo & Krill: Krill does the talking (Mo is silent in Deadlock): select, unselect, Sand Blast (`use_power3`) and Burrow (`use_power2`) 40 %, Tag Team every time; Dust Devil is silent (his `use_power1` lines are about Scorn).
 - Only the local player hears their own hero's voice.
 
 ---
 
-## The ult equipment (all four heroes)
+## The ult equipment (every hero)
 - **What they are:** RoR2 equipment on Q (`design/equipment.json`) with a **120 s** cooldown. Fuel Cells and Gesture of the Drowned work as on any equipment.
 - **Drops:** they follow the Preon Accumulator's rules: chests, Equipment Barrels, the Artifact of Enigma and Bottled Chaos.
 - **Power:** at least 6800 % per enemy per use, the Preon scaled from 140 s to 120 s. **Not balanced** (creator's decision, v0.4.1): any survivor can carry them, so they may be as strong as we like and are left out of the comparison with Commando.

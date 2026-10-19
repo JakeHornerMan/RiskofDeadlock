@@ -52,7 +52,7 @@ namespace DeadlockOfRain
     public static class Relay
     {
         internal enum Kind : uint { Vfx = 1, Sound = 2, Impact = 3, Flash = 4, Bolt = 5, Shot = 6, Reload = 7 }
-        internal static readonly string[] Moments = { "cast", "loop", "hit", "end", "wave", "muzzle", "trigger", "aim", "reload" };
+        internal static readonly string[] Moments = { "cast", "loop", "hit", "end", "wave", "muzzle", "trigger", "aim", "reload", "hop" };
         public static int Received;
 
         static void Send(Kind k, int index, int moment, EffectData d)

@@ -14,7 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
-| – | – | nothing open (v0.6.3 Flame Gun 75 % and Flame Dash pockets covered by the Infernus-only run of 2026-10-18, §3.3) | – | – |
+| – | – | nothing open (v0.6.3 Flame Gun 75 % and Flame Dash pockets covered by the Infernus-only run of 2026-10-18, §3.3; Mo & Krill's first run 2026-10-19, §3.4) | – | – |
 
 ## 1. The question
 The creator's hypothesis: **Commando, using every ability the moment it is ready while shooting constantly for 30 s
@@ -129,6 +129,18 @@ Flame Gun 50 → 75 % per bullet; Flame Dash always runs 5 s and lays Afterburn 
 
 - Flame Dash's damage is now the Afterburn ignitions its pockets cause (12 enemies, 385 hits in 3 uses).
 - One run each; this bench is noisy for single passes.
+
+### 3.4 v0.7.0 Mo & Krill (Mo & Krill-only run, 2026-10-19)
+New hero matched to MUL-T (creator's spec: "aiming for 1,450 %/s", balanced band 950–1,950). Library `VERSION` v0.7.0.
+
+| Hero | %/s | M1 / M2 / Shift / R alone | RoR2 match (library) | Gap | Verdict (±500) |
+|---|---|---|---|---|---|
+| Mo & Krill | **1620** | 443 / 510 / 370 / 382 | MUL-T 1450 | +170 | **inside** |
+
+- The spec estimated ~1,600 together: Dust Devil gathers the still pack around him, so the pop-out spin and each later tornado hit all 12.
+- The gun is half MUL-T's nailgun alone (443 against 876); Sand Blast and the pull carry him. Levers if a later run misses the band
+  (spec): above 1,950 Dust Devil 50 → 40 %, then Sand Blast 450 → 350 %; below 950 Yellow Canary 40 → 50 %.
+- Q (Tag Team) one use: 81,000 % on the 12 (just for fun).
 
 Each move alone in the last full run (%/s, hero vs match):
 

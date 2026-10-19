@@ -15,6 +15,8 @@ namespace DeadlockOfRain
         AnimRow rows;
         Transform upperBody;
         Transform[] spine;
+        /// <summary>The gun rig's bone-name prefix (animations rigPrefix): "rider_" when the gun is held by Krill on Mo.</summary>
+        string rig = "";
         CharacterBody body;
         CharacterMotor motor;
         InputBankTest inputs;
@@ -69,17 +71,20 @@ namespace DeadlockOfRain
             logical["secondary"] = rows.Secondary; logical["utility"] = rows.Utility; logical["utility_loop"] = rows.UtilityLoop;
             logical["special_start"] = rows.SpecialStart; logical["special"] = rows.Special;
             logical["ult_start"] = rows.UltStart; logical["ult_loop"] = rows.UltLoop; logical["ult_end"] = rows.UltEnd; logical["death"] = rows.Death;
+            logical["special_loop"] = rows.SpecialLoop; logical["melee"] = rows.Melee; logical["melee_alt"] = rows.MeleeAlt;
+            rig = rows.RigPrefix == "none" ? "" : rows.RigPrefix;
             var all = GetComponentsInChildren<Transform>(true);
             Transform Bone(string n) { foreach (var t in all) if (t.name == n) return t; return null; }
             upperBody = Bone(rows.UpperBodyBone);
-            spine = new[] { Bone("spine_1"), Bone("spine_2"), Bone("spine_3") };
+            // the gun rig turns the spine of whoever holds the gun (Krill's, rider_spine_*, on Mo)
+            spine = new[] { Bone(rig + "spine_1"), Bone(rig + "spine_2"), Bone(rig + "spine_3") };
             foreach (var kv in clips)
             {
                 var st = anim[kv.Key];
                 if (st == null) continue;
                 bool locomotion = IsLocomotion(kv.Key);
                 st.layer = locomotion ? 0 : 1;
-                st.wrapMode = locomotion || kv.Key == rows.UltLoop || kv.Key == rows.UtilityLoop || (kv.Key == rows.Secondary && HeroId == "abrams") ? WrapMode.Loop : WrapMode.Once;
+                st.wrapMode = locomotion || kv.Key == rows.UltLoop || kv.Key == rows.UtilityLoop || kv.Key == rows.SpecialLoop || (kv.Key == rows.Secondary && rows.LoopSecondary) ? WrapMode.Loop : WrapMode.Once;
             }
             CaptureRig(all);
             loco = null;
@@ -95,12 +100,12 @@ namespace DeadlockOfRain
             if (rows.AimPose == "none" || !clips.TryGetValue(rows.AimPose, out var pose)) return;
             pose.SampleAnimation(gameObject, 0f);
             gunHand = Bone(rows.GunHand);
-            mainHand = gunHand ? gunHand : Bone("hand_R");
+            mainHand = gunHand ? gunHand : Bone(rig + "hand_R");
             gunBone = rows.GunBone != "none" ? Bone(rows.GunBone) : null;
             // the gun's own bones (weapon_hand_* subtrees, everything under a welded gun bone) never animate: ability and
             // reload clips would otherwise slide the gun around inside the hand
             var gun = new List<Transform>();
-            foreach (var w in new[] { Bone("weapon_hand_R"), Bone("weapon_hand_L") }) if (w) gun.AddRange(w.GetComponentsInChildren<Transform>(true));
+            foreach (var w in new[] { Bone(rig + "weapon_hand_R"), Bone(rig + "weapon_hand_L") }) if (w) gun.AddRange(w.GetComponentsInChildren<Transform>(true));
             if (gunBone && gunHand)
             {
                 foreach (var t in gunBone.GetComponentsInChildren<Transform>(true)) if (t != gunBone) gun.Add(t);
@@ -111,12 +116,12 @@ namespace DeadlockOfRain
             var arms = new List<Transform>();
             foreach (var side in rows.GunArms == "LR" ? new[] { "R", "L" } : new[] { "R" })
             {
-                var clav = Bone("clavicle_" + side);
+                var clav = Bone(rig + "clavicle_" + side);
                 if (clav) foreach (var t in clav.GetComponentsInChildren<Transform>(true)) if (!gun.Contains(t)) arms.Add(t);
             }
             Snapshot(arms, out rigBones, out rigPos, out rigRot);
             Snapshot(gun, out gunParts, out gunPartPos, out gunPartRot);
-            gunRoot = gunBone ? gunBone : Bone("weapon_hand_R");
+            gunRoot = gunBone ? gunBone : Bone(rig + "weapon_hand_R");
             if (gunRoot && mainHand) gunRootInHand = mainHand.InverseTransformPoint(gunRoot.position);
             var muzzle = Bone("muzzle_fx");
             var dir = muzzle && mainHand ? muzzle.position - mainHand.position : transform.forward;
@@ -402,7 +407,8 @@ namespace DeadlockOfRain
                 gunBone.position = gunHand.TransformPoint(gunOffPos);
                 gunBone.rotation = gunHand.rotation * gunOffRot;
             }
-            if (gunRoot && mainHand)
+            // (not while the gun's holder is hidden: Krill scaled to 0 while he is away on Tag Team)
+            if (gunRoot && mainHand && mainHand.lossyScale.x > 1e-3f)
                 GunDrift = Mathf.Max(GunDrift, Vector3.Distance(mainHand.InverseTransformPoint(gunRoot.position), gunRootInHand) * transform.lossyScale.x);
         }
 

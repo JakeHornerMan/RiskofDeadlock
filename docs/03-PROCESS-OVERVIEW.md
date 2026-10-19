@@ -324,6 +324,7 @@ doc 02 §11. In short:
 | Extractor runs on the player's PC (Melty `setup`) | Legal: we ship no Deadlock files. Deadlock updates are picked up by re-running. |
 | Legacy `Animation` with runtime clips | No Unity editor or AssetBundles needed; clips come straight from the cache |
 | One SkinnedMeshRenderer per material | RoR2 CharacterModel's one-material-per-renderer behaviour |
+| Mo & Krill (v0.7.0, 2026-10-19) from the creator's spec, matched to MUL-T | Questions → answers: size → "Abrams' height, ~2× wide (Recommended)" (even `modelScale`, capsule copied from MUL-T); Krill holds the gun, so during Tag Team → "Mo punches instead"; Sand Blast → "Deadlock's cone, 20 m"; stage snag check → "You play-check it"; Dust Devil look → "Try Deadlock's clip first" (it worked: `ability_tornado_idle`); Tag Team reward → "Reset each stage"; toughness → "Tankier: 250 / 25" |
 | Haze = Commando height, one global factor | Requirement: scale relative to RoR2 characters while keeping Deadlock's relative sizes |
 | Gun rig (rigid arms, weld, chest aim, recoil) | Playtest: guns floated or pointed at the floor when firing; the user asked for gun locked to hand, aimed at camera, no arm animation |
 | 4 skills, ult on R (v0.2.0) | Playtest: "risk of rain only has 4 active abilities". Ability 3 dropped; Haze and Infernus keep their gun on-hit effects as passives. |
@@ -357,12 +358,13 @@ doc 02 §11. In short:
 - **New effects are only checked by eye** (devshots); the test measures what skills do, not how they look.
 - **Co-op over the internet is untested with real friends.** The two-copy test proves joining, every skill of a joined player and the relay on one PC (loopback). Steam lobbies, Melty's Join link with a `.steamlobby` address and lag were not tested (one Steam account can't join itself); the first real session with a friend is the test. With lag, Haymaker's damage and Seismic Impact's slam land a moment after the owner sees them (doc 02 §7.7).
 - **Equipment ults on non-heroes** (Commando, Equipment Drones) use plain muzzles and no Deadlock animation; they work but look plainer than on the hero.
+- **Mo & Krill (v0.7.0):** the co-op test was stopped for low memory after the join (rerun `run_coop_test.sh mokrill`). The creator still has to play-check the stages for snags (doors, shop, teleporter pits, jump pads, Bazaar, the final stage); his capsule is MUL-T's. A joined player's Tag Team with no target loses the charge (doc 02 §7.7). The `enemy_pulled` check is loose (targets also move when shot). Mo & Krill's kit page is private until the creator shares it. Not released: the recipe needs `mokrill-plays` (drop one check at the 12 cap) and a forced re-extract.
 - **More heroes:** follow doc 08 (the four heroes are done, creator 2026-10-18). Abrams-style off-hand weapon pivots need `gunBone`.
 - **Seven's gun froze after a magazine (fixed in v0.4.1):** 29 rounds in bursts of 3 drove the burst counter below zero; any gun whose magazine is not a multiple of its burst would have done the same.
 - **Seven's gun is stronger than the sheet says:** about 350 %/s sustained (before Capacitor), against a `targetDps` of 250. Preflight's burst formula doesn't match `GunState`'s re-arm timing (doc 02 §7.6).
 - **Negative move-speed adds divide** (doc 02 §7.4). The 0.3.0 slows (Napalm Slow, Fixation Slow) are written so they really are 28 % and 12 %.
 - **Pelvis bob is lost** for Haze, Seven and Infernus: their `pelvis` is a separate root in the DLM, and the animator skips position curves on every root bone (doc 01 §7). A fix would skip only `root_motion`, plus the pelvis' *horizontal* drift.
-- **This PC's cache** was rebuilt from the current manifest on 2026-10-18 (v0.6.2, 58 sound events, 44 voice groups).
+- **This PC's cache** was rebuilt from the current manifest on 2026-10-19 (v0.7.0, 74 sound events, 54 voice groups).
 
 ---
 

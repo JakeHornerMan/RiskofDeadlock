@@ -1,6 +1,6 @@
 {
   "sheet": "sounds",
-  "about": "Deadlock sound events (as referenced by the hero's abilities in scripts/abilities.vdata) played for each skill moment. The extractor resolves each event through the player's soundevents/*.vsndevts (following 'base' inheritance) to its vsnd files and decodes them to WAV in the local cache. 'none' = silent on purpose. RoR2 disables Unity audio, so the plugin plays these through its own small Windows audio mixer at the game's SFX volume. castLayer / hitLayer: a second event played together with cast / hit to make it heavier (another hero's or a generic Deadlock sound), or none. tick / tickFinal: a countdown tick played once a second through a fuse, and the last one before it goes off (its sound is stopped at the blast); none for moves without a fuse. gain: loudness multiplier for every event of the row (1 = as Deadlock mixes it).",
+  "about": "Deadlock sound events (as referenced by the hero's abilities in scripts/abilities.vdata) played for each skill moment. The extractor resolves each event through the player's soundevents/*.vsndevts (following 'base' inheritance) to its vsnd files and decodes them to WAV in the local cache. 'none' = silent on purpose. RoR2 disables Unity audio, so the plugin plays these through its own small Windows audio mixer at the game's SFX volume. castLayer / hitLayer: a second event played together with cast / hit to make it heavier (another hero's or a generic Deadlock sound), or none. tick / tickFinal: a countdown tick played once a second through a fuse, and the last one before it goes off (its sound is stopped at the blast); none for moves without a fuse. gain: loudness multiplier for every event of the row (1 = as Deadlock mixes it). A row named <skill>/<part> is an extra sound set of that skill (mokrill_gun/step: Mo's footsteps (cast) and landing thud (hit); mokrill_gun/punch: the punch while Krill is away).",
   "columns": [
     "skill",
     "cast",
@@ -273,6 +273,97 @@
       "hitLayer": "none",
       "tick": "Ratking.ScrapGrenade.Timer",
       "tickFinal": "Ratking.ScrapGrenade.Timer.Final",
+      "gain": 1.0
+    },
+    {
+      "skill": "mokrill_gun",
+      "cast": "MoKrill.Wpn.Fire",
+      "loop": "none",
+      "hit": "none",
+      "end": "none",
+      "reload": "MoKrill.Wpn.Reload.Start",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "mokrill_gun/step",
+      "cast": "MoKrill.Footstep",
+      "loop": "none",
+      "hit": "MoKrill.JumpLand",
+      "end": "none",
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 0.7
+    },
+    {
+      "skill": "mokrill_gun/punch",
+      "cast": "MoKrill.Melee.Swing",
+      "loop": "none",
+      "hit": "MoKrill.Combo.Hit",
+      "end": "none",
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "mokrill_sand_blast",
+      "cast": "MoKrill.Sandblast.Cast",
+      "loop": "none",
+      "hit": "MoKrill.Sandblast.Impact",
+      "end": "none",
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "mokrill_burrow",
+      "cast": "MoKrill.Burrow.Modifier.Start",
+      "loop": "MoKrill.Burrow.Travel.Lp",
+      "hit": "MoKrill.Burrow.Spin",
+      "end": "MoKrill.Burrow.Spin.End",
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "mokrill_dust_devil",
+      "cast": "MoKrill.Burrow.Spin",
+      "loop": "MoKrill.Burrow.Spin.Lp",
+      "hit": "none",
+      "end": "MoKrill.Burrow.Spin.End",
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "mokrill_tag_team",
+      "cast": "MoKrill.Combo.Channel.Start",
+      "loop": "MoKrill.Combo.Duration.Lp",
+      "hit": "MoKrill.Combo.Hit",
+      "end": "MoKrill.Combo.Cast",
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
       "gain": 1.0
     }
   ]

@@ -1,9 +1,9 @@
 # Deadlock of Rain
 
-Play Risk of Rain 2 as **Haze, Abrams, Seven or Infernus** from Deadlock, using their real models, animations, guns, abilities, icons and sounds, read from your own Deadlock install.
+Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus or Mo & Krill** from Deadlock, using their real models, animations, guns, abilities, icons and sounds, read from your own Deadlock install.
 
 ## Features
-- Four new survivors on the character select screen: Haze, Abrams, Seven and Infernus.
+- Five new survivors on the character select screen: Haze, Abrams, Seven, Infernus and Mo & Krill.
 - Their models, animations, ability icons, portraits and sounds come from **your own Deadlock install**. Nothing from Deadlock is in this download.
 - Each hero has Risk of Rain 2's four skills, made from their Deadlock kit, plus their ultimate as equipment:
   - **Left Click:** their Deadlock gun, with its magazine and reload.
@@ -14,10 +14,11 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven or Infernus** from Deadlock, using 
   - **Abrams:** Shotgun, Siphon Life (works like a Mired Urn), Shoulder Charge, Haymaker (locks onto an enemy, even one in the air, and rushes into a heavy punch); Q Seismic Impact (hover, aim the slam, crash down). Passive: Infernal Resilience.
   - **Seven:** Shock Rifle, Lightning Ball, Static Charge, Power Surge (his shots arc Tesla lightning); Q Thunderhead (a storm with a Warbanner). Passive: Capacitor (hits build Static that discharges).
   - **Infernus:** Flame Gun, Napalm, Flame Dash (a 5 s run that leaves pockets of fire behind), Torment Pulse (rings of fire); Q Concussive Combustion. Passive: hits build Afterburn and set enemies on fire.
+  - **Mo & Krill:** a huge, slow pair. Yellow Canary (Krill's 4-pellet spread), Sand Blast (a cone of sand that stops monsters attacking), Burrow (travel underground, burst out in a spin), Dust Devil (a sand tornado that pulls enemies in); Q Tag Team (Krill leaps from enemy to enemy, and Mo punches while he is away). Passive: Heavyweight, monsters can't knock him back.
 - The heroes speak: Deadlock voice lines play at the right moments (read from your Deadlock install, like the other sounds).
 - New ability effects made for this mod in Unity, in the style of Deadlock's; Infernus' fire uses Risk of Rain 2's own fire materials.
 - Guns stay in the hero's hands and point where you aim.
-- Balanced against Risk of Rain 2's survivors: Haze ~ Commando, Abrams ~ Loader, Seven ~ Artificer, Infernus ~ Engineer.
+- Balanced against Risk of Rain 2's survivors: Haze ~ Commando, Abrams ~ Loader, Seven ~ Artificer, Infernus ~ Engineer, Mo & Krill ~ MUL-T.
   - Health, regen and damage grow on every level-up, just like vanilla survivors.
 - Scaled to Risk of Rain 2 with one shared factor (Haze is Commando's height), so Deadlock's size differences are kept. Abrams is the biggest.
 - Co-op with up to 4 players: Risk of Rain 2's own lobby and Steam invites, or Melty's Join button. Every player needs this mashup (the same version) and their own Deadlock install.

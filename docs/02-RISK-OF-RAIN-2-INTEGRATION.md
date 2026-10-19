@@ -103,10 +103,13 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
    - move speed, jump power and count, acceleration, shield, `sprintingSpeedMultiplier`
 
    Level growth is **RoR2's own**: `RecalculateStats` computes `base + level*(lvl-1)`. That's why the test can check `maxHealth == base + levelMaxHealth*(lvl-1)`.
-4. **Size** (`heightScale`, `widthScale`):
+4. **Size** (`heightScale`, `widthScale`; v0.7.0 adds `capsuleFrom`, `cameraFrom`, `cameraScale`, `cameraRight`, `interactRange`):
+   - `capsuleFrom` (Mo & Krill: `ToolbotBody`): the capsule is **copied** from that vanilla body (loaded as `RoR2/Base/<name minus Body>/<name>.prefab`), so a huge model moves like MUL-T and fits wherever MUL-T does. Otherwise:
    - The capsule height, radius and centre are scaled. The private `KinematicCharacterMotor.CapsuleHeight/CapsuleRadius/CapsuleYOffset` fields are set by reflection, because the motor caches them.
    - `aimOriginTransform` Y is scaled.
-   - `CameraTargetParams.cameraParams` is cloned with `idealLocalCameraPos × lerp(1, heightScale, 0.8)` and `pivotVerticalOffset × heightScale`.
+   - `CameraTargetParams.cameraParams` is cloned with `idealLocalCameraPos × lerp(1, heightScale, 0.8)` and `pivotVerticalOffset × heightScale`,
+     or, with `cameraFrom`, cloned from that body's (MUL-T's); then `idealLocalCameraPos × cameraScale` and `x + cameraRight` (Mo: 1.15, 1.2 m right, so the crosshair is not on his back).
+   - `Interactor.maxInteractionDistance × interactRange` (Mo 1.6: he reaches chests from the edge of his body).
 5. **Skills:** see §7. Commando's four `GenericSkill`s get one family each.
 6. **Passive:**
    - `SkillLocator.passiveSkill` is a struct: copy it, set it, and assign it back.
@@ -122,7 +125,8 @@ The `SurvivorDef` gets:
 - `primaryColor`, and `desiredSortPosition` (100.1–100.4, placing them after the vanilla roster)
 
 ### 4.3 The model (`ModelBuilder.Build`)
-- **Root:** `mdlDeadlock<Name>`, `localScale = GlobalScale`. The hierarchy is root → `Armature` → bones (from DLM, local TRS) and root → `DeadlockMesh_<material>` renderers.
+- **Root:** `mdlDeadlock<Name>`, `localScale = GlobalScale × modelScale` (v0.7.0; 1 for the first four, Mo & Krill 1.262 to reach Abrams' height). `<Name>` is the display name in letters only (`Survivors.CodeName`: "Mo & Krill" → `MoKrill`, so bodies are `DeadlockMoKrillBody`: the bench parser and console want one word).
+- **Material filter:** `Build(hero, forDisplay, onlyMaterials)` keeps only parts whose material name contains it (`rider`: just Krill, for Tag Team's pickup figure and the flying Krill). The hierarchy is root → `Armature` → bones (from DLM, local TRS) and root → `DeadlockMesh_<material>` renderers.
 - **One `SkinnedMeshRenderer` per material/submesh**, all sharing the bone array (`rootBone = Armature`, `updateWhenOffscreen = true`), each with one `CharacterModel.RendererInfo`.
   **Why:** RoR2's `CharacterModel` keeps **one material per renderer** and re-applies `defaultMaterial` every update, so a multi-material renderer only ever drew submesh 0 and the heroes looked invisible or partial.
 - **Materials** (`MakeMaterial`):
@@ -185,6 +189,7 @@ Commando's height**. Every hero uses the same factor, so Deadlock's relative siz
 | Abrams | 2.927 | 1.213 | 1.3 | ≈2.21 m | Loader |
 | Seven | 2.43 | 1.007 | 1.0 | ≈1.83 m | Artificer |
 | Infernus | 2.505 | 1.038 | 1.05 | ≈1.89 m | Engineer |
+| Mo & Krill | 2.319 (× `modelScale` 1.262) | 1.213 | 1.55 (hurtbox; capsule = MUL-T's) | ≈2.21 m, ≈1.9 m wide | MUL-T |
 
 - The **model** always uses `GlobalScale`.
 - The **capsule, camera and aim origin** use `heightScale`/`widthScale`.
@@ -244,6 +249,11 @@ Per hero (`animations.json`):
 | Abrams | LR (two-handed shotgun) | `weaponPivot` (child of `root_motion`) | hand_R | weapon_stand_idle |
 | Seven | R | none (gun under `weapon_hand_R`) | hand_R | weapon_stand_idle |
 | Infernus | R | none (no gun mesh; `muzzle_fx` is on the index fingertip) | hand_R | weapon_stand_idle |
+| Mo & Krill | R, **`rigPrefix` `rider_`** | none (the gun is part of Krill's mesh, under `rider_weapon_hand_R`) | rider_hand_R | weapon_stand_idle |
+
+`rigPrefix` (v0.7.0): the rig's bones are looked up with this prefix: Krill rides on Mo (`rider_pelvis` is a child of Mo's `spine_0`), so the aim
+turns `rider_spine_1..3`, the held arm is under `rider_clavicle_R` and the gun under `rider_weapon_hand_R`; Mo's own arms animate freely.
+`loopSecondary` replaces the old hard-coded Abrams check; `special_loop` (Dust Devil's tornado) and `melee`/`melee_alt` (the punch) are new clip columns.
 
 Display models (character select) have no `InputBankTest`, so they get rigid arms but no aiming.
 
@@ -269,7 +279,7 @@ RoR2's four, so ability 3 was dropped: Fixation, Infernal Resilience, Power Surg
 ### 7.2 SkillDef settings (`MakeSkillDef`)
 | Field | primary | secondary/utility | special (R) |
 |---|---|---|---|
-| `activationStateMachineName` | `Weapon` | `Weapon`, or `Body` for `dash_*` | `Weapon`, or `Body` for `phantom_strike` and `heavy_melee` |
+| `activationStateMachineName` | `Weapon` | `Weapon`, or `Body` for `dash_*` and `burrow` | `Weapon`, or `Body` for `phantom_strike`, `heavy_melee` and `dust_devil` |
 | `interruptPriority` | Any | Skill | PrioritySkill |
 | `baseRechargeInterval` | 0 | sheet `cooldown` | sheet `cooldown` |
 | `rechargeStock` | 1 | 1 | 1 |
@@ -279,7 +289,7 @@ RoR2's four, so ability 3 was dropped: Fixation, Infernal Resilience, Power Surg
 | `cancelSprintingOnActivation` | true | false for dashes and Smoke Bomb | true |
 | `hideCooldown` / `hideStockCount` | – / true | – / – | – / – |
 | `baseMaxStock` | max(1, `stocks`) | max(1, `stocks`) | max(1, `stocks`) |
-| `requiredStock` / `isCombatSkill` / `canceledFromSprinting` / `beginSkillCooldownOnSkillEnd` | 1 / true / false / false | same | same |
+| `requiredStock` / `isCombatSkill` / `canceledFromSprinting` / `beginSkillCooldownOnSkillEnd` | 1 / true / false / false | same | same, except `beginSkillCooldownOnSkillEnd` = the row's `cooldownOnEnd` (Dust Devil) |
 
 Each SkillDef is wrapped in its own `SkillFamily` (one variant, with a `ViewablesCatalog.Node`) and written into the
 `GenericSkill`'s private `_skillFamily` by reflection. `RowOfSkill[def]` maps a SkillDef back to its sheet row.
@@ -311,6 +321,13 @@ client run the same row. Without either it falls back to the hero's row of that 
 | `ult_zone` | `UltZone` | Thunderhead (Q) | Weapon machine, 0.6 s. Plants `DlrZone` at Seven's feet for `duration` and gives Seven the `thunderhead` marker buff. Every `interval` the zone strikes up to `chainCount` random enemies within `radius` (`Fx.Hit damagePct`, `vfx` bolt from the cloud; RoR2's small `OmniImpactVFXLightning` (`effect` storm_strike) once per tick: the big `LightningStrikeImpact` drew huge cyan rings across the screen). The `extra` object, RoR2's **Warbanner ward** (`WarbannerWard.prefab`: `BuffWard` with vanilla `bdWarbanner`, +30 % attack and move speed), is spawned on Seven's team with `radius` and `expireDuration = duration`. `vfx` `seven_storm`: the cloud deck and its flashes. |
 | `ult_selfbomb` | `UltSelfBomb` | Concussive Combustion (Q) | `duration` fuse (3 s), slowed, with the `vfx` `infernus_bomb` fire gathering on him and (v0.6.1) a **yellow ring on the ground at the blast's full `radius`** (moment `aim`) that follows whoever holds the equipment, with a ring sweeping inward once a second as a countdown (a shrinking area dome, so it follows slopes), and (v0.6.2) a timer **tick** each second (`tick`, the last one `tickFinal`, cut at the blast) over the cast's build-up. It is in the state, which runs from the equipment's row on any carrier, so Commando or a drone with the item shows it too, and every co-op player sees it. Then `Fx.Blast(radius, damagePct)` and stun (2 s), and the `vfx` blast (fire ring, fireball, smoke, burning ground). Kills by the blast (counted with `onCharacterDeathGlobal` while it lands) heal `healFraction` (10 %) of max health each. |
 
+| `burrow` | `Burrow` → `BurrowPop` | Burrow (Shift) | Body machine, Frozen. Gesture `utility`, then (0.25 s) `CharacterModel.invisibilityCount++` and a dirt-mound `vfx` loop; the server gives the row's `buff` (`burrowed`: +100 armor, `moveSpeedAdd` +1, `noGun`). The owner steers with `moveDirection` (sprint forced off), scaled down 1 m/s per hit taken in the last 1.5 s (seen as health drops, so it works for a joined player). Pops at `duration`, on Shift or Jump after `minDuration`, or ungrounded 0.15 s: `BurrowPop` (a networked state with the row) spins (`special` clip) and hits `burst` times every `interval` within `radius`, each enemy given the row's `debuff` (`burrow_slow`), knocked up `knockback` m/s on the first hit (bosses × `bossMult`, 0 = none). **R underground** (special row of kind `dust_devil`, a stock left): deduct it and go straight to `DustDevil`. Test/bench: digs toward the aim and pops at 1.2 s. |
+| `cone_wave` | `ConeWave` | Sand Blast (M2) | Weapon machine, so it runs while Burrow or Dust Devil hold the Body machine. Launches `DlrSandWave` on every machine (damage on the server): a front racing along the ground at `speed` to `range`, `radius` wide at the start and widening by `spreadDeg` each side (Deadlock's 5 m + 0.5 m/m); every enemy it passes inside the cone is hit once for `damagePct` and given the row's `buff` via `Buffs.Apply(..., bossMult)` (`sanded`: `disarm` → vanilla `DLC2Content.Buffs.DisableAllSkills` for the same time; RoR2 then overrides all four monster skills with `CommonAssets.disabledSkill` on its authority; bosses half as long). A wall in front of the centre stops it. |
+| `dust_devil` | `DustDevil` | Dust Devil (R) | Body machine, PrioritySkill. `special_loop` clip (Deadlock's `ability_tornado_idle`, arms out) looping for `duration`; he walks (`moveDirection` = input, no sprint, no jump: our state replaces the main state) and faces the aim. Server, every tick: `Fx.Pull` (top each enemy's speed toward him up to `speed` × k, k ramping from 0 at `radius`/2 to 1 at `range`, bosses × `bossMult`, flyers in 3D). Every `interval` everything within `radius` takes `damagePct`. R again stops it (not in test/bench). Buff `dust_devil` (`noGun`); the cooldown starts when it ends (`cooldownOnEnd`). |
+| `ult_krill` | `UltKrill` | Tag Team (Q) | Weapon machine, 0.5 s (`ult_start` = `item_throw`). `Equipment.Fire` refuses it (no charge spent) when `AimTargetOf(body, range)` finds nothing. The server's `DlrHopper` (Projectiles.cs) gives the thrower the row's `buff` (`krill_away`: `melee`, so Krill is hidden on Mo and his M1 punches) and, every `interval` for `duration`, flies Krill (relayed moment `hop`: the rider-only pickup figure on an arc) to the nearest enemy within `reach` not yet landed on (any, once all are): `damagePct` + `stunDuration`, `splashPct` to the rest within `radius`, damage with the hopper as inflictor; kills (`onCharacterDeathGlobal`, inflictor = hopper) give the thrower the row's `debuff` (`tag_team_health`, permanent stacks of `maxHealthAdd` 2, `buffStacks` per kill × `bossMult` for a boss, max 100: they go with the body, so they reset each stage). No enemy for `minDuration`, or `duration` over: Krill hops back, the buff clears. |
+
+Guns, v0.7.0: a gun row with `pattern` `krill` fires one bullet per pellet at Deadlock's fixed offsets (centre, below, upper left, upper right; a corner `spreadDeg` off the centre) instead of RoR2's random spread. While a buff with `noGun` is on the gun does nothing; while one with `melee` is on (and the row has `meleePct`) M1 is a punch: a wide (2.5 m) short bullet from the aim origin to `reach` (so it is the owner's hit, networked by RoR2), `meleePct` at `meleeRate` per second, alternating `melee`/`melee_alt` clips, sounds from the `<gun>/punch` row.
+
 **Interrupt priorities** (what can cut a running state off):
 
 | State | Priority |
@@ -339,6 +356,7 @@ and the server is the host's. How each kind copes with that is §7.7.
 | Haze | **Fixation** | gun `buff` = `fixation`: +2.5 % damage from Haze per stack (max 40, 6 s), crits add 3, every 20 stacks 200 % + `fixation_slow` (12 % for 2 s) |
 | Abrams | **Infernal Resilience** | `heroes.damageHealBack` 0.1 / `damageHealBackTime` 10: `HealBack` (event on `onServerDamageDealt`) heals back 10 % of every hit he takes over 10 s, in 0.25 s pulses. `heroes.debuffResist` 0.2: `DebuffResistPatch` (prefix on the private `CharacterBody.AddTimedBuffInternal`) shortens timed debuffs on him by 20 % |
 | Seven | **Capacitor** (icon: Deadlock's Tesla Bullets item) | gun, Lightning Ball and Power Surge arcs `buff` = `static` (max 10, 5 s): at 10 the stacks clear, 300 % to the target and 2 enemies within 12 m, all stunned 1 s |
+| Mo & Krill | **Heavyweight** | `heroes.immuneToForce`: `HeroRuntime.Start` gives the body vanilla `RoR2Content.Buffs.ImmuneToPhysicsForces` (server), which `HealthComponent.TakeDamageForce` and `RadialForce` respect; jump pads and his own moves still move him. `riderBone` (`rider_pelvis`) is scaled to 0 while a `melee` buff is on (Krill away), every frame on every machine |
 | Infernus | **Afterburn** | gun `buff` = `afterburn_buildup` (max 12, 4 s): at 12 the stacks clear and the vanilla **Burn** DoT starts (`Buffs.Burn`: 3 s, `damageMultiplier = dotDamagePct/100 × 2`, since vanilla Burn ticks 50 %/s per 1.0). The gun's `vfx` (`EmberFx`) shows embers growing with the build-up and flames while the enemy burns |
 
 - **`StatsPatch`** (Harmony postfix on `CharacterBody.RecalculateStats`) sums each active buff's columns (× stacks when
@@ -348,6 +366,8 @@ and the server is the host's. How each kind copes with that is §7.7.
   - multiplies attack speed by `1 + attackSpeedAdd`
   - adds armor
   - adds `regenAdd × (1 + 0.2·(level − 1))`
+  - adds `maxHealthAdd` × stacks to max health (v0.7.0, Tag Team's trophies)
+- **v0.7.0 buff columns:** `disarm` (Buffs.Apply also adds vanilla DisableAllSkills for the duration), `noGun` (the gun can't fire), `melee` (M1 punches, the rider hides), `maxHealthAdd`. `AddTimed` with duration 0 adds a permanent stack.
 
   The private property setters are invoked through `AccessTools.PropertySetter`.
   - **Hard-coded vs generic:** the stat columns, `damageTakenFromOwnerPerStack`, `critStacks`, `trigger*`, `withBuff` and `slowResist` are generic. The `cloak` column is unused (Smoke Bomb adds vanilla Cloak because its buff id is `smoke`); Bullet Dance evasion reads `evasionChance` of the `bullet_dance` row.
@@ -408,6 +428,9 @@ sends it on to everyone else, so `OnEnter`/`FixedUpdate`/`OnExit` run on every m
 - Anything the owner decides at the start travels **with the state** (`OnSerialize` runs after `OnEnter` on the owner,
   `OnDeserialize` before `OnEnter` everywhere else): the ult row (`RowOverride`), the lock-on target of Phantom Strike and
   Haymaker (`LockTarget`, a `HurtBoxReference`, picked by `LockOn()`), Static Charge's point and the body it sticks to.
+- Tag Team's target is the owner's lock-on. `Equipment.Fire` checks there is one before spending the charge, but for a **joined player** the server spends
+  the charge first and the server has no aim: if the owner then finds no target, no Krill is thrown (charge lost); with a target the
+  state carries it to the server's hopper. The hops are picked on the server and drawn everywhere through the relay (moment `hop`).
 - A move steered by the owner (Shoulder Charge, Flame Dash) reads its direction elsewhere from how the body moves (`MotionDir`).
   Seismic Impact's dive starts on the owner's Left Click; elsewhere it shows as the body dropping fast (`Falling`), and the
   server slams when it sees him land (or when the owner's state ends). Haymaker punches on each machine when that machine
@@ -510,6 +533,12 @@ materials (effects rows of kind `material`: `mat_glow`, `mat_tracer`, `mat_light
 | `haze_phantom` | cast, hit | smoke where she vanishes and lands, a violet streak with afterimage glows; a slash arc across the target per cut (alternating colour and angle), a ring and flash on the last; the same slash on every other enemy each cut sweeps |
 | `haze_dagger` | loop | Sleep Dagger in flight: a violet glow, a pink trail and a light |
 | `abrams_haymaker` | cast, hit, wave | a glowing, smouldering fist through the wind-up; on the punch two shockwave rings, sparks thrown forward along the punch, fire puffs, dust, a red flash and a white-hot one, and a strong camera shake (4.5, 0.45 s) |
+| `mokrill_gun` | muzzle, hit | a hot orange puff and grey smoke at Krill's muzzle per shot; dirt sparks where each pattern pellet lands |
+| `mokrill_sand` | cast, loop, hit | an orange ring and light at Mo's hands; the wave: tan sand in a box emitter that `Vfx.SetWave` moves to the front, turns and widens with the cone each tick, edge streaks at both ends; a sand puff and orange flash per enemy hit, and `SandedFx` (sand circling the head while a `disarm` buff is on, read from the synced buff) |
+| `mokrill_burrow` | cast, loop, hit | a burst of dirt and debris where he digs in; the mound following him (rising dust, a dark crack trail, dirt flecks, faint orange glow); on the pop-out hot orange rings at the spin's reach, smoke, debris, a flash and a shake |
+| `mokrill_devil` | cast, loop, hit, end | four spinning sand arms with thin trails around Mo, swirling dust at his feet, an area dome at the damage radius, sparks streaming inward from the pull radius (radial velocity), a light; small puffs on ticked enemies |
+| `mokrill_krill` | cast, hop, hit, end | Krill (Tag Team's rider-only pickup figure, tumbling) flying on an arc (`ArcMover`) with an orange trail and sparks; on landing an orange ring, electric arcs, a glow and a flash |
+| `mokrill_punch` | hit | a small dust puff, an orange glow and sparks on each enemy Mo punches |
 | `seven_surge` | cast, loop | a ring, sparks and a flash on cast; crackling arcs, a blue glow and a flickering light on Seven while it runs (the arcs themselves are RoR2's Tesla orbs) |
 
 `Buffs.Stack` triggers draw a flash and arcs in the buff's `color`. `Vfx.Stop(go)` ends a looping effect: particles
@@ -542,6 +571,10 @@ themselves. Effects run where the skill code runs (the host in single player).
 | equipment_fire_client | Harmony postfix | `EquipmentSlot.RpcOnClientEquipmentActivationRecieved()` (private ClientRpc) | start the ult on a remote client that owns the body |
 | starting_equipment | event | `CharacterBody.onBodyStartGlobal` | a hero's first body of the run gets its ult |
 | torment_pulse | component | `PulseAura` on the body (every machine; damage on the server) | Torment Pulse's pulses |
+| heavyweight | component | `HeroRuntime` (vanilla `ImmuneToPhysicsForces` on the body, server) | Mo & Krill can't be knocked back |
+| disarm | component | `Buffs.Apply` (vanilla `DLC2Content.Buffs.DisableAllSkills`, timed, server) | Sand Blast's Sanded: no monster attacks |
+| tag_team_kills | event | `GlobalEventManager.onCharacterDeathGlobal` (per hopper) | Tag Team's max-health trophies |
+| rider | component | `HeroRuntime` (`riderBone` scaled to 0) | Krill hidden while away |
 | loadout_skins | Harmony postfix | `LoadoutPanelController+Row.FromSkin` (public static on a private nested class) | Default skin entry |
 
 Private members we touch by reflection, which **can break on a RoR2 update**:
@@ -597,8 +630,12 @@ says `N/N heroes`. The creator wants only the changed heroes tested.
      - Every frame for 2.5 s (primary) or `clamp(duration + 1.5, 2.5, 7)` s (others):
        - keep `aimDirection` on a live target
        - poll target buffs, `StunState` on the Body state machine, Burn DoT, self buffs, cloak, and distance moved
-     - Compare against the row's **`expect`** list (`enemy_damage`, `enemy_stun`, `enemy_burn`, `enemy_debuff:<buff>`, `self_buff:<buff>`, `self_heal`, `self_move` > 3 m, `self_cloak`). Log what was seen and anything missing. Log damage to other bodies as "other damage seen".
+     - Compare against the row's **`expect`** list (`enemy_damage`, `enemy_stun`, `enemy_burn`, `enemy_debuff:<buff>`, `self_buff:<buff>`, `self_heal`, `self_move` > 3 m, `self_cloak`;
+       v0.7.0: `enemy_disarm` (a target got DisableAllSkills), `enemy_pulled` (a target ended > 1 m closer to the hero), `self_hidden` (the model's `invisibilityCount` > 0)). The polling is `Effects.Poll`, shared with the co-op test. Log what was seen and anything missing. Log damage to other bodies as "other damage seen".
    - **Heal-back passive** (heroes with `damageHealBack`, i.e. Abrams): take 40 % NonLethal damage, wait 1.5 s, and require some heal.
+   - **Heavyweight** (`immuneToForce`): a 30 m/s push must move the hero less than 0.2 m.
+   - **Punch** (the equipment row's `extra` = `punch`): right after Q, walk up to a target and hold M1 for 1.5 s; it must deal damage (`<hero>_punch.png`).
+   - `hero-scale` uses `capsuleFrom`'s capsule and `GlobalScale × modelScale`; `level-stats` adds any `maxHealthAdd` buff on the body.
    - Read `GunDrift`.
    - Report `<hero>-plays` (gun + 3 abilities (M2, Shift, R) + the Q ult all as expected, and the heal-back passive). The other passives are in the gun rows' `expect`: Haze's gun must apply `fixation_slow` (the 20-stack burst), Seven's must stun (the Static discharge), Infernus' must burn (Afterburn ignition).
    - Check level growth.
@@ -731,3 +768,5 @@ the other is the **host** (only the host writes checks). How to run it: doc 03 �
 15. **Effects on the ground:** flat `LineRenderer` circles float through the air on slopes and, with RoR2's tracer material, short dashes render as glowing blobs. Ground markers use particles emitted from a circle's edge, or RoR2's `matAreaIndicatorIntersectionOnly` dome, which draws only where it meets the ground. A dome with the rim material tints the whole screen when the camera is inside it.
 16. **Negative `moveSpeedAdd` divides** speed: write the slow you want as `−(1/(1 − x) − 1)` (§7.4).
 17. **Equipment states run where the body has authority:** starting an EntityState from `PerformEquipmentAction` (server) works only for bodies the server owns; a remote player's state must be started on their client (the activation ClientRpc), with the row id serialized so the server's copy deals the damage.
+18. **RoR2's `mat_dust` is opaque** (v0.7.0): big or many dust particles hide the screen (Dust Devil's first build was a brown wall). Keep them small and few; use additive smoke for volume.
+19. **A display name with spaces or `&` breaks the bench parser** (`\S+` body names): object names use `Survivors.CodeName` (letters only).

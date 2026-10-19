@@ -451,6 +451,106 @@
       "group": "inferno/inferno_happy",
       "chance": 1.0,
       "gap": 0
+    },
+    {
+      "id": "mokrill_select",
+      "hero": "mokrill",
+      "trigger": "select",
+      "skill": "none",
+      "kills": 0,
+      "group": "krill/krill_select",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "mokrill_unselect",
+      "hero": "mokrill",
+      "trigger": "unselect",
+      "skill": "none",
+      "kills": 0,
+      "group": "krill/krill_unselect",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "mokrill_sand",
+      "hero": "mokrill",
+      "trigger": "skill",
+      "skill": "mokrill_sand_blast",
+      "kills": 0,
+      "group": "krill/krill_use_power3",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "mokrill_burrow",
+      "hero": "mokrill",
+      "trigger": "skill",
+      "skill": "mokrill_burrow",
+      "kills": 0,
+      "group": "krill/krill_use_power2",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "mokrill_tag_team",
+      "hero": "mokrill",
+      "trigger": "skill",
+      "skill": "mokrill_tag_team",
+      "kills": 0,
+      "group": "krill/krill_use_power4",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "mokrill_streak4",
+      "hero": "mokrill",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 4,
+      "group": "krill/krill_killstreak_start",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "mokrill_streak7",
+      "hero": "mokrill",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 7,
+      "group": "krill/krill_killstreak_mid",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "mokrill_streak10",
+      "hero": "mokrill",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 10,
+      "group": "krill/krill_killstreak_high",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "mokrill_hunt",
+      "hero": "mokrill",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "krill/krill_hunt",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "mokrill_happy",
+      "hero": "mokrill",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "krill/krill_happy",
+      "chance": 1.0,
+      "gap": 0
     }
   ]
 }

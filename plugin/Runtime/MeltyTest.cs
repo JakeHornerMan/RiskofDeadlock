@@ -141,12 +141,15 @@ namespace DeadlockOfRain
                     arenaForward = body.inputBank.aimDirection; arenaForward.y = 0; arenaForward.Normalize();
                 }
 
-                // scale: capsule follows Deadlock's relative height, model uses the shared factor
+                // scale: capsule follows Deadlock's relative height (or copies capsuleFrom's: Mo moves with MUL-T's), model uses
+                // the shared factor times modelScale
                 var cap = body.GetComponent<CapsuleCollider>();
-                float want = commandoCap.height * hero.HeightScale;
-                float mscale = body.modelLocator.modelTransform.localScale.y;
-                if (Mathf.Abs(cap.height - want) > 0.05f || Mathf.Abs(mscale - ModelBuilder.GlobalScale) > 0.01f)
-                { scaleOk = false; scaleWhy += $"{hero.Id}: capsule {cap.height:F2} want {want:F2}, model {mscale:F3} want {ModelBuilder.GlobalScale:F3}; "; }
+                var capFrom = hero.CapsuleFrom != "none" ? BodyCatalog.FindBodyPrefab(hero.CapsuleFrom) : null;
+                float want = capFrom ? capFrom.GetComponent<CapsuleCollider>().height : commandoCap.height * hero.HeightScale;
+                float mscale = body.modelLocator.modelTransform.localScale.y, wantScale = ModelBuilder.GlobalScale * hero.ModelScale;
+                if (Mathf.Abs(cap.height - want) > 0.05f || Mathf.Abs(mscale - wantScale) > 0.01f)
+                { scaleOk = false; scaleWhy += $"{hero.Id}: capsule {cap.height:F2} want {want:F2}, model {mscale:F3} want {wantScale:F3}; "; }
+                Log.Info($"Melty test: {hero.Id} size: capsule {cap.height:F2} x {cap.radius:F2} m, model scale {mscale:F3}, hurtbox {(body.mainHurtBox ? body.mainHurtBox.collider.bounds.size.ToString("F2") : "none")}");
 
                 // gun rig: the gun stays in the hand and points where the camera aims (straight, 30 deg up, 30 deg down)
                 var anim = DeadlockAnimator.Of(body);
@@ -198,6 +201,7 @@ namespace DeadlockOfRain
 
                 // every skill must measurably do what its sheet row's expect column says
                 bool gun = false; int abilities = 0; bool ultFired = false;
+                bool passive = true; string passiveWhy = "";
                 foreach (var slot in new[] { "primary", "secondary", "utility", "special", "equipment" })
                 {
                     body = master.GetBody();
@@ -211,9 +215,29 @@ namespace DeadlockOfRain
                     else if (slot == "equipment") { ultFired = ok; if (!ok) ultsWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
                     else { if (ok) abilities++; else abilitiesWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
                     if (slot == "equipment" && !result.Charged) equipWhy += $"{hero.Id}: Q did not start a 120 s cooldown; ";
+                    // a melee M1 while the ult's buff is on (Mo punches while Krill is away): hold M1 now, it must hit
+                    if (slot == "equipment" && row.Extra == "punch")
+                    {
+                        body = master.GetBody();
+                        var punch = new Effects();
+                        yield return Punches(body, punch);
+                        Log.Info($"Melty test: {hero.Id} punches while {row.Name} runs: {punch}");
+                        if (punch.Damage <= 0f) { ultFired = false; ultsWhy += $"{row.Id}: no punch damage while it ran; "; }
+                    }
+                }
+                // Heavyweight (immuneToForce): a big push moves the hero less than 0.2 m
+                if (hero.ImmuneToForce)
+                {
+                    body = master.GetBody();
+                    var p0 = body.footPosition;
+                    if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+                    body.healthComponent.TakeDamageForce(body.transform.right * 30f * (body.characterMotor ? body.characterMotor.mass : 100f), true, true);
+                    yield return new WaitForSeconds(0.4f);
+                    float pushed = Vector3.Distance(p0, body.footPosition);
+                    Log.Info($"Melty test: {hero.Id} heavyweight: a 30 m/s push moved him {pushed:F2} m");
+                    if (pushed > 0.2f) { passive = false; passiveWhy = $"pushed {pushed:F2} m"; }
                 }
                 // a heal-back passive (Abrams' Infernal Resilience) gives part of a hit back over the next seconds
-                bool passive = true;
                 if (hero.DamageHealBack > 0f)
                 {
                     body = master.GetBody();
@@ -228,6 +252,7 @@ namespace DeadlockOfRain
                     HealthComponent.onCharacterHealServer -= onHeal;
                     Log.Info($"Melty test: {hero.Id} passive heal-back: healed {healed:F0} in 1.5s");
                     passive = healed > 0f;
+                    if (!passive) passiveWhy = "no heal-back";
                 }
                 if (anim)
                 {
@@ -236,7 +261,7 @@ namespace DeadlockOfRain
                 }
 
                 bool plays = gun && abilities == 3 && ultFired && passive;
-                Write(hero.Id + "-plays", plays, $"gun={gun}, abilities={abilities}/3, ult={ultFired}, passive={passive}");
+                Write(hero.Id + "-plays", plays, $"gun={gun}, abilities={abilities}/3, ult={ultFired}, passive={passive} {passiveWhy}; {gunsWhy}{abilitiesWhy}{ultsWhy}".Trim());
                 if (plays) heroes++;
 
                 // level-up growth matches the sheet (no items in a fresh run)
@@ -244,6 +269,8 @@ namespace DeadlockOfRain
                 var st = Sheet.Stats(hero.Id);
                 float lvl = body.level;
                 float wantHp = st.BaseMaxHealth + st.LevelMaxHealth * (lvl - 1f), wantDmg = st.BaseDamage + st.LevelDamage * (lvl - 1f);
+                // plus any max-health buff the skills gave (Tag Team's trophies stay for the stage)
+                foreach (var br in BuffRow.All) if (br.MaxHealthAdd != 0) wantHp += br.MaxHealthAdd * Buffs.Count(body, br.Id);
                 if (Mathf.Abs(body.maxHealth - wantHp) > 1.5f || Mathf.Abs(body.damage - wantDmg) > 0.3f)
                 { levelOk = false; levelWhy += $"{hero.Id} lvl {lvl}: hp {body.maxHealth:F0} want {wantHp:F0}, dmg {body.damage:F1} want {wantDmg:F1}; "; }
 
@@ -378,7 +405,7 @@ namespace DeadlockOfRain
                 var fig = def ? def.pickupModelPrefab : null;
 #pragma warning restore CS0618
                 if (!fig) continue;
-                var f = UnityEngine.Object.Instantiate(fig, origin + new Vector3((k++ - 1.5f) * 1.2f, 0.4f, -2.5f), Quaternion.LookRotation(Vector3.back));
+                var f = UnityEngine.Object.Instantiate(fig, origin + new Vector3((k++ - (HeroRow.All.Length - 1) / 2f) * 1.2f, 0.4f, -2.5f), Quaternion.LookRotation(Vector3.back));
                 f.transform.localScale = Vector3.one * 0.5f;
                 f.SetActive(true);
                 extra.Add(f);
@@ -504,11 +531,37 @@ namespace DeadlockOfRain
         }
 
         /// <summary>What one skill measurably did while it ran (polled every frame plus damage and heal events).</summary>
-        sealed class Effects
+        internal sealed class Effects
         {
-            public float Damage, Healed, Moved;
-            public bool Stun, Burn, Cloak, Charged; // Charged: the equipment went on its cooldown
+            public float Damage, Healed, Moved, Pulled;
+            public bool Stun, Burn, Cloak, Charged, Disarm, Hidden; // Charged: the equipment went on its cooldown
             public readonly HashSet<string> EnemyBuffs = new HashSet<string>(), SelfBuffs = new HashSet<string>();
+            readonly Dictionary<CharacterBody, float> startGap = new Dictionary<CharacterBody, float>();
+
+            /// <summary>One frame of watching: the hero (moved, cloaked, hidden, its buffs) and the targets (buffs, stun, burn,
+            /// skills locked, drawn toward the hero).</summary>
+            public void Poll(CharacterBody b, Vector3 start, IEnumerable<CharacterBody> targets)
+            {
+                Moved = Mathf.Max(Moved, Vector3.Distance(start, b.corePosition));
+                if (b.hasCloakBuff) Cloak = true;
+                var cm = b.modelLocator && b.modelLocator.modelTransform ? b.modelLocator.modelTransform.GetComponent<CharacterModel>() : null;
+                if (cm && cm.invisibilityCount > 0) Hidden = true;
+                foreach (var kv in Buffs.Defs) if (b.HasBuff(kv.Value)) SelfBuffs.Add(kv.Key);
+                foreach (var t in targets)
+                {
+                    if (!t || !t.healthComponent || !t.healthComponent.alive) continue;
+                    foreach (var kv in Buffs.Defs) if (t.HasBuff(kv.Value)) EnemyBuffs.Add(kv.Key);
+                    var esm = EntityStateMachine.FindByCustomName(t.gameObject, "Body");
+                    if (esm && esm.state is EntityStates.StunState) Stun = true;
+                    var dc = DotController.FindDotController(t.gameObject);
+                    if (dc && dc.HasDotActive(DotController.DotIndex.Burn)) Burn = true;
+                    if (DLC2Content.Buffs.DisableAllSkills && t.HasBuff(DLC2Content.Buffs.DisableAllSkills)) Disarm = true;
+                    // drawn toward the hero (Dust Devil): how much closer it got than it started
+                    var flat = t.corePosition - b.corePosition; flat.y = 0;
+                    if (!startGap.ContainsKey(t)) startGap[t] = flat.magnitude;
+                    Pulled = Mathf.Max(Pulled, startGap[t] - flat.magnitude);
+                }
+            }
 
             public List<string> Missing(SkillRow row)
             {
@@ -525,14 +578,17 @@ namespace DeadlockOfRain
                         kind == "self_buff" ? SelfBuffs.Contains(arg) :
                         kind == "self_heal" ? Healed > 0f :
                         kind == "self_move" ? Moved > 3f :
-                        kind == "self_cloak" ? Cloak : false;
+                        kind == "self_cloak" ? Cloak :
+                        kind == "enemy_disarm" ? Disarm :
+                        kind == "enemy_pulled" ? Pulled > 1f :
+                        kind == "self_hidden" ? Hidden : false;
                     if (!ok) miss.Add(e);
                 }
                 return miss;
             }
 
             public override string ToString() =>
-                $"damage {Damage:F0}, stun {Stun}, burn {Burn}, enemy buffs [{string.Join(",", EnemyBuffs)}], self buffs [{string.Join(",", SelfBuffs)}], healed {Healed:F0}, moved {Moved:F1} m, cloak {Cloak}";
+                $"damage {Damage:F0}, stun {Stun}, burn {Burn}, enemy buffs [{string.Join(",", EnemyBuffs)}], self buffs [{string.Join(",", SelfBuffs)}], healed {Healed:F0}, moved {Moved:F1} m, cloak {Cloak}, disarm {Disarm}, pulled {Pulled:F1} m, hidden {Hidden}";
         }
 
         /// <summary>Puts two sturdy Lemurians in front of the hero, aims the camera at the first, fires the skill through its
@@ -552,7 +608,7 @@ namespace DeadlockOfRain
             var aim = body.inputBank.GetAimRay();
             var fwd = aim.direction; fwd.y = 0; fwd.Normalize();
             var right = Vector3.Cross(Vector3.up, fwd);
-            float d = row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" ? 10f : 6f;
+            float d = TargetDistance(row);
             foreach (var at in new[] { body.footPosition + fwd * d, body.footPosition + fwd * (d + 1.5f) + right * 2f })
             {
                 var p = at;
@@ -636,18 +692,7 @@ namespace DeadlockOfRain
                     if (aimAt && body) body.inputBank.aimDirection = (aimAt.corePosition - body.inputBank.aimOrigin).normalized;
                     var b = body;
                     if (!b) break;
-                    fx.Moved = Mathf.Max(fx.Moved, Vector3.Distance(start, b.corePosition));
-                    if (b.hasCloakBuff) fx.Cloak = true;
-                    foreach (var kv in Buffs.Defs) if (b.HasBuff(kv.Value)) fx.SelfBuffs.Add(kv.Key);
-                    foreach (var t in targets)
-                    {
-                        if (!t || !t.healthComponent || !t.healthComponent.alive) continue;
-                        foreach (var kv in Buffs.Defs) if (t.HasBuff(kv.Value)) fx.EnemyBuffs.Add(kv.Key);
-                        var esm = EntityStateMachine.FindByCustomName(t.gameObject, "Body");
-                        if (esm && esm.state is EntityStates.StunState) fx.Stun = true;
-                        var dc = DotController.FindDotController(t.gameObject);
-                        if (dc && dc.HasDotActive(DotController.DotIndex.Burn)) fx.Burn = true;
-                    }
+                    fx.Poll(b, start, targets);
                     // dev screenshots through the skill: early, middle, late
                     if (shots < 3 && Time.time - t0 > new[] { 0.5f, 1.4f, 2.3f }[shots]) { Shot(shots == 0 ? row.Id : row.Id + "_" + (shots + 1)); shots++; }
                     yield return null;
@@ -662,6 +707,37 @@ namespace DeadlockOfRain
             if (others.Count > 0) Log.Info($"Melty test: {row.Id}: other damage seen: " + string.Join("; ", others.Take(8)));
             // let dashes, leaps and buffs finish before the next skill
             yield return new WaitForSeconds(0.5f);
+        }
+
+        /// <summary>How far in front of the hero the test's targets stand: guns, the leap, the blink and Tag Team's throw
+        /// from 10 m, everything else 6 m.</summary>
+        internal static float TargetDistance(SkillRow row) =>
+            row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "ult_krill" ? 10f : 6f;
+
+        /// <summary>Hold M1 for 1.5 s against the targets still standing (Tag Team's Krill is away: Mo punches), measuring damage.</summary>
+        IEnumerator Punches(CharacterBody body, Effects fx)
+        {
+            if (!body) yield break;
+            var victims = new HashSet<CharacterBody>(targets);
+            System.Action<DamageReport> onDamage = r => { if (r != null && r.attackerBody == body && victims.Contains(r.victimBody)) fx.Damage += r.damageDealt; };
+            GlobalEventManager.onServerDamageDealt += onDamage;
+            try
+            {
+                var aimAt = targets.FirstOrDefault(x => x && x.healthComponent && x.healthComponent.alive);
+                // walk up to the target: the punch reaches a few metres
+                if (aimAt) TeleportHelper.TeleportBody(body, aimAt.footPosition - (aimAt.footPosition - body.footPosition).normalized * (body.radius + aimAt.radius + 1f), false);
+                yield return new WaitForSeconds(0.2f);
+                fireBody = body; fireUntil = Time.time + 1.5f;
+                body.skillLocator.primary.ExecuteIfReady();
+                float t0 = Time.time;
+                while (Time.time - t0 < 1.6f)
+                {
+                    if (aimAt && body) body.inputBank.aimDirection = (aimAt.corePosition - body.inputBank.aimOrigin).normalized;
+                    if (Time.time - t0 > 0.6f && Time.time - t0 < 0.65f) Shot(Survivors.HeroOf(body) + "_punch");
+                    yield return null;
+                }
+            }
+            finally { GlobalEventManager.onServerDamageDealt -= onDamage; fireBody = null; }
         }
 
         /// <summary>Turns the player's camera (and with it the aim) to look along a direction: the camera mode keeps its

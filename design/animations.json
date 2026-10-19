@@ -1,6 +1,6 @@
 {
   "sheet": "animations",
-  "about": "Which of the hero's own Deadlock animation clips (names as VRF exports them from the player's install) plays for each RoR2 action. Locomotion columns play full-body; gesture columns (reload, secondary, utility, special*, ult*) play on the upper body from upperBodyBone so the legs keep running. 'none' = no clip for that action on purpose. The extractor exports only the clips named here. 'land' is none for Haze, Abrams and Seven: their Deadlock jump_landing clips are partial layers that crush the pose when played on their own. Gun rig: gunArms ('R' or 'LR') are held rigid in the aimPose clip's first frame and the chest turns so the gun points where the camera aims (no fire clip on the arms); gunBone (when the gun is not a child of the hand, e.g. Abrams' weaponPivot) is welded to gunHand with its aimPose offset. The heroes' shoot_idle clips are additive layers that point the guns ~60 deg at the floor on their own, so fire and fire_alt are none: shots use a procedural recoil kick on the rigid gun arms instead. muzzle/muzzleLeft: the bone at the end of the gun (right / second gun) where shots, tracers, muzzle flashes and thrown abilities start (none = the hand). ragdollBones / ragdollThickness: on death the hero goes limp (RoR2's RagdollController, as vanilla survivors): each listed bone gets a capsule (radius = ragdollThickness x its length to the next listed bone) and a joint to the nearest listed bone above it. clothParents: Deadlock cloth bones ($cloth_*) are exported without a parent; each is attached to the nearest of these bones (Abrams' coat), or none. special_start/special: the R move (special_start plays as it begins, e.g. Phantom Strike's blink or the haymaker wind-up; special on each hit or cast). ult*: the hero's ultimate, now their Q equipment (played only when the hero fires it).",
+  "about": "Which of the hero's own Deadlock animation clips (names as VRF exports them from the player's install) plays for each RoR2 action. Locomotion columns play full-body; gesture columns (reload, secondary, utility, special*, ult*) play on the upper body from upperBodyBone so the legs keep running. 'none' = no clip for that action on purpose. The extractor exports only the clips named here. 'land' is none for Haze, Abrams and Seven: their Deadlock jump_landing clips are partial layers that crush the pose when played on their own. Gun rig: gunArms ('R' or 'LR') are held rigid in the aimPose clip's first frame and the chest turns so the gun points where the camera aims (no fire clip on the arms); gunBone (when the gun is not a child of the hand, e.g. Abrams' weaponPivot) is welded to gunHand with its aimPose offset. The heroes' shoot_idle clips are additive layers that point the guns ~60 deg at the floor on their own, so fire and fire_alt are none: shots use a procedural recoil kick on the rigid gun arms instead. muzzle/muzzleLeft: the bone at the end of the gun (right / second gun) where shots, tracers, muzzle flashes and thrown abilities start (none = the hand). ragdollBones / ragdollThickness: on death the hero goes limp (RoR2's RagdollController, as vanilla survivors): each listed bone gets a capsule (radius = ragdollThickness x its length to the next listed bone) and a joint to the nearest listed bone above it. clothParents: Deadlock cloth bones ($cloth_*) are exported without a parent; each is attached to the nearest of these bones (Abrams' coat), or none. rigPrefix: the gun rig's bones carry this prefix (Krill rides on Mo: rider_spine_1..3 aim, rider_clavicle_* hold the gun arms, rider_weapon_hand_* is the gun), none = the hero's own spine. loopSecondary: the secondary clip loops (Abrams' Siphon Life). special_loop: a looping full-body clip while the R move lasts (Dust Devil's tornado). melee/melee_alt: the punches thrown, alternating, by a melee M1 (Mo while Krill is away). special_start/special: the R move (special_start plays as it begins, e.g. Phantom Strike's blink or the haymaker wind-up; special on each hit or cast). ult*: the hero's ultimate, now their Q equipment (played only when the hero fires it).",
   "columns": [
     "hero",
     "upperBodyBone",
@@ -9,7 +9,7 @@
     "gunHand",
     "muzzle",
     "muzzleLeft",
-    "clothParents", "ragdollBones", "ragdollThickness",
+    "clothParents", "ragdollBones", "ragdollThickness", "rigPrefix", "loopSecondary",
     "aimPose",
     "idle",
     "run_n",
@@ -31,6 +31,9 @@
     "ult_start",
     "ult_loop",
     "ult_end",
+    "special_loop",
+    "melee",
+    "melee_alt",
     "death"
   ],
   "rows": [
@@ -44,7 +47,7 @@
       "muzzleLeft": "muzzle_fx_L",
       "clothParents": [
         "none"
-      ], "ragdollBones": ["pelvis", "spine_1", "spine_3", "head", "arm_upper_L", "arm_lower_L", "arm_upper_R", "arm_lower_R", "leg_upper_L", "leg_lower_L", "leg_upper_R", "leg_lower_R"], "ragdollThickness": 0.3,
+      ], "ragdollBones": ["pelvis", "spine_1", "spine_3", "head", "arm_upper_L", "arm_lower_L", "arm_upper_R", "arm_lower_R", "leg_upper_L", "leg_lower_L", "leg_upper_R", "leg_lower_R"], "ragdollThickness": 0.3, "rigPrefix": "none", "loopSecondary": false,
       "aimPose": "weapon_stand_idle",
       "idle": "weapon_stand_idle",
       "run_n": "weapon_run_n",
@@ -66,6 +69,9 @@
       "ult_start": "ability_bullet_flurry_intro",
       "ult_loop": "ability_bullet_flurry",
       "ult_end": "none",
+      "special_loop": "none",
+      "melee": "none",
+      "melee_alt": "none",
       "death": "death_static_1"
     },
     {
@@ -82,7 +88,7 @@
         "spine_1",
         "spine_2",
         "spine_3"
-      ], "ragdollBones": ["pelvis", "spine_1", "spine_3", "head", "arm_upper_L", "arm_lower_L", "arm_upper_R", "arm_lower_R", "leg_upper_L", "leg_lower_L", "leg_upper_R", "leg_lower_R"], "ragdollThickness": 0.3,
+      ], "ragdollBones": ["pelvis", "spine_1", "spine_3", "head", "arm_upper_L", "arm_lower_L", "arm_upper_R", "arm_lower_R", "leg_upper_L", "leg_lower_L", "leg_upper_R", "leg_lower_R"], "ragdollThickness": 0.3, "rigPrefix": "none", "loopSecondary": true,
       "aimPose": "weapon_stand_idle",
       "idle": "weapon_stand_idle",
       "run_n": "weapon_run_n",
@@ -104,6 +110,9 @@
       "ult_start": "ability_leap_upwards",
       "ult_loop": "ability_leap_hover_loop",
       "ult_end": "ability_leap_smash",
+      "special_loop": "none",
+      "melee": "none",
+      "melee_alt": "none",
       "death": "death_generic"
     },
     {
@@ -116,7 +125,7 @@
       "muzzleLeft": "none",
       "clothParents": [
         "none"
-      ], "ragdollBones": ["pelvis", "spine_1", "spine_3", "head", "arm_upper_L", "arm_lower_L", "arm_upper_R", "arm_lower_R", "leg_upper_L", "leg_lower_L", "leg_upper_R", "leg_lower_R"], "ragdollThickness": 0.3,
+      ], "ragdollBones": ["pelvis", "spine_1", "spine_3", "head", "arm_upper_L", "arm_lower_L", "arm_upper_R", "arm_lower_R", "leg_upper_L", "leg_lower_L", "leg_upper_R", "leg_lower_R"], "ragdollThickness": 0.3, "rigPrefix": "none", "loopSecondary": false,
       "aimPose": "weapon_stand_idle",
       "idle": "weapon_stand_idle",
       "run_n": "weapon_run_n",
@@ -138,6 +147,9 @@
       "ult_start": "ability_storm_cloud_start",
       "ult_loop": "ability_storm_cloud_loop",
       "ult_end": "ability_storm_cloud_end",
+      "special_loop": "none",
+      "melee": "none",
+      "melee_alt": "none",
       "death": "death_static_1"
     },
     {
@@ -150,7 +162,7 @@
       "muzzleLeft": "none",
       "clothParents": [
         "none"
-      ], "ragdollBones": ["pelvis", "spine_1", "spine_3", "head", "arm_upper_L", "arm_lower_L", "arm_upper_R", "arm_lower_R", "leg_upper_L", "leg_lower_L", "leg_upper_R", "leg_lower_R"], "ragdollThickness": 0.3,
+      ], "ragdollBones": ["pelvis", "spine_1", "spine_3", "head", "arm_upper_L", "arm_lower_L", "arm_upper_R", "arm_lower_R", "leg_upper_L", "leg_lower_L", "leg_upper_R", "leg_lower_R"], "ragdollThickness": 0.3, "rigPrefix": "none", "loopSecondary": false,
       "aimPose": "weapon_stand_idle",
       "idle": "weapon_stand_idle",
       "run_n": "weapon_run_n",
@@ -172,6 +184,46 @@
       "ult_start": "none",
       "ult_loop": "none",
       "ult_end": "ability_stun_bomb_explode",
+      "special_loop": "none",
+      "melee": "none",
+      "melee_alt": "none",
+      "death": "none"
+    },
+    {
+      "hero": "mokrill",
+      "upperBodyBone": "spine_0",
+      "gunArms": "R",
+      "gunBone": "none",
+      "gunHand": "rider_hand_R",
+      "muzzle": "muzzle_fx",
+      "muzzleLeft": "none",
+      "clothParents": [
+        "none"
+      ], "ragdollBones": ["pelvis", "spine_1", "spine_3", "head", "arm_upper_L", "arm_lower_L", "arm_upper_R", "arm_lower_R", "leg_upper_L", "leg_lower_L", "leg_upper_R", "leg_lower_R"], "ragdollThickness": 0.3, "rigPrefix": "rider_", "loopSecondary": false,
+      "aimPose": "weapon_stand_idle",
+      "idle": "weapon_stand_idle",
+      "run_n": "weapon_run_n",
+      "run_s": "weapon_run_s",
+      "run_e": "weapon_run_e",
+      "run_w": "weapon_run_w",
+      "sprint": "none",
+      "jump_start": "jump_start",
+      "jump_air": "jump_in_air_loop",
+      "land": "none",
+      "fire": "none",
+      "fire_alt": "none",
+      "reload": "primary_stand_reload",
+      "secondary": "ability_throw_sand",
+      "utility": "ability_burrow_intro_in_ground",
+      "utility_loop": "burrowing_loop",
+      "special_start": "ability_tornado_cast",
+      "special": "ability_burrow_spinning_start",
+      "ult_start": "item_throw",
+      "ult_loop": "none",
+      "ult_end": "none",
+      "special_loop": "ability_tornado_idle",
+      "melee": "melee_quick_1",
+      "melee_alt": "melee_quick_2",
       "death": "none"
     }
   ]

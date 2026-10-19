@@ -241,6 +241,46 @@
       "purpose": "co-op test only (two copies on one PC share one Steam account): the joining copy presents another id and the host skips the Steam ticket check. Never patched outside the test",
       "reads": "none",
       "side": "both"
+    },
+    {
+      "id": "heavyweight",
+      "method": "component",
+      "target": "HeroRuntime (vanilla RoR2Content.Buffs.ImmuneToPhysicsForces on the body, server)",
+      "purpose": "Heavyweight: heroes with immuneToForce can't be knocked back, pushed or pulled",
+      "reads": "heroes.immuneToForce",
+      "side": "server"
+    },
+    {
+      "id": "max_health_add",
+      "method": "Harmony postfix",
+      "target": "RoR2.CharacterBody.RecalculateStats",
+      "purpose": "buffs' maxHealthAdd per stack (Tag Team's trophies), in the stats postfix",
+      "reads": "buffs.maxHealthAdd",
+      "side": "both"
+    },
+    {
+      "id": "disarm",
+      "method": "component",
+      "target": "Buffs.Apply (vanilla DLC2Content.Buffs.DisableAllSkills, timed, server)",
+      "purpose": "Sand Blast's Sanded: monsters can't use their skills",
+      "reads": "buffs.disarm, skills.bossMult",
+      "side": "server"
+    },
+    {
+      "id": "tag_team_kills",
+      "method": "event",
+      "target": "RoR2.GlobalEventManager.onCharacterDeathGlobal",
+      "purpose": "Tag Team: kills by Krill's landings give the thrower max-health trophies",
+      "reads": "skills.buffStacks, skills.bossMult",
+      "side": "server"
+    },
+    {
+      "id": "rider",
+      "method": "component",
+      "target": "HeroRuntime (riderBone scaled to 0)",
+      "purpose": "Krill hidden on Mo while a melee buff (krill_away) is on",
+      "reads": "heroes.riderBone, buffs.melee",
+      "side": "both"
     }
   ]
 }

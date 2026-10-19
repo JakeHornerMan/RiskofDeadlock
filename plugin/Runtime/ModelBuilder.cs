@@ -15,12 +15,14 @@ namespace DeadlockOfRain
         public static float GlobalScale = 0.75f;
         public static Material Template;
 
-        public static GameObject Build(HeroRow hero, bool forDisplay)
+        /// <param name="onlyMaterials">keep only the parts whose material name contains this ("rider": just Krill, for his figure).</param>
+        public static GameObject Build(HeroRow hero, bool forDisplay, string onlyMaterials = null)
         {
             var asset = DeadlockCache.LoadHero(hero.Id);
             if (asset == null) return null;
-            var root = new GameObject("mdlDeadlock" + hero.DisplayName);
-            root.transform.localScale = Vector3.one * GlobalScale;
+            var root = new GameObject("mdlDeadlock" + Survivors.CodeName(hero));
+            // modelScale: an extra even scale on top of the shared factor (Mo & Krill are scaled up to Abrams' height)
+            root.transform.localScale = Vector3.one * GlobalScale * hero.ModelScale;
 
             // skeleton
             var armature = new GameObject("Armature").transform;
@@ -55,6 +57,7 @@ namespace DeadlockOfRain
             for (int s = 0; s < parts.Length; s++)
             {
                 var def = asset.Materials[Mathf.Clamp(asset.Submeshes[s].Key, 0, asset.Materials.Length - 1)];
+                if (onlyMaterials != null && (def.Name == null || def.Name.IndexOf(onlyMaterials, System.StringComparison.OrdinalIgnoreCase) < 0)) continue;
                 var meshGo = new GameObject("DeadlockMesh_" + def.Name);
                 meshGo.transform.SetParent(root.transform, false);
                 var smr = meshGo.AddComponent<SkinnedMeshRenderer>();
@@ -79,8 +82,10 @@ namespace DeadlockOfRain
             // the end of the gun first (shots, tracers, muzzle flashes and thrown abilities start there), the hand otherwise
             if (anims.Muzzle != "none") Add("MuzzleRight", anims.Muzzle);
             if (anims.MuzzleLeft != "none") Add("MuzzleLeft", anims.MuzzleLeft);
-            Add("MuzzleRight", "weapon_hand_R"); Add("MuzzleRight", "hand_R");
-            Add("MuzzleLeft", "weapon_hand_L"); Add("MuzzleLeft", "hand_L");
+            // the gun rig's bones may carry a prefix (Krill, who rides on Mo, holds the gun: rider_hand_R)
+            var rig = anims.RigPrefix == "none" ? "" : anims.RigPrefix;
+            Add("MuzzleRight", rig + "weapon_hand_R"); Add("MuzzleRight", rig + "hand_R");
+            Add("MuzzleLeft", rig + "weapon_hand_L"); Add("MuzzleLeft", rig + "hand_L");
             Add("Head", "head"); Add("Chest", "spine_2"); Add("Pelvis", "pelvis");
             Add("HandR", "hand_R"); Add("HandL", "hand_L");
             AccessTools.Field(typeof(ChildLocator), "transformPairs").SetValue(locator, pairs.ToArray());

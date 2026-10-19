@@ -421,6 +421,28 @@ the source values. The RoR2-scale numbers next to them are our own balance (doc 
   - It knows only the bone names `muzzle_fx`, `muzzle_fx_L` and `weapon`. A new hero with other names needs the script extended.
 - The other dlm tools take a `.dlm` path and **must be run from the repo root** (they load `tools/dlm_check.py` by relative path).
 
+**Mo & Krill (added 2026-10-19, v0.7.0):**
+- **Codename** `krill` (`hero_krill`, hero id 18); model `models/heroes_staging/digger/digger.vmdl` ("digger" is the old name of the model),
+  images `panorama/images/heroes/digger_sm_psd` / `digger_card_psd`, gun icon `heroes/guns/digger_gun_psd`, ability icons in
+  `hud/abilities/grappler/` (`grappler_throw_sand`, `grappler_spin` = Burrow, `grappler_regen` = Scorn, `grappler_combo` = Combo).
+- **Meshes** `body` (Mo), `rider` (Krill **and his gun**: materials `digger_rider_gun`, `digger_rider_shape`), `hat` (merged into
+  `digger_shape`); LODs dropped. Glb in metres, body 2.319 m tall, 2.04 m wide (`sourceHeight` 2.319).
+- **Skeleton:** Mo's standard chain (`pelvis`, `spine_0..3`, `head`, arms, legs: the 12 ragdoll bones work) plus Krill's `rider_*`
+  chain whose root `rider_pelvis` is a child of Mo's `spine_0`; gun under `rider_hand_R` → `rider_weapon_hand_R` → `muzzle_fx`.
+- **Clips** (glb names): `weapon_stand_idle`, `weapon_run_n/s/e/w`, `jump_start`, `jump_in_air_loop`, `primary_stand_reload`,
+  `ability_throw_sand`, `ability_burrow_intro_in_ground`, `burrowing_loop`, `ability_burrow_spinning_start`, `ability_tornado_cast/idle`
+  (an old tornado spin, arms out: Dust Devil), `item_throw`, `melee_quick_1/2`. No death or sprint clip (ragdoll; run).
+- **Gun** (`citadel_weapon_digger_set`): 4 pellets at fixed `m_vecScatterOffsets` [0,0] [0,-0.66] [-0.5,0.5] [0.5,0.5], 2.82 each,
+  cycle 0.189 s, clip 20, reload 2.82 s, falloff 20 → 57.5 m.
+- **Abilities:** Scorn `ability_intimidate`; Burrow `ability_burrow` (40 s, 5 s channel, +5 m/s, 60 % bullet resist, spin 1.5 s 75 DPS 5 m,
+  `EnemyDamageSpeedPenalty` 0.5); Sand Blast `ability_throw_sand` (40 s, 25 m, 5 m wide + 0.5 m/m, disarm 2.5 s, speed 3500 u/s);
+  Combo `ability_ult_combo` (2.4 s channel stun, +40 max health per kill).
+- **Sounds** (`soundevents/hero/krill.vsndevts`): `MoKrill.Wpn.Fire`, `.Wpn.Reload.Start/Mid/End`, `.Sandblast.Cast/.Impact`,
+  `.Burrow.Cast/.Cast.Delay/.Modifier.Start/.Travel.Lp/.Spin/.Spin.Lp/.Spin.End`, `.Combo.Channel.Start/.Hit/.Cast/.Duration.Lp`,
+  `.Melee.Swing`, `.Footstep`, `.JumpLand`. **Voice:** Krill only, `sounds/vo/krill/krill_<group>`.
+- **Particles** (looked at for colours only, nothing exported): `particles/abilities/digger/digger_throw_sand*`, `digger_burrow_*`,
+  `digger_ult_tgt_*`, `weapon_fx/digger/digger_tracer*` (tan sand 236,218,186; orange 226,132,32; dark cracks 51,46,41; hot cracks 237,107,20).
+
 **Next-hero cheat-sheet: Wraith** (found in the build 6774 listings; verify before use):
 - **Model:** `models/heroes_wip/wraith/wraith.vmdl`. Other variants exist (`wraith_gen_man`, `wraith_magician`).
 - **Images:** portraits `panorama/images/heroes/wraith_sm_psd.vtex`, `wraith_card_psd.vtex`; gun icon `panorama/images/heroes/guns/wraith_gun_psd.vtex`.

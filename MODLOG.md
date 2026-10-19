@@ -21,6 +21,7 @@
   during test_release). Dev screenshots: create %LOCALAPPDATA%\DeadlockOfRain\devshots.
 
 ## Balance
+- 0.7.0 (2026-10-19, not released): Mo & Krill, matched to MUL-T: 250 +75 health, 25 armor, 5 m/s. Yellow Canary 4 x 40 % fixed pattern; Sand Blast 450 % cone, Sanded = DisableAllSkills 2 s; Burrow 4 s x2 speed +100 armor, pop-out 3 x 100 %; Dust Devil 16 x 50 %, pull 16 m; Tag Team 20 x 1500 % hops. Bench 1620 vs MUL-T 1450 (inside).
 - 0.4.2: each hero within ±500 %/s of its RoR2 match (means over bench runs; doc 05 §3.0).
 - 0.5.1: playtest feel pass (Haymaker lock-on rush, Phantom Strike 5 m area, bouncing 10 m Lightning Ball); benched once and reported, not retuned.
 - 0.6.3: Abrams Shoulder Charge vfx abrams_charge (visual). run_test.sh takes heroes (test only the changed ones); run_bench.sh clears a leftover test-mode file. Bench Infernus 1149 vs Engineer 1611 (inside, just).
