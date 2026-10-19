@@ -63,14 +63,23 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
 ## 3. Boot sequence
 
 1. **`Plugin.Awake`** (BepInEx chainloader):
-   - `DeadlockCache.Open(dir)`: no `ready.json` means an error is logged and no heroes are built (the game still runs).
+   - `FirstRun.Start` (Thunderstore build only: `extract/DeadlockExtract.exe` beside the DLL). It finds Deadlock (config
+     *Deadlock folder*, env `DEADLOCKOFRAIN_DEADLOCK`, RoR2's own Steam library, Steam's path from `reg.exe query
+     HKCU\Software\Valve\Steam`, `C:\Program Files (x86)\Steam`, then every library in `libraryfolders.vdf`; Deadlock is
+     `steamapps/common/Deadlock` with `game/citadel/pak01_dir.vpk`) and starts the extractor as a hidden child process.
+     The cache is then opened on the loading screen (step 2), and `DeadlockAudio.Init` waits for it too.
+   - Otherwise (Melty build) `Plugin.OpenCache()` → `DeadlockCache.Open(dir)`: no `ready.json` means an error is logged and no heroes are built (the game still runs).
+   - When the heroes can't be loaded, `FirstRun.Problem` holds why; `FirstRun.Init` shows it once in a `SimpleDialogBox` on
+     the title screen (tokens `DLR_FIRSTRUN_*`).
    - `new Harmony("melty.deadlockofrain").PatchAll(assembly)` applies every `[HarmonyPatch]` class: `LanguagePatch`, `StatsPatch`, `DamagePatch`, `DebuffResistPatch`, `LoadoutSkinRowPatch`, `Equipment.FirePatch`, `Equipment.ClientFirePatch`.
    - `ContentManager.collectContentPackProviders += add => add(new DeadlockContentProvider())`.
    - `Equipment.Init()` subscribes `CharacterBody.onBodyStartGlobal` (starting equipment) and `Run.onRunStartGlobal`.
    - `Buffs.InitHooks()` subscribes the Infernal Resilience heal-back. The other buff effects live in the Harmony patches.
    - `DeadlockAudio.Init()` loads `sounds.json` and starts the mixer thread.
    - `MeltyTest.Init()` activates only if `%LOCALAPPDATA%\Melty\test\risk-of-deadlock-2.json` (Melty's, named after the listing slug) or `deadlock-of-rain.json` (written by our tools) exists.
-2. **`DeadlockContentProvider.LoadStaticContentAsync`**, during RoR2's content loading. If the cache is ready it runs
+2. **`DeadlockContentProvider.LoadStaticContentAsync`**, during RoR2's content loading. If `FirstRun` started the
+   extractor, it first yields while the process runs (the loading bar follows `progress.txt`, up to 45 % of our share),
+   then `FirstRun.Finish`, `Plugin.OpenCache()` and `DeadlockAudio.Init()`. If the cache is ready it runs
    `Survivors.Build()` (an IEnumerator, stepped while reporting progress), then adds to the `ContentPack`:
    `bodyPrefabs`, `survivorDefs`, `skillDefs`, `skillFamilies`, `entityStateTypes` (every non-abstract EntityState in our
    assembly), `buffDefs` and `equipmentDefs` (built at the end of `Survivors.Build` by `Equipment.Build`). `GenerateContentPackAsync` copies it. RoR2 then assigns catalog indices itself.

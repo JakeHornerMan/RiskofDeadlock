@@ -453,6 +453,14 @@ namespace DeadlockOfRain
 
         public IEnumerator LoadStaticContentAsync(LoadStaticContentAsyncArgs args)
         {
+            if (FirstRun.Started)
+            {
+                // first launch from Thunderstore: the loading screen waits while the heroes are read from Deadlock
+                while (FirstRun.Running) { args.ReportProgress(0.45f * FirstRun.Progress); yield return null; }
+                FirstRun.Finish(DeadlockCache.DefaultDir());
+                Plugin.OpenCache();
+                DeadlockAudio.Init();
+            }
             if (DeadlockCache.Ready)
             {
                 var e = Survivors.Build();

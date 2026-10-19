@@ -282,6 +282,28 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
   the four 0.1.0 shots were removed. Driving the select screen with `um win drive` is fiddly (client coords are half the
   shot's full size on this monitor; clicks lag a frame); asking the creator for shots was quicker.
 
+### 6b. Releasing on Thunderstore (since 2026-10-19)
+Risk of Rain 2 has **no Steam Workshop**; its one-click mod hub is Thunderstore (r2modman / Thunderstore Mod Manager).
+The same DLL and GUID (`melty.deadlockofrain`) as on Melty, so Melty and Thunderstore players can play co-op on the same version.
+**Nothing from Deadlock is in the package** (asked and declined: shipping ripped Deadlock files is redistributing Valve's
+work; the player's own Deadlock install is read on their PC, exactly as on Melty).
+- Files in `thunderstore/`: `manifest.json` (name, description ≤ 250 chars, website, dependency
+  `bbepis-BepInExPack-5.4.2122`; `version_number` is filled in by the packager), `README.md` (the store page: needs
+  Deadlock, first start waits, hero page links), `CHANGELOG.md` (add an entry per version).
+- `python tools/package.py <version> --thunderstore` → `build/DeadlockOfRain-<version>-thunderstore.zip`: root
+  `manifest.json`, `icon.png` (256×256, composed from our own renders in `build/pages/img`, no Deadlock art), `README.md`,
+  `CHANGELOG.md`; `plugins/DeadlockOfRain.dll`, `plugins/LICENSE.txt`, `plugins/extract/` (exe, `deadlock-manifest.json`, notices).
+- First start on a player's PC: `FirstRun.cs` finds Deadlock and runs the extractor; the loading screen waits (~10 min for
+  five heroes, once per Deadlock or manifest update); a title-screen popup explains a missing Deadlock or a failed read.
+- Upload: the creator signs in to thunderstore.io with their own account and team and uploads the zip (Risk of Rain 2
+  community, categories Mods + Survivors), or approves the agent driving the upload page. No API token in files or chat.
+  Uploads can't be edited: every change is a new version.
+- Test a package on this PC: put `plugins/extract/` into the installed `BepInEx/plugins/DeadlockOfRain/`, move
+  `%LOCALAPPDATA%\DeadlockOfRain\cache` aside, `run_test.sh <hero>`; afterwards `lab_restore.sh`, remove `extract/` from
+  the plugin folder and put the cache back.
+- Open: Thunderstore states no rule on a bundled `.exe` (the 46 MB extractor); if moderation objects, the fallback is
+  downloading it from the GitHub release on first start with its sha256 pinned in the DLL (ask the creator first).
+
 ---
 
 ## 7. Git conventions
@@ -345,6 +367,7 @@ doc 02 §11. In short:
 | Playtest feel pass (v0.5.1) | The creator after playing 0.5.0: Haymaker "slaping into the floor and wasting the move" → lock-on only (20 m, no target no punch, like Phantom Strike), rush at the target even in the air, hit-stop + shake + Loader impact + a deeper thud; Phantom Strike "keep the logic the sam" but a 5 m area; Lightning Ball "75%" speed (= slower), bounces, 10 m; Thunderhead clouds 35 m; Flame Gun louder with a heavier layer and smoke; Napalm a visible bottle. Balance: bench once and report, no retuning. Sound sheet gained `castLayer` / `hitLayer` / `gain` for heavier sounds without new code per hero |
 | Stored DPS library (2026-10-17) | The creator: measure every character once and keep it, so new heroes are compared with stored data instead of re-testing everyone. Every survivor, 3 runs, pack test only. `docs/dps-library.json` (`tools/dps_library.py`), shown at the bottom of the overview page (doc 05 §6) |
 | Deadlock voice lines (2026-10-17) | The creator: play each hero's wiki voice lines from Deadlock's files: the ability lines when the matching move is used, the ult's own hero speaking whoever uses the ult item, generic lines only on especially good multikills or after 2–5 min of silence, Select at every stage start, Unselect when the teleporter finishes; "don't ask questions", and don't list the lines on the pages. Decisions: ability lines are Deadlock's `use_power1..4` (slot-matched), Phantom Strike its item line, Haymaker and Torment Pulse a grunt (no Deadlock line exists), chances 40 % with an 8 s gap for abilities. `design/voice.json`, `Runtime/Voice.cs`, extractor `ExportVoice` |
+| Thunderstore, not Steam Workshop; no Deadlock files shipped (2026-10-19) | The creator: "i want to upload this mod to steam work shop can we have a second verion of the app where we rip out key asset form the deadlock game so it can all be installed nativly without the two games". Answers: shipping extracted Deadlock assets was declined (Valve's copyrighted files; the project rule); RoR2 has no Workshop, so Thunderstore was picked; extraction stays on the player's PC, the first start **waits on the loading screen** (picked over "background, restart after"). `FirstRun.cs`, `package.py --thunderstore`, §6b |
 | Effects built in Unity, not ripped | The creator: "make it similar to the Deadlock game, not a rip from the Deadlock engine files". `Runtime/Vfx.cs` builds them at runtime from Unity components and RoR2 materials (doc 02 §8.1) |
 
 ---

@@ -30,12 +30,13 @@ Every hero's abilities, numbers and measured damage against their Risk of Rain 2
 - Balanced against Risk of Rain 2's survivors: Haze ~ Commando, Abrams ~ Loader, Seven ~ Artificer, Infernus ~ Engineer, Mo & Krill ~ MUL-T.
   - Health, regen and damage grow on every level-up, just like vanilla survivors.
 - Scaled to Risk of Rain 2 with one shared factor (Haze is Commando's height), so Deadlock's size differences are kept. Abrams is the biggest.
-- Co-op with up to 4 players: Risk of Rain 2's own lobby and Steam invites, or Melty's Join button. Every player needs this mashup (the same version) and their own Deadlock install.
+- Co-op with up to 4 players: Risk of Rain 2's own lobby and Steam invites, or Melty's Join button. Every player needs this mod (the same version) and their own Deadlock install.
 
 ## Requirements
 - Risk of Rain 2 and Deadlock, both installed (for co-op, on every player's PC).
 - On first start, the bundled DeadlockExtract tool reads the five heroes from your Deadlock folder into `%LOCALAPPDATA%\DeadlockOfRain\cache`. This takes a few minutes and happens once per Deadlock update.
 - Melty does all of this for you: press Play.
+- **Thunderstore** (r2modman): install the mod, and the first start waits on the loading screen while the heroes are read from Deadlock (a few minutes, once per Deadlock update). If Deadlock is in an unusual folder, set *Deadlock folder* in the mod's config.
 
 ## How it is built
 - `design/*.json`: the design sheets (heroes, stats, skills, equipment, buffs, animations, sounds, effects, hooks). They are the source of truth.

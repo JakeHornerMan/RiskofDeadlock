@@ -1,0 +1,9 @@
+{
+  "name": "DeadlockOfRain",
+  "version_number": "0.0.0",
+  "website_url": "https://github.com/JakeHornerMan/RiskofDeadlock",
+  "description": "Play as Haze, Abrams, Seven, Infernus and Mo & Krill from Deadlock. Needs Deadlock (free on Steam) installed: their models and sounds are read from your own copy.",
+  "dependencies": [
+    "bbepis-BepInExPack-5.4.2122"
+  ]
+}

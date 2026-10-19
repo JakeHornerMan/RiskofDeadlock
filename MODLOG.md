@@ -31,6 +31,10 @@
 - 0.6.1: Napalm thrown with Left Click after aiming (speed 45 -> 78, range 80 -> 240: same arc, 3x as far); Flame Dash held up to 5 s (was 3), cooldown 13 s (was 8). Ragdoll deaths and the Combustion range ring are visual. Infernus benched once: 929 %/s vs Engineer 1611 (below; the gun waits while he holds the flask); not retuned.
 - 0.6.0: co-op; no numbers changed. Power Surge's arcs are now limited to once per gun interval on the server (was once per burst in the owner's state).
 
+## Thunderstore (2026-10-19)
+- RoR2 has no Steam Workshop; Thunderstore is the hub. `package.py <ver> --thunderstore`; the plugin runs
+  `plugins/extract/DeadlockExtract.exe` itself (`FirstRun.cs`), the loading screen waits; no Deadlock files ship.
+
 ## Gotchas found
 1. RoR2's CharacterModel keeps ONE material per renderer (it re-applies defaultMaterial), so a multi-material
    SkinnedMeshRenderer only drew submesh 0. Fix: one SkinnedMeshRenderer per material, one RendererInfo each.

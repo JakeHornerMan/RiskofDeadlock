@@ -1,9 +1,11 @@
-// DeadlockExtract: reads the four heroes' models, animations, icons and sounds from the PLAYER'S OWN Deadlock install
+// DeadlockExtract: reads the heroes' models, animations, icons and sounds from the PLAYER'S OWN Deadlock install
 // and writes a local cache that the Risk of Rain 2 plugin loads. Nothing from Deadlock ships with the mod.
 //
 //   DeadlockExtract.exe --deadlock <Deadlock folder> --out <cache folder> [--manifest manifest.json] [--force]
 //
-// Melty runs this once before the first start (recipe.setup) and again when Deadlock updates.
+// Melty runs this once before the first start (recipe.setup) and again when Deadlock updates; the Thunderstore build's
+// plugin runs it on every start from BepInEx/plugins/.../extract/ (it returns at once when ready.json is current).
+// While working it writes progress.txt ("<done> <total> <step>") for the plugin's loading screen.
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
@@ -54,6 +56,11 @@ public static class Program
         }
     }
 
+    static void Progress(string outDir, int done, int total, string step)
+    {
+        try { File.WriteAllText(Path.Combine(outDir, "progress.txt"), $"{done} {total} {step}"); } catch { }
+    }
+
     static void Log(string s)
     {
         Console.WriteLine(s);
@@ -101,8 +108,13 @@ public static class Program
 
         var heroesDir = Path.Combine(outDir, "heroes");
         Directory.CreateDirectory(heroesDir);
+        int total = manifest.Heroes.Count + 2, step = 0;
         foreach (var hero in manifest.Heroes)
+        {
+            Progress(outDir, step++, total, hero.Id);
             ExportHero(loader, hero, Path.Combine(heroesDir, hero.Id));
+        }
+        Progress(outDir, step++, total, "images");
 
         var imagesDir = Path.Combine(outDir, "images");
         Directory.CreateDirectory(imagesDir);
@@ -111,6 +123,7 @@ public static class Program
             if (ExportImage(loader, img, Path.Combine(imagesDir, ImageFileName(img)))) images++;
         Log($"Images: {images}/{manifest.Images.Count}");
 
+        Progress(outDir, step++, total, "sounds");
         int sounds = ExportSounds(package, loader, manifest.SoundEvents, manifest.VoiceGroups, Path.Combine(outDir, "sounds"), out int voiceGroups);
         Log($"Sound events: {sounds}/{manifest.SoundEvents.Count}, voice groups: {voiceGroups}/{manifest.VoiceGroups.Count}");
 
@@ -126,6 +139,7 @@ public static class Program
             time = DateTime.UtcNow.ToString("o"),
         }, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(readyPath, readyJson);
+        Progress(outDir, total, total, "done");
         Log("Done: " + readyPath);
         return 0;
     }

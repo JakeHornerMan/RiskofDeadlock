@@ -29,7 +29,7 @@ namespace DeadlockOfRain
             var ready = Path.Combine(dir, "ready.json");
             if (!File.Exists(ready))
             {
-                Log.Error($"Deadlock content is missing ({ready}). Melty sets it up from your Deadlock install before the first start.");
+                Log.Error($"Deadlock content is missing ({ready}). It is read from your own Deadlock install (Melty does it before the first start; the Thunderstore build on the loading screen).");
                 return false;
             }
             var text = File.ReadAllText(ready);

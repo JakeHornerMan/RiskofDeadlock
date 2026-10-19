@@ -45,6 +45,7 @@ Before touching anything:
 | Balance now | v0.5.1 heroes-only run vs the library (doc 05 §3.1): **Haze 6550 vs Commando 1222 (far above: Phantom Strike's area spreads Fixation)**, Abrams 2460 vs Loader 2951 (inside), **Seven 3164 vs Artificer 4013 (below: the bouncing ball leaves the pack)**, Infernus 1149 vs Engineer 1611 (inside, just; v0.6.3, doc 05 §3.3). Not retuned; the creator decides |
 | Bench rule | **Bench our heroes only** (`run_bench.sh 30 <ids>`, the default); vanilla numbers come from `docs/dps-library.json` (creator, 2026-10-17; CLAUDE.md). Every base-game and Survivors of the Void survivor is stored (3 runs each, also listed in doc 06); the Seekers of the Storm three are not (expansion off) |
 | Sounds | Every move's Deadlock sounds and the voice-line triggers are listed in doc 06 "Sounds" (mirrors `design/sounds.json` / `voice.json`) |
+| Thunderstore | **Package built (2026-10-19, not uploaded)**: `package.py 0.7.0 --thunderstore`; the plugin finds Deadlock and extracts on the first start (`FirstRun.cs`; doc 03 §6b). No Deadlock files in it. Waiting on the creator's thunderstore.io account/team and go-ahead to upload |
 | Pages | Five claude.ai Artifacts, redesigned (links at the top of doc 06); all five shared "anyone with the link" (2026-10-18) and linked from the Melty listing |
 | Voice lines | `design/voice.json` + `Runtime/Voice.cs` (doc 02 §8). Not yet heard in a real run: unselect (teleporter finish), multikill and idle lines; the test only proves select/skill lines play. Release needs a forced re-extract (new voice files) and the recipe check `voice-lines` |
 | Open | RoR2 survivor portraits fail to render (§9); pickup figure size and Haymaker wave vfx not seen in game; the bench is noisy for Loader/Artificer (a steadier multi-run bench would help) |
@@ -214,7 +215,15 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: Mo & Krill play-check pass (v0.7.0b, 2026-10-19, built and tested; not released)
+## 9. Last work: Thunderstore package (2026-10-19, built and tested; not uploaded)
+
+The creator wanted Steam Workshop with Deadlock assets bundled; bundling was declined (Valve's files) and RoR2 has no
+Workshop, so: Thunderstore, with the plugin reading the player's own Deadlock on the first start (`FirstRun.cs`, the
+loading screen waits; doc 03 §6b). `package.py 0.7.0 --thunderstore` built; first start tested (6 min extract, heroes
+built), Haze test pass on the rerun. **Next:** the creator's thunderstore.io account/team, then upload with their
+go-ahead; push the repo when asked.
+
+## 9-prev0. Mo & Krill play-check pass (v0.7.0b, 2026-10-19, built and tested; not released)
 
 The creator's notes after playing him (doc 07): Tag Team to R (30 s, numbers unchanged, no target = R stays ready), Dust
 Devil to the Q ult (8 s, 32 × 200 %, any carrier spins), Burrow 8 s with a 3 × 500 % pop-out and a visible sink and rise,

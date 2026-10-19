@@ -285,6 +285,10 @@ this cache is "stale" but still a superset of what 0.2.0 needs:
   - Always read `extract.log`.
 - **What gets wiped:** `heroes/<id>/` and `sounds/` are wiped and rewritten on each run. `images/` is **not**, so old PNGs linger (harmless).
 - Melty's recipe `setup.done.file` is this `ready.json`. That's why the game waits for extraction on first start.
+- **Thunderstore build (2026-10-19):** the plugin itself runs the exe on every start (`plugin/Runtime/FirstRun.cs`, doc 02 §3); the
+  stamp check above makes that a ~1 s no-op once the cache is current. While working, the exe writes `progress.txt`
+  (`<done> <total> <step>`, one step per hero, then images, then sounds) for the loading screen. The output itself is
+  unchanged, so `Version` stays 1.2.0 and Melty and Thunderstore players share the same stamp.
 - The plugin reads `deadlockBuild` for its log line only. It does **not** re-check the stamp.
 
 ### 6.7 Building and publishing the extractor exe
@@ -295,7 +299,9 @@ dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=
 ```
 This gives one self-contained `build/extract/DeadlockExtract.exe` (about 45.8 MB), so players need no .NET install.
 `tools/package.py` copies it into the zip as `extract/DeadlockExtract.exe` with `manifest.json`,
-`THIRD-PARTY-NOTICES.txt` and `LICENSE.txt`. **Rebuild the exe only when `extractor/*.cs` changes.** A manifest change needs only `gen.py` + `package.py`.
+`THIRD-PARTY-NOTICES.txt` and `LICENSE.txt`. The Thunderstore zip (`--thunderstore`) puts it in `plugins/extract/` with
+the manifest renamed `deadlock-manifest.json` (Thunderstore's own `manifest.json` sits at the zip root); the plugin
+passes `--manifest` explicitly. **Rebuild the exe only when `extractor/*.cs` changes.** A manifest change needs only `gen.py` + `package.py`.
 
 The published exe has its own copy of `manifest.json` next to it in `build/extract/` (from publish time), and that
 copy is what it reads by default. **When running it by hand after `gen.py`, pass `--manifest extractor/manifest.json`.**
