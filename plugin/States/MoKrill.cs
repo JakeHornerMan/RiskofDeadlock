@@ -225,7 +225,7 @@ namespace DeadlockOfRain.States
     }
 
     // ---------------- Mo & Krill: Dust Devil (Q, the ult equipment) ----------------
-    /// <summary>The carrier spins as a sand tornado for duration: it keeps walking (no sprint, no jump), everything within
+    /// <summary>The carrier spins as a sand tornado for duration: it keeps walking and can jump (no sprint), everything within
     /// range is pulled toward it (bosses at bossMult), everything within radius takes damagePct every interval. Mo plays
     /// Deadlock's tornado clip; any other carrier (no special_loop clip) has its whole model turned two times a second.</summary>
     [Kind("ult_devil")]
@@ -266,6 +266,12 @@ namespace DeadlockOfRain.States
             {
                 characterBody.isSprinting = false;
                 characterMotor.moveDirection = inputBank ? inputBank.moveVector : Vector3.zero;
+                // the carrier can jump while it spins (every jump it has: double jumps, Feathers)
+                if (inputBank && inputBank.jump.justPressed && characterMotor.jumpCount < characterBody.maxJumpCount)
+                {
+                    GenericCharacterMain.ApplyJumpVelocity(characterMotor, characterBody, 1f, 1f);
+                    characterMotor.jumpCount++;
+                }
                 var face = GetAimRay().direction; face.y = 0;
                 if (clip && characterDirection && face.sqrMagnitude > 0.01f) characterDirection.forward = face.normalized;
             }

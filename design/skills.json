@@ -1313,7 +1313,7 @@
       "slot": "equipment",
       "deadlockAbility": "none",
       "name": "Dust Devil",
-      "description": "Spin into a sand tornado for 8s, <style=cIsUtility>pulling in</style> every enemy within 16m and hitting everything within 8m for <style=cIsDamage>450% four times a second</style>. Keep walking while it spins. Any survivor holding it spins.",
+      "description": "Spin into a sand tornado for 8s, <style=cIsUtility>pulling in</style> every enemy within 16m and hitting everything within 8m for <style=cIsDamage>450% four times a second</style>. Keep walking and jumping while it spins. Any survivor holding it spins.",
       "kind": "ult_devil",
       "icon": "panorama/images/hud/abilities/grappler/grappler_regen_psd.vtex",
       "damagePct": 450,

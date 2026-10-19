@@ -587,3 +587,12 @@ Tag Team gamage from Krill  and also let -50 form mo and krill base health make 
 **Results:** all 2317 %/s (was 3252), M1 443, Sand Blast 800, Burrow 1567, Tag Team 1367, Dust Devil 3330 (99900 % per use on 12). MUL-T 1450: +867, above the ±500 band; Abrams 2460, Seven 3164.
 **Not done / open:** the creator's pick from the suggestions; `run_test.sh mokrill` (slopes, trophies); page republish.
 **Lessons:** a terrain-following wave must step along the ground; a flat ray at the start height reads every uphill slope as a wall.
+
+### 2026-10-19 · Jump during Dust Devil · v0.7.1c (dev) · the commit that adds this entry
+**Request (verbatim):** "while in the 
+Dust Devil ability for alllcharactere i would like to be able to jump"
+**Questions asked → answers:** none.
+**Done:** `UltDevil` jumps on the jump press for any carrier (all its jumps, Feathers included) via `GenericCharacterMain.ApplyJumpVelocity`; sheet description, docs 02 and 06.
+**Results:** PREFLIGHT CLEAN, build succeeded; the creator had the game open, so the DLL was copied for their next start (not closed). Not tested in game.
+**Not done / open:** as before.
+**Lessons:** none new.
