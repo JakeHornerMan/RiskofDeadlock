@@ -661,3 +661,14 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 - The creator's reply to Harb and the Thunderstore re-upload.
 - The DLL plan is kept only as notes (the plan file and this entry); it is the fallback if any exe is refused.
 **Lessons:** a store moderator's "make it a library" can be far more work than it sounds for a .NET 10 dependency. Weigh the upkeep on every game update, and offer verifiable public builds first.
+
+### 2026-10-19 · Melty 0.7.2 with all five heroes; the test spot fixed · v0.7.2 · the commit that adds this entry
+**Request (verbatim):** "and then lets relese all 5 characters to melty!"; during the tests: "what is happening?", "what going on now? it seemed to have stopped!", "the guy is tanding still wtf?", "there something wrong with the tests", "the character is not under the floor", "ok so are we gonna test and upload or what??? can you fix the fucking test?"
+**Questions asked → answers:** after the first failed test: retest, publish now, or both → "Retest, then publish (Recommended)".
+**Done:**
+- Melty 0.7.2 (full five-hero zip, `heroes.txt` with every hero so 0.7.1's four-hero list is overwritten), recipe with `mokrill-plays` and `trophies`, 12-minute runs.
+- Two Melty tests failed in the same place on Distant Roost: the test spot 14 m ahead of the drop pod sat above a slope, so the summoned targets slid 17 m away and every hit check failed while the hero stood idle. I first said "under the map"; the creator corrected it (the hero was on the ground). Fix: `MeltyTest.FindArena` picks a spot with ground under the hero and level, visible ground under both targets (old spot, landing, then nearby ground nodes in 8 directions); `STAGE=` test option.
+- Footage reviewed for every run; listing description rewritten for five heroes with the red "!" and "Built with" lines; published.
+**Results:** `STAGE=blackbeach` and `STAGE=blackbeach2 run_test.sh haze`: targets at 10 m, pass. Melty test `3dd01dab-…`: run 1 (Siphoned Forest) and run 2 (Distant Roost) every check pass, 5/5 heroes, reviews pass, `graduates: true`. Published; Melty's safety review was checking it when this was written.
+**Not done / open:** confirm 0.7.2 went live (`mod_status`); check `player_logs` for the Deadlock 5977 player; Melty still flags "players hit bugs" (the "fix all bugs" pass, if the creator wants it).
+**Lessons:** a test that fails the same way at the same coordinates is a test bug: look at the recording before calling it bad luck, and don't guess what the picture shows (the hero was on a slope, not under the floor).

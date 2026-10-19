@@ -647,6 +647,13 @@ An optional `"break": "infernus"` (`BREAK=infernus run_test.sh haze`, v0.7.2) ca
 heroes at `Init`: they are skipped as if Deadlock couldn't be read, `deadlock-content`/`survivors-listed` expect the others
 only, and an extra check `missing-hero-tile` passes when each broken hero has a placeholder in the catalog, isn't unlocked,
 isn't built, and its hover text names both version pairs. The `lobby` screenshot shows the red "!" tile.
+An optional `"stage": "blackbeach"` (`STAGE=blackbeach run_test.sh haze`, v0.7.2) moves the run to that scene
+(`NetworkManager.ServerChangeScene`) before the heroes are tested; the log names the stage either way.
+**The test spot (`FindArena`, v0.7.2):** every skill starts from one spot. It must have ground under it and level ground
+(within 1.5 m, in line of sight) where the two targets go, 6–12 m ahead and 2 m to the side. Tried in order: 14 m ahead of the landing (the
+old spot), the landing itself, then up to 80 walkable ground nodes (`SceneInfo.groundNodes`) within 80 m, each facing 8 ways.
+Before this the 14 m spot was taken unchecked: on Distant Roost it sat above a slope, the targets slid 17 m down and every hit
+check failed in two Melty tests (the hero just stood there). The log line `arena at ..., facing ...` shows the pick.
 
 **Flow:**
 1. Wait for `RoR2Application.loadFinished`. Report `deadlock-content` (cache ready and 4 bodies) and `survivors-listed` (4 in `SurvivorCatalog`).
