@@ -201,9 +201,25 @@ namespace DeadlockOfRain
     [HarmonyPatch(typeof(CharacterBody), nameof(CharacterBody.RecalculateStats))]
     static class StatsPatch
     {
-        static void Postfix(CharacterBody __instance)
+        /// <summary>The flat max health each body got from buffs at its last recalculation (the trophies).</summary>
+        static readonly System.Runtime.CompilerServices.ConditionalWeakTable<CharacterBody, float[]> lastHealthAdd =
+            new System.Runtime.CompilerServices.ConditionalWeakTable<CharacterBody, float[]>();
+
+        /// <summary>Vanilla compares the new max health with the old one (ours included) and heals the gain or cuts health
+        /// above the new max. Our flat add comes after it, so it would see every recalculation as a loss and cut health back to
+        /// the base max. So: remember health and the max without our add, and fix health up in the postfix.</summary>
+        static void Prefix(CharacterBody __instance, out float[] __state)
+        {
+            __state = null;
+            var b = __instance;
+            if (!NetworkServer.active || !b.healthComponent || !lastHealthAdd.TryGetValue(b, out var last) || last[0] == 0f) return;
+            __state = new[] { b.healthComponent.health, b.maxHealth - last[0] };
+        }
+
+        static void Postfix(CharacterBody __instance, float[] __state)
         {
             var b = __instance;
+            float vanillaMax = b.maxHealth;
             float moveAdd = 0, attackAdd = 0, armorAdd = 0, regenAdd = 0, slowResist = 0, healthAdd = 0;
             foreach (var row in BuffRow.All)
             {
@@ -217,9 +233,16 @@ namespace DeadlockOfRain
                 healthAdd += row.MaxHealthAdd * k;
                 slowResist = Mathf.Max(slowResist, row.SlowResist);
             }
-            if (moveAdd == 0 && attackAdd == 0 && armorAdd == 0 && regenAdd == 0 && slowResist == 0 && healthAdd == 0) return;
-            // flat max health (Tag Team's trophies)
+            if (healthAdd != 0 || lastHealthAdd.TryGetValue(b, out _)) lastHealthAdd.GetValue(b, _ => new float[1])[0] = healthAdd;
+            // flat max health (Mo & Krill's trophies): a new stack raises the max only, it doesn't heal; health above the base
+            // max stays. Vanilla's own gains (items, levels) still heal as usual
             if (healthAdd != 0) Set(b, "maxHealth", b.maxHealth + healthAdd);
+            if (__state != null && NetworkServer.active && b.healthComponent && b.healthComponent.alive)
+            {
+                float h = __state[0] + Mathf.Max(0f, vanillaMax - __state[1]);
+                b.healthComponent.Networkhealth = Mathf.Clamp(h, 1f, b.maxHealth);
+            }
+            if (moveAdd == 0 && attackAdd == 0 && armorAdd == 0 && regenAdd == 0 && slowResist == 0) return;
             // move speed: positive adds like vanilla speed buffs, negative like slows
             float ms = b.moveSpeed;
             if (moveAdd > 0) ms *= 1f + moveAdd;

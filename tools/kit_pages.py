@@ -496,6 +496,17 @@ def passive_card(h):
         if b['duration']: t.append(('Lasts', f"{n(b['duration'])} s"))
         if b['triggerStacks']: t.append(('Bursts at', f"{n(b['triggerStacks'])} stacks"))
         if b['triggerDamagePct']: t.append(('Burst', f"{n(b['triggerDamagePct'])} %"))
+    # trophies (Mo & Krill): max health per kill, for the stage
+    math = '<p class="note">A passive has no number of its own: it is counted inside the moves that trigger it.</p>'
+    for r in SKILLS:
+        tb = BUFFS.get(r['debuff']) if r['hero'] == h['id'] and r['kind'] == 'krill_hop' else None
+        if not tb or not tb['maxHealthAdd']: continue
+        per = tb['maxHealthAdd'] * max(1, r['buffStacks']); boss = per * max(1, r['bossMult']); cap = tb['maxHealthAdd'] * tb['maxStacks']
+        t = [('Per kill', f"+{n(per)} max hp"), ('Boss kill', f"+{n(boss)} max hp"), ('Up to', f"+{n(cap)}"), ('Lasts', 'the stage')] + t
+        math = (f'<div class="work"><span>every kill, any move: +{n(per)} max health</span><span>a boss: +{n(per)} × {n(r["bossMult"])} = +{n(boss)}</span>'
+                f'<span>up to {n(tb["maxStacks"])} stacks = +{n(cap)}</span><span class="eq">{n(STATS[h["id"]]["baseMaxHealth"])} base → up to {n(STATS[h["id"]]["baseMaxHealth"] + cap)} at level 1</span></div>'
+                '<p class="note">It raises <b>max health only</b>: a kill doesn’t heal you, the extra room fills by regen and healing like the rest of the bar. '
+                'Every new stage starts back at base max health: the trophies stay on the body, and each stage gives you a new one.</p>')
     tl = tiles_html(t[:4])
     return f'''<article class="ab">
   <div class="main">
@@ -503,7 +514,7 @@ def passive_card(h):
     <p class="desc">{E(strip_tags(h["passiveDescription"]))}</p>
     {f'<div class="tiles">{tl}</div>' if tl else ''}
   </div>
-  <aside class="math"><div class="eyebrow">The maths</div><p class="note">A passive has no number of its own: it is counted inside the moves that trigger it.</p></aside>
+  <aside class="math"><div class="eyebrow">The maths</div>{math}</aside>
 </article>'''
 
 def analysis(h):

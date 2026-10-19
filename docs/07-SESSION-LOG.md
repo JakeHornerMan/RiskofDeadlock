@@ -620,3 +620,15 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Results:** five heroes built, no errors in the log.
 **Not done / open:** if Melty launches the game it may switch BepInEx off again (its own behaviour).
 **Lessons:** after any test, check `winhttp.dll` is there before telling the creator a build is ready for Steam Play.
+
+### 2026-10-19 · Trophies: shown on the page, verified, fixed; health 180 · v0.7.1f (dev) · the commit that adds this entry
+**Request (verbatim):** (pasted the Heavyweight card) "why the fuck is there no ention of the health gain on kill and how you lose it after each stage also please validate the code that this is how it works. 2+ for ecah kill in the health kill no health game just to max health, when we change stages all accimalated health is reset back to base!"; "make starting health 180 for mo and krill"
+**Questions asked → answers:** run the test now (closes their game) or wait → "Close it and test now (Recommended)".
+**Done:**
+- Code read: kills → `DlrHopper.OnKill` adds permanent `tag_team_health` stacks (+2 each, ×10 boss, max 100); a new stage spawns a new body, so they reset. **Bug found:** `StatsPatch` added the max after vanilla's heal/clamp, so every recalculation cut health back to base; fixed with a prefix/postfix pair (doc 02 §12). A gain never healed (as wanted) and still doesn't.
+- `MeltyTest`: new check `trophies` (10 stacks: max up, no heal, full health kept through recalculations).
+- Page: the passive card shows Per kill / Boss kill / Up to / Lasts the stage tiles and the maths ("max health only", "back to base every stage"); passive text says it too. Mo & Krill page republished.
+- `baseMaxHealth` 200 → 180. Docs 02, 06.
+**Results:** `run_test.sh mokrill` ×3: run 1 below-the-map spawn (0 damage everywhere; trophies **pass** 200 → 220, 100 → 100 on gain, 220 kept); run 2 a bad spot (targets 15–18 m, Mo on a ledge; Sand Blast, Burrow, Dust Devil missed; trophies pass, and it showed 4 stacks already from the test's own kills); run 3 **every check pass, 1/1**, trophies 180 → 200, no heal, kept.
+**Not done / open:** Sand Blast missed targets 18 m away from a ledge in run 2: watch it in play from high ground.
+**Lessons:** a stat added in a `RecalculateStats` postfix bypasses vanilla's heal/clamp and gets clamped next time: carry health across it.

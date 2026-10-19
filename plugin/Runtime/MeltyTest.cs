@@ -321,6 +321,28 @@ namespace DeadlockOfRain
                 if (Mathf.Abs(body.maxHealth - wantHp) > 1.5f || Mathf.Abs(body.damage - wantDmg) > 0.3f)
                 { levelOk = false; levelWhy += $"{hero.Id} lvl {lvl}: hp {body.maxHealth:F0} want {wantHp:F0}, dmg {body.damage:F1} want {wantDmg:F1}; "; }
 
+                // trophies (Mo & Krill): a kill's stacks raise the max only (no heal), and health above the base max stays
+                // through later stat recalculations
+                var trophy = SkillRow.All.FirstOrDefault(r => r.Hero == hero.Id && r.Kind == "krill_hop" && r.Debuff != "none");
+                if (trophy != null && body.healthComponent)
+                {
+                    var hc = body.healthComponent;
+                    float baseMax = body.maxHealth - Sheet.Buff(trophy.Debuff).MaxHealthAdd * Buffs.Count(body, trophy.Debuff);
+                    hc.Networkhealth = baseMax * 0.5f;
+                    float before = hc.health;
+                    for (int i = 0; i < 10; i++) Buffs.AddTimed(body, trophy.Debuff, 0f, (int)Sheet.Buff(trophy.Debuff).MaxStacks);
+                    body.RecalculateStats();
+                    float afterGain = hc.health, maxAfter = body.maxHealth;
+                    hc.Networkhealth = body.maxHealth;
+                    body.RecalculateStats(); body.RecalculateStats();
+                    float kept = hc.health;
+                    bool ok = maxAfter > baseMax + 1f && Mathf.Abs(afterGain - before) < 0.5f && kept > baseMax + 1f;
+                    Log.Info($"Melty test: {hero.Id} trophies: base max {baseMax:F0}, max after 10 stacks {maxAfter:F0}, health {before:F0} -> {afterGain:F0} on gain, full {body.maxHealth:F0} kept {kept:F0} after recalculating");
+                    Write("trophies", ok, ok ? $"{hero.Id}: +{maxAfter - baseMax:F0} max, no heal, kept {kept:F0}" : $"{hero.Id}: max {maxAfter:F0} (base {baseMax:F0}), health {before:F0} -> {afterGain:F0} on gain, kept {kept:F0}");
+                    Buffs.Clear(body, trophy.Debuff);
+                    hc.Networkhealth = body.maxHealth;
+                }
+
                 // death: a spare body of this hero, killed in front of the player, must go limp like vanilla survivors
                 var rag = new string[1];
                 yield return TestRagdoll(master.GetBody(), hero, rag);

@@ -800,3 +800,9 @@ the other is the **host** (only the host writes checks). How to run it: doc 03 Â
 20. **Additive lines vanish on snow and sand** (v0.7.0b, Sand Blast's cone): a ground marker that must read everywhere uses an alpha-blended material (`Vfx.Solid`, Unity's sprite shader).
 21. **Hiding or moving a model: offset `modelLocator.modelBaseTransform`**, not the model; ModelLocator copies the base's position to the (detached) model every frame (Burrow's sink and rise).
 19. **A display name with spaces or `&` breaks the bench parser** (`\S+` body names): object names use `Survivors.CodeName` (letters only).
+
+- **Flat max health from buffs (trophies) and vanilla's heal/clamp (v0.7.1f).** `RecalculateStats` compares the new max health
+  with the old one and heals the gain or cuts health above the new max. Our `StatsPatch` adds `maxHealthAdd` in a postfix,
+  after that, so vanilla saw every recalculation as a loss and cut health back to the base max. The prefix now records health
+  and the max without our add (per body, `lastHealthAdd`); the postfix restores health plus only vanilla's own gain, clamped
+  to the new max. A new stack therefore raises the max without healing. Test check `trophies`.

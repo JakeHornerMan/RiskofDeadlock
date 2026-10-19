@@ -212,7 +212,7 @@
       "roR2Analog": "ToolbotBody",
       "subtitle": "The Tunnel Rats",
       "passiveName": "Heavyweight",
-      "passiveDescription": "Mo is <style=cIsUtility>too heavy to be knocked back</style>, pushed or pulled by monsters. Krill rides on Mo and fires the <style=cIsDamage>Yellow Canary</style>. <style=cIsHealing>Every kill gives +2 max health</style> (+20 for a boss) for the rest of the stage, up to +200.",
+      "passiveDescription": "Mo is <style=cIsUtility>too heavy to be knocked back</style>, pushed or pulled by monsters. Krill rides on Mo and fires the <style=cIsDamage>Yellow Canary</style>. <style=cIsHealing>Every kill gives +2 max health</style> (+20 for a boss), up to +200. Max health only: a kill does not heal. Back to base at the start of every stage.",
       "passiveIcon": "panorama/images/items/vitality/unstoppable_psd.vtex",
       "damageHealBack": 0,
       "damageHealBackTime": 0,
