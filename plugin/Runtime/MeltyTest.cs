@@ -306,11 +306,16 @@ namespace DeadlockOfRain
                 if (dig.Kind == "burrow" && q.Kind == "ult_devil")
                 {
                     body = master.GetBody();
+                    // start from an idle body: right after the R check a state can still hold the machine and drop the Burrow
+                    var idle = EntityStateMachine.FindByCustomName(body.gameObject, "Body");
+                    if (idle) idle.SetNextStateToMain();
+                    yield return new WaitForSeconds(0.5f);
                     var us = body.skillLocator.utility;
                     us.Reset();
                     us.ExecuteIfReady();
                     yield return new WaitForSeconds(States.Burrow.SinkDelay + States.Burrow.SinkTime + 0.3f);
                     var cm = body.modelLocator && body.modelLocator.modelTransform ? body.modelLocator.modelTransform.GetComponent<CharacterModel>() : null;
+                    for (float w = 0f; w < 1.5f && !(cm && cm.invisibilityCount > 0); w += 0.1f) yield return new WaitForSeconds(0.1f);
                     bool under = cm && cm.invisibilityCount > 0;
                     var qInv = body.inventory; var qDef = Equipment.OfHero(hero.Id);
                     if (qInv && qDef) qInv.SetEquipment(new EquipmentState(qDef.equipmentIndex, Run.FixedTimeStamp.now, 1), qInv.activeEquipmentLocation);
@@ -889,6 +894,8 @@ namespace DeadlockOfRain
             try
             {
                 var aimAt = targets.FirstOrDefault(x => x && x.healthComponent && x.healthComponent.alive);
+                // the move just hurt it: at full health it lives through the punches, so the throw can be measured
+                if (aimAt) aimAt.healthComponent.HealFraction(1f, default(ProcChainMask));
                 var st = Sheet.Stats(Survivors.HeroOf(body));
                 if (st != null) fx.Speed = body.moveSpeed / Mathf.Max(0.1f, st.BaseMoveSpeed);
                 // walk up to the target: the punch reaches a few metres

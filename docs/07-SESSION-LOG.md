@@ -693,5 +693,6 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 - `run_test.sh haze`: every check passes, 1/1 heroes (run twice).
 - Quit tests on this PC: quitting after a test run crashes in ntdll even with the fix (the audio stop is logged first). An unmodded quit, a BepInEx-only quit and a modded title-screen quit did not crash. Windows' log has the same crash on this PC since 2026-10-13.
 - The dump scan shows the crash in Mono's runtime shutdown, with no winmm or mod thread alive.
+- Melty 1-run test of 0.7.3: everything passed except `mokrill-plays`, twice on test timing: (1) Burrow-then-Dust-Devil fired Burrow while the R no-target state still held the body (now: back to idle, then wait up to 1.5 s for him to be under); (2) the Tag Team punch target died part-way (thrown 1.9 m), because Tag Team had already hurt it (now healed to full first). `run_test.sh mokrill`: all pass, thrown 9.1 m. Published at the creator's word ("ok just publish it when it passes").
 **Not done / open:** the quit crash itself (bisect plan in doc 00 §9). The 0.7.3 change doesn't fix it and isn't described as a fix.
 **Lessons:** reproduce a crash before calling a change its fix. Quitting with `CloseMainWindow()` after a test run reproduces this one in about 7 minutes. Bash heredocs still mangle backslashes in scripts: write Python with the Write tool.
