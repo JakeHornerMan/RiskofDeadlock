@@ -136,6 +136,7 @@ python tools/dlm_pose.py <hero> [frame] [clip-substring]   # where each clip poi
 - If the manifest **adds** Deadlock content, rebuild the cache (~8 min), always passing `--manifest` (the exe otherwise
   reads its stale copy in `build/extract/`):
   `build/extract/DeadlockExtract.exe --deadlock "C:/Program Files (x86)/Steam/steamapps/common/Deadlock" --out "$LOCALAPPDATA/DeadlockOfRain/cache" --manifest extractor/manifest.json --force`
-- If `extractor/*.cs` changes, re-publish the exe first (exact `dotnet publish` line in doc 01 §6.7).
+- If `extractor/*.cs` changes, re-publish the exe first (exact `dotnet publish` line in doc 01 §6.7). For a release, GitHub builds it:
+  push a tag `extractor-<Program.Version>`, then `python tools/fetch_extractor.py <ver>`; `package.py --thunderstore` accepts only that exe.
 - Logs: `<RoR2>/BepInEx/LogOutput.log` and `%USERPROFILE%\AppData\LocalLow\Hopoo Games, LLC\Risk of Rain 2\Player.log` (exceptions).
   Decompiled RoR2 source: `C:\Users\jakeh\ror2-decomp\ror2`.

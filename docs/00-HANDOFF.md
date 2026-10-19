@@ -45,7 +45,7 @@ Before touching anything:
 | Balance now | v0.5.1 heroes-only run vs the library (doc 05 §3.1): **Haze 6550 vs Commando 1222 (far above: Phantom Strike's area spreads Fixation)**, Abrams 2460 vs Loader 2951 (inside), **Seven 3164 vs Artificer 4013 (below: the bouncing ball leaves the pack)**, Infernus 1149 vs Engineer 1611 (inside, just; v0.6.3, doc 05 §3.3). Not retuned; the creator decides |
 | Bench rule | **Bench our heroes only** (`run_bench.sh 30 <ids>`, the default); vanilla numbers come from `docs/dps-library.json` (creator, 2026-10-17; CLAUDE.md). Every base-game and Survivors of the Void survivor is stored (3 runs each, also listed in doc 06); the Seekers of the Storm three are not (expansion off) |
 | Sounds | Every move's Deadlock sounds and the voice-line triggers are listed in doc 06 "Sounds" (mirrors `design/sounds.json` / `voice.json`) |
-| Thunderstore | **0.7.0 uploaded by the creator and rejected ("Invalid submission", reason not given; ask the moderators on the RoR2 modding Discord). 0.7.1 package (new extractor) is the one to upload next.** Earlier: "Risk of Deadlock" 0.7.0 package built (2026-10-19): one mod, first release **Haze, Abrams, Seven, Infernus** (`thunderstore/release.json`; Mo & Krill later); `package.py 0.7.0 --thunderstore`; the plugin finds Deadlock and extracts on the first start (`FirstRun.cs`; doc 03 §6b). The co-op mod-list entry names the built heroes. No Deadlock files in it. Waiting on the creator's thunderstore.io account/team and go-ahead to upload |
+| Thunderstore | **0.7.0 rejected; the moderator (Harb) asked why the extractor is an exe. Answer: GitHub now builds it in public (release `extractor-1.4.0`, sha256 on the release page; §9); the creator replies to Harb and re-uploads with the GitHub-built exe (`fetch_extractor.py`).** Earlier: "Risk of Deadlock" 0.7.0 package built (2026-10-19): one mod, first release **Haze, Abrams, Seven, Infernus** (`thunderstore/release.json`; Mo & Krill later); `package.py 0.7.0 --thunderstore`; the plugin finds Deadlock and extracts on the first start (`FirstRun.cs`; doc 03 §6b). The co-op mod-list entry names the built heroes. No Deadlock files in it. Waiting on the creator's thunderstore.io account/team and go-ahead to upload |
 | Pages | Five claude.ai Artifacts, redesigned (links at the top of doc 06); all five shared "anyone with the link" (2026-10-18) and linked from the Melty listing |
 | Voice lines | `design/voice.json` + `Runtime/Voice.cs` (doc 02 §8). Not yet heard in a real run: unselect (teleporter finish), multikill and idle lines; the test only proves select/skill lines play. Release needs a forced re-extract (new voice files) and the recipe check `voice-lines` |
 | Open | RoR2 survivor portraits fail to render (§9); pickup figure size and Haymaker wave vfx not seen in game; the bench is noisy for Loader/Artificer (a steadier multi-run bench would help) |
@@ -197,6 +197,8 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
 - **A Deadlock update can break the extractor** (2026-10-19, build 6795: VRF "Unknown KVType"): check `player_logs` on Melty,
   update the VRF NuGet, publish the exe, re-read with `--force`, compare the cache with the old one. Since extractor 1.3.0 one
   unreadable hero no longer takes the others down, so players keep most heroes while a fix is made.
+- **Store moderators distrust bundled exes** (Thunderstore, 2026-10-19): ship one GitHub builds from public source, with a
+  sha256 on the release page, and say in the README what it does and why it can't be a library.
 - **Test only the heroes you changed** (`run_test.sh <hero>`). Every unasked game launch costs the creator's patience; say up front how many runs you need and why, and clear leftover test files before a bench (a stale test-mode file wrecked one bench run).
 
 ## 8. Where everything is recorded (the record-keeping system)
@@ -221,7 +223,22 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: fallback system + five-hero Melty release v0.7.2 (2026-10-19)
+## 9. Last work: GitHub builds the extractor exe for Thunderstore (2026-10-19)
+
+The Thunderstore moderator Harb asked why the extractor is its own exe and suggested a library inside the DLL. Researched:
+- VRF and its dependencies are .NET 10-only, so a DLL means a patched VRF copy for Unity Mono.
+- That copy costs days of work up front and makes every Deadlock format fix harder.
+- A DLL plan was written (session log); the creator chose to keep it as notes and explain the exe instead: "have GitHub build the exe".
+
+Done:
+- `.github/workflows/extractor.yml`: on a tag `extractor-X.Y.Z` it publishes, makes a Release with the sha256 and build log, and checks the tag against `Program.Version`.
+- `tools/fetch_extractor.py`.
+- `package.py --thunderstore` accepts only the GitHub-built exe.
+- "About DeadlockExtract.exe" section in both READMEs.
+
+**Next:** the creator sends Harb the release link and re-uploads to Thunderstore. If Harb refuses any exe, the DLL plan is the fallback.
+
+## 9-prev00000. Fallback system + five-hero Melty release v0.7.2 (2026-10-19)
 
 A player's Melty logs: v0.6.3 had stopped on Deadlock 6795 (fixed by 0.7.1), and on 0.7.1 the player's Deadlock **build 5977**
 had no `models/heroes_wip/inferno/inferno.vmdl`, so Infernus was skipped (the others loaded: 0.7.1's skip worked). The creator

@@ -50,6 +50,14 @@ Every hero's abilities, numbers and measured damage against their Risk of Rain 2
   - It runs the 20 skills and the 5 ult equipments, and the gun rig (guns held in the hands and aimed at the crosshair).
   - It plays Deadlock sounds through a small Windows audio mixer, because RoR2 turns Unity audio off.
 
+## About DeadlockExtract.exe
+The mod comes with one small program, `DeadlockExtract.exe`. It reads the heroes from **your own Deadlock install** (opened
+read-only) and saves them to `%LOCALAPPDATA%\DeadlockOfRain\cache` for the mod. It makes no network connections and changes
+nothing else. It is a separate program because the Valve file reader it uses only runs on .NET 10, which Risk of Rain 2 can't
+load. GitHub builds it in public from the source in [`extractor/`](https://github.com/JakeHornerMan/RiskofDeadlock/tree/main/extractor):
+the [release page](https://github.com/JakeHornerMan/RiskofDeadlock/releases/tag/extractor-1.4.0) links the build log and lists
+its SHA-256, the same file that is in this download.
+
 ## Credits
 - Made with Melty (melty.gg).
 - Risk of Rain 2 © Gearbox Software / Hopoo Games. Deadlock © Valve Corporation. This is an unofficial fan mashup; it ships no game files.

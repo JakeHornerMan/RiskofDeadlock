@@ -79,6 +79,8 @@ design/                   THE SOURCE OF TRUTH – JSON sheets (heroes, stats, sk
 tools/preflight.py        checks every sheet cell and cross-reference (and Deadlock/RoR2 names against tools/dev listings)
 tools/gen.py              runs preflight, then generates plugin/Generated/Sheets.g.cs + extractor/manifest.json
 tools/package.py          builds build/DeadlockOfRain-<ver>.zip (+ .json with size, sha256, entries)
+tools/fetch_extractor.py  downloads the GitHub-built DeadlockExtract.exe (release extractor-<ver>) into build/extract, checks its sha256
+.github/workflows/extractor.yml  GitHub builds DeadlockExtract.exe in public on a tag extractor-<ver> and makes a Release
 tools/dev_run.sh          kill RoR2, re-enable BepInEx, deploy the built DLL, launch via Steam
 tools/run_test.sh         local test run of the given heroes (`run_test.sh infernus`; none = all four), prints every check
 tools/lab_restore.sh      put the PC back the way Melty set it up
@@ -323,8 +325,12 @@ work; the player's own Deadlock install is read on their PC, exactly as on Melty
 - Test a package on this PC: put `plugins/extract/` and `plugins/heroes.txt` into the installed `BepInEx/plugins/DeadlockOfRain/`, move
   `%LOCALAPPDATA%\DeadlockOfRain\cache` aside, `run_test.sh <hero>`; afterwards `lab_restore.sh`, remove `extract/` from
   the plugin folder and put the cache back. (A release manifest has its own stamp, so the test extracts again.)
-- Open: Thunderstore states no rule on a bundled `.exe` (the 46 MB extractor); if moderation objects, the fallback is
-  downloading it from the GitHub release on first start with its sha256 pinned in the DLL (ask the creator first).
+- **The exe is GitHub-built** (2026-10-19). Thunderstore rejected 0.7.0, and the moderator Harb asked "Why does the extractor need
+  to be it's own exe?" and said it "could load it as library or just directly embed it into your dll". Packaging steps:
+  - `python tools/fetch_extractor.py <extractor version>` first, then `package.py --thunderstore`, which checks the sha256 against
+    `thunderstore/extractor.json`.
+  - The store README's "About DeadlockExtract.exe" links the Release, with its build log and checksum.
+  - doc 01 §6.7 has the release steps; §9 records why the reader was not moved into the DLL.
 
 ---
 
@@ -392,6 +398,7 @@ doc 02 §11. In short:
 | Thunderstore, not Steam Workshop; no Deadlock files shipped (2026-10-19) | The creator: "i want to upload this mod to steam work shop can we have a second verion of the app where we rip out key asset form the deadlock game so it can all be installed nativly without the two games". Answers: shipping extracted Deadlock assets was declined (Valve's copyrighted files; the project rule); RoR2 has no Workshop, so Thunderstore was picked; extraction stays on the player's PC, the first start **waits on the loading screen** (picked over "background, restart after"). `FirstRun.cs`, `package.py --thunderstore`, §6b |
 | One mod, first release four heroes (2026-10-19) | The creator asked for a Thunderstore mod per hero, then: "let actually just have 1 mod with all characters!", "only all heros so online always works", and "ok i just want HazeAbramsSevenInfernus for first release of all all pack of risk of deadlock". Asked: "will the online work if a friend doesnt have the same characters installed?" → the mod-list entry now names the built heroes, so a mismatched player (or one without Deadlock) gets RoR2's mod-mismatch refusal. `release.json`, `heroes.txt`, `manifest_owners.json`, §6b |
 | One hero that can't be read never stops the others; VRF follows Deadlock (v0.7.1, 2026-10-19) | Deadlock build 6795 added a KV3 type VRF 20.0 didn't know, the extractor aborted on Haze and every Melty player lost all heroes. The creator: "i would prefer we fix it here! and also can we make sure this doesnt happen again, so if 1 character fails they dont all fail. update to the latest deadlock update". Extractor 1.3.0 reads each hero on its own (`failed` in ready.json, exit 0 while one hero works), the plugin names the missing ones on the title screen, VRF 20.1.7467 |
+| The extractor stays an exe, built in public by GitHub (2026-10-19) | Thunderstore's moderator asked for the reader as a library inside the DLL. Researched: VRF and its dependencies are .NET 10-only, so the DLL route means keeping our own patched copy of VRF for Unity Mono, with days of work up front and slower, harder fixes after every Deadlock format change (today's 6795 fix was a one-line VRF bump). The creator chose "Rewrite into the DLL", then asked to keep the plan as notes and to explain the exe instead: "have GitHub build the exe". `.github/workflows/extractor.yml` builds it with a public log and sha256 (doc 01 §6.7). If the moderator still refuses any exe, the DLL plan is the fallback (session log 2026-10-19) |
 | Effects built in Unity, not ripped | The creator: "make it similar to the Deadlock game, not a rip from the Deadlock engine files". `Runtime/Vfx.cs` builds them at runtime from Unity components and RoR2 materials (doc 02 §8.1) |
 
 ---

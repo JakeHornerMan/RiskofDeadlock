@@ -1,0 +1,79 @@
+# Builds DeadlockExtract.exe from the public source in extractor/, so anyone can check that the exe shipped with the mod
+# is exactly this code: the build log is public and the release lists the exe's SHA-256.
+#   push a tag extractor-X.Y.Z (X.Y.Z = Program.Version)  -> build + GitHub Release with the exe and its checksum
+#   Actions > "Build DeadlockExtract" > Run workflow     -> build only (the exe is kept as a run artifact)
+name: Build DeadlockExtract
+
+on:
+  push:
+    tags: ['extractor-*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Tag matches Program.Version
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}" -replace '^extractor-', ''
+          $m = Select-String -Path extractor/Program.cs -Pattern 'Version = "([^"]+)"'
+          $ver = $m.Matches[0].Groups[1].Value
+          if ($tag -ne $ver) { throw "tag says $tag but extractor/Program.cs says Version = $ver" }
+          echo "Version $ver"
+
+      - name: Publish (same command as docs/01-DEADLOCK-ASSETS.md §6.7)
+        working-directory: extractor
+        run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=none -o ../out
+
+      - name: Checksum
+        shell: pwsh
+        run: |
+          $h = (Get-FileHash out/DeadlockExtract.exe -Algorithm SHA256).Hash.ToLower()
+          "$h  DeadlockExtract.exe" | Out-File -Encoding ascii -NoNewline out/DeadlockExtract.exe.sha256
+          Copy-Item THIRD-PARTY-NOTICES.txt, LICENSE.txt out/
+          echo "SHA256 $h"
+          echo "SHA256=$h" >> $env:GITHUB_ENV
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DeadlockExtract
+          path: |
+            out/DeadlockExtract.exe
+            out/DeadlockExtract.exe.sha256
+            out/THIRD-PARTY-NOTICES.txt
+            out/LICENSE.txt
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: DeadlockExtract ${{ github.ref_name }}
+          files: |
+            out/DeadlockExtract.exe
+            out/DeadlockExtract.exe.sha256
+            out/THIRD-PARTY-NOTICES.txt
+            out/LICENSE.txt
+          body: |
+            **DeadlockExtract.exe**, built by GitHub Actions from the source in [`extractor/`](${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/extractor) at commit ${{ github.sha }}.
+            Build log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            SHA-256: `${{ env.SHA256 }}`
+
+            **What it does:** reads the hero models, animations, icons and sounds from the player's own Deadlock install
+            (`pak01_dir.vpk`, opened read-only) and writes them to `%LOCALAPPDATA%\DeadlockOfRain\cache` for the Risk of Rain 2
+            plugin. It makes no network connections and changes nothing else.
+
+            **Why it is a separate program:** the Valve file reader it uses (ValveResourceFormat) only runs on .NET 10, which
+            Risk of Rain 2's Unity runtime can't load. Running it as its own program lets it follow Deadlock's file-format
+            updates by updating that library. Self-contained single file, so players need no .NET install.

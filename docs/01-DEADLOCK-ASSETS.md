@@ -331,6 +331,20 @@ updated Deadlock and compare the cache with the old one before releasing.
 the manifest renamed `deadlock-manifest.json` (Thunderstore's own `manifest.json` sits at the zip root); the plugin
 passes `--manifest` explicitly. **Rebuild the exe only when `extractor/*.cs` changes.** A manifest change needs only `gen.py` + `package.py`.
 
+**GitHub builds the released exe** (since 2026-10-19, after Thunderstore's moderator asked why the extractor is an exe):
+`.github/workflows/extractor.yml` runs the publish line above on GitHub's Windows runner and makes a public Release with
+the exe, its `.sha256`, the notices and LICENSE, plus a link to the build log. The Release text says what the exe does and why it
+is an exe: VRF is .NET 10-only, and RoR2's Unity Mono can't load it. To release a new extractor:
+1. Bump `Program.Version`; the workflow fails if the tag differs.
+2. Commit and push.
+3. `git tag extractor-X.Y.Z && git push origin extractor-X.Y.Z`.
+4. `python tools/fetch_extractor.py X.Y.Z`. It downloads the exe into `build/extract/`, checks the sha256 and writes
+   `thunderstore/extractor.json`.
+
+`package.py --thunderstore` refuses any other exe, so the store zip always carries the public build. Local `dotnet publish`
+stays the dev loop and Melty zips. Builds are not byte-identical between machines, which is why the store uses the downloaded one.
+Actions > "Build DeadlockExtract" > Run workflow builds without releasing.
+
 The published exe has its own copy of `manifest.json` next to it in `build/extract/` (from publish time), and that
 copy is what it reads by default. **When running it by hand after `gen.py`, pass `--manifest extractor/manifest.json`.**
 `build/` is gitignored, so after a fresh clone the exe must be published again.

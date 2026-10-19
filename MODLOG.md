@@ -37,6 +37,10 @@
 - First release "Risk of Deadlock" = Haze, Abrams, Seven, Infernus (`thunderstore/release.json` → `heroes.txt`, cut manifest).
   Mod-list entry `melty.deadlockofrain;<version>;<built hero ids>`: other heroes, or none, can't join.
 
+- 0.7.0 rejected; moderator Harb: why an exe, use a library. VRF is .NET 10-only (Mono can't load it), so it stays an exe,
+  built in public by GitHub: `.github/workflows/extractor.yml` on tag `extractor-X.Y.Z` -> Release + sha256;
+  `fetch_extractor.py`; `package.py --thunderstore` ships only that exe.
+
 ## Deadlock update 6795 (2026-10-19, v0.7.1)
 - VRF 20.0.6980 threw "Unknown KVType for variable 'datatype': 26" on Haze's model; extractor 1.2.0 aborted the whole run,
   so 3 Melty players on 0.6.3 got no heroes. VRF 20.1.7467 reads all five; extractor 1.3.0 reads each hero on its own

@@ -39,6 +39,14 @@ Every hero's abilities, numbers and measured damage next to their Risk of Rain 2
 - Scaled to Risk of Rain 2 with one shared factor (Haze is Commando's height), so Deadlock's size differences are kept. Abrams is the biggest.
 - Co-op with up to 4 players: Risk of Rain 2's own lobby and Steam invites. Every player needs this mod (the same version) and their own Deadlock install; a player whose heroes didn't load (no Deadlock) is turned away with Risk of Rain 2's "mod mismatch" message instead of joining a broken game.
 
+## About DeadlockExtract.exe
+The mod comes with one small program, `DeadlockExtract.exe`. It reads the heroes from **your own Deadlock install** (opened
+read-only) and saves them to `%LOCALAPPDATA%\DeadlockOfRain\cache` for the mod. It makes no network connections and changes
+nothing else. It is a separate program because the Valve file reader it uses only runs on .NET 10, which Risk of Rain 2 can't
+load. GitHub builds it in public from the source in [`extractor/`](https://github.com/JakeHornerMan/RiskofDeadlock/tree/main/extractor):
+the [release page](https://github.com/JakeHornerMan/RiskofDeadlock/releases/tag/extractor-1.4.0) links the build log and lists
+its SHA-256, the same file that is in this download.
+
 ## Credits
 - Source and issues: https://github.com/JakeHornerMan/RiskofDeadlock. Also on Melty (melty.gg), where it was made.
 - Risk of Rain 2 © Gearbox Software / Hopoo Games. Deadlock © Valve Corporation. This is an unofficial fan mod; it ships no game files.

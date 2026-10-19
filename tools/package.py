@@ -7,7 +7,8 @@ Nothing from Risk of Rain 2 or Deadlock is included: the extractor reads Deadloc
   python tools/package.py <version> --release       the same Melty zip cut down to thunderstore/release.json's heroes
     (plugins/DeadlockOfRain/heroes.txt + a cut extractor manifest), e.g. the four originals without Mo & Krill
 
-  python tools/package.py <version> --thunderstore  Thunderstore zip (r2modman installs plugins/ into
+  python tools/package.py <version> --thunderstore  Thunderstore zip (needs the GitHub-built exe: tools/fetch_extractor.py;
+    r2modman installs plugins/ into
     BepInEx/plugins/<team>-DeadlockOfRain/; the plugin runs plugins/extract/DeadlockExtract.exe itself, FirstRun.cs)
     manifest.json, icon.png, README.md, CHANGELOG.md   Thunderstore's own files (thunderstore/)
     plugins/DeadlockOfRain.dll, plugins/extract/...    the extractor's asset list is deadlock-manifest.json there
@@ -155,8 +156,19 @@ stamp_texts(BW)
 BW_TXT = ''.join(f'{k}={v}\n' for k, v in BW.items()).encode('utf-8')
 print(built_with_line(BW))
 
+def check_github_exe():
+    """The Thunderstore zip ships only the GitHub-built exe (tools/fetch_extractor.py), so its SHA-256 is the public one."""
+    f = os.path.join(TS, 'extractor.json')
+    if not os.path.exists(f): raise SystemExit('no thunderstore/extractor.json: run python tools/fetch_extractor.py <extractor version> first')
+    want = json.load(open(f, encoding='utf-8'))
+    got = hashlib.sha256(open(os.path.join(ROOT, EXTRACT['DeadlockExtract.exe']), 'rb').read()).hexdigest()
+    if got != want['sha256']:
+        raise SystemExit(f'build/extract/DeadlockExtract.exe is not the GitHub-built {want["version"]} ({want["url"]}): run python tools/fetch_extractor.py {want["version"]}')
+
+
 if thunderstore:
     check_store_text()
+    check_github_exe()
     out = os.path.join(ROOT, 'build', f'{RELEASE["name"]}-{version}-thunderstore.zip')
     files = {
         'README.md': 'thunderstore/README.md',

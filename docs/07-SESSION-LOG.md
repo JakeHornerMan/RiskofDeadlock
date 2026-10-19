@@ -645,3 +645,19 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Results:** extractor fault run: Infernus pointed at the wrong folder was found, a fake hero skipped, exit 0. Full cache 5/5 on Deadlock 6795 (stamp `6795|1.4.0|544C18F87BF82B69`). `BREAK=infernus run_test.sh haze`: every check pass incl. `missing-hero-tile`, red "!" tile in the lobby shot. The first run showed "this PC: Risk of Rain 2 build ?" (acf looked one folder too high): fixed, in the packaged DLL. Package 0.7.2: built with RoR2 25921972 / Deadlock 6795.
 **Not done / open:** Melty 0.7.2 upload, test and publish (next, creator said release); the 5977 player should get Infernus back once the vdata or folder lookup finds him (unverified on their build).
 **Lessons:** check which version each pasted log comes from before fixing; heredocs here mangle `\n` even when quoted.
+
+### 2026-10-19 · Thunderstore moderator asked why an exe; GitHub now builds it in public · no version bump · the commit that adds this entry
+**Request (verbatim):** (pasted the Discord thread: Harb "Why does the extractor need to be it's own exe?" ... "This is c# code, you could load it as library or just directly embed it into your dll") "what are some approaches we can do to appease this moderator. lets chat!" / then "do you think the .exe is the best way for this is there a way we could explain this to them... i do believe this uy is just bieng a gate keeper. what are dthe downsides of doing the plan we just created it seem like a lot fo work if valve updates their game" / "can i have a link to the .exe in my github" / "have GitHub build the exe"
+**Questions asked → answers:**
+- Approach → "Rewrite into the DLL". A plan was written: a netstandard2.1 reader with a vendored, patched VRF slice, DLM written straight from VRF objects, and no Skia/glTF.
+- The creator then said "let keep this is a .md for now pls!" (plan file only) and chose to explain the exe instead.
+**Done:**
+- `.github/workflows/extractor.yml`: Windows runner, the doc 01 §6.7 publish line, tag/Version check, sha256, a Release with what the exe does and why it's an exe.
+- `tools/fetch_extractor.py`; `package.py --thunderstore` checks the exe against `thunderstore/extractor.json`.
+- README and store README "About DeadlockExtract.exe" section.
+- Docs 00, 01, 03, CLAUDE.md, MODLOG.
+- Pushed `main` and the tag `extractor-1.4.0`.
+**Not done / open:**
+- The creator's reply to Harb and the Thunderstore re-upload.
+- The DLL plan is kept only as notes (the plan file and this entry); it is the fallback if any exe is refused.
+**Lessons:** a store moderator's "make it a library" can be far more work than it sounds for a .NET 10 dependency. Weigh the upkeep on every game update, and offer verifiable public builds first.
