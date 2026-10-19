@@ -33,7 +33,7 @@ Every hero's abilities, numbers and measured damage against their Risk of Rain 2
 - Co-op with up to 4 players: Risk of Rain 2's own lobby and Steam invites, or Melty's Join button. Every player needs this mod (the same version) and their own Deadlock install.
 
 ## Requirements
-- Built with Risk of Rain 2 build 25921972 and Deadlock build 6795 (v0.7.2, 2026-10-19).
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6795 (v0.7.3, 2026-10-19).
 - Risk of Rain 2 and Deadlock, both installed (for co-op, on every player's PC).
 - On first start, the bundled DeadlockExtract tool reads the five heroes from your Deadlock folder into `%LOCALAPPDATA%\DeadlockOfRain\cache`. This takes a few minutes and happens once per Deadlock update.
 - Melty does all of this for you: press Play.

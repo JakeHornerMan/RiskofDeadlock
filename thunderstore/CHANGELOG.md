@@ -1,6 +1,7 @@
 # Changelog
 
 ## 0.7.3
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6795 (v0.7.3, 2026-10-19).
 - Closing the game shuts the mod's Deadlock sound down properly first.
 
 ## 0.7.2
