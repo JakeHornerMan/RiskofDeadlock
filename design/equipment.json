@@ -67,6 +67,17 @@
       "enigmaCompatible": true,
       "randomTrigger": true,
       "figure": "all"
+    },
+    {
+      "id": "eq_viscous_gooball",
+      "hero": "viscous",
+      "skill": "viscous_gooball",
+      "pickupText": "Become a huge ball of goo for 10s: roll into enemies to smash and launch them, jump to slam.",
+      "lore": "Cubes are for healing. Balls are for something else entirely.",
+      "canDrop": true,
+      "enigmaCompatible": true,
+      "randomTrigger": true,
+      "figure": "all"
     }
   ]
 }

@@ -82,6 +82,24 @@ namespace DeadlockOfRain
             if (row.WithBuff != "none" && row.WithBuff != id) Apply(owner, victim, row.WithBuff, bossMult);
         }
 
+        /// <summary>n stacks of a stacking buff at once, as one meter (Gooed): up to maxStacks, and every stack is refreshed to the
+        /// buff's duration, so the meter only drains when nothing has added to it for that long. The buff's own visual (its vfx
+        /// column) starts on every player's machine when the victim first gets it. Server only.</summary>
+        public static void AddStacks(CharacterBody owner, CharacterBody victim, string id, int n)
+        {
+            var row = Sheet.Buff(id);
+            var d = Get(id);
+            if (row == null || !d || !victim || n <= 0 || !NetworkServer.active) return;
+            int before = victim.GetBuffCount(d);
+            int max = row.CanStack ? Mathf.Max(1, (int)row.MaxStacks) : 1;
+            int after = Mathf.Min(max, before + n);
+            victim.ClearTimedBuffs(d);
+            while (victim.GetBuffCount(d) > 0) victim.RemoveBuff(d);
+            for (int i = 0; i < after; i++) victim.AddTimedBuff(d, row.Duration);
+            if (owner) SetOwner(owner, victim, id);
+            if (before == 0 && row.Vfx != "none") Relay.Vfx(row.Vfx, "hit", victim.corePosition, 1f, victim.gameObject);
+        }
+
         /// <summary>One hit's worth of a stacking debuff (Fixation, Static, Afterburn build-up): a crit adds critStacks, and the
         /// row's trigger fires at triggerStacks. Returns true when it fired.</summary>
         public static bool Stack(CharacterBody owner, CharacterBody victim, string id, bool crit)
@@ -222,16 +240,23 @@ namespace DeadlockOfRain
             var b = __instance;
             float vanillaMax = b.maxHealth;
             float moveAdd = 0, attackAdd = 0, armorAdd = 0, regenAdd = 0, slowResist = 0, healthAdd = 0;
+            // linearSlow buffs (Gooed) take their fraction straight off the speed; acceleration, jump power and extra jumps (Goo Ball)
+            float linearMove = 0, accelAdd = 0, jumpAdd = 0, jumpCount = 0;
             foreach (var row in BuffRow.All)
             {
-                if (row.MoveSpeedAdd == 0 && row.AttackSpeedAdd == 0 && row.ArmorAdd == 0 && row.RegenAdd == 0 && row.SlowResist == 0 && row.MaxHealthAdd == 0) continue;
+                if (row.MoveSpeedAdd == 0 && row.AttackSpeedAdd == 0 && row.ArmorAdd == 0 && row.RegenAdd == 0 && row.SlowResist == 0 && row.MaxHealthAdd == 0
+                    && row.AccelerationAdd == 0 && row.JumpPowerAdd == 0 && row.JumpCountAdd == 0) continue;
                 var d = Buffs.Get(row.Id);
                 if (!d) continue;
                 int n = b.GetBuffCount(d);
                 if (n <= 0) continue;
                 int k = row.CanStack ? n : 1;
-                moveAdd += row.MoveSpeedAdd * k; attackAdd += row.AttackSpeedAdd * k; armorAdd += row.ArmorAdd * k; regenAdd += row.RegenAdd * k;
+                // bosses feel bossStatCut less of the move and attack speed (Gooed: half)
+                float speedK = k * (b.isChampion ? 1f - row.BossStatCut : 1f);
+                if (row.LinearSlow) linearMove += row.MoveSpeedAdd * speedK; else moveAdd += row.MoveSpeedAdd * speedK;
+                attackAdd += row.AttackSpeedAdd * speedK; armorAdd += row.ArmorAdd * k; regenAdd += row.RegenAdd * k;
                 healthAdd += row.MaxHealthAdd * k;
+                accelAdd += row.AccelerationAdd * k; jumpAdd += row.JumpPowerAdd * k; jumpCount += row.JumpCountAdd * k;
                 slowResist = Mathf.Max(slowResist, row.SlowResist);
             }
             if (healthAdd != 0 || lastHealthAdd.TryGetValue(b, out _)) lastHealthAdd.GetValue(b, _ => new float[1])[0] = healthAdd;
@@ -243,11 +268,15 @@ namespace DeadlockOfRain
                 float h = __state[0] + Mathf.Max(0f, vanillaMax - __state[1]);
                 b.healthComponent.Networkhealth = Mathf.Clamp(h, 1f, b.maxHealth);
             }
-            if (moveAdd == 0 && attackAdd == 0 && armorAdd == 0 && regenAdd == 0 && slowResist == 0) return;
+            if (accelAdd != 0) Set(b, "acceleration", b.acceleration * Mathf.Max(0.02f, 1f + accelAdd));
+            if (jumpAdd != 0) Set(b, "jumpPower", b.jumpPower * Mathf.Max(0.1f, 1f + jumpAdd));
+            if (jumpCount != 0) SetInt(b, "maxJumpCount", Mathf.Max(0, b.maxJumpCount + (int)jumpCount));
+            if (moveAdd == 0 && attackAdd == 0 && armorAdd == 0 && regenAdd == 0 && slowResist == 0 && linearMove == 0) return;
             // move speed: positive adds like vanilla speed buffs, negative like slows
             float ms = b.moveSpeed;
             if (moveAdd > 0) ms *= 1f + moveAdd;
             else if (moveAdd < 0) ms /= 1f - moveAdd;
+            if (linearMove < 0) ms *= Mathf.Max(0.1f, 1f + linearMove);
             if (slowResist > 0)
             {
                 // ignore that fraction of whatever slows pulled the speed under the unslowed base speed
@@ -255,7 +284,7 @@ namespace DeadlockOfRain
                 if (ms < floor) ms += (floor - ms) * slowResist;
             }
             Set(b, "moveSpeed", ms);
-            Set(b, "attackSpeed", b.attackSpeed * (1f + attackAdd));
+            Set(b, "attackSpeed", b.attackSpeed * Mathf.Max(0.1f, 1f + attackAdd));
             Set(b, "armor", b.armor + armorAdd);
             // regen scales with level like vanilla regen
             Set(b, "regen", b.regen + regenAdd * (1f + 0.2f * (b.level - 1f)));
@@ -263,6 +292,11 @@ namespace DeadlockOfRain
 
         static readonly Dictionary<string, System.Reflection.MethodInfo> setters = new Dictionary<string, System.Reflection.MethodInfo>();
         static void Set(CharacterBody b, string prop, float v)
+        {
+            if (!setters.TryGetValue(prop, out var m)) setters[prop] = m = AccessTools.PropertySetter(typeof(CharacterBody), prop);
+            m.Invoke(b, new object[] { v });
+        }
+        static void SetInt(CharacterBody b, string prop, int v)
         {
             if (!setters.TryGetValue(prop, out var m)) setters[prop] = m = AccessTools.PropertySetter(typeof(CharacterBody), prop);
             m.Invoke(b, new object[] { v });

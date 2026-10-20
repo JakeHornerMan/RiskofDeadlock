@@ -22,7 +22,7 @@ namespace DeadlockExtract;
 
 public static class Program
 {
-    public const string Version = "1.4.0";
+    public const string Version = "1.5.0";
     static StreamWriter? log;
 
     public static int Main(string[] args)
@@ -111,7 +111,7 @@ public static class Program
 
         var heroesDir = Path.Combine(outDir, "heroes");
         Directory.CreateDirectory(heroesDir);
-        int total = manifest.Heroes.Count + 2, step = 0;
+        int total = manifest.Heroes.Count + 3, step = 0;
         // Each hero is read on its own (1.3.0): a Deadlock update that breaks one model must not cost the player the others.
         // A hero is written to <id>.tmp and swapped in only when it finished; a failed one has no folder at all, so the plugin
         // never loads an old copy that no longer matches, and ready.json lists it under "failed".
@@ -147,6 +147,31 @@ public static class Program
         }
         if (read.Count == 0 && manifest.Heroes.Count > 0)
             throw new Exception($"none of the {manifest.Heroes.Count} heroes could be read from Deadlock build {build} (see the HERO FAILED lines above)");
+        // the Deadlock models our effects draw as plain meshes (1.5.0: Viscous' cube, ball and fist). Each is read on its own and
+        // never costs the player a hero: a failed one is listed under "failedProps" and the plugin draws a simple shape instead
+        Progress(outDir, step, total, "props");
+        Log($"[{++step}/{total}] Reading effect models...");
+        var props = new List<string>();
+        var failedProps = new List<object>();
+        var propsDir = Path.Combine(outDir, "props");
+        TryDeleteDir(propsDir);
+        foreach (var prop in manifest.Props)
+        {
+            var work = Path.Combine(propsDir, prop.Id);
+            try
+            {
+                ExportProp(loader, prop, work);
+                props.Add(prop.Id);
+            }
+            catch (Exception e)
+            {
+                Log($"  prop {prop.Id} ({prop.Vmdl}) SKIPPED: {e.Message}");
+                TryDeleteDir(work);
+                failedProps.Add(new { id = prop.Id, error = e.Message });
+            }
+        }
+        Log($"Effect models: {props.Count}/{manifest.Props.Count}");
+
         Progress(outDir, step, total, "images");
         Log($"[{++step}/{total}] Reading icons...");
 
@@ -177,6 +202,8 @@ public static class Program
             heroes = read.ToArray(),
             failed,
             modelPaths,
+            props = props.ToArray(),
+            failedProps,
             images,
             soundEvents = sounds,
             voiceGroups,
@@ -318,6 +345,31 @@ public static class Program
         var model = ModelRoot.Load(glb);
         var stats = DlmWriter.Write(model, hero, dir, Log);
         Log($"  {hero.Id}: {stats}");
+        Directory.Delete(tmp, true);
+    }
+
+    /// <summary>One effect model (a prop): its meshes and materials to DLM, no skeleton or clips.</summary>
+    static void ExportProp(GameFileLoader loader, PropEntry prop, string dir)
+    {
+        if (Directory.Exists(dir)) Directory.Delete(dir, true);
+        Directory.CreateDirectory(dir);
+        var tmp = Path.Combine(dir, "_gltf");
+        Directory.CreateDirectory(tmp);
+        var res = loader.LoadFileCompiled(prop.Vmdl) ?? throw new Exception("model not found: " + prop.Vmdl);
+        var exporter = new GltfModelExporter(loader)
+        {
+            ExportAnimations = false,
+            ExportMaterials = true,
+            AdaptTextures = true,
+            SatelliteImages = false,
+            ProgressReporter = new Progress<string>(_ => { }),
+        };
+        var glb = Path.Combine(tmp, prop.Id + ".glb");
+        exporter.Export(res, glb, CancellationToken.None);
+        if (!File.Exists(glb)) throw new Exception("glTF export produced nothing");
+        var model = ModelRoot.Load(glb);
+        var stats = DlmWriter.Write(model, new HeroEntry { Id = prop.Id, Vmdl = prop.Vmdl }, dir, Log);
+        Log($"  prop {prop.Id}: {stats}");
         Directory.Delete(tmp, true);
     }
 
@@ -496,6 +548,13 @@ public sealed class Manifest
     public List<string> Images { get; set; } = new();
     public List<string> SoundEvents { get; set; } = new();
     public List<string> VoiceGroups { get; set; } = new();
+    public List<PropEntry> Props { get; set; } = new();
+}
+
+public sealed class PropEntry
+{
+    public string Id { get; set; } = "";
+    public string Vmdl { get; set; } = "";
 }
 
 public sealed class HeroEntry

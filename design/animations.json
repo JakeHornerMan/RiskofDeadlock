@@ -225,6 +225,43 @@
       "melee": "melee_quick_1",
       "melee_alt": "melee_quick_2",
       "death": "none"
+    },
+    {
+      "hero": "viscous",
+      "upperBodyBone": "spine_0",
+      "gunArms": "R",
+      "gunBone": "weapon_bone_R",
+      "gunHand": "hand_R",
+      "muzzle": "muzzle_fx",
+      "muzzleLeft": "none",
+      "clothParents": [
+        "none"
+      ], "ragdollBones": ["pelvis", "spine_1", "spine_3", "head", "arm_upper_L", "arm_lower_L", "arm_upper_R", "arm_lower_R", "leg_upper_L", "leg_lower_L", "leg_upper_R", "leg_lower_R"], "ragdollThickness": 0.3, "rigPrefix": "none", "loopSecondary": false,
+      "aimPose": "weapon_stand_idle",
+      "idle": "weapon_stand_idle",
+      "run_n": "weapon_run_n",
+      "run_s": "weapon_run_s",
+      "run_e": "weapon_run_e",
+      "run_w": "weapon_run_w",
+      "sprint": "sprint_run_n",
+      "jump_start": "jump_start",
+      "jump_air": "jump_in_air_loop",
+      "land": "none",
+      "fire": "none",
+      "fire_alt": "none",
+      "reload": "reload_idle",
+      "secondary": "throw",
+      "utility": "ability_generic_cast",
+      "utility_loop": "none",
+      "special_start": "none",
+      "special": "ability_puddle_punch",
+      "ult_start": "ability_goo_ball_intro",
+      "ult_loop": "none",
+      "ult_end": "none",
+      "special_loop": "none",
+      "melee": "none",
+      "melee_alt": "none",
+      "death": "none"
     }
   ]
 }

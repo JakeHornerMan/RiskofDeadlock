@@ -210,7 +210,7 @@ namespace DeadlockOfRain.States
             DeadlockAudio.Stop(loop);
             Vfx.Stop(reticle, 0.1f);
             Vfx.Stop(trail, 0.4f);
-            characterBody.bodyFlags &= ~CharacterBody.BodyFlags.IgnoreFallDamage;
+            if (!Survivors.NoFallDamage(characterBody)) characterBody.bodyFlags &= ~CharacterBody.BodyFlags.IgnoreFallDamage;
             if (phase != Phase.Done && Server) Slam();
             if (anim) anim.StopOverride();
             base.OnExit();

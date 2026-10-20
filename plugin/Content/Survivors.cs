@@ -79,7 +79,11 @@ namespace DeadlockOfRain
 
         /// <summary>Movement skills run on the Body machine (they steer the character), everything else on Weapon.</summary>
         public static string MachineFor(string kind) =>
-            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "ult_devil" ? "Body" : "Weapon";
+            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "ult_devil" || kind == "goo_cube" ? "Body" : "Weapon";
+
+        /// <summary>The hero never takes fall damage (heroes.json noFallDamage: Viscous). Moves that switch fall damage off for a while
+        /// (Seismic Impact, Goo Ball) leave it off for such a hero when they end.</summary>
+        public static bool NoFallDamage(CharacterBody b) => Sheet.Hero(HeroOf(b))?.NoFallDamage ?? false;
 
         public static Type StateFor(string kind) => kindTypes != null && kindTypes.TryGetValue(kind, out var t) ? t : null;
         static Dictionary<string, Type> kindTypes;
@@ -194,6 +198,7 @@ namespace DeadlockOfRain
             cb.baseAcceleration = st.BaseAcceleration;
             cb.baseMaxShield = st.BaseMaxShield; cb.levelMaxShield = 0;
             cb.sprintingSpeedMultiplier = st.SprintingSpeedMultiplier;
+            if (hero.NoFallDamage) cb.bodyFlags |= CharacterBody.BodyFlags.IgnoreFallDamage;
 
             // size: capsule and camera follow the hero's Deadlock height relative to Haze (= Commando)
             var capsule = body.GetComponent<CapsuleCollider>();
@@ -392,7 +397,9 @@ namespace DeadlockOfRain
         {
             if (!b) return false;
             foreach (var r in BuffRow.All) if (r.NoGun && Buffs.Count(b, r.Id) > 0) return true;
-            return false;
+            // every skill locked (The Cube, Goo Ball, the DisableAllSkills debuff): a gun still held down stops too
+            var gun = b.skillLocator ? b.skillLocator.primary : null;
+            return gun && gun.skillDef && gun.skillDef == CharacterBody.CommonAssets.disabledSkill;
         }
 
         void LateUpdate()

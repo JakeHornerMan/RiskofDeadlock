@@ -121,6 +121,11 @@ namespace DeadlockOfRain
             var user = LocalUserManager.GetFirstLocalUser();
             while (user == null) { yield return null; user = LocalUserManager.GetFirstLocalUser(); }
             var tested = Tested;
+            if (tested.Length == 0 || !Survivors.Defs.ContainsKey(tested[0].Id))
+            {
+                Write("heroes-to-test", false, "none of the asked heroes is in this build (heroes.txt beside the DLL lists the built ones)");
+                yield break;
+            }
             user.userProfile.SetSurvivorPreference(Survivors.Defs[tested[0].Id]);
             RoR2.Console.instance.SubmitCmd(null, "transition_command \"gamemode ClassicRun; host 0;\"");
             float t0 = Time.unscaledTime;
@@ -330,6 +335,35 @@ namespace DeadlockOfRain
                     if (bm) bm.SetNextStateToMain();
                     yield return new WaitForSeconds(0.5f);
                 }
+                // noFallDamage (Viscous): the body ignores fall damage
+                if (hero.NoFallDamage)
+                {
+                    body = master.GetBody();
+                    bool soft = (body.bodyFlags & CharacterBody.BodyFlags.IgnoreFallDamage) != 0;
+                    Log.Info($"Melty test: {hero.Id} no fall damage: {soft}");
+                    if (!soft) { passive = false; passiveWhy += "takes fall damage; "; }
+                }
+                // a bounce-pad R (Puddle Punch, launchHeight): placed at the hero's own feet it throws the hero up
+                var pad = Sheet.SkillOf(hero.Id, "special");
+                if (pad.LaunchHeight > 0)
+                {
+                    body = master.GetBody();
+                    KillTargets();
+                    var rest = EntityStateMachine.FindByCustomName(body.gameObject, "Weapon");
+                    if (rest) rest.SetNextStateToMain();
+                    yield return new WaitForSeconds(0.5f);
+                    var down = Vector3.down * 0.95f + body.transform.forward * 0.05f;
+                    AimCamera(body, down);
+                    for (int f = 0; f < 10; f++) { body.inputBank.aimDirection = down; yield return null; }
+                    float y0 = body.footPosition.y, top = y0;
+                    var rs = body.skillLocator.special;
+                    rs.Reset();
+                    rs.ExecuteIfReady();
+                    for (float w = 0f; w < 2.2f; w += Time.deltaTime) { body.inputBank.aimDirection = down; top = Mathf.Max(top, body.footPosition.y); yield return null; }
+                    Log.Info($"Melty test: {hero.Id} {pad.Id} at his feet: rose {top - y0:F1} m (want about {pad.LaunchHeight:F0})");
+                    if (top - y0 < pad.LaunchHeight * 0.5f) kitWhy += $"{pad.Id}: bounced only {top - y0:F1} m; ";
+                    yield return new WaitForSeconds(2.5f);
+                }
                 // a heal-back passive (Abrams' Infernal Resilience) gives part of a hit back over the next seconds
                 if (hero.DamageHealBack > 0f)
                 {
@@ -403,7 +437,7 @@ namespace DeadlockOfRain
             // Commando holding Dust Devil spins in the same tornado
             string anyWhy = ""; bool anyTested = false;
             // (only when its hero is among the tested ones)
-            foreach (var bomb in SkillRow.All.Where(r => (r.Kind == "ult_selfbomb" || r.Kind == "ult_devil") && tested.Any(h => h.Id == r.Hero)).ToList())
+            foreach (var bomb in SkillRow.All.Where(r => (r.Kind == "ult_selfbomb" || r.Kind == "ult_devil" || r.Kind == "ult_gooball") && tested.Any(h => h.Id == r.Hero)).ToList())
             {
                 master.TransformBody("CommandoBody");
                 yield return new WaitForSeconds(1.5f);
@@ -654,6 +688,9 @@ namespace DeadlockOfRain
         internal sealed class Effects
         {
             public float Damage, Healed, Moved, Pulled;
+            /// <summary>How far a target rose above where it stood (Puddle Punch's knock-up); the hero was invulnerable (The Cube).</summary>
+            public float Lifted; public bool Invulnerable;
+            readonly Dictionary<CharacterBody, float> startY = new Dictionary<CharacterBody, float>();
             /// <summary>Degrees the hero's facing turned in all (Dust Devil spinning a carrier); its speed over the sheet's base
             /// speed and how far a punched target was thrown (Mo's Frenzy).</summary>
             public float Spun, Speed, Knocked;
@@ -670,6 +707,7 @@ namespace DeadlockOfRain
                 if (b.hasCloakBuff) Cloak = true;
                 var cm = b.modelLocator && b.modelLocator.modelTransform ? b.modelLocator.modelTransform.GetComponent<CharacterModel>() : null;
                 if (cm && cm.invisibilityCount > 0) Hidden = true;
+                if (b.HasBuff(RoR2Content.Buffs.HiddenInvincibility)) Invulnerable = true;
                 if (b.characterDirection)
                 {
                     if (!float.IsNaN(lastYaw)) Spun += Mathf.Abs(Mathf.DeltaAngle(lastYaw, b.characterDirection.yaw));
@@ -689,6 +727,8 @@ namespace DeadlockOfRain
                     var flat = t.corePosition - b.corePosition; flat.y = 0;
                     if (!startGap.ContainsKey(t)) startGap[t] = flat.magnitude;
                     Pulled = Mathf.Max(Pulled, startGap[t] - flat.magnitude);
+                    if (!startY.ContainsKey(t)) startY[t] = t.footPosition.y;
+                    Lifted = Mathf.Max(Lifted, t.footPosition.y - startY[t]);
                 }
             }
 
@@ -710,14 +750,16 @@ namespace DeadlockOfRain
                         kind == "self_cloak" ? Cloak :
                         kind == "enemy_disarm" ? Disarm :
                         kind == "enemy_pulled" ? Pulled > 1f :
-                        kind == "self_hidden" ? Hidden : false;
+                        kind == "self_hidden" ? Hidden :
+                        kind == "self_invulnerable" ? Invulnerable :
+                        kind == "enemy_knockup" ? Lifted > 1f : false;
                     if (!ok) miss.Add(e);
                 }
                 return miss;
             }
 
             public override string ToString() =>
-                $"damage {Damage:F0}, stun {Stun}, burn {Burn}, enemy buffs [{string.Join(",", EnemyBuffs)}], self buffs [{string.Join(",", SelfBuffs)}], healed {Healed:F0}, moved {Moved:F1} m, cloak {Cloak}, disarm {Disarm}, pulled {Pulled:F1} m, hidden {Hidden}, spun {Spun:F0} deg";
+                $"damage {Damage:F0}, stun {Stun}, burn {Burn}, enemy buffs [{string.Join(",", EnemyBuffs)}], self buffs [{string.Join(",", SelfBuffs)}], healed {Healed:F0}, moved {Moved:F1} m, cloak {Cloak}, disarm {Disarm}, pulled {Pulled:F1} m, hidden {Hidden}, spun {Spun:F0} deg, lifted {Lifted:F1} m, invulnerable {Invulnerable}";
         }
 
         /// <summary>The flat spot every skill starts from: ground under it, and level ground (within 1.5 m) at the targets' places
@@ -848,6 +890,9 @@ namespace DeadlockOfRain
                 else
                 {
                     var gs = row.Slot == "secondary" ? body.skillLocator.secondary : row.Slot == "utility" ? body.skillLocator.utility : body.skillLocator.special;
+                    var hr = body.GetComponent<HeroRuntime>();
+                    var gunRow = Survivors.RowFor(body.skillLocator.primary);
+                    if (row.AmmoCost > 0 && hr && gunRow != null) { hr.Reloading = false; hr.Ammo = (int)gunRow.ClipSize; }
                     gs.Reset();
                     gs.ExecuteIfReady();
                 }

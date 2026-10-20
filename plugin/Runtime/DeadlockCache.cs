@@ -101,6 +101,37 @@ namespace DeadlockOfRain
             return h;
         }
 
+        static readonly Dictionary<string, Mesh> props = new Dictionary<string, Mesh>();
+
+        /// <summary>An effect model (effects kind prop: Viscous' cube, ball, fist) as one plain mesh in metres, or null when the
+        /// extractor could not read it (ready.json failedProps) or the cache predates 1.5.0; the effect then draws a simple shape.</summary>
+        public static Mesh Prop(string id)
+        {
+            if (string.IsNullOrEmpty(id) || id == "none" || Dir == null) return null;
+            if (props.TryGetValue(id, out var m)) return m;
+            var dir = Path.Combine(Dir, "props", id);
+            var file = Path.Combine(dir, id + ".dlm");
+            try
+            {
+                if (File.Exists(file))
+                {
+                    var a = HeroAsset.Read(file, dir);
+                    var idx = new List<int>();
+                    foreach (var sm in a.Submeshes) idx.AddRange(sm.Value);
+                    m = new Mesh { name = "mshDeadlock_" + id };
+                    m.indexFormat = a.Positions.Length > 65000 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16;
+                    m.vertices = a.Positions; m.normals = a.Normals; m.uv = a.Uvs;
+                    m.SetTriangles(idx, 0, true);
+                    m.RecalculateBounds();
+                    m.UploadMeshData(true);
+                }
+                else Log.Warn($"effect model {id} not in the cache (extractor 1.5.0+ reads it); a simple shape stands in");
+            }
+            catch (Exception e) { Log.Warn($"effect model {id}: {e.Message}"); m = null; }
+            props[id] = m;
+            return m;
+        }
+
         public static string ImageFile(string vtex) =>
             Path.Combine(Dir, "images", vtex.Replace('\\', '/').Replace(".vtex", "").Replace('/', '_') + ".png");
 

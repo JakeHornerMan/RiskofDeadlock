@@ -15,8 +15,8 @@ namespace DeadlockOfRain
         public static GameObject Prefab(string effectId)
         {
             var row = Sheet.Effect(effectId);
-            // materials are loaded by Vfx.Mat, custom visuals are built by Vfx
-            if (row == null || row.Addressable == "none" || row.Kind == "material") return null;
+            // materials are loaded by Vfx.Mat, custom visuals are built by Vfx, props come from the Deadlock cache (DeadlockCache.Prop)
+            if (row == null || row.Addressable == "none" || row.Kind == "material" || row.Kind == "prop") return null;
             if (prefabs.TryGetValue(row.Addressable, out var p)) return p;
             try { p = Addressables.LoadAssetAsync<GameObject>(row.Addressable).WaitForCompletion(); }
             catch (System.Exception e) { Log.Warn($"effect {effectId}: {e.Message}"); }

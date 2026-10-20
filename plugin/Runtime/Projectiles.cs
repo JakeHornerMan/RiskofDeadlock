@@ -156,15 +156,20 @@ namespace DeadlockOfRain
     /// touches: damage and the row's debuff to every enemy in the splash.</summary>
     public sealed class DlrLob : MonoBehaviour
     {
-        CharacterBody owner; SkillRow row; Vector3 velocity; float age; GameObject vfx; bool damage;
+        CharacterBody owner; SkillRow row; Vector3 velocity; float age, scale = 1f; GameObject vfx; bool damage; int loop;
 
-        public static void Launch(CharacterBody owner, SkillRow row, Vector3 from, Vector3 dir, bool damage)
+        /// <param name="scale">the splash (and its puddle) at this fraction of the row's radius: Splatter thrown with fewer rounds left
+        /// than it costs.</param>
+        public static void Launch(CharacterBody owner, SkillRow row, Vector3 from, Vector3 dir, bool damage, float scale = 1f)
         {
             var go = new GameObject("DlrLob_" + row.Id);
             go.transform.position = from;
             var l = go.AddComponent<DlrLob>();
-            l.owner = owner; l.row = row; l.velocity = dir.normalized * row.Speed; l.damage = damage;
-            l.vfx = Vfx.Play(row.Vfx, "loop", from, row.Radius, go.transform);
+            l.owner = owner; l.row = row; l.velocity = dir.normalized * row.Speed; l.damage = damage; l.scale = Mathf.Clamp(scale, 0.05f, 1f);
+            l.vfx = Vfx.Play(row.Vfx, "loop", from, row.Radius * l.scale, go.transform);
+            // the throw's own flight sound, when it has one (Splatter's goo ball)
+            var snd = Sheet.Sound(row.Id);
+            if (snd != null && snd.Loop != "none") l.loop = Fx.Loop(row.Id, from);
         }
 
         void FixedUpdate()
@@ -208,21 +213,28 @@ namespace DeadlockOfRain
 
         void Burst(Vector3 at)
         {
-            Fx.Impact(row.Effect, at, row.Radius);
-            Vfx.Play(row.Vfx, "hit", at, row.Radius);
+            float radius = row.Radius * scale;
+            Fx.Impact(row.Effect, at, radius);
+            Vfx.Play(row.Vfx, "hit", at, radius);
             Fx.Sound(row.Id, "hit", at);
             if (damage)
             {
-                foreach (var hb in Fx.Enemies(owner, at, row.Radius))
+                foreach (var hb in Fx.Enemies(owner, at, radius))
                 {
                     Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, hb.transform.position);
-                    if (row.Buff != "none" && hb.healthComponent.body) Buffs.Apply(owner, hb.healthComponent.body, row.Buff);
+                    if (row.Buff == "none" || !hb.healthComponent.body) continue;
+                    // a stacking meter (Splatter's Gooed: buffStacks at once) or a one-stack debuff (Napalm)
+                    var br = Sheet.Buff(row.Buff);
+                    if (row.BuffStacks > 0 && br != null && br.CanStack) Buffs.AddStacks(owner, hb.healthComponent.body, row.Buff, (int)row.BuffStacks);
+                    else Buffs.Apply(owner, hb.healthComponent.body, row.Buff);
                 }
             }
+            // Splatter leaves a goo puddle where it lands (every machine plants its own; the server's ticks)
+            if (row.Kind == "lob_ammo" && row.Reach > 0) DlrPuddle.Plant(owner, row, at, row.Reach * scale, damage);
             Destroy(gameObject);
         }
 
-        void OnDestroy() => Vfx.Stop(vfx, 0.6f);
+        void OnDestroy() { DeadlockAudio.Stop(loop); Vfx.Stop(vfx, 0.6f); }
     }
 
     /// <summary>Thunderhead: a storm planted on the ground for duration. Every interval lightning strikes up to chainCount

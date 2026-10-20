@@ -60,7 +60,7 @@ namespace DeadlockOfRain
     public static class Relay
     {
         internal enum Kind : uint { Vfx = 1, Sound = 2, Impact = 3, Flash = 4, Bolt = 5, Shot = 6, Reload = 7 }
-        internal static readonly string[] Moments = { "cast", "loop", "hit", "end", "wave", "muzzle", "trigger", "aim", "reload", "hop" };
+        internal static readonly string[] Moments = { "cast", "loop", "hit", "end", "wave", "muzzle", "trigger", "aim", "reload", "hop", "slam" };
         public static int Received;
 
         static void Send(Kind k, int index, int moment, EffectData d)
@@ -93,10 +93,11 @@ namespace DeadlockOfRain
             Send(Kind.Bolt, 0, 0, new EffectData { origin = a, start = b, color = c, scale = width, genericFloat = life });
 
         /// <summary>The owner of a hero fired one shot of its gun: the other players play its sound, flash and recoil.</summary>
-        public static void Shot(CharacterBody body, bool left)
+        /// <param name="aim">the shot's direction (a projectile gun flies its blob along it on every machine).</param>
+        public static void Shot(CharacterBody body, bool left, Vector3 aim = default)
         {
             if (!body || !NetworkServer.active && !NetworkClient.active) return;
-            var d = new EffectData { origin = body.corePosition, genericBool = left };
+            var d = new EffectData { origin = body.corePosition, genericBool = left, start = aim };
             d.SetNetworkedObjectReference(body.gameObject);
             Send(Kind.Shot, 0, 0, d);
         }
@@ -141,7 +142,7 @@ namespace DeadlockOfRain
                     if (k == Kind.Shot) GunState.BreakSmoke(body);
                     // the owner already played it when it fired
                     if (body.hasEffectiveAuthority) break;
-                    if (k == Kind.Shot) GunState.ShotFx(body, d.genericBool);
+                    if (k == Kind.Shot) GunState.ShotFx(body, d.genericBool, d.start);
                     else GunState.ReloadFx(body);
                     MeltyTest.Report("coop-remote-" + (k == Kind.Shot ? "shot" : "reload"), true, body.baseNameToken);
                     break;

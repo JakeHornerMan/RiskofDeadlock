@@ -1,6 +1,6 @@
 {
   "sheet": "effects",
-  "about": "Visual effect ids used by skills.effect/vfx/extra. Deadlock's particle systems (.vpcf) are never read or copied: visuals reuse Risk of Rain 2's own effect prefabs and materials (Addressables keys checked against the installed catalog.json) or are built by our own code in Unity (kind custom: plugin/Runtime/Vfx.cs, made to look like Deadlock). kind: tracer (bullet line muzzle->hit), impact (one-shot at a point, scaled by radius when scaleWithRadius), ghost (attached visual that follows a mod-simulated projectile), orb (RoR2 OrbManager lightning orb), trail (vanilla DamageTrail fire trail), attachment (a RoR2 NetworkedBodyAttachment put on the hero), ward (a RoR2 BuffWard placed on the ground), material (a RoR2 material our custom visuals are drawn with), custom (built by Vfx.cs; addressable none), none.",
+  "about": "Visual effect ids used by skills.effect/vfx/extra. Deadlock's particle systems (.vpcf) are never read or copied: visuals reuse Risk of Rain 2's own effect prefabs and materials (Addressables keys checked against the installed catalog.json) or are built by our own code in Unity (kind custom: plugin/Runtime/Vfx.cs, made to look like Deadlock). kind: tracer (bullet line muzzle->hit), impact (one-shot at a point, scaled by radius when scaleWithRadius), ghost (attached visual that follows a mod-simulated projectile), orb (RoR2 OrbManager lightning orb), trail (vanilla DamageTrail fire trail), attachment (a RoR2 NetworkedBodyAttachment put on the hero), ward (a RoR2 BuffWard placed on the ground), material (a RoR2 material our custom visuals are drawn with), custom (built by Vfx.cs; addressable none), none. prop: a Deadlock model the extractor reads from the player's install as a plain mesh (addressable = its vmdl path; extractor 1.5.0+), drawn by Vfx with our own materials; a prop that could not be read falls back to a simple shape.",
   "columns": [
     "id",
     "kind",
@@ -435,6 +435,111 @@
       "addressable": "none",
       "scaleWithRadius": false,
       "notes": "Mo's punch while Krill is away: a dust burst and an orange flash on each enemy hit"
+    },
+    {
+      "id": "mat_goo",
+      "kind": "material",
+      "addressable": "RoR2/Base/Croco/matCrocoGooLarge.mat",
+      "scaleWithRadius": false,
+      "notes": "Acrid's big goo blobs: the body of every goo splash and drip, tinted"
+    },
+    {
+      "id": "mat_goo_small",
+      "kind": "material",
+      "addressable": "RoR2/Base/Croco/matCrocoGooSmall.mat",
+      "scaleWithRadius": false,
+      "notes": "Acrid's small goo droplets"
+    },
+    {
+      "id": "mat_tar",
+      "kind": "material",
+      "addressable": "RoR2/Base/ClayBoss/matTarball.mat",
+      "scaleWithRadius": false,
+      "notes": "the Clay Dunestrider's tarball: the goo blob's surface"
+    },
+    {
+      "id": "mat_goo_bubble",
+      "kind": "material",
+      "addressable": "RoR2/Base/Clay/matClayBubble.mat",
+      "scaleWithRadius": false,
+      "notes": "Clay tar bubbles: the see-through skin of the cube and the ball, puddle bubbles"
+    },
+    {
+      "id": "mat_goo_overlay",
+      "kind": "material",
+      "addressable": "RoR2/Base/Grandparent/matGrandparentGooOverlay.mat",
+      "scaleWithRadius": false,
+      "notes": "the Grandparent's goo overlay: Gooed enemies coated in goo"
+    },
+    {
+      "id": "mat_goo_trail",
+      "kind": "material",
+      "addressable": "RoR2/Base/ClayBoss/matGooTrail.mat",
+      "scaleWithRadius": false,
+      "notes": "the Clay Dunestrider's goo trail: tethers and trails"
+    },
+    {
+      "id": "viscous_cube_prop",
+      "kind": "prop",
+      "addressable": "models/abilities/viscous_cube.vmdl",
+      "scaleWithRadius": false,
+      "notes": "Deadlock's cube model (2.3 m box) for The Cube"
+    },
+    {
+      "id": "viscous_sphere_prop",
+      "kind": "prop",
+      "addressable": "models/abilities/viscous_sphere.vmdl",
+      "scaleWithRadius": false,
+      "notes": "Deadlock's goo sphere (2.5 m) for Goo Ball"
+    },
+    {
+      "id": "viscous_fist_prop",
+      "kind": "prop",
+      "addressable": "models/abilities/viscous_fist_model.vmdl",
+      "scaleWithRadius": false,
+      "notes": "Deadlock's goo fist for Puddle Punch"
+    },
+    {
+      "id": "viscous_goo",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "M1 goo blob: a wobbling green blob stretched along its flight, drips, a splat of droplets where it lands"
+    },
+    {
+      "id": "viscous_splatter",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "Splatter: the aim dome (big, green, the current splash size), the goo ball in flight, the splash and the goo puddle"
+    },
+    {
+      "id": "viscous_cube",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "The Cube: Deadlock's cube model in see-through goo around Viscous, jiggling; the burst"
+    },
+    {
+      "id": "viscous_punch",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "Puddle Punch: the placement ring, the bubbling ground, the goo fist rising and the splash"
+    },
+    {
+      "id": "viscous_ball",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "Goo Ball: Deadlock's sphere in see-through goo around the carrier, rolling; smash splats, the landing slam"
+    },
+    {
+      "id": "viscous_gooed",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "notes": "Gooed enemies: goo dripping off them, more with every stack, and a goo coat over the model"
     }
   ]
 }

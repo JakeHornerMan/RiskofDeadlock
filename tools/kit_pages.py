@@ -26,7 +26,7 @@ SKILLS = sheet('skills'); BUFFS = {r['id']: r for r in sheet('buffs')}
 EQUIP = {r['hero']: r for r in sheet('equipment')}
 LINKS = {'haze': 'https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p', 'abrams': 'https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG',
          'seven': 'https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m', 'infernus': 'https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF',
-         'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
+         'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'viscous': 'https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
 SLOTS = ['primary', 'secondary', 'utility', 'special']
 KEY = {'primary': 'M1', 'secondary': 'M2', 'utility': 'Shift', 'special': 'R', 'equipment': 'Q'}
 KIND_LABEL = {'primary': 'Weapon', 'secondary': 'Ability', 'utility': 'Ability', 'special': 'Ability · new in 0.4'}
@@ -53,6 +53,11 @@ VANILLA = {
         'secondary': ('Pressure Mines', 'Place mines that explode when enemies come near.'),
         'utility': ('Bubble Shield', 'A shield that blocks enemies and their shots; no damage.'),
         'special': ('TR12 Gauss Auto-Turret', 'Place a turret that inherits your items.')}),
+ 'TreebotBody': dict(name='REX', who='Treebot',
+   kit={'primary': ('DIRECTIVE: Inject', 'Fire syringes for 80% each; the last one heals you.'),
+        'secondary': ('Seed Barrage', 'Lob a mortar for 450% in an area; costs health.'),
+        'utility': ('DIRECTIVE: Disperse', 'Push enemies away and weaken them; no damage.'),
+        'special': ('Tangling Growth', 'Fire a flower that roots and damages enemies around it; costs health.')}),
  'ToolbotBody': dict(name='MUL-T', who='Toolbot',
    kit={'primary': ('Auto-Nailgun', 'Fire nails for 70% each, faster the longer you hold.'),
         'secondary': ('Blast Canister', 'Launch a canister for 220% that bursts into bomblets, stunning.'),
@@ -62,6 +67,8 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
+ 'viscous': [('v0.8.0', ['New hero, matched to REX: Deep Sea Interpreter (goo blobs that drop and lose damage past 20 m), Splatter (no cooldown, costs 5 rounds: a goo splash that leaves a slowing puddle), The Cube (3 s invulnerable, tar tethers that drain and heal, then a 16 m burst), Puddle Punch (place a goo fist anywhere within 40 m; twice as wide on a puddle; bounces you and allies 20 m up), Goo Ball (Q: roll as a huge goo ball and smash everything)',
+                     'Gooey: every goo hit stacks Gooed (-8 % move and attack speed per stack, up to -40 %); he never takes fall damage'])],
  'haze': [('v0.6.1', ['Falls as a ragdoll on death, like the RoR2 survivors']),
             ('v0.6.0', ['Co-op: up to 4 players; every move works the same when a friend joins your game and plays Haze']),
             ('v0.5.1', ['Phantom Strike: every cut hits every enemy within 5 m of the target', 'Sleep Dagger always shows: thrown from the aim with a violet glow and trail']),
@@ -113,6 +120,15 @@ RUNS = {
  'DeadlockSeven': [],
  'Engi': [1268, 1555, 1641],
  'DeadlockInfernus': [920, 1226, 1161],
+}
+
+# a new hero's estimate from the sheet numbers, shown until its first bench run (then ANALYSIS takes over)
+PAPER = {
+ 'viscous': ['Not measured yet: these are paper estimates from the sheet numbers, against REX’s measured 1,738 %/s (balanced 1,238–2,238).',
+             'Splatter has no cooldown, only the 5 rounds a throw: 4 throws per magazine, 200 % to about 10 of the 12 each, every 7.2 s with the reload, about 1,100 %/s. In the test every move is pressed the moment it is ready, so Splatter crowds out the gun there.',
+             'The Cube: 4 tethers × 100 %/s × 3 s plus the 300 % burst on all 12, every 18 s, about 270 %/s. Puddle Punch: 400 % to all 12 on a puddle (12 m), a charge every 10 s, about 480 %/s.',
+             'Together about 1,860 %/s on paper. The last new hero (Mo & Krill) measured well above his paper sum, so expect this to come in higher; the levers are Splatter 200 → 150 % first, then Puddle Punch.',
+             'REX’s Seed Barrage alone measured 7,465 %/s, far above REX’s 1,738 with everything; in god mode its health cost never bites. Compare all-together numbers, not that one.'],
 }
 
 ANALYSIS = {
@@ -255,6 +271,18 @@ def maths(r):
     if k == 'ult_devil':
         ticks = r['duration'] / r['interval']; tot = ticks * d
         return [f"{n(ticks)} × {n(d)} % = {n(tot)} % to everything within {n(r['radius'])} m, pulling from {n(r['range'])} m", f"every {n(cd)} s"], tot / cd
+    if k == 'lob_ammo':
+        throws = 20 / max(1, r['ammoCost'])
+        gun = next((g for g in SKILLS if g['hero'] == r['hero'] and g['slot'] == 'primary'), None)
+        cyc = throws * (0.8 + r['duration']) + (gun['reloadTime'] if gun else 0)
+        return [f"{n(d)} % in {n(r['radius'])} m, then a {n(r['reach'])} m puddle for {n(r['chainCount'])} s", f"no cooldown: {n(r['ammoCost'])} rounds a throw, {n(throws)} throws a magazine ({cyc:.1f} s with the reload)"], d * throws / cyc
+    if k == 'goo_cube':
+        tot = d * r['duration'] + r['splashPct']
+        return [f"{n(d)} %/s × {n(r['duration'])} s from each of {n(r['chainCount'])} tethers + {n(r['splashPct'])} % burst in {n(r['radius'])} m = {n(tot)} %", f"every {n(cd + r['duration'])} s ({n(r['duration'])} s cube + {n(cd)} s cooldown)"], tot / (cd + r['duration'])
+    if k == 'placed_punch':
+        return [f"{n(d)} % to everything within {n(r['radius'])} m ({n(r['radius'] * r['puddleMult'])} m on a puddle)", f"{n(r['stocks'])} charges, {n(cd)} s each"], d / cd
+    if k == 'ult_gooball':
+        return [f"{n(r['damageMinPct'])}–{n(d)} % a smash by speed, {n(r['splashPct'])} % slam in {n(r['radius'])} m", f"for {n(r['duration'])} s"], None
     if k == 'self_buff':
         return ['no damage: invisibility and speed'], 0
     return [], None
@@ -521,7 +549,7 @@ def analysis(h):
     hid = h['id']; body, v = match_of(hid)
     me, base = avg_all(hero_who(hid)), avg_all(v['who'])
     if me is None or base is None:
-        return ['No benchmark for this pair yet.']
+        return PAPER.get(hid, ['No benchmark for this pair yet.'])
     side, gap = verdict(me, base)
     out = [f"All main moves together: <strong>{me:,} %/s</strong> (mean of {runs_of(hero_who(hid))} runs) against {E(v['name'])}’s <strong>{base:,} %/s</strong> (mean of {runs_of(v['who'])}) "
            f"({signed(gap)}, {me / base:.2f}×). Balanced is {max(0, base - BAND):,}–{base + BAND:,}: <strong>{side} the band</strong>."]
@@ -536,7 +564,7 @@ def analysis(h):
 def nav(current):
     items = [('overview', 'Balance overview')] + [(h['id'], h['displayName']) for h in HEROES]
     return '<nav class="nav" aria-label="Pages">' + ''.join(
-        f'<a href="{LINKS[k]}"' + (' aria-current="page"' if k == current else '') + f'>{E(label)}</a>' for k, label in items) + '</nav>'
+        f'<a href="{LINKS.get(k, "#")}"' + (' aria-current="page"' if k == current else '') + f'>{E(label)}</a>' for k, label in items) + '</nav>'
 
 def balance_scale(h, v, me, base):
     if not me or not base: return ''
@@ -674,7 +702,7 @@ def overview_page():
         hid = h['id']; body, v = match_of(hid)
         me, base = avg_all(hero_who(hid)), avg_all(v['who'])
         side, gap = verdict(me, base)
-        pairs.append(f'<tr><td><div class="who-cell">{img_tag(hid, "", 60)}<a href="{LINKS[hid]}">{E(h["displayName"])}</a></div></td>'
+        pairs.append(f'<tr><td><div class="who-cell">{img_tag(hid, "", 60)}<a href="{LINKS.get(hid, "#")}">{E(h["displayName"])}</a></div></td>'
                      f'<td><div class="who-cell">{img_tag(body, "", 60) or badge(v["name"])}{E(v["name"])}</div></td>'
                      f'<td class="n">{fmt(me)}</td><td class="n">{fmt(base)}</td>'
                      f'<td><span class="verdict {side}">{side} · {signed(gap)}</span></td></tr>')
@@ -684,7 +712,7 @@ def overview_page():
   <div><span class="verdict {side}">{side} the band · {signed(gap)} %/s</span></div>
   {balance_scale(h, v, me, base)}
   {paras}
-  <p><a href="{LINKS[hid]}">Open {E(h["displayName"])}’s kit sheet</a></p>
+  <p><a href="{LINKS.get(hid, "#")}">Open {E(h["displayName"])}’s kit sheet</a></p>
 </section>''')
         u = per_use(hero_who(hid)); eq = next(r for r in SKILLS if r['hero'] == hid and r['slot'] == 'equipment')
         total = f'{u["total"]:,.0f} %' if u else '–'; hit = u['enemies'] if u else '–'
@@ -701,7 +729,7 @@ def overview_page():
   <header class="id" style="gap:14px">
     <div class="eyebrow">Deadlock of Rain · {VERSION} · Balance</div>
     <h1>Each hero <span style="color:var(--brass)">vs</span> their Risk of Rain match</h1>
-    <p class="muted">Every Deadlock hero is paired with the Risk of Rain 2 survivor their stats are built on, and both are measured the same way: all main moves (M1, M2, Shift, R) used the moment they are ready for 30 s against a pack of 12. Balanced means within ±500 %/s of the match. <strong style="color:var(--cream)">{inside} of 4</strong> are inside.</p>
+    <p class="muted">Every Deadlock hero is paired with the Risk of Rain 2 survivor their stats are built on, and both are measured the same way: all main moves (M1, M2, Shift, R) used the moment they are ready for 30 s against a pack of 12. Balanced means within ±500 %/s of the match. <strong style="color:var(--cream)">{inside} of {len(HEROES)}</strong> are inside.</p>
   </header>
 
   <section class="section" aria-labelledby="pr">

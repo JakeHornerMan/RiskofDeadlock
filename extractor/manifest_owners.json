@@ -218,6 +218,75 @@
   "Seven.Wpn.Reload.Start": [
     "seven"
   ],
+  "Viscous.Cube.Cast": [
+    "viscous"
+  ],
+  "Viscous.Cube.Dur.End": [
+    "viscous"
+  ],
+  "Viscous.Cube.Dur.Target.Lp": [
+    "viscous"
+  ],
+  "Viscous.Fire": [
+    "viscous"
+  ],
+  "Viscous.Fire.Alt": [
+    "viscous"
+  ],
+  "Viscous.Fire.Alt.Explode": [
+    "viscous"
+  ],
+  "Viscous.Footstep": [
+    "viscous"
+  ],
+  "Viscous.GooBall.Cast": [
+    "viscous"
+  ],
+  "Viscous.GooBall.Impact": [
+    "viscous"
+  ],
+  "Viscous.GooBall.Proj.Lp": [
+    "viscous"
+  ],
+  "Viscous.GooBowlingBall.Cast": [
+    "viscous"
+  ],
+  "Viscous.GooBowlingBall.End": [
+    "viscous"
+  ],
+  "Viscous.GooBowlingBall.Hit": [
+    "viscous"
+  ],
+  "Viscous.GooBowlingBall.Impact.Wall": [
+    "viscous"
+  ],
+  "Viscous.GooBowlingBall.Lp": [
+    "viscous"
+  ],
+  "Viscous.JumpLand": [
+    "viscous"
+  ],
+  "Viscous.Telepunch.Cast": [
+    "viscous"
+  ],
+  "Viscous.Telepunch.Hit": [
+    "viscous"
+  ],
+  "Viscous.Telepunch.Hit.Self": [
+    "viscous"
+  ],
+  "Viscous.Telepunch.Portal": [
+    "viscous"
+  ],
+  "Viscous.Telepunch.Select.Lp": [
+    "viscous"
+  ],
+  "Viscous.Wpn.Impact": [
+    "viscous"
+  ],
+  "Viscous.Wpn.Reload.Start": [
+    "viscous"
+  ],
   "Warden.Wpn.Fire": [
     "infernus"
   ],
@@ -416,6 +485,9 @@
   "panorama/images/heroes/guns/inferno_gun_psd.vtex": [
     "infernus"
   ],
+  "panorama/images/heroes/guns/viscous_gun_psd.vtex": [
+    "viscous"
+  ],
   "panorama/images/heroes/haze_card_psd.vtex": [
     "haze"
   ],
@@ -427,6 +499,12 @@
   ],
   "panorama/images/heroes/inferno_sm_psd.vtex": [
     "infernus"
+  ],
+  "panorama/images/heroes/viscous_card_psd.vtex": [
+    "viscous"
+  ],
+  "panorama/images/heroes/viscous_sm_psd.vtex": [
+    "viscous"
   ],
   "panorama/images/hud/abilities/bull_beef_psd.vtex": [
     "abrams"
@@ -488,6 +566,21 @@
   "panorama/images/hud/abilities/inferno_molotov_psd.vtex": [
     "infernus"
   ],
+  "panorama/images/hud/abilities/viscous/viscous_goo_ball_psd.vtex": [
+    "viscous"
+  ],
+  "panorama/images/hud/abilities/viscous/viscous_goo_puddle_psd.vtex": [
+    "viscous"
+  ],
+  "panorama/images/hud/abilities/viscous/viscous_goo_punch_psd.vtex": [
+    "viscous"
+  ],
+  "panorama/images/hud/abilities/viscous/viscous_goo_sphere_psd.vtex": [
+    "viscous"
+  ],
+  "panorama/images/hud/abilities/viscous/viscous_restorative_goo_psd.vtex": [
+    "viscous"
+  ],
   "panorama/images/items/spirit/torment_pulse_psd.vtex": [
     "infernus"
   ],
@@ -517,5 +610,50 @@
   ],
   "soundevents/hero/krill.vsndevts": [
     "mokrill"
+  ],
+  "soundevents/hero/viscous.vsndevts": [
+    "viscous"
+  ],
+  "viscous/viscous_happy": [
+    "viscous"
+  ],
+  "viscous/viscous_hunt": [
+    "viscous"
+  ],
+  "viscous/viscous_killstreak_high": [
+    "viscous"
+  ],
+  "viscous/viscous_killstreak_mid": [
+    "viscous"
+  ],
+  "viscous/viscous_killstreak_start": [
+    "viscous"
+  ],
+  "viscous/viscous_select": [
+    "viscous"
+  ],
+  "viscous/viscous_unselect": [
+    "viscous"
+  ],
+  "viscous/viscous_use_power1": [
+    "viscous"
+  ],
+  "viscous/viscous_use_power2": [
+    "viscous"
+  ],
+  "viscous/viscous_use_power3": [
+    "viscous"
+  ],
+  "viscous/viscous_use_power4": [
+    "viscous"
+  ],
+  "viscous_cube_prop": [
+    "viscous"
+  ],
+  "viscous_fist_prop": [
+    "viscous"
+  ],
+  "viscous_sphere_prop": [
+    "viscous"
   ]
 }

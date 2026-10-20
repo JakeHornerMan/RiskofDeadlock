@@ -140,6 +140,30 @@
         "weapon_run_w",
         "weapon_stand_idle"
       ]
+    },
+    {
+      "id": "viscous",
+      "key": "hero_viscous",
+      "vmdl": "models/heroes_staging/viscous/viscous.vmdl",
+      "meshes": [
+        "body",
+        "gun"
+      ],
+      "clips": [
+        "ability_generic_cast",
+        "ability_goo_ball_intro",
+        "ability_puddle_punch",
+        "jump_in_air_loop",
+        "jump_start",
+        "reload_idle",
+        "sprint_run_n",
+        "throw",
+        "weapon_run_e",
+        "weapon_run_n",
+        "weapon_run_s",
+        "weapon_run_w",
+        "weapon_stand_idle"
+      ]
     }
   ],
   "images": [
@@ -154,10 +178,13 @@
     "panorama/images/heroes/guns/gigawatt_gun_psd.vtex",
     "panorama/images/heroes/guns/haze_gun_psd.vtex",
     "panorama/images/heroes/guns/inferno_gun_psd.vtex",
+    "panorama/images/heroes/guns/viscous_gun_psd.vtex",
     "panorama/images/heroes/haze_card_psd.vtex",
     "panorama/images/heroes/haze_sm_psd.vtex",
     "panorama/images/heroes/inferno_card_psd.vtex",
     "panorama/images/heroes/inferno_sm_psd.vtex",
+    "panorama/images/heroes/viscous_card_psd.vtex",
+    "panorama/images/heroes/viscous_sm_psd.vtex",
     "panorama/images/hud/abilities/bull_beef_psd.vtex",
     "panorama/images/hud/abilities/bull_charge_psd.vtex",
     "panorama/images/hud/abilities/bull_drain_psd.vtex",
@@ -178,6 +205,11 @@
     "panorama/images/hud/abilities/inferno_dash_psd.vtex",
     "panorama/images/hud/abilities/inferno_deflect_psd.vtex",
     "panorama/images/hud/abilities/inferno_molotov_psd.vtex",
+    "panorama/images/hud/abilities/viscous/viscous_goo_ball_psd.vtex",
+    "panorama/images/hud/abilities/viscous/viscous_goo_puddle_psd.vtex",
+    "panorama/images/hud/abilities/viscous/viscous_goo_punch_psd.vtex",
+    "panorama/images/hud/abilities/viscous/viscous_goo_sphere_psd.vtex",
+    "panorama/images/hud/abilities/viscous/viscous_restorative_goo_psd.vtex",
     "panorama/images/items/spirit/torment_pulse_psd.vtex",
     "panorama/images/items/vitality/phantom_strike_psd.vtex",
     "panorama/images/items/vitality/unstoppable_psd.vtex",
@@ -258,6 +290,29 @@
     "Seven.Wpn.Fire",
     "Seven.Wpn.Impact",
     "Seven.Wpn.Reload.Start",
+    "Viscous.Cube.Cast",
+    "Viscous.Cube.Dur.End",
+    "Viscous.Cube.Dur.Target.Lp",
+    "Viscous.Fire",
+    "Viscous.Fire.Alt",
+    "Viscous.Fire.Alt.Explode",
+    "Viscous.Footstep",
+    "Viscous.GooBall.Cast",
+    "Viscous.GooBall.Impact",
+    "Viscous.GooBall.Proj.Lp",
+    "Viscous.GooBowlingBall.Cast",
+    "Viscous.GooBowlingBall.End",
+    "Viscous.GooBowlingBall.Hit",
+    "Viscous.GooBowlingBall.Impact.Wall",
+    "Viscous.GooBowlingBall.Lp",
+    "Viscous.JumpLand",
+    "Viscous.Telepunch.Cast",
+    "Viscous.Telepunch.Hit",
+    "Viscous.Telepunch.Hit.Self",
+    "Viscous.Telepunch.Portal",
+    "Viscous.Telepunch.Select.Lp",
+    "Viscous.Wpn.Impact",
+    "Viscous.Wpn.Reload.Start",
     "Warden.Wpn.Fire"
   ],
   "soundEventFiles": [
@@ -265,7 +320,8 @@
     "soundevents/hero/gigawatt.vsndevts",
     "soundevents/hero/haze.vsndevts",
     "soundevents/hero/inferno.vsndevts",
-    "soundevents/hero/krill.vsndevts"
+    "soundevents/hero/krill.vsndevts",
+    "soundevents/hero/viscous.vsndevts"
   ],
   "voiceGroups": [
     "atlas/atlas_happy",
@@ -321,6 +377,31 @@
     "krill/krill_unselect",
     "krill/krill_use_power2",
     "krill/krill_use_power3",
-    "krill/krill_use_power4"
+    "krill/krill_use_power4",
+    "viscous/viscous_happy",
+    "viscous/viscous_hunt",
+    "viscous/viscous_killstreak_high",
+    "viscous/viscous_killstreak_mid",
+    "viscous/viscous_killstreak_start",
+    "viscous/viscous_select",
+    "viscous/viscous_unselect",
+    "viscous/viscous_use_power1",
+    "viscous/viscous_use_power2",
+    "viscous/viscous_use_power3",
+    "viscous/viscous_use_power4"
+  ],
+  "props": [
+    {
+      "id": "viscous_cube_prop",
+      "vmdl": "models/abilities/viscous_cube.vmdl"
+    },
+    {
+      "id": "viscous_sphere_prop",
+      "vmdl": "models/abilities/viscous_sphere.vmdl"
+    },
+    {
+      "id": "viscous_fist_prop",
+      "vmdl": "models/abilities/viscous_fist_model.vmdl"
+    }
   ]
 }

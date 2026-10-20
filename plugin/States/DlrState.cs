@@ -134,6 +134,20 @@ namespace DeadlockOfRain.States
             return search.GetResults().FirstOrDefault(h => h && h.healthComponent && h.healthComponent.alive && h.healthComponent.body);
         }
 
+        /// <summary>No moves while this runs (The Cube, Goo Ball): every skill slot shows RoR2's own "disabled" skill, as the
+        /// DisableAllSkills debuff does, without its sound and screen effect. On the owner, where the skills are pressed.</summary>
+        protected void LockSkills(bool on)
+        {
+            var disabled = CharacterBody.CommonAssets.disabledSkill;
+            if (!isAuthority || !skillLocator || !disabled) return;
+            foreach (var gs in new[] { skillLocator.primary, skillLocator.secondary, skillLocator.utility, skillLocator.special })
+            {
+                if (!gs) continue;
+                if (on) gs.SetSkillOverride(this, disabled, GenericSkill.SkillOverridePriority.Contextual);
+                else gs.UnsetSkillOverride(this, disabled, GenericSkill.SkillOverridePriority.Contextual);
+            }
+        }
+
         /// <summary>A lock-on move found no target: give the charge back so the key stays ready.</summary>
         protected void RefundStock()
         {

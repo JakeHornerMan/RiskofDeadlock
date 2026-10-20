@@ -239,6 +239,13 @@ hero's **standing height, sole to top of head, from the body and head meshes onl
 It prints each submesh's Y range; take the body and head submeshes (not the gun, hair spikes or props). Example
 for Seven: body −0.18 to 2.65 includes the backpack antenna, head top 2.46, and the sheet says 2.43.
 
+### 6.3b Effect models (props, 1.5.0, `ExportProp`)
+The manifest's `props` (from `effects.json` rows of kind `prop`: id + vmdl) are exported after the heroes, each on its own, with
+no animations: glTF → `DlmWriter.Write` with an empty clip list → `props/<id>/<id>.dlm` (0 bones; every vertex on bone 0, which the
+plugin ignores). A prop that fails is logged `prop <id> (...) SKIPPED` and listed in `ready.json` `failedProps`; it never costs a hero,
+and the plugin draws a simple shape instead. `ready.json` `props` lists the ones read. `props/` is wiped on each run.
+Progress has one more step ("props"). `tools/package.py` keeps a release's props by the hero their id starts with (`manifest_owners.json`).
+
 ### 6.4 Images (`ExportImage`)
 `LoadFileCompiled(vtex)` → `Texture.GenerateBitmap()` → down-scaled to max 512 px (Mitchell cubic) → PNG. The file name
 is the vtex path with `.vtex` removed and `/` replaced by `_`, plus `.png`. For example,
@@ -410,7 +417,14 @@ All of these read the VPK. None write to Deadlock. `D` = `.../Deadlock/game/cita
 | Portraits/icons | `-i "$D" -l -f "panorama/images/heroes/"`, `-f "panorama/images/hud/abilities/"` |
 | Decompile hero/ability data | `-i "$D" -f "scripts/heroes.vdata_c,scripts/abilities.vdata_c" -d -o <scratch>` |
 | Decompile one hero's sound events | `-i "$D" -f "soundevents/hero/haze.vsndevts_c" -d -o <scratch>` |
+| Loudness over time of a decoded sound | `python tools/sound_env.py x.wav [...] [--step 0.05]` (length, loudest moment, a bar per step; v0.8.0) |
 | Export a model to look at (glb) | `-i "$D" -f "<model>.vmdl_c" -d --gltf_export_format glb --gltf_export_materials --gltf_export_animations -o <scratch>` (open in Blender to check bones, meshes and clip names) |
+
+**Build 6795 and the VRF 20.0 CLI (2026-10-20):** the CLI in `C:\Users\jakeh\tools\vrf-cli` can't read 6795's
+`scripts/heroes.vdata` or new models (`Unknown KVType for variable 'datatype': 26`). The extractor's VRF 20.1.7467 reads them. For the
+Viscous lookup `tools/vrfdump` (a small console tool on that NuGet package; its header has the commands: `list`, `glb`, `text`, `wav`,
+`events`) did the same jobs; the dev listings `vpk_files.txt`, `sound_events.txt` and `anim_names.json`
+(all six heroes) were regenerated with it at 6795. A newer CLI release (20.1+) would do the same with the commands above.
 
 **Dev listings in `tools/dev/` (gitignored, made on this PC from its install, used by `preflight.py`):**
 - `vpk_files.txt`: every VPK path, used to check that `vmdl` and `vtex` paths in the sheets exist.
@@ -429,10 +443,10 @@ with `CLI=/c/Users/jakeh/tools/vrf-cli/Source2Viewer-CLI.exe`, `D=<pak01_dir.vpk
 grep -rhoE "^\s[A-Za-z0-9_.]+ = $" "$S/dl/soundevents" | sed -E 's/^\s+//; s/ = $//' | sort -u > tools/dev/sound_events.txt
 # anim_names.json  (export each hero's model once, then read the glb JSON chunk)
 "$CLI" -i "$D" -f "<hero vmdl>_c" -d --gltf_export_format glb --gltf_export_animations -o "$S/<hero>.glb"
-python - "$S/haze.glb" "$S/abrams.glb" "$S/seven.glb" "$S/infernus.glb" <<'EOF' > tools/dev/anim_names.json
+python - "$S/haze.glb" "$S/abrams.glb" "$S/seven.glb" "$S/infernus.glb" "$S/mokrill.glb" "$S/viscous.glb" <<'EOF' > tools/dev/anim_names.json
 import json,struct,sys
 out={}
-for p,h in zip(sys.argv[1:],['haze','abrams','seven','infernus']):   # extend for new heroes
+for p,h in zip(sys.argv[1:],['haze','abrams','seven','infernus','mokrill','viscous']):   # extend for new heroes
     f=open(p,'rb'); hdr=f.read(20); ln=struct.unpack_from('<I',hdr,12)[0]; j=json.loads(f.read(ln))
     out[h]={'anims':sorted(set(a['name'].split('/')[-1] for a in j['animations'])),'meshes':[m['name'].split('.')[-1] for m in j['meshes']]}
 print(json.dumps(out))
@@ -490,6 +504,36 @@ the source values. The RoR2-scale numbers next to them are our own balance (doc 
   `.Melee.Swing`, `.Footstep`, `.JumpLand`. **Voice:** Krill only, `sounds/vo/krill/krill_<group>`.
 - **Particles** (looked at for colours only, nothing exported): `particles/abilities/digger/digger_throw_sand*`, `digger_burrow_*`,
   `digger_ult_tgt_*`, `weapon_fx/digger/digger_tracer*` (tan sand 236,218,186; orange 226,132,32; dark cracks 51,46,41; hot cracks 237,107,20).
+
+**Viscous (added 2026-10-20, v0.8.0; Deadlock build 6795):**
+- **Codename** `viscous` (`hero_viscous`, hero id 35); model `models/heroes_staging/viscous/viscous.vmdl` (`m_strModelName`), images
+  `panorama/images/heroes/viscous_sm_psd` / `viscous_card_psd`, gun icon `heroes/guns/viscous_gun_psd`, ability icons in
+  `hud/abilities/viscous/`: `viscous_goo_ball_psd` = **Splatter** (Deadlock calls ability 1 `viscous_goo_grenade`, its sounds `GooBall.*`),
+  `viscous_restorative_goo_psd` = The Cube, `viscous_goo_punch_psd` = Puddle Punch, `viscous_goo_sphere_psd` = **Goo Ball** (ult,
+  `viscous_goo_bowling_ball`, sounds `GooBowlingBall.*`), `viscous_goo_puddle_psd` (no ability uses it: our passive and Gooed icon).
+- **Meshes** `body`, `gun` (kept), `inflated` (the ball form, dropped), `bodyoutline` (dropped). Body 2.444 m tall in the glb
+  (`sourceHeight` 2.444, `heightScale` 1.013).
+- **Skeleton:** the standard chain (the 12 ragdoll bones exist); `pelvis` sits under `root_motion` (like Abrams). The gun hangs off
+  `hand_R` → `weapon_bone_R` (`gunBone`, welded) → `muzzle` → `muzzle_fx`. `weapon_stand_idle` frame 0 holds it at +9.6° pitch (`aimPose`).
+- **Clips** (glb names, 481 in all): `weapon_stand_idle`, `weapon_run_n/s/e/w`, `sprint_run_n`, `jump_start`, `jump_in_air_loop`,
+  `reload_idle`, `throw` (Splatter), `ability_generic_cast` (The Cube), `ability_puddle_punch`, `ability_goo_ball_intro`; also
+  `rolling_goo`, `puddle_start/loop/end`, `gootapult_*` and `goopunch_ground*` (unused). No death clip (ragdoll).
+- **Gun** (`citadel_weapon_viscous_set`): 10.3 per bullet, 4.76/s, 20 rounds, 2.5 s reload, 254 m/s, falloff 20 → 58 m; alt fire 5 rounds.
+- **Abilities** (wiki and vdata): Splatter 26 s, 55 dmg, 5 m, 2 bounces, puddles −28 % for 10 s; The Cube 42 s, cast on self or an ally
+  20 m away, 3 s invulnerable, 40 regen; Puddle Punch 24 s, 40 m, 4 m, 57.8 dmg, 0.6 s knock-up; Goo Ball 150 s, 11 s, 110 dmg, 0.5 s
+  stun, 1.4 m radius, 35 % resists.
+- **Effect models (props, extractor 1.5.0):** `models/abilities/viscous_cube.vmdl` (2.3 m box, origin at its base),
+  `viscous_sphere.vmdl` (2.52 m sphere), `viscous_fist_model.vmdl` (1.37 m fist); all static meshes (no bones, no clips).
+  `viscous_puddle_punch_model` is a 2 cm morph target (useless as a mesh); `viscous_bg`, `viscous_inflated` are hero variants.
+- **Sounds** (`soundevents/hero/viscous.vsndevts`, 36 events; length and peak from `tools/sound_env.py`): `Viscous.Fire` (gun,
+  2.0 s tail), `Viscous.Wpn.Impact` (0.8 s), `Viscous.Wpn.Reload.Start/Mid/End`, `Viscous.Fire.Alt` (alt fire, 3 s) and
+  `.Fire.Alt.Explode` (a 2 s goo burst, peak 0.2 s), `Viscous.GooBall.Cast/Proj.Lp/Impact/Hit` (Splatter), `Viscous.Cube.Cast`,
+  `.Cube.Dur.Target.Lp`, `.Cube.Dur.End` (no burst sound of its own), `Viscous.Telepunch.Cast` (peak 0.4 s), `.Portal` (peak 0.4 s),
+  `.Hit`, `.Hit.Self`, `.Select.Lp`, `Viscous.GooBowlingBall.Cast` (a 0.4–2 s build-up), `.Lp` (20 s), `.Impact.Wall`, `.Hit`, `.End`,
+  `Viscous.Footstep`, `Viscous.JumpLand`. The vdata names `Viscous.Cube.Impact`, which does not exist.
+- **Voice:** `sounds/vo/viscous/viscous_<group>`; `use_power4`'s takes start at `_11` (preflight accepts any numbered take since v0.8.0).
+- **Particles** (looked at for colours only): `particles/abilities/viscous/*` (goo_grenade_explode, viscous_goo_puddle, restorative_goo,
+  glob_punch, bowling_*), materials `materials/particle/blobs/viscous_*`. Our goo palette: deep #1E5E2A, body #4FB83A, highlight #B6F26A.
 
 **Next-hero cheat-sheet: Wraith** (found in the build 6774 listings; verify before use):
 - **Model:** `models/heroes_wip/wraith/wraith.vmdl`. Other variants exist (`wraith_gen_man`, `wraith_magician`).

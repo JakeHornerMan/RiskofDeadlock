@@ -11,7 +11,7 @@ namespace DeadlockOfRain
     /// trail renderers and lights, drawn with Risk of Rain 2's own materials (effects rows of kind material). They are made
     /// to look like the Deadlock abilities; nothing is read from Deadlock's particle files.
     /// Each skill's vfx id answers moments like its sounds do: cast, loop (returns an object to keep or move), hit, trigger, end.</summary>
-    public static class Vfx
+    public static partial class Vfx
     {
         static readonly Dictionary<string, Material> baseMats = new Dictionary<string, Material>();
         static readonly Dictionary<string, Material> tinted = new Dictionary<string, Material>();
@@ -44,6 +44,12 @@ namespace DeadlockOfRain
                     case "mokrill_devil": return MokrillDevil(moment, at, radius, follow, angle);
                     case "mokrill_krill": return MokrillKrill(moment, at, radius, to);
                     case "mokrill_punch": return MokrillPunch(moment, at, radius, follow);
+                    case "viscous_goo": return ViscousGoo(moment, at, radius, follow, to);
+                    case "viscous_splatter": return ViscousSplatter(moment, at, radius, follow, life);
+                    case "viscous_cube": return ViscousCube(moment, at, radius, follow);
+                    case "viscous_punch": return ViscousPunch(moment, at, radius);
+                    case "viscous_ball": return ViscousBall(moment, at, radius);
+                    case "viscous_gooed": return ViscousGooed(moment, follow);
                 }
             }
             catch (System.Exception e) { Log.Warn($"vfx {id}/{moment}: {e.Message}"); }

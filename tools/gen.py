@@ -96,6 +96,9 @@ manifest['soundEvents'] = sorted({r[c] for r in sounds for c in ['cast', 'loop',
 manifest['soundEventFiles'] = sorted({hero['soundevents'] for hero in h['rows']})
 # voice lines: every numbered take of each group, sounds/vo/<group>_NN.vsnd (design/voice.json)
 manifest['voiceGroups'] = sorted({r['group'] for r in load('voice')['rows']})
+# Deadlock models used as plain meshes by our effects (effects kind prop: the Cube, Goo Ball's sphere, the fist; extractor 1.5.0+)
+effects = load('effects')['rows']
+manifest['props'] = [{'id': e['id'], 'vmdl': e['addressable']} for e in effects if e['kind'] == 'prop']
 json.dump(manifest, open(os.path.join(ROOT, 'extractor', 'manifest.json'), 'w', encoding='utf-8'), indent=2)
 # which hero(es) use each image, sound event and voice group, so tools/package.py can cut the manifest down to a
 # release's heroes (thunderstore/release.json); an entry with no owner (shared buff icons) is always kept
@@ -112,5 +115,10 @@ for r in sounds:
         base = r['skill'].split('/')[0]   # 'mokrill_gun/step': a variant of the gun row
         if r[c] != 'none' and base in skill_hero: own(r[c], skill_hero[base])
 for r in load('voice')['rows']: own(r['group'], r['hero'])
+# a prop belongs to the hero its id starts with (viscous_cube_prop)
+for e in effects:
+    if e['kind'] == 'prop':
+        for hero in h['rows']:
+            if e['id'].startswith(hero['id'] + '_'): own(e['id'], hero['id'])
 json.dump({k: sorted(v) for k, v in sorted(owners.items())}, open(os.path.join(ROOT, 'extractor', 'manifest_owners.json'), 'w', encoding='utf-8'), indent=2)
-print(f'gen: wrote plugin/Generated/Sheets.g.cs and extractor/manifest.json ({len(manifest["images"])} images, {len(manifest["soundEvents"])} sound events, {len(manifest["voiceGroups"])} voice groups)')
+print(f'gen: wrote plugin/Generated/Sheets.g.cs and extractor/manifest.json ({len(manifest["images"])} images, {len(manifest["soundEvents"])} sound events, {len(manifest["voiceGroups"])} voice groups, {len(manifest["props"])} props)')

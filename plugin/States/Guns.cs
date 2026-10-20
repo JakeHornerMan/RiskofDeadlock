@@ -73,7 +73,9 @@ namespace DeadlockOfRain.States
 
         /// <summary>What another player's machine plays for one of this hero's shots: sound, flash, muzzle visual, recoil
         /// (or, while Krill is away, Mo's punch).</summary>
-        public static void ShotFx(CharacterBody body, bool left)
+        /// <param name="aim">where the owner aimed the shot (sent with the relay); a projectile gun (gun_goo) flies its blob along it
+        /// here too: the server's copy deals the damage, the other players' copies are only seen.</param>
+        public static void ShotFx(CharacterBody body, bool left, Vector3 aim = default)
         {
             var row = Survivors.RowFor(body.skillLocator ? body.skillLocator.primary : null);
             if (row == null) return;
@@ -84,6 +86,8 @@ namespace DeadlockOfRain.States
             Fx.MuzzleFlash(body, left);
             var muzzle = Fx.Muzzle(body, left);
             if (muzzle) Vfx.Play(row.Vfx, "muzzle", muzzle.position, 1f, muzzle);
+            if (row.Kind == "gun_goo" && !body.hasEffectiveAuthority && aim.sqrMagnitude > 0.01f && body.inputBank)
+                DlrGoo.Launch(body, row, body.inputBank.aimOrigin, aim, NetworkServer.active);
         }
 
         public static void BreakSmoke(CharacterBody body)
@@ -161,10 +165,11 @@ namespace DeadlockOfRain.States
             bool left = rt != null && rt.AltMuzzle && row.Hero == "haze";
             // the sound, the flash on the end of the gun (the sheet's muzzle bone), the hero's own per-shot muzzle visual
             // (Infernus' smoke) and the recoil; the other players get the same through the relay
-            ShotFx(characterBody, left);
-            Relay.Shot(characterBody, left);
             var aim = GetAimRay();
-            if (isAuthority && row.Pattern == "krill")
+            ShotFx(characterBody, left);
+            Relay.Shot(characterBody, left, aim.direction);
+            if (isAuthority && Shoot(aim, left)) { }
+            else if (isAuthority && row.Pattern == "krill")
             {
                 // one bullet per pellet along its fixed offset (Deadlock's offsets; a corner sits spreadDeg off the centre)
                 var up = Vector3.Cross(aim.direction, Vector3.Cross(Vector3.up, aim.direction)).normalized;
@@ -215,6 +220,9 @@ namespace DeadlockOfRain.States
             }
             MeltyTest.Report("gun-fires", true, characterBody.baseNameToken);
         }
+
+        /// <summary>A gun whose shot is not a bullet (gun_goo: a goo blob) fires it here, on the owner; true = handled.</summary>
+        protected virtual bool Shoot(Ray aim, bool left) => false;
 
         /// <summary>A pattern pellet landed: the row's hit visual (dirt sparks), then RoR2's own hit handling.</summary>
         bool PelletHit(BulletAttack attack, ref BulletAttack.BulletHit hit)

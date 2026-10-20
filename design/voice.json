@@ -551,6 +551,116 @@
       "group": "krill/krill_happy",
       "chance": 1.0,
       "gap": 0
+    },
+    {
+      "id": "viscous_select",
+      "hero": "viscous",
+      "trigger": "select",
+      "skill": "none",
+      "kills": 0,
+      "group": "viscous/viscous_select",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "viscous_unselect",
+      "hero": "viscous",
+      "trigger": "unselect",
+      "skill": "none",
+      "kills": 0,
+      "group": "viscous/viscous_unselect",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "viscous_splatter_vo",
+      "hero": "viscous",
+      "trigger": "skill",
+      "skill": "viscous_splatter",
+      "kills": 0,
+      "group": "viscous/viscous_use_power1",
+      "chance": 0.3,
+      "gap": 10
+    },
+    {
+      "id": "viscous_cube_vo",
+      "hero": "viscous",
+      "trigger": "skill",
+      "skill": "viscous_cube",
+      "kills": 0,
+      "group": "viscous/viscous_use_power2",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "viscous_punch_vo",
+      "hero": "viscous",
+      "trigger": "skill",
+      "skill": "viscous_punch",
+      "kills": 0,
+      "group": "viscous/viscous_use_power3",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "viscous_gooball_vo",
+      "hero": "viscous",
+      "trigger": "skill",
+      "skill": "viscous_gooball",
+      "kills": 0,
+      "group": "viscous/viscous_use_power4",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "viscous_streak4",
+      "hero": "viscous",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 4,
+      "group": "viscous/viscous_killstreak_start",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "viscous_streak7",
+      "hero": "viscous",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 7,
+      "group": "viscous/viscous_killstreak_mid",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "viscous_streak10",
+      "hero": "viscous",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 10,
+      "group": "viscous/viscous_killstreak_high",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "viscous_hunt",
+      "hero": "viscous",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "viscous/viscous_hunt",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "viscous_happy",
+      "hero": "viscous",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "viscous/viscous_happy",
+      "chance": 1.0,
+      "gap": 0
     }
   ]
 }

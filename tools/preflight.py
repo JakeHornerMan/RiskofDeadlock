@@ -7,7 +7,7 @@ Checks (each row x column crossing is a checkbox):
   - slot layout: each hero has exactly primary/secondary/utility/special (RoR2's 4 skills) plus one equipment (the Deadlock ult on Q)
   - balance: gun DPS computed from the row matches targetDps (+-10%) and sits in the RoR2 band
   - Deadlock assets named by the sheets exist in the player's install listing (dev files, if present):
-    vmdl/vtex paths, sound events, animation clip names, mesh names
+    vmdl/vtex paths (heroes and effects props), sound events, voice takes, animation clip names, mesh names
   - RoR2 Addressables keys named by effects exist in the game's catalog (dev file, if present)
 Exit code 0 only when nothing is listed.
 """
@@ -78,14 +78,15 @@ for r in sheets['skills']['rows']:
     for e in r['expect']:
         kind, _, arg = e.partition(':')
         if kind in ('enemy_debuff', 'self_buff'): ref('skills', r['id'], 'expect', arg, buffs, False)
-        elif kind not in ('enemy_damage', 'enemy_stun', 'enemy_burn', 'enemy_disarm', 'enemy_pulled', 'self_heal', 'self_move', 'self_cloak', 'self_hidden') or arg:
+        elif kind not in ('enemy_damage', 'enemy_stun', 'enemy_burn', 'enemy_disarm', 'enemy_pulled', 'enemy_knockup', 'self_heal', 'self_move', 'self_cloak', 'self_hidden', 'self_invulnerable') or arg:
             bad(f'skills[{r["id"]}].expect: "{e}" is not a known effect')
 for b in buffs.values():
     ref('buffs', b['id'], 'triggerBuff', b['triggerBuff'], buffs)
     ref('buffs', b['id'], 'withBuff', b['withBuff'], buffs)
+    ref('buffs', b['id'], 'vfx', b['vfx'], {k for k, e in effects.items() if e['kind'] == 'custom'})
     if b['triggerStacks'] and not b['canStack']: bad(f'buffs[{b["id"]}].triggerStacks: needs a stacking buff')
     if b['triggerStacks'] > b['maxStacks']: bad(f'buffs[{b["id"]}].triggerStacks: above maxStacks, it can never fire')
-EFFECT_KINDS = {'none', 'tracer', 'impact', 'ghost', 'orb', 'trail', 'attachment', 'ward', 'material', 'custom'}
+EFFECT_KINDS = {'none', 'tracer', 'impact', 'ghost', 'orb', 'trail', 'attachment', 'ward', 'material', 'custom', 'prop'}
 for e in effects.values():
     if e['kind'] not in EFFECT_KINDS: bad(f'effects[{e["id"]}].kind: "{e["kind"]}" unknown')
     if (e['kind'] in ('custom', 'none')) != (e['addressable'] == 'none'): bad(f'effects[{e["id"]}].addressable: custom/none rows have none, every other kind a key')
@@ -108,8 +109,11 @@ for h in heroes:
         bad(f'skills: hero {h} slots {got} != {SLOTS}')
 for r in skills.values():
     if r['slot'] not in SLOTS: bad(f'skills[{r["id"]}].slot: "{r["slot"]}" unknown')
-    if r['slot'] in ('secondary', 'utility', 'special') and r['cooldown'] <= 0:
-        bad(f'skills[{r["id"]}]: ability needs a cooldown')
+    # a move that spends the gun's rounds instead (Splatter, ammoCost) may have none
+    if r['slot'] in ('secondary', 'utility', 'special') and r['cooldown'] <= 0 and r['ammoCost'] <= 0:
+        bad(f'skills[{r["id"]}]: ability needs a cooldown (or an ammoCost)')
+    if r['ammoCost'] > 0 and not any(g['hero'] == r['hero'] and g['slot'] == 'primary' and g['clipSize'] >= r['ammoCost'] for g in skills.values()):
+        bad(f'skills[{r["id"]}].ammoCost: the gun of this hero has no magazine that big')
     if r['slot'] == 'equipment' and r['cooldown'] != 120:
         bad(f'skills[{r["id"]}]: equipment ults recharge in 120 s (cooldown {r["cooldown"]})')
 equipment = sheets['equipment']['rows']
@@ -158,6 +162,7 @@ for r in skills.values():
         if r['kind'] == 'ult_dance': total = r['duration'] / r['interval'] * r['damagePct']
         elif r['kind'] == 'ult_zone': total = r['duration'] / r['interval'] * r['damagePct']  # per target: every tick strikes up to chainCount enemies
         elif r['kind'] == 'ult_devil': total = r['duration'] / r['interval'] * r['damagePct']  # every interval, everything within radius
+        elif r['kind'] == 'ult_gooball': total = r['duration'] / r['interval'] * r['damageMinPct']  # a smash every re-hit interval, at the slowest speed
         else: total = r['damagePct']
         if total < 6000:
             bad(f'skills[{r["id"]}]: equipment ult total {total:.0f}% below the Preon level of 6000')
@@ -192,8 +197,12 @@ if vpk:
         for c in ['vmdl', 'imageSmall', 'imageCard', 'soundevents']: has(h[c], f'heroes[{h["id"]}].{c}')
         if h['passiveIcon'] != 'none': has(h['passiveIcon'], f'heroes[{h["id"]}].passiveIcon')
     for r in skills.values(): has(r['icon'].replace('.vtex', '.vtex'), f'skills[{r["id"]}].icon')
+    # any numbered take will do (Viscous' use_power4 takes start at _11)
+    takes = {re.sub(r'_[0-9]+\.vsnd_c$', '', f) for f in files if f.startswith('sounds/vo/') and re.search(r'_[0-9]+\.vsnd_c$', f)}
     for r in sheets['voice']['rows']:
-        if f"sounds/vo/{r['group']}_01.vsnd_c" not in files: bad(f'voice[{r["id"]}].group: no sounds/vo/{r["group"]}_01.vsnd in Deadlock install')
+        if f"sounds/vo/{r['group']}" not in takes: bad(f'voice[{r["id"]}].group: no sounds/vo/{r["group"]}_NN.vsnd in Deadlock install')
+    for e in effects.values():
+        if e['kind'] == 'prop': has(e['addressable'], f'effects[{e["id"]}].addressable')
     for b in buffs.values():
         if b['icon'] != 'none': has(b['icon'], f'buffs[{b["id"]}].icon')
 else:
@@ -231,7 +240,8 @@ ak = dev('addressable_keys.txt')
 if ak:
     keys = set(l.strip() for l in open(ak, encoding='utf-8'))
     for e in effects.values():
-        if e['addressable'] != 'none' and e['addressable'] not in keys: bad(f'effects[{e["id"]}].addressable: "{e["addressable"]}" not in RoR2 catalog')
+        # a prop is a Deadlock model path (checked against the VPK listing above), not a RoR2 key
+        if e['addressable'] != 'none' and e['kind'] != 'prop' and e['addressable'] not in keys: bad(f'effects[{e["id"]}].addressable: "{e["addressable"]}" not in RoR2 catalog')
 else:
     bad('dev listing tools/dev/addressable_keys.txt missing: effect keys unverified')
 
