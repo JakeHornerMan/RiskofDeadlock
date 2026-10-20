@@ -243,8 +243,10 @@ Melty's only live issue was `crash:crashed:ntdll.dll` (3 players on 0.7.2/0.7.3,
 - Tried and dropped: guarding our OnDestroy work, pre-compiling our methods, the DDOL clean-up (not needed).
 - Test-only tools kept: `MeltyTest.Off(...)` switches (`OFF=` in `run_test.sh`), `VANILLA=1` Commando run.
 - Melty 0.7.4: test `1cd1f52b-…` passed 2/2, published 2026-10-20 (safety review pending at the time of writing).
-- **Next:** confirm it's live; watch `install_outcomes` for 0.7.4 crashes; merge `hotfix-0.7.4` into `main` (main has
-  uncommitted Viscous work: commit or stash it first; keep main's version 0.8.0 and add the 0.7.4 CHANGELOG section).
+- 0.7.4 **live** since 12:49 UTC; first day: 7 plays, 0 crashed. Merged into `main` (7baa5f1) with security hardening
+  (998012c: Mono patch pinned to the verified build + VirtualQuery). Main tested: all six heroes 24/24 pass + clean
+  quit; 3 more clean quits. Open: near-vanilla quit, `BREAK=infernus` and co-op on main (stopped / not run: low memory).
+  Main's Viscous work is still uncommitted (a backup is in `git stash`).
 
 ## 9-prev0000000. v0.7.3 clean sound shutdown (2026-10-19)
 

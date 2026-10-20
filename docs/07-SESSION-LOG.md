@@ -718,3 +718,17 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 - Melty: release `9697f980-…` (same recipe as 0.7.3), test `1cd1f52b-…` passed 2/2 (Siphoned Forest, Verdant Falls), both footage reviews pass, `graduates: true`, Windows logged no crash for either close. Published at the creator's word ("test and upload to melty when you are done"); in Melty's safety review at the time of writing. Listing: only the Built-with line changed (v0.7.4), Hero pages kept. `report_bug_fix` for `crash:crashed:ntdll.dll`.
 **Not done / open:** merge into `main` (main's working tree has uncommitted Viscous work, so not done in this session); confirm 0.7.4 is live (`mod_status`); watch `install_outcomes` for 0.7.4 quits.
 **Lessons:** run the no-mod control early; repeat intermittent crashes 3+ times per condition; a native crash after a Mono stack overflow hides a managed trace that RoR2BepInExPack's patch reveals; Melty players don't get RoR2BepInExPack's fixes.
+
+### 2026-10-20 · 0.7.4 merged into main, security hardening, tests · main (0.8.0 in progress) · commits 7baa5f1, eb14fb4, 998012c and the one that adds this entry
+**Request (verbatim):** "merge it into main and do loads of fucking testt make sure its all scure and wokring!"
+**Questions asked → answers:** none.
+**Done:**
+- Main's uncommitted Viscous work stashed, `hotfix-0.7.4` merged (7baa5f1; the only conflict, `design/hooks.json`, keeps Viscous's five rows + `keep_console_on_quit`), stash restored (Plugin.cs stays 0.8.0, CHANGELOG 0.8.0 above 0.7.4); the Viscous work is uncommitted as before. The merge kept the hotfix's generated hook rows: `gen.py` (PREFLIGHT CLEAN) regenerated `Sheets.g.cs` (eb14fb4).
+- Security review (agent): safe to ship; hardening done anyway (998012c): Mono patch only on the verified build (SizeOfImage 0xA54000 + TimeDateStamp 0x66FD8CF6 via GetModuleHandle) and only after VirtualQuery shows committed executable code; console type from RoR2's assembly; `quit_test.sh` removes the test file; `run_test.sh` validates BREAK/STAGE/OFF; notices beside the Thunderstore DLL too. Doc 02 gotcha 22.
+- Cache re-read with extractor 1.5.0 (Melty's 0.7.4 test had rebuilt it with 1.4.0): 6/6 heroes, stamp `6795|1.5.0|E2F6C2203AC8C931`.
+**Results:**
+- `quit_test.sh` with all six heroes: **6/6 heroes, 24/24 checks pass** (incl. viscous-plays), QUIT_OK, both fixes applied.
+- `quit_test.sh haze` ×3: QUIT_OK, 0 fails, 0 overflows, clean Unity shutdown each time.
+- Melty: 0.7.4 live since 12:49 UTC; first day 7 plays, 6 worked, **0 crashed**, 0 failed installs (0.7.3: 2 of 4 crashed).
+**Not done / open:** Claude Code stopped the near-vanilla quit and the `BREAK=infernus` check (low memory, ~1.3 GB free); not rerun without asking. Co-op test not run (two game copies need more free memory than this PC had). The hardening is on main only; the live 0.7.4 doesn't have it (the review said it isn't needed to ship). Drop `git stash` "viscous wip before 0.7.4 merge" once the Viscous work is committed.
+**Lessons:** after merging a branch that regenerated `Sheets.g.cs`, run `gen.py` again: the merge can silently keep the wrong side's generated rows. A Melty test of an older release rebuilds the cache with that release's extractor.
