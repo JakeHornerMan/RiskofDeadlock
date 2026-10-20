@@ -452,24 +452,31 @@ namespace DeadlockOfRain
                     passive = healed > 0f;
                     if (!passive) passiveWhy = "no heal-back";
                 }
-                // puddleAmmo (Viscous' puddles): an empty magazine, then a fresh puddle at his feet gives the rounds, and a second new
-                // puddle gives them again with no reload in between
+                // puddleAmmo (Viscous' puddles): standing in a fresh puddle refills an empty magazine; once its supply is used up it
+                // gives nothing more; a second fresh puddle refills again, with no reload in between
                 foreach (var pr in Sheet.SkillsOf(hero.Id).Where(s => s.PuddleAmmo > 0))
                 {
                     body = master.GetBody();
                     var hr = body.GetComponent<HeroRuntime>();
                     var gunRow = Survivors.RowFor(body.skillLocator.primary);
                     if (!hr || gunRow == null) { kitWhy += $"{pr.Id}: no magazine; "; continue; }
+                    int wantAmmo = (int)Mathf.Min(pr.PuddleAmmo, gunRow.ClipSize);
                     hr.Reloading = false; hr.Ammo = 0;
                     DlrPuddle.Plant(body, pr, body.footPosition, pr.Reach, true);
-                    yield return new WaitForSeconds(0.5f);
+                    yield return new WaitForSeconds(0.4f);
                     int ammo1 = hr.Ammo;
-                    DlrPuddle.Plant(body, pr, body.footPosition, pr.Reach, true);
-                    yield return new WaitForSeconds(0.5f);
+                    // spend what it gave: a puddle of puddleAmmo rounds that filled the magazine has puddleAmmo - want left
+                    hr.Ammo = 0;
+                    yield return new WaitForSeconds(0.4f);
                     int ammo2 = hr.Ammo;
-                    Log.Info($"Melty test: {hero.Id} {pr.Id} puddle ammo: empty -> {ammo1} -> {ammo2} (want {pr.PuddleAmmo:F0}, {2 * pr.PuddleAmmo:F0}), reloading {hr.Reloading}");
-                    if (ammo1 != (int)pr.PuddleAmmo || ammo2 != (int)Mathf.Min(2 * pr.PuddleAmmo, gunRow.ClipSize + pr.PuddleAmmo) || hr.Reloading)
-                        kitWhy += $"{pr.Id}: puddle ammo {ammo1}/{ammo2}; ";
+                    hr.Ammo = 0;
+                    DlrPuddle.Plant(body, pr, body.footPosition, pr.Reach, true);
+                    yield return new WaitForSeconds(0.4f);
+                    int ammo3 = hr.Ammo;
+                    int left = (int)Mathf.Min(pr.PuddleAmmo - wantAmmo, gunRow.ClipSize);
+                    Log.Info($"Melty test: {hero.Id} {pr.Id} puddle ammo: empty -> {ammo1}, emptied again -> {ammo2} (its leftover {left}), new puddle -> {ammo3} (want {wantAmmo}), reloading {hr.Reloading}");
+                    if (ammo1 != wantAmmo || ammo2 != left || ammo3 < wantAmmo || hr.Reloading) kitWhy += $"{pr.Id}: puddle ammo {ammo1}/{ammo2}/{ammo3}; ";
+                    hr.Ammo = (int)gunRow.ClipSize;
                     yield return new WaitForSeconds(0.5f);
                 }
                 if (anim)

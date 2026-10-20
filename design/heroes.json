@@ -306,7 +306,7 @@
       "roR2Analog": "TreebotBody",
       "subtitle": "The Goo",
       "passiveName": "Gooey",
-      "passiveDescription": "Every goo hit stacks <style=cIsUtility>Gooed</style>: -8% movement and attack speed per stack, up to 5 (-40%; bosses half). <style=cIsUtility>Goo puddles</style> (Splatter and The Cube) last 10s, then shrink away over 20s. The first time you step into a puddle it gives <style=cIsDamage>+20 rounds</style> (up to 40), no reload needed: hop from puddle to puddle to keep firing. You and your allies move 30% faster on goo puddles. Viscous never takes fall damage.",
+      "passiveDescription": "Every goo hit stacks <style=cIsUtility>Gooed</style>: -8% movement and attack speed per stack, up to 5 (-40%; bosses half). <style=cIsUtility>Goo puddles</style> (Splatter and The Cube) last 3s, then shrink away over 5s. Each puddle holds <style=cIsDamage>20 rounds</style>: while you stand in it, it keeps your gun's magazine topped up, no reload needed, until its 20 are used up; hop to a fresh puddle for more. You and your allies move 30% faster on goo puddles. Viscous jumps a third higher and never takes fall damage.",
       "passiveIcon": "panorama/images/hud/abilities/viscous/viscous_goo_puddle_psd.vtex",
       "damageHealBack": 0,
       "damageHealBackTime": 0,

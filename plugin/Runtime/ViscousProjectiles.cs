@@ -82,7 +82,7 @@ namespace DeadlockOfRain
     public sealed class DlrPuddle : MonoBehaviour
     {
         public static readonly List<DlrPuddle> Live = new List<DlrPuddle>();
-        CharacterBody owner; SkillRow row; float radius, age, next; bool damage, gaveAmmo; GameObject vfx;
+        CharacterBody owner; SkillRow row; float radius, age, next; bool damage, supplied; int supply = -1; GameObject vfx;
 
         /// <summary>How far above or below a puddle something can stand and still be on it.</summary>
         const float Reach = 3f;
@@ -123,16 +123,20 @@ namespace DeadlockOfRain
         {
             age += Time.fixedDeltaTime;
             if (!owner || age >= Life(row)) { Destroy(gameObject); return; }
-            // the owner's machine: the first time the owner stands in this puddle it gives puddleAmmo rounds (a new puddle gives them again)
-            if (!gaveAmmo && row.PuddleAmmo > 0 && owner.hasEffectiveAuthority && Inside(owner.footPosition))
+            // the owner's machine: the puddle holds puddleAmmo rounds; while the owner stands in it, it keeps the gun's magazine topped
+            // up from them (a reload is called off) until they are used up. Nothing extra stays once he steps out
+            if (supply < 0) supply = (int)row.PuddleAmmo;
+            if (supply > 0 && owner.hasEffectiveAuthority && Inside(owner.footPosition))
             {
-                gaveAmmo = true;
                 var rt = owner.GetComponent<HeroRuntime>();
                 var gun = Survivors.RowFor(owner.skillLocator ? owner.skillLocator.primary : null);
-                if (rt && gun != null && rt.GiveAmmo(gun, (int)row.PuddleAmmo))
+                int took = rt && gun != null ? rt.TopUp(gun, supply) : 0;
+                if (took > 0)
                 {
-                    Vfx.Play(row.Vfx, "refill", owner.footPosition, 1f, owner.transform);
-                    Fx.Sound(gun.Id, "reload", owner.footPosition);
+                    supply -= took;
+                    // the first draw from this puddle shows: goo spirals up into him with the reload sound
+                    if (!supplied) { Vfx.Play(row.Vfx, "refill", owner.footPosition, 1f, owner.transform); Fx.Sound(gun.Id, "reload", owner.footPosition); }
+                    supplied = true;
                 }
             }
             if (!damage || age < next) return;
