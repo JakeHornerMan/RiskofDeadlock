@@ -21,6 +21,10 @@ Vortice.SpirvCross - MIT License - Copyright (c) Amer Koleci and contributors; n
 .NET runtime and System.IO.Hashing - MIT License - Copyright (c) .NET Foundation and Contributors
   https://github.com/dotnet/runtime
 
+The plugin (DeadlockOfRain.dll) contains code adapted from:
+RoR2BepInExPack (the stack overflow fix in Runtime/QuitSafety.cs) - MIT License - Copyright (c) 2023 Risk of Thunder
+  https://github.com/risk-of-thunder/RoR2BepInExPack
+
 MIT License text:
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated

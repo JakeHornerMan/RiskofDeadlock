@@ -297,6 +297,14 @@
       "purpose": "Krill hidden on Mo while a melee buff (krill_away) is on",
       "reads": "heroes.riderBone, buffs.melee",
       "side": "both"
+    },
+    {
+      "id": "keep_console_on_quit",
+      "method": "harmony-prefix",
+      "target": "RoR2.UnitySystemConsoleRedirector.Disengage (skipped)",
+      "purpose": "Quit crash fix (Runtime/QuitSafety.cs): restoring the console at quit makes BepInEx's console writer write to itself and overflow the stack; also nops Mono's misaligned restore_stack push (not a RoR2 hook)",
+      "reads": "none",
+      "side": "both"
     }
   ]
 }

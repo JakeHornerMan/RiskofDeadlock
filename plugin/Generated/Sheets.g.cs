@@ -463,6 +463,7 @@ namespace DeadlockOfRain.Sheets
             new HookRow { Id = "disarm", Method = "component", Target = "Buffs.Apply (vanilla DLC2Content.Buffs.DisableAllSkills, timed, server)", Purpose = "Sand Blast's Sanded: monsters can't use their skills", Reads = "buffs.disarm, skills.bossMult", Side = "server" },
             new HookRow { Id = "tag_team_kills", Method = "event", Target = "RoR2.GlobalEventManager.onCharacterDeathGlobal", Purpose = "Mo & Krill trophies: every kill the hero makes (any move) gives max-health stacks (the krill_hop row's debuff)", Reads = "skills.buffStacks, skills.bossMult", Side = "server" },
             new HookRow { Id = "rider", Method = "component", Target = "HeroRuntime (riderBone scaled to 0)", Purpose = "Krill hidden on Mo while a melee buff (krill_away) is on", Reads = "heroes.riderBone, buffs.melee", Side = "both" },
+            new HookRow { Id = "keep_console_on_quit", Method = "harmony-prefix", Target = "RoR2.UnitySystemConsoleRedirector.Disengage (skipped)", Purpose = "Quit crash fix (Runtime/QuitSafety.cs): restoring the console at quit makes BepInEx's console writer write to itself and overflow the stack; also nops Mono's misaligned restore_stack push (not a RoR2 hook)", Reads = "none", Side = "both" },
         };
     }
 

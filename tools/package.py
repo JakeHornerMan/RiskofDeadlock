@@ -187,6 +187,8 @@ else:
         'plugins/DeadlockOfRain/DeadlockOfRain.dll': 'plugin/bin/Release/netstandard2.1/DeadlockOfRain.dll',
         'plugins/DeadlockOfRain/README.md': 'README.md',
         'plugins/DeadlockOfRain/LICENSE.txt': 'LICENSE.txt',
+        # the DLL holds code adapted from RoR2BepInExPack (MIT): its notice goes beside it too
+        'plugins/DeadlockOfRain/THIRD-PARTY-NOTICES.txt': 'THIRD-PARTY-NOTICES.txt',
         'extract/manifest.json': 'extractor/manifest.json',
     }
     files.update({'extract/' + k: v for k, v in EXTRACT.items()})
