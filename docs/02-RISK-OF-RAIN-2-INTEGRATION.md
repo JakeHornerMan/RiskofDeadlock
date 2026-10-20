@@ -553,10 +553,8 @@ Steam invites and RoR2's lobby work as in vanilla; the Melty line is an extra wa
   - **Shutdown** (v0.7.3): `Plugin.OnDestroy`/`OnApplicationQuit` call `DeadlockAudio.Shutdown()`, which stops the loop and
     **joins the thread (up to 0.5 s)** so `waveOutReset/Unprepare/Close` finish and the buffers are freed before the process
     exits (also on `Application.quitting`; logs "Deadlock audio stopped"). Before 0.7.3 it only cleared a flag.
-    **Open:** the game still sometimes crashes in ntdll (c0000005) while quitting after a run (a 0.7.2 player, and this PC
-    since 2026-10-13). The dump shows it inside Mono's runtime shutdown with no mod thread alive, so it is not the mixer.
-    Not seen quitting from the title screen, with or without the mod, or in an unmodded game. Cause unknown; the profile is
-    saved before it happens.
+    The crash on quit after a run (ntdll c0000005, 0.7.2/0.7.3) was not the mixer: it is RoR2 + BepInEx's console
+    writers looping at quit; fixed in 0.7.4 by `Runtime/QuitSafety.cs` (§12 gotcha 22).
   - **Master volume** = `volume_master/100 × volume_sfx/100` (RoR2 convars, re-read once per second), × config `Audio/Deadlock sound volume`, × 0.55, and 0 when the window is unfocused.
   - Guns play their `cast` sound per shot, but never their `hit` sound; the Afterburn ignite uses `infernus_gun.hit`.
   - **Layers and gain** (v0.5.1): a `design/sounds.json` row's `castLayer` / `hitLayer` event plays together with its `cast` / `hit` (a heavier sound under it: Infernus' gun has Warden's shot, Haymaker Abrams' charge-into-wall thud), and `gain` multiplies every event of the row (`Play(..., gain)`); the mixer hard-clips the sum.
@@ -860,6 +858,23 @@ the other is the **host** (only the host writes checks). How to run it: doc 03 �
 20. **Additive lines vanish on snow and sand** (v0.7.0b, Sand Blast's cone): a ground marker that must read everywhere uses an alpha-blended material (`Vfx.Solid`, Unity's sprite shader).
 21. **Hiding or moving a model: offset `modelLocator.modelBaseTransform`**, not the model; ModelLocator copies the base's position to the (detached) model every frame (Burrow's sink and rise).
 19. **A display name with spaces or `&` breaks the bench parser** (`\S+` body names): object names use `Survivors.CodeName` (letters only).
+22. **Crash on quit after a run (ntdll c0000005 at ntdll+0x4a612; fixed in 0.7.4 by `Runtime/QuitSafety.cs`).** It happens
+    with our mod switched off too (`OFF=mod VANILLA=1 tools/quit_test.sh`), on any setup with plain BepInEx 5 (Melty's):
+    - RoR2's `UnitySystemConsoleRedirector.Redirect()` (at start) saves `Console.Out`, which under BepInEx is already
+      BepInEx's `LoggedTextWriter`; `Disengage()` (in `RoR2Application.OnApplicationQuit`) calls `Console.SetOut` with it.
+      BepInEx's `ConsoleSetOutFix` turns that into `loggedTextWriter.Parent = <a synchronized wrapper of itself>`, so the
+      next console line during Unity's final `CleanupAllObjects` (an OnDisable/OnDestroy) recurses until the main thread's
+      1 MB stack overflows. Player.log then shows `LoggedTextWriter.WriteLine` ↔ `SyncTextWriter.WriteLine` repeating.
+    - Mono's stack-overflow recovery thunk (`restore_stack`, pointer at mono-2.0-bdwgc.dll+0x757488) starts with
+      `push rbp`, so it runs 8 bytes off alignment; the CRT's first `SetThreadStackGuarantee` lookup goes through the
+      Steam overlay's `LoadLibraryExW` hook into ntdll, whose aligned `movaps` faults. That is the native crash players see.
+    - Fix: a Harmony prefix skips `Disengage` (it only restores the console of a process that is ending), and the thunk's
+      `push rbp` is replaced by a nop after checking the exact bytes (from RiskofThunder's RoR2BepInExPack, MIT, which
+      r2modman players always have; Melty doesn't install it). Thunderstore players with the pack: the thunk is already
+      patched ("already applied"). Test-mode switches `OFF=consolefix` / `OFF=soefix`.
+    - How it was found: crash dumps (`%LOCALAPPDATA%\CrashDumps`), symbols from Microsoft's and Unity's symbol servers,
+      then the nop patch turned the native crash into a logged StackOverflowException with the looping trace. RoR2 saves
+      the profile synchronously in `OnApplicationQuit` before all this, so players never lost progress.
 
 - **Flat max health from buffs (trophies) and vanilla's heal/clamp (v0.7.1f).** `RecalculateStats` compares the new max health
   with the old one and heals the gain or cuts health above the new max. Our `StatsPatch` adds `maxHealthAdd` in a postfix,

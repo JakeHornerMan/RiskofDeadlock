@@ -84,6 +84,9 @@ tools/fetch_extractor.py  downloads the GitHub-built DeadlockExtract.exe (releas
 .github/workflows/extractor.yml  GitHub builds DeadlockExtract.exe in public on a tag extractor-<ver> and makes a Release
 tools/dev_run.sh          kill RoR2, re-enable BepInEx, deploy the built DLL, launch via Steam
 tools/run_test.sh         local test run of the given heroes (`run_test.sh infernus`; none = all four), prints every check
+tools/quit_test.sh        run_test.sh, then close the game like a player and report QUIT_OK / QUIT_CRASH (Windows crash
+                          event); OFF=<parts> switches parts of the mod off (mod, harmony, audio, consolefix, soefix),
+                          VANILLA=1 plays a plain Commando run instead of the hero checks (OFF=mod VANILLA=1: the control)
 tools/lab_restore.sh      put the PC back the way Melty set it up
 tools/kit_pages.py        builds the hero kit pages + balance page (claude.ai Artifacts, links in doc 06) into build/pages/
 tools/run_bench.sh        DPS benchmark (Monsoon, 12-enemy pack, 30 s passes) -> build/bench_results.txt; closes the game itself (doc 05)

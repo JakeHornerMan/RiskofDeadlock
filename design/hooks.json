@@ -337,6 +337,14 @@
       "purpose": "Viscous never takes fall damage; Puddle Punch's bounce spares allies that landing",
       "reads": "heroes.noFallDamage, skills.launchHeight",
       "side": "both"
+    },
+    {
+      "id": "keep_console_on_quit",
+      "method": "harmony-prefix",
+      "target": "RoR2.UnitySystemConsoleRedirector.Disengage (skipped)",
+      "purpose": "Quit crash fix (Runtime/QuitSafety.cs): restoring the console at quit makes BepInEx's console writer write to itself and overflow the stack; also nops Mono's misaligned restore_stack push (not a RoR2 hook)",
+      "reads": "none",
+      "side": "both"
     }
   ]
 }

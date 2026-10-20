@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.4
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6795 (v0.7.4, 2026-10-20).
+- The game no longer crashes when you quit after playing a run. It was Risk of Rain 2 and BepInEx together (it happened without this mod too); the mod now stops it.
+
 ## 0.7.3
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6795 (v0.7.3, 2026-10-19).
 - Closing the game shuts the mod's Deadlock sound down properly first.

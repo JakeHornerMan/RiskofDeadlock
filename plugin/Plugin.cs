@@ -12,7 +12,7 @@ namespace DeadlockOfRain
     public sealed class Plugin : BaseUnityPlugin
     {
         public const string Guid = "melty.deadlockofrain";
-        public const string Version = "0.7.3";
+        public const string Version = "0.7.4";
         public static Plugin Instance;
         public static ConfigEntry<float> Volume;
         public static ConfigEntry<string> DeadlockFolder;
@@ -27,17 +27,20 @@ namespace DeadlockOfRain
 
             DeadlockFolder = Config.Bind("Deadlock", "Deadlock folder", "", "Only needed if Deadlock is not found by itself: the folder that holds game/citadel/pak01_dir.vpk.");
 
+            QuitSafety.Init();
+            // test-mode "off": "mod": nothing but the quit fixes and the test itself, to see whether a problem needs the mod
+            if (MeltyTest.Off("mod")) { MeltyTest.Init(); return; }
             BuiltWith.Read();
             // Thunderstore install: read the heroes from Deadlock now; the loading screen waits for it (Survivors.cs)
             if (!FirstRun.Start(DeadlockCache.DefaultDir(), DeadlockFolder.Value)) OpenCache();
 
-            new Harmony(Guid).PatchAll(typeof(Plugin).Assembly);
+            if (!MeltyTest.Off("harmony")) new Harmony(Guid).PatchAll(typeof(Plugin).Assembly);
             ContentManager.collectContentPackProviders += add => add(new DeadlockContentProvider());
             Equipment.Init();
             Buffs.InitHooks();
             States.GunHits.Init();
             Net.Init();
-            if (!FirstRun.Started) DeadlockAudio.Init();
+            if (!FirstRun.Started && !MeltyTest.Off("audio")) DeadlockAudio.Init();
             Voice.Init();
             DlrHopper.InitTrophies();
             FirstRun.Init();

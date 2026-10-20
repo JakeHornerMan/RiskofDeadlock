@@ -60,6 +60,16 @@
   That did NOT stop the crash: it repeats on this PC when quitting after a test run, inside Mono's shutdown with no mod
   thread alive (dump scan). Unmodded and title-screen quits don't crash. Still open.
 
+## 0.7.4 (2026-10-20): the quit crash, found and fixed
+- `tools/quit_test.sh` reproduces it (run, then close the window): 2/3 crashed at baseline, 2/2 with the mod switched off
+  (`OFF=mod VANILLA=1`), so it was never our code. Guarding our OnDestroy work, pre-compiling our methods, switching off
+  Harmony and the mixer: no change.
+- Dumps + Microsoft/Unity symbols: a main-thread stack overflow during Unity's CleanupAllObjects; Mono's recovery thunk
+  runs misaligned and ntdll faults under the Steam overlay's LoadLibraryExW hook. RoR2BepInExPack's nop patch (ported)
+  turned it into a logged StackOverflowException whose trace showed the loop: RoR2's console redirector `Disengage`
+  makes BepInEx's LoggedTextWriter write to itself. `Runtime/QuitSafety.cs` skips `Disengage` and keeps the nop patch.
+  Details: doc 02 §12 gotcha 22.
+
 ## Gotchas found
 1. RoR2's CharacterModel keeps ONE material per renderer (it re-applies defaultMaterial), so a multi-material
    SkinnedMeshRenderer only drew submesh 0. Fix: one SkinnedMeshRenderer per material, one RendererInfo each.

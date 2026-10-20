@@ -35,6 +35,27 @@ namespace DeadlockOfRain
 
         public static bool Active => checksFile != null;
 
+        static List<string> offParts;
+        /// <summary>Test-mode file "off": "audio,harmony" switches parts of the mod off, to find which one a problem needs
+        /// (OFF=audio tools/quit_test.sh haze). Never true outside test mode.</summary>
+        public static bool Off(string part)
+        {
+            if (offParts == null)
+            {
+                offParts = new List<string>();
+                try
+                {
+                    var dir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Melty", "test");
+                    var f = Slugs.Select(s => System.IO.Path.Combine(dir, s + ".json")).FirstOrDefault(File.Exists);
+                    var m = f == null ? null : System.Text.RegularExpressions.Regex.Match(File.ReadAllText(f), "\"off\"\\s*:\\s*\"([^\"]*)\"");
+                    if (m != null && m.Success) offParts = m.Groups[1].Value.Split(',').Select(p => p.Trim()).Where(p => p != "").ToList();
+                    if (offParts.Count > 0) Log.Warn("Melty test mode: switched off " + string.Join(", ", offParts));
+                }
+                catch { }
+            }
+            return offParts.Contains(part);
+        }
+
         public static void Init()
         {
             try
@@ -49,6 +70,7 @@ namespace DeadlockOfRain
                 checksFile = text.Substring(a + 1, b - a - 1).Replace("\\\\", "\\");
                 // the co-op test ("coop": true): the copy started with a join= line joins, the other hosts
                 Coop = System.Text.RegularExpressions.Regex.IsMatch(text, "\"coop\"\\s*:\\s*true");
+                Vanilla = System.Text.RegularExpressions.Regex.IsMatch(text, "\"vanilla\"\\s*:\\s*true");
                 Joiner = Coop && MeltyJoin.JoinAddress != "";
                 // optional "heroes": "haze,abrams": the test (solo or co-op) plays only these
                 var hm = System.Text.RegularExpressions.Regex.Match(text, "\"heroes\"\\s*:\\s*\"([^\"]*)\"");
@@ -91,11 +113,53 @@ namespace DeadlockOfRain
             try { File.AppendAllText(checksFile, line + Environment.NewLine); } catch (Exception e) { Log.Warn(e.Message); }
         }
 
+        /// <summary>Test-mode "vanilla": true: no hero checks, just a normal Commando run for VanillaSeconds (the quit test's
+        /// control: with OFF=mod nearly nothing of the mod is loaded).</summary>
+        static bool Vanilla;
+        const float VanillaSeconds = 150f;
+
+        static IEnumerator VanillaRun()
+        {
+            yield return new WaitForSeconds(3f);
+            var user = LocalUserManager.GetFirstLocalUser();
+            while (user == null) { yield return null; user = LocalUserManager.GetFirstLocalUser(); }
+            user.userProfile.SetSurvivorPreference(SurvivorCatalog.FindSurvivorDefFromBody(BodyCatalog.FindBodyPrefab("CommandoBody")));
+            RoR2.Console.instance.SubmitCmd(null, "transition_command \"gamemode ClassicRun; host 0;\"");
+            float t0 = Time.unscaledTime;
+            while (!PreGameController.instance && Time.unscaledTime - t0 < 60f) yield return null;
+            yield return new WaitForSeconds(3f);
+            if (PreGameController.instance) RoR2.Console.instance.SubmitCmd(null, "pregame_start_run");
+            t0 = Time.unscaledTime;
+            while ((user.cachedBody == null || !Run.instance) && Time.unscaledTime - t0 < 120f) yield return null;
+            if (!user.cachedBody) { Write("vanilla-run", false, "the run did not start"); yield break; }
+            yield return new WaitForSeconds(4f);
+            if (user.cachedBody && user.cachedBody.currentVehicle) user.cachedBody.currentVehicle.EjectPassenger(user.cachedBody.gameObject);
+            // play like a player would: Commando can't die, uses every skill, and the monsters nearby die as they come
+            for (float t = 0f; t < VanillaSeconds; t += 0.5f)
+            {
+                var b = user.cachedBody;
+                if (b)
+                {
+                    if (b.healthComponent) b.healthComponent.godMode = true;
+                    var s = b.skillLocator;
+                    if (s) { s.primary?.ExecuteIfReady(); s.secondary?.ExecuteIfReady(); s.utility?.ExecuteIfReady(); s.special?.ExecuteIfReady(); }
+                    if ((int)(t * 2f) % 4 == 0)
+                        foreach (var m in TeamComponent.GetTeamMembers(TeamIndex.Monster).ToArray())
+                            if (m && m.body && m.body.healthComponent && m.body.healthComponent.alive && (m.transform.position - b.corePosition).sqrMagnitude < 60f * 60f)
+                                m.body.healthComponent.TakeDamage(new DamageInfo { attacker = b.gameObject, inflictor = b.gameObject, damage = m.body.healthComponent.fullCombinedHealth * 2f, position = m.transform.position, procCoefficient = 1f, crit = false, damageColorIndex = DamageColorIndex.Default });
+                }
+                yield return new WaitForSeconds(0.5f);
+            }
+            Write("vanilla-run", true, "");
+            Log.Info($"Melty test finished: vanilla Commando run, {VanillaSeconds:0} s");
+        }
+
         IEnumerator Start()
         {
             if (Coop) { yield return Joiner ? CoopJoin() : CoopHost(); yield break; }
             // 1. content
             while (!RoR2Application.loadFinished) yield return null;
+            if (Vanilla) { yield return VanillaRun(); yield break; }
             Write("deadlock-content", DeadlockCache.Ready && Survivors.Bodies.Count == Expected, $"cache ready={DeadlockCache.Ready}, heroes built={Survivors.Bodies.Count}/{Expected}");
             int listed = Survivors.Released.Count(h => Survivors.Defs.TryGetValue(h.Id, out var d) && SurvivorCatalog.FindSurvivorDefFromBody(d.bodyPrefab) != null);
             Write("survivors-listed", listed == Expected, $"{listed}/{Expected} heroes in the survivor catalog");
