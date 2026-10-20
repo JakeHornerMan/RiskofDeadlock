@@ -770,3 +770,11 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Done:** Splatter `chainCount` 3, `puddleShrink` 5, `damagePct` 150; Viscous `baseJumpPower` 20; `HeroRuntime.TopUp` replaces `GiveAmmo`; `DlrPuddle` keeps a per-puddle supply drawn while the owner stands in it; the test step checks fill, a used-up puddle, and a fresh one; passive text and page card; docs 02, 05 (§0, §3.8), 06, MODLOG, 00.
 **Results:** `run_test.sh viscous` every check pass, 1/1 heroes; puddle supply empty → 20, same puddle again → 0, new puddle → 20, not reloading. Bench 2273 / 2213 / 2272, mean **2253** vs REX 1738 (+515, 15 above the band). Viscous and balance pages republished.
 **Not done / open:** 15 %/s above the band (Puddle Punch 700 % or Splatter 140 % would bring him in); the creator still has to share the Viscous page; Viscous co-op and the Melty release.
+
+### 2026-10-21 · Viscous: Puddle Punch leaves a puddle, every puddle 20 % smaller · v0.8.0f (not released) · the commit that adds this entry
+**Request (verbatim):** "Puddle Punch should alse place a puddle lets make all puddles 20% smaller"
+**Questions asked → answers:** none. Read as: the punch leaves a Splatter-size puddle; 20 % off every puddle's width.
+**Done:** Puddle Punch `extra` `viscous_splatter`, `reach` 6.4 (`DlrPunch.Strike` plants it on every machine); Splatter `reach` 8 → 6.4; The Cube `reach` 10 → 8; descriptions and passive text; the test step clears leftover puddles first; docs 02, 05 (§0, §3.9), 06, MODLOG, 00.
+**Results:** first `run_test.sh viscous` failed `viscous-plays` on the puddle-ammo step (20/20/20): Puddle Punch's own test had just left a puddle at his feet, which refilled him. A test-order problem, not a mechanic bug; the step now clears old puddles first. The re-run with that fix was stopped by Claude Code for low memory before any check reported (the test game was closed with lab_restore.sh), so the fixed test step itself is **not yet confirmed in game**. Bench 1660 / 1805 / 2410, mean **1958** vs REX 1738 (+220, inside). Viscous and balance pages republished.
+**Not done / open:** the creator still has to share the Viscous page; Viscous co-op and the Melty release.
+**Lessons:** when a move starts leaving something in the world (a puddle), later test steps that assume a clean spot need to clear it.

@@ -14,6 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
+| Viscous | 0.8.0f: Puddle Punch leaves a 6.4 m puddle (`extra` `viscous_splatter`); every puddle 20 % smaller (Splatter 8 → 6.4 m, Cube 10 → 8 m) | the creator's fourth round | this one | **benched**: 1660 / 1805 / 2410, **mean 1958** vs REX 1738 (+220, inside), §3.9; `run_test.sh viscous` every check pass | **done** |
 | Viscous | 0.8.0e: puddles 3 s + 5 s shrinking and a 20-round supply that tops the magazine up while he stands in them (no more +20 above it), Splatter 200 → 150 %, jump power 15 → 20 | the creator's third round | this one | **benched**: 2273 / 2213 / 2272, **mean 2253** vs REX 1738 (+515, 15 above), §3.8; `run_test.sh viscous` every check pass incl. puddle supply 0 → 20, same puddle → 0, new puddle → 20 | **done** |
 | Viscous | 0.8.0d: puddles 10 s + 20 s shrinking and +20 rounds per new puddle (`puddleAmmo`), The Cube leaves a 10 m puddle, base damage back to 12, Goo Ball 75 % (375–1500 %, slam 1125 %) and grip −0.5 | the creator's second round | this one | **benched**: 2607 / 2367 / 2293, **mean 2422** vs REX 1738 (+684, above), §3.7; `run_test.sh viscous` every check pass incl. puddle ammo 0 → 20 → 40 | **done** |
 | Viscous | 0.8.0b (creator's first play): Puddle Punch 400 → 800 %, Goo Ball 15 s and grip −0.3, Splatter flies through enemies and splashes on the floor, puddle Gooed every 1 s; then 0.8.0c: base damage 12 → 15 (+3/lvl), Cube burst 300 → 600 % | after the creator's play | this one | **benched**: 0.8.0b 1912 / 1942 / 1585 (mean 1813); 0.8.0c **2172 / 2225 / 2312, mean 2236** vs REX 1738 (+498, inside, just), §3.6; `run_test.sh viscous` every check pass | **done** |
@@ -176,6 +177,21 @@ Bench caveats seen in this work:
 - Engineer's turrets land few hits in 30 s against a still pack.
 - Engineer's damage stat is 14 (Infernus 12): %/s removes it.
 - Q per use, last run: Abrams 88400 % (13 hit), Infernus 74800 %, Haze 52771 %, Preon 48400 %, Seven 27200 %.
+
+### 3.9 v0.8.0f Viscous (Viscous-only runs, 2026-10-21)
+`VERSION` v0.8.0f, so the 0.8.0e runs dropped.
+
+| Pass | Runs (%/s) | Mean | 0.8.0e mean |
+|---|---|---|---|
+| All main moves | 1660, 1805, 2410 | **1958** | 2253 |
+| M1 Deep Sea Interpreter | 412 ×3 | 412 | 412 |
+| M2 Splatter | 1240, 1355, 1630 | 1408 | 1587 |
+| Shift The Cube | 460, 460, 560 | 493 | 500 |
+| R Puddle Punch | 587, 613, 907 | 702 | 871 |
+| Q Goo Ball (not balanced) | 1421, 1386, 2029 | 1612 | 1713 |
+
+- +220 against REX's 1738: **inside** the ±500 band. The runs swing widely (1660–2410), because how often a smaller puddle reaches
+  the bench's fixed spot decides how often the magazine is topped up (and so how many Splatters it throws).
 
 ### 3.8 v0.8.0e Viscous (Viscous-only runs, 2026-10-20)
 The changes in the §0 row; `VERSION` v0.8.0e, so the 0.8.0d runs dropped.

@@ -460,6 +460,9 @@ namespace DeadlockOfRain
                     var hr = body.GetComponent<HeroRuntime>();
                     var gunRow = Survivors.RowFor(body.skillLocator.primary);
                     if (!hr || gunRow == null) { kitWhy += $"{pr.Id}: no magazine; "; continue; }
+                    // no other puddle in play (Puddle Punch's test just left one at his feet)
+                    foreach (var old in DlrPuddle.Live.ToArray()) if (old) UnityEngine.Object.Destroy(old.gameObject);
+                    yield return null;
                     int wantAmmo = (int)Mathf.Min(pr.PuddleAmmo, gunRow.ClipSize);
                     hr.Reloading = false; hr.Ammo = 0;
                     DlrPuddle.Plant(body, pr, body.footPosition, pr.Reach, true);

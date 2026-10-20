@@ -145,11 +145,10 @@ PAPER = {
 }
 
 ANALYSIS = {
- 'viscous': ['Three runs after the 0.8.0e changes (8 s puddles that top the magazine up while you stand in them, Splatter 150 %, a higher jump): 2,273, 2,213 and 2,272 %/s, mean 2,253 against REX’s 1,738. That is +515, 15 above the ±500 band.',
-             'Splatter is still the biggest part (1,587 %/s alone, 1,924 in 0.8.0d at 200 %): the bench stands still, but some puddles reach its spot and refill the magazine, so it throws more often than one magazine allows.',
-             'Puddle Punch 871 %/s, The Cube 500, the gun 412. Base damage is 12, the same as REX, so %/s compares like for like.',
-             'Goo Ball (Q, the ult) 1,713 %/s over its 30 s pass (one use; it swings a lot with how many enemies it rolls into). It isn’t in the all-together number.',
-             'One small step brings him inside the band: Puddle Punch 800 → 700 % or Splatter 150 → 140 %.'],
+ 'viscous': ['Three runs after the 0.8.0f changes (Puddle Punch leaves a puddle, every puddle 20 % smaller): 1,660, 1,805 and 2,410 %/s, mean 1,958 against REX’s 1,738. That is +220, inside the ±500 band.',
+             'The runs swing a lot (1,660 to 2,410): how often a smaller puddle reaches the bench’s fixed spot and tops up the magazine decides how many Splatters it throws.',
+             'Splatter 1,408 %/s alone, Puddle Punch 702, The Cube 493, the gun 412.',
+             'Goo Ball (Q, the ult) 1,612 %/s over its 30 s pass. It isn’t in the all-together number.'],
  'mokrill': ['After the 0.7.1c balance pass he does about 2,425 %/s with every move (one run), against MUL-T’s 1,450: above the ±500 band, about Abrams’ level (2,460). The creator chose to keep it.',
              'Tag Team (1,407 %/s alone, with Mo’s punches) and Burrow’s pop-out spin (1,150 %/s alone, now every 14 s) are the biggest parts; Sand Blast is 333 %/s and is there for control.',
              'His gun is slower than MUL-T’s nailgun (443 against 876 alone). No healing in the kit: he starts at 200 health and grows it with every kill.'],
