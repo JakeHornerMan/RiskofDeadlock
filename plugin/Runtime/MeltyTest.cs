@@ -452,6 +452,26 @@ namespace DeadlockOfRain
                     passive = healed > 0f;
                     if (!passive) passiveWhy = "no heal-back";
                 }
+                // puddleAmmo (Viscous' puddles): an empty magazine, then a fresh puddle at his feet gives the rounds, and a second new
+                // puddle gives them again with no reload in between
+                foreach (var pr in Sheet.SkillsOf(hero.Id).Where(s => s.PuddleAmmo > 0))
+                {
+                    body = master.GetBody();
+                    var hr = body.GetComponent<HeroRuntime>();
+                    var gunRow = Survivors.RowFor(body.skillLocator.primary);
+                    if (!hr || gunRow == null) { kitWhy += $"{pr.Id}: no magazine; "; continue; }
+                    hr.Reloading = false; hr.Ammo = 0;
+                    DlrPuddle.Plant(body, pr, body.footPosition, pr.Reach, true);
+                    yield return new WaitForSeconds(0.5f);
+                    int ammo1 = hr.Ammo;
+                    DlrPuddle.Plant(body, pr, body.footPosition, pr.Reach, true);
+                    yield return new WaitForSeconds(0.5f);
+                    int ammo2 = hr.Ammo;
+                    Log.Info($"Melty test: {hero.Id} {pr.Id} puddle ammo: empty -> {ammo1} -> {ammo2} (want {pr.PuddleAmmo:F0}, {2 * pr.PuddleAmmo:F0}), reloading {hr.Reloading}");
+                    if (ammo1 != (int)pr.PuddleAmmo || ammo2 != (int)Mathf.Min(2 * pr.PuddleAmmo, gunRow.ClipSize + pr.PuddleAmmo) || hr.Reloading)
+                        kitWhy += $"{pr.Id}: puddle ammo {ammo1}/{ammo2}; ";
+                    yield return new WaitForSeconds(0.5f);
+                }
                 if (anim)
                 {
                     Log.Info($"Melty test: {hero.Id} gun drift from the hand over all skills: {anim.GunDrift * 100f:F1} cm");

@@ -121,7 +121,8 @@ namespace DeadlockOfRain
                 if (!important) return;
                 DeadlockAudio.Stop(playing);
             }
-            playing = DeadlockAudio.Play(ev, null, false, 1.15f);
+            // heroes.voiceGain on top (Viscous' lines +20 %, creator 2026-10-20)
+            playing = DeadlockAudio.Play(ev, null, false, 1.15f * (Sheet.Hero(v.Hero)?.VoiceGain ?? 1f));
             if (playing == 0) return;
             lastLine = Time.time;
             nextIdle = Time.time + Random.Range(IdleMin, IdleMax);

@@ -1347,8 +1347,8 @@
     "regen": 1.0,
     "regenPerLevel": 0.2,
     "armor": 20.0,
-    "damage": 15.0,
-    "damagePerLevel": 3.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
     "moveSpeed": 7.0,
     "jumps": 1,
     "crit": 1.0
@@ -1360,67 +1360,67 @@
     "special": "Puddle Punch"
    },
    "hero": true,
-   "measuredOn": "v0.8.0c",
+   "measuredOn": "v0.8.0d",
    "dps": {
     "all": {
      "runs": [
-      2172,
-      2225,
-      2312
+      2607,
+      2367,
+      2293
      ],
-     "mean": 2236,
-     "min": 2172,
-     "max": 2312
+     "mean": 2422,
+     "min": 2293,
+     "max": 2607
     },
     "primary": {
      "runs": [
-      400,
-      400,
-      400
+      412,
+      412,
+      412
      ],
-     "mean": 400,
-     "min": 400,
-     "max": 400
+     "mean": 412,
+     "min": 412,
+     "max": 412
     },
     "secondary": {
      "runs": [
-      1420,
-      1460,
-      1473
+      2080,
+      1620,
+      2073
      ],
-     "mean": 1451,
-     "min": 1420,
-     "max": 1473
+     "mean": 1924,
+     "min": 1620,
+     "max": 2080
     },
     "utility": {
      "runs": [
-      560,
-      560,
-      560
+      580,
+      480,
+      520
      ],
-     "mean": 560,
-     "min": 560,
-     "max": 560
+     "mean": 527,
+     "min": 480,
+     "max": 580
     },
     "special": {
      "runs": [
-      880,
-      907,
-      827
+      933,
+      667,
+      853
      ],
-     "mean": 871,
-     "min": 827,
-     "max": 907
+     "mean": 818,
+     "min": 667,
+     "max": 933
     },
     "equipment": {
      "runs": [
-      1769,
-      1538,
-      2880
+      1702,
+      1273,
+      1283
      ],
-     "mean": 2062,
-     "min": 1538,
-     "max": 2880
+     "mean": 1419,
+     "min": 1273,
+     "max": 1702
     }
    }
   }

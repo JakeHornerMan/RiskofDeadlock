@@ -280,6 +280,9 @@ namespace DeadlockOfRain.States
             Vfx.Play(row.Vfx, "hit", characterBody.footPosition, row.Radius);
             Sound("hit");
             Sound("end");
+            // a goo puddle like Splatter's where he breaks out (extra = the skill row whose puddle it is, reach m wide), on every machine
+            var puddle = row.Extra != "none" ? Sheet.Skill(row.Extra) : null;
+            if (puddle != null && row.Reach > 0) DlrPuddle.Plant(characterBody, puddle, characterBody.footPosition, row.Reach, Server);
             if (!Server) return;
             characterBody.ClearTimedBuffs(RoR2Content.Buffs.HiddenInvincibility);
             if (urn) Object.Destroy(urn);

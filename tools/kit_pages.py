@@ -67,7 +67,10 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
- 'viscous': [('v0.8.0c', ['Base damage 12 → 15 (+3 a level, was +2.4): every move hits 25 % harder',
+ 'viscous': [('v0.8.0d', ['Goo puddles (Splatter and now The Cube) last 10 s, then shrink away over 20 s; stepping into a new puddle gives +20 rounds with no reload, so puddle-hopping keeps the gun firing',
+                      'Base damage back to 12 (+2.4 a level); The Cube’s burst stays 600 % and now leaves a 10 m puddle',
+                      'Bigger goo explosions for Splatter and The Cube; Goo Ball a little looser (half the grip) and 75 % of its damage (375–1500 %, slam 1125 %); voice lines 20 % louder']),
+             ('v0.8.0c', ['Base damage 12 → 15 (+3 a level, was +2.4): every move hits 25 % harder',
                       'The Cube’s burst when he breaks out: 300 → 600 %']),
              ('v0.8.0b', ['After the creator’s first play: Puddle Punch 400 → 800 % and a giant goo fist that punches up out of the ground; Goo Ball lasts 15 s (was 10) and steers much snappier',
                       'Splatter flies through enemies and bosses and splashes on the floor; its puddle lies on the ground (it follows slopes) and adds 1 Gooed a second to anyone standing in it',
@@ -137,11 +140,11 @@ PAPER = {
 }
 
 ANALYSIS = {
- 'viscous': ['Three runs after the 0.8.0c changes (base damage 15, Cube burst 600 %): 2,172, 2,225 and 2,312 %/s, mean 2,236 against REX’s 1,738. That is +498, just inside the ±500 band.',
-             'The %/s numbers are a share of each survivor’s own damage stat, so the base damage 15 (REX: 12) does not show in them: in real damage he does about 336 a second at level 1 against REX’s 209, about 60 % more.',
-             'Splatter is the biggest part (1,451 %/s alone): no cooldown, only 5 rounds a throw. Puddle Punch 871 %/s, The Cube 560 (was 303 before its burst doubled), the gun 400.',
-             'Goo Ball (Q, the ult) measured 2,062 %/s over its 30 s pass (one use; it swings a lot with how many enemies it rolls into). It isn’t in the all-together number.',
-             'REX’s Seed Barrage alone measured 7,465 %/s, far above REX’s 1,738 with everything; in god mode its health cost never bites. Compare all-together numbers, not that one.'],
+ 'viscous': ['Three runs after the 0.8.0d changes (puddle ammo, 30 s puddles, Cube puddle, base damage back to 12, Goo Ball 75 %): 2,607, 2,367 and 2,293 %/s, mean 2,422 against REX’s 1,738. That is +684, above the ±500 band.',
+             'Splatter is most of it (1,924 %/s alone, 1,451 in 0.8.0c): the bench stands still, but some puddles reach its spot and refill the magazine, so it throws more often (37 throws in 30 s instead of about 30). A player who hops from puddle to puddle gets that on purpose.',
+             'Puddle Punch 818 %/s, The Cube 527, the gun 412. Base damage is 12 again, the same as REX, so %/s compares like for like.',
+             'Goo Ball (Q, the ult) 1,419 %/s over its 30 s pass after the cut to 75 % (2,062 before). It isn’t in the all-together number.',
+             'Lever if he should be inside the band: Splatter 200 → 150 % (about −480 %/s).'],
  'mokrill': ['After the 0.7.1c balance pass he does about 2,425 %/s with every move (one run), against MUL-T’s 1,450: above the ±500 band, about Abrams’ level (2,460). The creator chose to keep it.',
              'Tag Team (1,407 %/s alone, with Mo’s punches) and Burrow’s pop-out spin (1,150 %/s alone, now every 14 s) are the biggest parts; Sand Blast is 333 %/s and is there for control.',
              'His gun is slower than MUL-T’s nailgun (443 against 876 alone). No healing in the kit: he starts at 200 health and grows it with every kill.'],
@@ -385,9 +388,6 @@ p {{ margin: 0; max-width: 68ch; }}
 /* ability ledger */
 .ab {{ display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); background: var(--panel); border: 1px solid var(--rule); }}
 .ab .main {{ padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }}
-.ab .fx {{ margin: 0; display: grid; place-items: center; padding: 12px; border: 1px solid var(--rule);
-    background: radial-gradient(55% 50% at 50% 50%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 72%), var(--ink); }}
-.ab .fx img {{ max-height: 260px; width: auto; filter: drop-shadow(0 10px 14px rgba(0,0,0,.6)); }}
 .head {{ display: flex; align-items: center; gap: 14px; }}
 .key {{ flex: none; width: 52px; height: 58px; display: grid; place-items: center; font: 700 17px/1 var(--cond); letter-spacing: .06em;
     color: var(--ink); background: var(--accent); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }}
@@ -518,15 +518,11 @@ def ability_card(r, hid, v, scale):
     eq = f'<span class="eq">= {per:,.0f} %/s per target</span>' if per else ('<span class="eq">= 0 %/s</span>' if per == 0 else '')
     note = '<p class="note">Its arcs ride on the gun, so its damage shows in the all-together number, not alone.</p>' if r['kind'] == 'power_surge' else ''
     rows = [(r['name'], dps(hero_who(hid), slot), ''), (f"{v['name']}: {mname}", dps(v['who'], slot), ' match')]
-    # a studio render of the move's effect (<skill id>_fx.webp, DpsBench), when there is one
-    fx = img_tag(r['id'] + '_fx', 'The ' + r['name'] + ' effect, rendered in Risk of Rain 2')
-    fx = f'<figure class="fx">{fx}</figure>' if fx else ''
     return f'''<article class="ab">
   <div class="main">
     <div class="head"><span class="key">{KEY[slot]}</span><div><h3>{E(r["name"])}</h3><div class="eyebrow">{E(KIND_LABEL[slot])}</div></div></div>
     <p class="desc">{E(strip_tags(r["description"]))}</p>
     <div class="tiles">{tiles_html(tiles(r))}</div>
-    {fx}
   </div>
   <aside class="math" aria-label="{E(r['name'])} damage maths">
     <div class="eyebrow">The maths</div>
@@ -558,6 +554,19 @@ def passive_card(h):
                 f'<span>up to {n(tb["maxStacks"])} stacks = +{n(cap)}</span><span class="eq">{n(STATS[h["id"]]["baseMaxHealth"])} base → up to {n(STATS[h["id"]]["baseMaxHealth"] + cap)} at level 1</span></div>'
                 '<p class="note">It raises <b>max health only</b>: a kill doesn’t heal you, the extra room fills by regen and healing like the rest of the bar. '
                 'Every new stage starts back at base max health: the trophies stay on the body, and each stage gives you a new one.</p>')
+    # goo puddles (Viscous): rounds from each new puddle, and how long a puddle lasts
+    for r in SKILLS:
+        if r['hero'] != h['id'] or not r.get('puddleAmmo'): continue
+        gun = next((g for g in SKILLS if g['hero'] == h['id'] and g['slot'] == 'primary'), None)
+        clip = gun['clipSize'] if gun else 0
+        t = [('Per new puddle', f"+{n(r['puddleAmmo'])} rounds"), ('Up to', f"{n(clip + r['puddleAmmo'])} rounds"),
+             ('Puddle whole', f"{n(r['chainCount'])} s"), ('Then shrinks', f"{n(r['puddleShrink'])} s")] + t
+        math = (f'<div class="work"><span>step into a puddle you haven’t used: +{n(r["puddleAmmo"])} rounds, no reload</span>'
+                f'<span>a {n(clip)}-round magazine can hold up to {n(clip + r["puddleAmmo"])} that way</span>'
+                f'<span>each puddle lasts {n(r["chainCount"])} s whole, then shrinks to nothing over {n(r["puddleShrink"])} s</span>'
+                f'<span class="eq">a new puddle every {n(r["puddleAmmo"] * gun["interval"]) if gun else 0} s of firing = no reloads</span></div>'
+                '<p class="note">The same puddle never gives rounds twice; a fresh Splatter or Cube puddle does. A reload already under way is called off. '
+                'The bench stands still, so it only gets these rounds when a puddle reaches its spot (it did in these runs: more Splatter throws than one magazine allows).</p>')
     tl = tiles_html(t[:4])
     return f'''<article class="ab">
   <div class="main">

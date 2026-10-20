@@ -121,6 +121,13 @@ namespace DeadlockOfRain
         /// <summary>Dev only (the kit-page studio, DpsBench): the goo shades itself for a camera here instead of the game's.</summary>
         internal static Vector3? StudioView;
 
+        /// <summary>A puddle effect (moment "puddle") stays whole for hold seconds, then draws in to nothing over shrink seconds.</summary>
+        public static void SetShrink(GameObject puddle, float hold, float shrink)
+        {
+            var s = puddle ? puddle.GetComponent<Sink>() : null;
+            if (s) { s.After = hold; s.Over = Mathf.Max(0.05f, shrink); }
+        }
+
         static CelGoo GooBall(Transform parent, float size, bool shell = false, float ooze = 0.05f) => Goo(parent, SphereMesh(), size, shell, ooze);
 
         /// <summary>A disc of radius metres laid over the ground around centre (a ray down for every vertex), in metres around centre:
@@ -212,6 +219,25 @@ namespace DeadlockOfRain
             Flash(at + Vector3.up, gooSheen, radius * 1.5f, 0.25f, 2.5f);
         }
 
+        /// <summary>A heavy goo explosion (Splatter's splash, The Cube breaking open; creator, 2026-10-20: "more visually impactful"):
+        /// a dome of goo that blooms out and pops, a crown of big globs thrown high, a wide spray of globs and droplets, two shockwave
+        /// rings racing over the ground to the reach, a bright flash, a big stain.</summary>
+        static void BigSplash(Vector3 at, float radius)
+        {
+            var bloom = Root(at, 0.6f, null);
+            var holder = new GameObject("bloom"); holder.transform.SetParent(bloom.transform, false);
+            GooBall(holder.transform, 1f, true, 0.12f);
+            var b = holder.AddComponent<Bloom>(); b.To = Mathf.Clamp(radius * 0.9f, 3f, 12f); b.Life = 0.45f;
+            Globs(at + Vector3.up * 0.5f, 12, Mathf.Clamp(radius * 1.8f, 9f, 22f), Mathf.Clamp(radius * 0.11f, 0.4f, 1.1f));
+            Globs(at + Vector3.up * 0.3f, 18, Mathf.Clamp(radius * 1.3f, 5f, 16f), Mathf.Clamp(radius * 0.08f, 0.25f, 0.8f));
+            DropBurst(at, gooBase, 60, 1.1f, radius * 1.6f, Mathf.Clamp(radius * 0.07f, 0.25f, 0.7f), radius * 0.25f, 2f);
+            DropBurst(at, gooSheen, 30, 0.8f, radius * 1.1f, 0.25f, radius * 0.2f);
+            Ring(at + Vector3.up * 0.25f, gooRim, 0.5f, radius, 0.4f, 0.6f);
+            Ring(at + Vector3.up * 0.2f, gooBase, 0.3f, radius * 0.75f, 0.55f, 1.1f);
+            Flash(at + Vector3.up, gooSheen, radius * 2.2f, 0.35f, 5f);
+            Stain(at, Vector3.up, Mathf.Min(radius * 0.45f, 6f), null, 4f);
+        }
+
         // ------------------------------------------------------------------ M1: Deep Sea Interpreter
         static GameObject ViscousGoo(string moment, Vector3 at, float radius, Transform follow, Vector3? to)
         {
@@ -268,12 +294,23 @@ namespace DeadlockOfRain
                     return root;
                 }
                 case "hit":
-                    Splash(at, radius, 18);
+                    BigSplash(at, radius);
+                    Shake(at, radius * 2f, 0.3f, 0.3f);
                     return null;
+                case "refill":
+                {
+                    // a puddle gave the hero rounds (puddleAmmo): goo spirals up out of the floor into him, a green flash
+                    var root = Root(at, 1f, follow);
+                    Particles(root, "mat_glow", gooRim, count: 40, life: 0.6f, speed: 3f, size: 0.4f, shapeRadius: 1.2f, world: true, upward: true, ring: true);
+                    Drops(root, gooSheen, count: 24, life: 0.7f, speed: 4f, size: 0.25f, shapeRadius: 0.8f, upward: true, gravity: 0.5f);
+                    Ring(at + Vector3.up * 0.2f, gooRim, 1.6f, 0.3f, 0.35f, 0.25f);
+                    Flash(at + Vector3.up, gooRim, 6f, 0.3f, 3f);
+                    return root;
+                }
                 case "puddle":
                 {
                     // the puddle for life seconds: a thick glossy pool of goo with an oozing edge, blobs rising and popping on it,
-                    // its reach outlined on the terrain; it sinks away over its last second
+                    // its reach outlined on the terrain; DlrPuddle sets when it starts shrinking and how long that takes (SetShrink)
                     // the pool is draped over the ground itself (slopes, steps, rocks), so it always lies on the floor
                     var root = Root(at, life + 1.5f, null);
                     var pool = new GameObject("pool"); pool.transform.SetParent(root.transform, false);
@@ -282,7 +319,7 @@ namespace DeadlockOfRain
                     cel.Pulse = 0.01f; cel.Flat = true;
                     root.AddComponent<DestroyMesh>().Mesh = drape;
                     var bubbles = root.AddComponent<Bubbler>(); bubbles.Radius = radius * 0.8f; bubbles.Rate = Mathf.Max(2f, radius * 0.6f);
-                    var sink = root.AddComponent<Sink>(); sink.After = Mathf.Max(0.5f, life - 1f); sink.Target = pool.transform;
+                    var sink = root.AddComponent<Sink>(); sink.After = Mathf.Max(0.5f, life - 1f); sink.Over = 1f; sink.Target = pool.transform;
                     return root;
                 }
             }
@@ -318,10 +355,9 @@ namespace DeadlockOfRain
                     return root;
                 }
                 case "hit":
-                    // the cube bursts: goo flung all the way out to the burst's reach
-                    Splash(at + Vector3.up * 0.8f, radius, 30);
-                    Shake(at, radius * 2f, 0.2f, 0.3f);
-                    Stain(at, Vector3.up, Mathf.Min(radius * 0.35f, 5f), null, 3f);
+                    // the cube bursts: the heavy goo explosion all the way out to the burst's reach (the puddle comes from the state)
+                    BigSplash(at + Vector3.up * 0.4f, radius);
+                    Shake(at, radius * 2f, 0.35f, 0.35f);
                     return null;
             }
             return null;
@@ -694,17 +730,31 @@ namespace DeadlockOfRain
         /// <summary>A puddle goes: after After seconds Target draws in toward its middle over a second.</summary>
         sealed class Sink : MonoBehaviour
         {
-            public float After = 5f; public Transform Target;
+            public float After = 5f, Over = 1f; public Transform Target;
             float age; Vector3 scale;
             void Start() { if (Target) scale = Target.localScale; }
             void Update()
             {
                 age += Time.deltaTime;
                 if (!Target || age < After) return;
-                float k = Mathf.Clamp01(1f - (age - After));
+                float k = Mathf.Clamp01(1f - (age - After) / Mathf.Max(0.05f, Over));
                 // it draws in toward its middle (the pool keeps lying on the ground as it goes)
                 Target.localScale = new Vector3(scale.x * k, scale.y, scale.z * k);
                 if (k <= 0f) { foreach (var b in GetComponents<Bubbler>()) b.enabled = false; }
+            }
+        }
+
+        /// <summary>The heavy splash's dome: blooms from nothing to To metres across in Life seconds, then pops (shrinks away fast).</summary>
+        sealed class Bloom : MonoBehaviour
+        {
+            public float To = 4f, Life = 0.45f;
+            float age;
+            void Update()
+            {
+                age += Time.deltaTime;
+                float t = age / Life;
+                float k = t < 0.7f ? Mathf.Sin(t / 0.7f * Mathf.PI * 0.5f) : Mathf.Lerp(1f, 0f, (t - 0.7f) / 0.3f);
+                transform.localScale = new Vector3(1f, 0.6f, 1f) * (To * Mathf.Max(0f, k));
             }
         }
 

@@ -1,6 +1,6 @@
 {
   "sheet": "heroes",
-  "about": "One row per Deadlock hero playable as a Risk of Rain 2 survivor. Heights are the hero's body-mesh height in metres as exported from the player's own Deadlock install (VRF glTF, 1 Source unit = 0.0254 m), measured 2026-10-12 on Deadlock ClientVersion 6774. heightScale keeps Deadlock's relative sizes: every hero is scaled by one global factor (anchorHero's height -> Commando's model height), so heightScale = sourceHeight / anchor sourceHeight. passiveName/passiveDescription/passiveIcon: the hero's passive on the character select screen (what the gun already does on hit), or none. damageHealBack/damageHealBackTime: the passive heals back that fraction of every hit taken over that many seconds (Abrams' Infernal Resilience), 0 = none. debuffResist: timed debuffs on the hero last that fraction less. modelScale: an extra even scale on the model only (1 = Deadlock's relative size; Mo & Krill are scaled up to Abrams' height), so heightScale = sourceHeight x modelScale / anchor sourceHeight. capsuleFrom: a vanilla body whose movement capsule the hero copies instead of scaling Commando's (none = scaled), so a huge model still fits through every stage. cameraFrom / cameraScale / cameraRight: a vanilla body whose camera settings are copied (none = Commando's scaled by height), pushed back by cameraScale and to the right by cameraRight metres. interactRange: multiplies the reach for chests, shrines and the teleporter. immuneToForce: the hero can't be pushed, pulled or knocked back by enemy hits (vanilla ImmuneToPhysicsForces). riderBone: a bone carrying a second character on the model (Krill), hidden by scaling it to 0 while a buff with melee=true is on (he is away), or none. noFallDamage: the hero never takes fall damage (Viscous: goo lands soft).",
+  "about": "One row per Deadlock hero playable as a Risk of Rain 2 survivor. Heights are the hero's body-mesh height in metres as exported from the player's own Deadlock install (VRF glTF, 1 Source unit = 0.0254 m), measured 2026-10-12 on Deadlock ClientVersion 6774. heightScale keeps Deadlock's relative sizes: every hero is scaled by one global factor (anchorHero's height -> Commando's model height), so heightScale = sourceHeight / anchor sourceHeight. passiveName/passiveDescription/passiveIcon: the hero's passive on the character select screen (what the gun already does on hit), or none. damageHealBack/damageHealBackTime: the passive heals back that fraction of every hit taken over that many seconds (Abrams' Infernal Resilience), 0 = none. debuffResist: timed debuffs on the hero last that fraction less. modelScale: an extra even scale on the model only (1 = Deadlock's relative size; Mo & Krill are scaled up to Abrams' height), so heightScale = sourceHeight x modelScale / anchor sourceHeight. capsuleFrom: a vanilla body whose movement capsule the hero copies instead of scaling Commando's (none = scaled), so a huge model still fits through every stage. cameraFrom / cameraScale / cameraRight: a vanilla body whose camera settings are copied (none = Commando's scaled by height), pushed back by cameraScale and to the right by cameraRight metres. interactRange: multiplies the reach for chests, shrines and the teleporter. immuneToForce: the hero can't be pushed, pulled or knocked back by enemy hits (vanilla ImmuneToPhysicsForces). riderBone: a bone carrying a second character on the model (Krill), hidden by scaling it to 0 while a buff with melee=true is on (he is away), or none. noFallDamage: the hero never takes fall damage (Viscous: goo lands soft). landShake: the amplitude of the screen shake after a heavy landing (2 = the usual; Viscous 0.2). voiceGain: the hero's voice lines' loudness on top of the usual (1 = the usual; Viscous 1.2). gooMaterials/glassMaterials: model parts drawn as living goo / a clear glass helmet instead of the game material.",
   "anchorHero": "haze",
   "anchorRoR2Body": "CommandoBody",
   "columns": [
@@ -24,6 +24,7 @@
     "immuneToForce",
     "noFallDamage",
     "landShake",
+    "voiceGain",
     "gooMaterials",
     "glassMaterials",
     "riderBone",
@@ -65,6 +66,7 @@
       "immuneToForce": false,
       "noFallDamage": false,
       "landShake": 2.0,
+      "voiceGain": 1.0,
       "gooMaterials": [
         "none"
       ],
@@ -109,6 +111,7 @@
       "immuneToForce": false,
       "noFallDamage": false,
       "landShake": 2.0,
+      "voiceGain": 1.0,
       "gooMaterials": [
         "none"
       ],
@@ -154,6 +157,7 @@
       "immuneToForce": false,
       "noFallDamage": false,
       "landShake": 2.0,
+      "voiceGain": 1.0,
       "gooMaterials": [
         "none"
       ],
@@ -200,6 +204,7 @@
       "immuneToForce": false,
       "noFallDamage": false,
       "landShake": 2.0,
+      "voiceGain": 1.0,
       "gooMaterials": [
         "none"
       ],
@@ -244,6 +249,7 @@
       "immuneToForce": true,
       "noFallDamage": false,
       "landShake": 2.0,
+      "voiceGain": 1.0,
       "gooMaterials": [
         "none"
       ],
@@ -287,6 +293,7 @@
       "immuneToForce": false,
       "noFallDamage": true,
       "landShake": 0.2,
+      "voiceGain": 1.2,
       "gooMaterials": [
         "viscous_head"
       ],
@@ -299,7 +306,7 @@
       "roR2Analog": "TreebotBody",
       "subtitle": "The Goo",
       "passiveName": "Gooey",
-      "passiveDescription": "Every goo hit stacks <style=cIsUtility>Gooed</style>: <style=cIsUtility>-8% movement and attack speed</style> per stack, up to 5 (-40%; bosses half). Viscous and his allies move <style=cIsUtility>30% faster</style> on goo puddles. Viscous <style=cIsUtility>never takes fall damage</style>.",
+      "passiveDescription": "Every goo hit stacks <style=cIsUtility>Gooed</style>: -8% movement and attack speed per stack, up to 5 (-40%; bosses half). <style=cIsUtility>Goo puddles</style> (Splatter and The Cube) last 10s, then shrink away over 20s. The first time you step into a puddle it gives <style=cIsDamage>+20 rounds</style> (up to 40), no reload needed: hop from puddle to puddle to keep firing. You and your allies move 30% faster on goo puddles. Viscous never takes fall damage.",
       "passiveIcon": "panorama/images/hud/abilities/viscous/viscous_goo_puddle_psd.vtex",
       "damageHealBack": 0,
       "damageHealBackTime": 0,

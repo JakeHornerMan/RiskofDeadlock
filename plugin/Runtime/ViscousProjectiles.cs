@@ -82,7 +82,7 @@ namespace DeadlockOfRain
     public sealed class DlrPuddle : MonoBehaviour
     {
         public static readonly List<DlrPuddle> Live = new List<DlrPuddle>();
-        CharacterBody owner; SkillRow row; float radius, age, next; bool damage; GameObject vfx;
+        CharacterBody owner; SkillRow row; float radius, age, next; bool damage, gaveAmmo; GameObject vfx;
 
         /// <summary>How far above or below a puddle something can stand and still be on it.</summary>
         const float Reach = 3f;
@@ -95,14 +95,21 @@ namespace DeadlockOfRain
             go.transform.position = at;
             var p = go.AddComponent<DlrPuddle>();
             p.owner = owner; p.row = row; p.radius = radius; p.damage = damage;
-            p.vfx = Vfx.Play(row.Vfx, "puddle", at, radius, life: row.ChainCount);
+            p.vfx = Vfx.Play(row.Vfx, "puddle", at, radius, life: Life(row));
+            Vfx.SetShrink(p.vfx, row.ChainCount, row.PuddleShrink);
             Live.Add(p);
         }
+
+        /// <summary>A puddle lasts chainCount seconds whole, then puddleShrink seconds drawing in to nothing.</summary>
+        static float Life(SkillRow row) => row.ChainCount + Mathf.Max(0f, row.PuddleShrink);
+
+        /// <summary>Its radius now: whole for chainCount seconds, then shrinking linearly to 0 over puddleShrink.</summary>
+        float Radius => row.PuddleShrink <= 0f || age <= row.ChainCount ? radius : radius * Mathf.Clamp01(1f - (age - row.ChainCount) / row.PuddleShrink);
 
         bool Inside(Vector3 at)
         {
             var d = at - transform.position;
-            return Mathf.Abs(d.y) < Reach && new Vector2(d.x, d.z).magnitude <= radius;
+            return Mathf.Abs(d.y) < Reach && new Vector2(d.x, d.z).magnitude <= Radius;
         }
 
         /// <summary>A live puddle under this point (Puddle Punch is twice as wide there).</summary>
@@ -115,10 +122,22 @@ namespace DeadlockOfRain
         void FixedUpdate()
         {
             age += Time.fixedDeltaTime;
-            if (!owner || age >= row.ChainCount) { Destroy(gameObject); return; }
+            if (!owner || age >= Life(row)) { Destroy(gameObject); return; }
+            // the owner's machine: the first time the owner stands in this puddle it gives puddleAmmo rounds (a new puddle gives them again)
+            if (!gaveAmmo && row.PuddleAmmo > 0 && owner.hasEffectiveAuthority && Inside(owner.footPosition))
+            {
+                gaveAmmo = true;
+                var rt = owner.GetComponent<HeroRuntime>();
+                var gun = Survivors.RowFor(owner.skillLocator ? owner.skillLocator.primary : null);
+                if (rt && gun != null && rt.GiveAmmo(gun, (int)row.PuddleAmmo))
+                {
+                    Vfx.Play(row.Vfx, "refill", owner.footPosition, 1f, owner.transform);
+                    Fx.Sound(gun.Id, "reload", owner.footPosition);
+                }
+            }
             if (!damage || age < next) return;
             next = age + Mathf.Max(0.1f, row.Interval);
-            foreach (var hb in Fx.Enemies(owner, transform.position, radius + Reach))
+            foreach (var hb in Fx.Enemies(owner, transform.position, Radius + Reach))
             {
                 var b = hb.healthComponent.body;
                 if (b && Inside(b.footPosition) && row.Buff != "none") Buffs.AddStacks(owner, b, row.Buff, 1);

@@ -14,6 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
+| Viscous | 0.8.0d: puddles 10 s + 20 s shrinking and +20 rounds per new puddle (`puddleAmmo`), The Cube leaves a 10 m puddle, base damage back to 12, Goo Ball 75 % (375–1500 %, slam 1125 %) and grip −0.5 | the creator's second round | this one | **benched**: 2607 / 2367 / 2293, **mean 2422** vs REX 1738 (+684, above), §3.7; `run_test.sh viscous` every check pass incl. puddle ammo 0 → 20 → 40 | **done** |
 | Viscous | 0.8.0b (creator's first play): Puddle Punch 400 → 800 %, Goo Ball 15 s and grip −0.3, Splatter flies through enemies and splashes on the floor, puddle Gooed every 1 s; then 0.8.0c: base damage 12 → 15 (+3/lvl), Cube burst 300 → 600 % | after the creator's play | this one | **benched**: 0.8.0b 1912 / 1942 / 1585 (mean 1813); 0.8.0c **2172 / 2225 / 2312, mean 2236** vs REX 1738 (+498, inside, just), §3.6; `run_test.sh viscous` every check pass | **done** |
 | Mo & Krill | speed 6.3, Sand Blast 750 % / knockback 22, Burrow ×3 speed, Dust Devil 450 % ×32 proc 0.5; then (same day) Tag Team 1000 % + 300 % splash, base health 200; then Tag Team 400 % + 150 %, 8 s, 20 s | v0.7.1c balance pass after the creator's play | this one | **benched** (2317 %/s, run of 2026-10-19); then Sand Blast 400 %, Dust Devil 5 s: **2227 %/s**; `run_test.sh mokrill` every check pass (second run; the first spawned below the map) then Burrow 14 s, punch knockback 10: **2425 %/s** (run of 2026-10-19 after one "no flat spot" retry), `run_test.sh mokrill` every check pass | **done** |
 | – | – | earlier: nothing open (v0.6.3 Flame Gun 75 % and Flame Dash pockets covered by the Infernus-only run of 2026-10-18, §3.3; Mo & Krill's play-check pass (Tag Team on R, Dust Devil on Q, Burrow 3 × 500 %, Frenzy punch 600 %, Sand Blast wind-up and shove) covered by the Mo & Krill-only run of 2026-10-19, §3.5) | – | – |
@@ -174,6 +175,23 @@ Bench caveats seen in this work:
 - Engineer's turrets land few hits in 30 s against a still pack.
 - Engineer's damage stat is 14 (Infernus 12): %/s removes it.
 - Q per use, last run: Abrams 88400 % (13 hit), Infernus 74800 %, Haze 52771 %, Preon 48400 %, Seven 27200 %.
+
+### 3.7 v0.8.0d Viscous (Viscous-only runs, 2026-10-20)
+The puddle ammo and the other changes in the §0 row; `VERSION` v0.8.0d, so the 0.8.0c runs dropped.
+
+| Pass | Runs (%/s) | Mean | 0.8.0c mean |
+|---|---|---|---|
+| All main moves | 2607, 2367, 2293 | **2422** | 2236 |
+| M1 Deep Sea Interpreter | 412 ×3 | 412 | 400 |
+| M2 Splatter | 2080, 1620, 2073 | 1924 | 1451 |
+| Shift The Cube | 580, 480, 520 | 527 | 560 |
+| R Puddle Punch | 933, 667, 853 | 818 | 871 |
+| Q Goo Ball (not balanced) | 1702, 1273, 1283 | 1419 | 2062 |
+
+- +684 against REX's 1738: **above** the ±500 band. Base damage is 12 again, so %/s compares like for like with REX.
+- Splatter rose although its damage didn't change: the bench stands still, but some puddles reach its spot and refill the
+  magazine (37 throws in 30 s instead of about 30 from 20-round magazines). The bench doesn't hop between puddles as a player would, so in play he can fire for longer.
+- Lever to get inside the band: Splatter 200 → 150 % (about −480 %/s). Not applied; the creator's call.
 
 ### 3.6 v0.8.0c Viscous (Viscous-only runs, 2026-10-20)
 New hero, matched to REX (`TreebotBody`, library 1738 %/s). Three runs after the creator's first-play changes (0.8.0b) and the

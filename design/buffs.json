@@ -912,7 +912,7 @@
       "slowResist": 0,
       "linearSlow": false,
       "bossStatCut": 0,
-      "accelerationAdd": -0.3,
+      "accelerationAdd": -0.5,
       "jumpPowerAdd": 0.8,
       "jumpCountAdd": 1,
       "vfx": "none",
@@ -920,7 +920,7 @@
       "disarm": false,
       "noGun": true,
       "melee": false,
-      "notes": "on whoever rolls in the Goo Ball: top speed 20 m/s from a 7 m/s walk, 70% of the grip (snappy steering with a little roll left), jumps 80% higher plus a double jump, +100 armor (Deadlock's 35% resists), no gun"
+      "notes": "on whoever rolls in the Goo Ball: top speed 20 m/s from a 7 m/s walk, half the grip (0.8.0d: a little looser than 0.8.0c's 70 %, still far snappier than the first eighth), jumps 80% higher plus a double jump, +100 armor (Deadlock's 35% resists), no gun"
     }
   ]
 }

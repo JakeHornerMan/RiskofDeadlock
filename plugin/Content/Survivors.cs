@@ -449,6 +449,19 @@ namespace DeadlockOfRain
             Fx.Sound(gun.Id, "reload", transform.position);
         }
 
+        /// <summary>Owner: n rounds on top of what is left, up to the magazine plus n (Viscous's puddles, puddleAmmo); a reload under
+        /// way is called off (the rounds replace it). False without a magazine.</summary>
+        public bool GiveAmmo(SkillRow gun, int n)
+        {
+            if (gun == null || gun.ClipSize <= 0 || n <= 0) return false;
+            int clipSize = (int)gun.ClipSize;
+            if (Ammo < 0) Ammo = clipSize;
+            if (Reloading) { Reloading = false; Ammo = 0; }
+            Ammo = Mathf.Min(Ammo + n, clipSize + n);
+            MeltyTest.Report("puddle-ammo", true, body ? body.baseNameToken : "");
+            return true;
+        }
+
         void Update()
         {
             if (Reloading && Time.time >= reloadEnd)
