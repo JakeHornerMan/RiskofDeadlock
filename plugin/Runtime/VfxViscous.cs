@@ -14,6 +14,7 @@ namespace DeadlockOfRain
     // whoever is inside shows. The cube and fist are Deadlock's own models (effects kind prop); Goo Ball uses a smooth sphere.
     public static partial class Vfx
     {
+        // Viscous' shakes are a tenth of the other heroes' (creator, 2026-10-20: "like 10% of what it is")
         // the palette (ghibli-goo-material from #4FB83A, the base lifted a little so it reads on RoR2's bright stages)
         static readonly Color gooDeep = new Color32(0x0C, 0x21, 0x08, 255), gooBase = new Color32(0x2A, 0x6E, 0x1E, 255),
             gooSheen = new Color32(0x62, 0xD8, 0x7F, 255), gooRim = new Color32(0x73, 0xFF, 0x96, 255);
@@ -89,11 +90,12 @@ namespace DeadlockOfRain
             var go = new GameObject("goo");
             go.transform.SetParent(parent, false);
             var b = mesh.bounds;
-            float k = size / Mathf.Max(0.01f, Mathf.Max(b.size.x, Mathf.Max(b.size.y, b.size.z)));
+            // size 0: the mesh as it is (already in metres around the parent, like a draped puddle)
+            float k = size <= 0f ? 1f : size / Mathf.Max(0.01f, Mathf.Max(b.size.x, Mathf.Max(b.size.y, b.size.z)));
             var inner = new GameObject("mesh");
             inner.transform.SetParent(go.transform, false);
             inner.transform.localScale = Vector3.one * k;
-            inner.transform.localPosition = -b.center * k;
+            inner.transform.localPosition = size <= 0f ? Vector3.zero : -b.center * k;
             var mr = inner.AddComponent<MeshRenderer>();
             mr.sharedMaterial = CelMat();
             mr.shadowCastingMode = ShadowCastingMode.Off;
@@ -103,7 +105,60 @@ namespace DeadlockOfRain
             return cel;
         }
 
+        /// <summary>A hero part made of goo (heroes.gooMaterials, Viscous' head): mesh already in bone's space, drawn there as thick
+        /// see-through cel goo with a gentle ooze and pulse, so it wobbles on him like Deadlock's.</summary>
+        public static bool GooPart(Transform bone, Mesh mesh, bool glass = false)
+        {
+            if (!bone || !mesh) return false;
+            // the mesh stays for the game: the body prefab and every copy of it share it. Glass is a still shell (clear middle,
+            // glossy rim); the goo inside it wobbles
+            var cel = Goo(bone, mesh, 0f, glass, glass ? 0f : 0.012f);
+            if (glass) { cel.Pulse = 0f; cel.Glass = true; }
+            else { cel.Gel = true; cel.Pulse = 0.015f; cel.Bright = true; }
+            return true;
+        }
+
+        /// <summary>Dev only (the kit-page studio, DpsBench): the goo shades itself for a camera here instead of the game's.</summary>
+        internal static Vector3? StudioView;
+
         static CelGoo GooBall(Transform parent, float size, bool shell = false, float ooze = 0.05f) => Goo(parent, SphereMesh(), size, shell, ooze);
+
+        /// <summary>A disc of radius metres laid over the ground around centre (a ray down for every vertex), in metres around centre:
+        /// a puddle that follows slopes, steps and rocks instead of floating flat over them. Enemies don't hold it up (world only).</summary>
+        static Mesh DrapeMesh(Vector3 centre, float radius, int rings = 10, int segs = 40)
+        {
+            var verts = new List<Vector3>(); var norms = new List<Vector3>(); var tris = new List<int>();
+            Vector3 Ground(Vector3 at, out Vector3 n)
+            {
+                var from = new Vector3(at.x, centre.y + Mathf.Max(3f, radius * 0.6f), at.z);
+                if (Physics.Raycast(from, Vector3.down, out var g, Mathf.Max(3f, radius * 0.6f) * 2.5f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
+                {
+                    // the top of a boulder, a wall or a ledge well above or below the landing isn't the floor it lies on: a downward
+                    // normal there, which hides that part of the disc (CelGoo Flat and FloorDisc show only faces that look up)
+                    n = Mathf.Abs(g.point.y - centre.y) > Mathf.Max(1.5f, radius * 0.25f) || g.normal.y < 0.45f ? Vector3.down : g.normal;
+                    return g.point + g.normal * 0.05f - centre;
+                }
+                n = Vector3.up; return new Vector3(at.x, centre.y + 0.05f, at.z) - centre;
+            }
+            verts.Add(Ground(centre, out var n0)); norms.Add(n0);
+            for (int r = 1; r <= rings; r++)
+                for (int a = 0; a < segs; a++)
+                {
+                    float ang = a * Mathf.PI * 2f / segs, d = radius * r / rings;
+                    verts.Add(Ground(centre + new Vector3(Mathf.Cos(ang) * d, 0f, Mathf.Sin(ang) * d), out var n)); norms.Add(n);
+                }
+            for (int a = 0; a < segs; a++) { tris.Add(0); tris.Add(1 + (a + 1) % segs); tris.Add(1 + a); }
+            for (int r = 1; r < rings; r++)
+                for (int a = 0; a < segs; a++)
+                {
+                    int i0 = 1 + (r - 1) * segs + a, i1 = 1 + (r - 1) * segs + (a + 1) % segs, o0 = i0 + segs, o1 = i1 + segs;
+                    tris.Add(i0); tris.Add(i1); tris.Add(o0);
+                    tris.Add(i1); tris.Add(o1); tris.Add(o0);
+                }
+            var m = new Mesh { name = "mshDlrGooDrape" };
+            m.SetVertices(verts); m.SetNormals(norms); m.SetTriangles(tris, 0); m.RecalculateBounds();
+            return m;
+        }
 
         static readonly Queue<GameObject> stains = new Queue<GameObject>();
         const int MaxStains = 30;
@@ -192,10 +247,10 @@ namespace DeadlockOfRain
             {
                 case "aim":
                 {
-                    // where it lands, the size of the splash it would make now (smaller with fewer rounds): a bright green dome on
-                    // the ground, a glowing edge, and the throw's path
+                    // where it lands, the size of the splash it would make now (smaller with fewer rounds): a bright green disc laid
+                    // over the floor itself (it never paints enemies or sits on top of them), a glowing edge, and the throw's path
                     var root = Root(at, 0f, null);
-                    Dome(root.transform, radius, gooRim);
+                    root.AddComponent<FloorDisc>().Radius = radius;
                     var edge = new GameObject("edge"); edge.transform.SetParent(root.transform, false); edge.transform.localPosition = Vector3.up * 0.3f;
                     Particles(edge, "mat_glow", gooRim, rate: 90, life: 0.45f, speed: 0.8f, size: 0.55f, shapeRadius: radius, world: true, ring: true);
                     var arc = Line(root.transform, gooRim, 0.12f, Vector3.zero, Vector3.zero);
@@ -219,12 +274,13 @@ namespace DeadlockOfRain
                 {
                     // the puddle for life seconds: a thick glossy pool of goo with an oozing edge, blobs rising and popping on it,
                     // its reach outlined on the terrain; it sinks away over its last second
-                    var root = Root(at + Vector3.up * 0.02f, life + 1.5f, null);
+                    // the pool is draped over the ground itself (slopes, steps, rocks), so it always lies on the floor
+                    var root = Root(at, life + 1.5f, null);
                     var pool = new GameObject("pool"); pool.transform.SetParent(root.transform, false);
-                    var cel = GooBall(pool.transform, radius * 2f, false, 0.06f);
-                    pool.transform.localScale = new Vector3(1f, 0.07f, 1f);
-                    cel.Pulse = 0.03f; cel.Flat = true;
-                    Dome(root.transform, radius, A(gooBase, 0.6f));
+                    var drape = DrapeMesh(at, radius);
+                    var cel = Goo(pool.transform, drape, 0f, false, 0.03f);
+                    cel.Pulse = 0.01f; cel.Flat = true;
+                    root.AddComponent<DestroyMesh>().Mesh = drape;
                     var bubbles = root.AddComponent<Bubbler>(); bubbles.Radius = radius * 0.8f; bubbles.Rate = Mathf.Max(2f, radius * 0.6f);
                     var sink = root.AddComponent<Sink>(); sink.After = Mathf.Max(0.5f, life - 1f); sink.Target = pool.transform;
                     return root;
@@ -240,13 +296,17 @@ namespace DeadlockOfRain
             {
                 case "loop":
                 {
-                    // Deadlock's cube as a see-through goo shell around Viscous (he shows inside), jiggling, oozing, dripping
+                    // Deadlock's cube as a solid block of goo with Viscous stuck inside (a dim frozen shape through thick green),
+                    // jiggling, oozing, bubbles rising through it, dripping
                     var root = Root(at, 0f, follow);
                     var feet = new GameObject("feet"); feet.transform.SetParent(root.transform, false);
                     if (follow) feet.transform.localPosition = at - follow.position;
-                    var cube = Goo(feet.transform, DeadlockCache.Prop("viscous_cube_prop") ?? CubeMesh(), radius, true, 0.03f);
+                    var cube = Goo(feet.transform, DeadlockCache.Prop("viscous_cube_prop") ?? CubeMesh(), radius, false, 0.03f);
+                    cube.Gel = true;
                     cube.transform.parent.localPosition = Vector3.up * radius * 0.45f;
                     cube.transform.parent.gameObject.AddComponent<Jiggle>();
+                    var inside = new GameObject("bubbles"); inside.transform.SetParent(feet.transform, false);
+                    Drops(inside, gooSheen, rate: 10f, life: 1.6f, speed: radius * 0.5f, size: 0.16f, shapeRadius: radius * 0.35f, upward: true, gravity: -0.05f);
                     var drip = feet.AddComponent<Dripper>(); drip.Radius = radius * 0.45f; drip.Height = radius * 0.2f; drip.Rate = 4f;
                     Light(feet, gooSheen, radius * 2.5f, 1.2f, Vector3.up * radius * 0.5f);
                     return root;
@@ -260,11 +320,34 @@ namespace DeadlockOfRain
                 case "hit":
                     // the cube bursts: goo flung all the way out to the burst's reach
                     Splash(at + Vector3.up * 0.8f, radius, 30);
-                    Shake(at, radius * 2f, 2f, 0.3f);
+                    Shake(at, radius * 2f, 0.2f, 0.3f);
                     Stain(at, Vector3.up, Mathf.Min(radius * 0.35f, 5f), null, 3f);
                     return null;
             }
             return null;
+        }
+
+        /// <summary>A goo fist size metres tall above its wrist (origin at the wrist, knuckles up, +z toward the viewer): a forearm going
+        /// down into the ground, the clenched hand, four knuckles on top, curled fingers on the front and the thumb across them.</summary>
+        static void Fist(Transform parent, float size)
+        {
+            void Piece(Vector3 pos, Vector3 scale, float ooze = 0.04f, bool wobble = false)
+            {
+                var g = new GameObject("piece"); g.transform.SetParent(parent, false);
+                g.transform.localPosition = pos * size;
+                GooBall(g.transform, 1f, false, ooze);
+                g.transform.localScale = scale * size;
+                if (wobble) g.AddComponent<Wobble>().Base = scale * size;
+            }
+            Piece(new Vector3(0f, -0.75f, 0f), new Vector3(0.42f, 1.7f, 0.42f));               // forearm, into the ground
+            Piece(new Vector3(0f, 0.42f, 0f), new Vector3(0.82f, 0.72f, 0.66f), 0.05f, true);  // the clenched hand
+            for (int i = 0; i < 4; i++)
+            {
+                float x = -0.3f + i * 0.2f;
+                Piece(new Vector3(x, 0.82f - Mathf.Abs(x) * 0.25f, 0.08f), Vector3.one * 0.3f, 0.03f);        // knuckles
+                Piece(new Vector3(x, 0.55f - Mathf.Abs(x) * 0.2f, 0.33f), new Vector3(0.19f, 0.34f, 0.24f), 0.03f); // curled fingers
+            }
+            Piece(new Vector3(0.38f, 0.38f, 0.3f), new Vector3(0.22f, 0.22f, 0.5f), 0.03f);    // thumb across the fingers
         }
 
         static Mesh cubeMesh;
@@ -311,14 +394,18 @@ namespace DeadlockOfRain
                 }
                 case "hit":
                 {
-                    // Deadlock's fist of goo punches up out of the ground, hangs a moment and sinks back; goo splashes everywhere
-                    var root = Root(at, 1.6f, null);
-                    float size = Mathf.Max(2.5f, radius * 1.2f);
+                    // a giant goo fist on its forearm punches up out of the ground (knuckles up, facing the camera), overshoots,
+                    // squeezes a moment and sinks back; goo splashes everywhere. Built from cel goo pieces: Deadlock's fist model is a
+                    // small lump that doesn't read as a fist from RoR2's camera (creator, 2026-10-20: "an actual fist").
+                    var root = Root(at, 1.7f, null);
+                    var cam = Camera.main;
+                    if (cam) { var f = cam.transform.position - at; f.y = 0f; if (f.sqrMagnitude > 0.01f) root.transform.rotation = Quaternion.LookRotation(f.normalized); }
+                    float size = Mathf.Max(2.5f, radius * 0.9f);
                     var rise = new GameObject("rise"); rise.transform.SetParent(root.transform, false);
-                    Goo(rise.transform, DeadlockCache.Prop("viscous_fist_prop"), size, false, 0.04f);
+                    Fist(rise.transform, size);
                     rise.AddComponent<Riser>().Size = size;
                     Splash(at, radius, 22);
-                    Shake(at, radius * 3f, 2.5f, 0.3f);
+                    Shake(at, radius * 3f, 0.25f, 0.3f);
                     Stain(at, Vector3.up, radius * 0.6f, null, 3f);
                     return root;
                 }
@@ -351,7 +438,7 @@ namespace DeadlockOfRain
                     return null;
                 case "slam":
                     Splash(at, radius, 26);
-                    Shake(at, radius * 3f, 3f, 0.35f);
+                    Shake(at, radius * 3f, 0.3f, 0.35f);
                     Stain(at, Vector3.up, radius * 0.5f, null, 3f);
                     return null;
                 case "bounce":
@@ -412,20 +499,22 @@ namespace DeadlockOfRain
         /// clear in the middle (alphaShell) and solid at the rim, its far side faint, so what is inside shows.</summary>
         sealed class CelGoo : MonoBehaviour
         {
-            public Mesh Source; public bool Shell, Flat; public float Ooze = 0.05f, Pulse = 0.04f;
+            public Mesh Source; public bool Shell, Flat, Gel, Glass, Bright; public float Ooze = 0.05f, Pulse = 0.04f;
             // the light sits mostly above, so the sheen is a crescent on top (not the whole lit half) with a painted glint in it
             const float Threshold = 0.86f, RimBand = 0.7f, Glint = 0.985f, ShellAlpha = 0.16f;
-            Mesh mesh; Vector3[] v0, n0, verts; Color32[] cols; float seed, maxR = 1f;
+            Mesh mesh; Vector3[] v0, n0, verts; Color32[] cols; float seed, maxR = 1f, maxH = 1f;
 
             void Start()
             {
                 seed = Random.value * 20f;
+                if (!Source) { enabled = false; return; }
                 mesh = Instantiate(Source);
                 mesh.MarkDynamic();
                 v0 = Source.vertices; n0 = Source.normals;
                 if (n0 == null || n0.Length != v0.Length) { mesh.RecalculateNormals(); n0 = mesh.normals; }
                 verts = new Vector3[v0.Length]; cols = new Color32[v0.Length];
                 maxR = 0.001f; foreach (var p in v0) maxR = Mathf.Max(maxR, new Vector2(p.x, p.z).magnitude);
+                var lb = Source.bounds; maxH = Mathf.Max(0.01f, lb.size.y * Mathf.Abs(transform.lossyScale.y));
                 var mf = gameObject.AddComponent<MeshFilter>();
                 mf.sharedMesh = mesh;
                 LateUpdate();
@@ -436,8 +525,10 @@ namespace DeadlockOfRain
                 if (mesh == null) return;
                 var cam = Camera.main;
                 var camT = cam ? cam.transform : null;
-                var light = ((camT ? -camT.right * 0.35f - camT.forward * 0.25f : Vector3.zero) + Vector3.up).normalized;
-                var camPos = camT ? camT.position : transform.position + Vector3.back * 10f;
+                var camPos = StudioView ?? (camT ? camT.position : transform.position + Vector3.back * 10f);
+                var fwd = StudioView.HasValue ? (transform.position - camPos).normalized : camT ? camT.forward : Vector3.zero;
+                var rgt = StudioView.HasValue ? Vector3.Cross(Vector3.up, fwd).normalized : camT ? camT.right : Vector3.zero;
+                var light = (-rgt * 0.35f - fwd * 0.25f + Vector3.up).normalized;
                 float t = Time.time;
                 var tr = transform;
                 float pulse = 1f + Pulse * Mathf.Sin(t * 1.2f * Mathf.PI * 2f * 0.5f + seed);
@@ -460,15 +551,30 @@ namespace DeadlockOfRain
                         // a pool: the flat base, a lit lip round its edge and slow sheen patches drifting over it
                         float r = new Vector2(p.x, p.z).magnitude / maxR;
                         float patch = Mathf.Sin(p.x / maxR * 7f + t * 0.6f + seed) * Mathf.Sin(p.z / maxR * 6f - t * 0.5f);
-                        c = r > 0.86f ? sheenDeep : patch > 0.72f ? sheenDeep : r < 0.2f ? gooDeep : gooBase;
-                        cols[i] = new Color(c.r, c.g, c.b, wn.y < -0.2f ? 0f : 0.95f);
+                        c = r > 0.92f ? sheenDeep : patch > 0.86f ? sheenDeep : r < 0.35f ? Color.Lerp(gooDeep, gooBase, 0.5f) : gooBase;
+                        cols[i] = new Color(c.r, c.g, c.b, wn.y < 0.3f ? 0f : 0.95f);
                         continue;
                     }
-                    c = half > Threshold ? sheenDeep : wn.y < -0.35f ? gooDeep : gooBase;
+                    // Bright (the goo head): lit a step up, so it glows green inside its helmet like Deadlock's
+                    c = half > Threshold ? (Bright ? gooSheen : sheenDeep) : wn.y < -0.35f ? (Bright ? gooBase : gooDeep) : (Bright ? sheenDeep : gooBase);
                     if (Vector3.Dot(wn, (light + view).normalized) > Glint && facing > 0f) c = Color.Lerp(gooRim, Color.white, 0.5f);
                     else if (fres > RimBand && facing > 0f) c = Color.Lerp(c, gooRim, 0.55f);
                     float a;
-                    if (Shell) a = facing < 0f ? 0.08f : Mathf.Lerp(ShellAlpha, 0.95f, Mathf.Pow(fres, 1.6f)) + (half > Threshold ? 0.12f : 0f);
+                    if (Gel)
+                    {
+                        // a block of goo with someone stuck in it: thick green all through (denser and darker low down), so what is
+                        // inside shows as a dim shape; the glossy rim and sheen stay solid
+                        float low = Mathf.Clamp01(0.5f - (wp.y - tr.position.y) / Mathf.Max(0.5f, maxH) * 0.5f);
+                        if (half <= Threshold && fres <= RimBand) c = Color.Lerp(gooBase, gooDeep, low * 0.6f);
+                        a = facing < 0f ? 0.3f + 0.2f * low : Mathf.Lerp(0.5f + 0.2f * low, 0.95f, Mathf.Pow(fres, 1.6f)) + (half > Threshold ? 0.1f : 0f);
+                    }
+                    else if (Glass)
+                    {
+                        // a clear helmet: almost invisible face-on, a pale glossy rim and the glint
+                        c = Color.Lerp(Color.white, gooRim, 0.4f);
+                        a = facing < 0f ? 0f : Mathf.Lerp(0.04f, 0.5f, Mathf.Pow(fres, 2.2f)) + (Vector3.Dot(wn, (light + view).normalized) > Glint ? 0.5f : 0f);
+                    }
+                    else if (Shell) a = facing < 0f ? 0.08f : Mathf.Lerp(ShellAlpha, 0.95f, Mathf.Pow(fres, 1.6f)) + (half > Threshold ? 0.12f : 0f);
                     else a = facing < -0.02f ? 0f : 1f;
                     cols[i] = new Color(c.r, c.g, c.b, Mathf.Clamp01(a));
                 }
@@ -478,6 +584,48 @@ namespace DeadlockOfRain
             }
 
             void OnDestroy() { if (mesh) Destroy(mesh); }
+        }
+
+        /// <summary>Splatter's landing preview: a see-through green disc over the floor (DrapeMesh) with a solid bright edge, laid again
+        /// whenever the marker moves.</summary>
+        sealed class FloorDisc : MonoBehaviour
+        {
+            public float Radius = 5f;
+            Mesh mesh; MeshFilter mf; Vector3 laid = new Vector3(float.MaxValue, 0f, 0f);
+
+            void Start()
+            {
+                var g = new GameObject("floorDisc");
+                g.transform.SetParent(transform, false);
+                mf = g.AddComponent<MeshFilter>();
+                var mr = g.AddComponent<MeshRenderer>();
+                mr.sharedMaterial = CelMat(); mr.shadowCastingMode = ShadowCastingMode.Off; mr.receiveShadows = false;
+            }
+
+            void LateUpdate()
+            {
+                if (!mf || (transform.position - laid).sqrMagnitude < 0.09f) return;
+                laid = transform.position;
+                if (mesh) Destroy(mesh);
+                mesh = DrapeMesh(laid, Radius, 8, 48);
+                var v = mesh.vertices; var nrm = mesh.normals; var cols = new Color32[v.Length];
+                for (int i = 0; i < v.Length; i++)
+                {
+                    float r = new Vector2(v[i].x, v[i].z).magnitude / Mathf.Max(0.1f, Radius);
+                    cols[i] = nrm[i].y < 0f ? A(gooRim, 0f) : r > 0.93f ? A(gooRim, 0.95f) : A(Color.Lerp(gooBase, gooRim, r * 0.6f), 0.22f + 0.2f * r);
+                }
+                mesh.colors32 = cols;
+                mf.sharedMesh = mesh;
+            }
+
+            void OnDestroy() { if (mesh) Destroy(mesh); }
+        }
+
+        /// <summary>Frees a mesh built for one effect when the effect goes.</summary>
+        sealed class DestroyMesh : MonoBehaviour
+        {
+            public Mesh Mesh;
+            void OnDestroy() { if (Mesh) Destroy(Mesh); }
         }
 
         /// <summary>A blob's wobble: its scale breathes on each axis out of step, so it looks soft.</summary>
@@ -512,16 +660,18 @@ namespace DeadlockOfRain
         {
             public float Size = 2f;
             float age; Vector3 scale;
-            void Start() { scale = transform.localScale; transform.localPosition = Vector3.down * Size; }
+            void Start() { scale = transform.localScale; transform.localPosition = Vector3.down * Size * 1.6f; }
             void Update()
             {
+                // all the way out in 0.12 s with an overshoot, settles, holds and squeezes, then sinks back into the ground
                 age += Time.deltaTime;
                 float y;
-                if (age < 0.15f) y = Mathf.Lerp(-Size, Size * 0.35f, age / 0.15f);
-                else if (age < 0.45f) y = Size * 0.35f;
-                else y = Mathf.Lerp(Size * 0.35f, -Size * 1.1f, (age - 0.45f) / 0.7f);
+                if (age < 0.12f) y = Mathf.Lerp(-Size * 1.6f, Size * 0.18f, age / 0.12f);
+                else if (age < 0.25f) y = Mathf.Lerp(Size * 0.18f, 0f, (age - 0.12f) / 0.13f);
+                else if (age < 0.7f) y = 0f;
+                else y = Mathf.Lerp(0f, -Size * 1.8f, (age - 0.7f) / 0.75f);
                 transform.localPosition = Vector3.up * y;
-                float squash = age < 0.15f ? 1.25f - age : 1f;
+                float squash = age < 0.12f ? 1.2f : age < 0.25f ? 1f - 0.1f * Mathf.Sin((age - 0.12f) / 0.13f * Mathf.PI) : 1f;
                 transform.localScale = new Vector3(scale.x / squash, scale.y * squash, scale.z / squash);
             }
         }
@@ -541,7 +691,7 @@ namespace DeadlockOfRain
             }
         }
 
-        /// <summary>A puddle sinks away: after After seconds Target flattens into the ground over a second.</summary>
+        /// <summary>A puddle goes: after After seconds Target draws in toward its middle over a second.</summary>
         sealed class Sink : MonoBehaviour
         {
             public float After = 5f; public Transform Target;
@@ -552,7 +702,8 @@ namespace DeadlockOfRain
                 age += Time.deltaTime;
                 if (!Target || age < After) return;
                 float k = Mathf.Clamp01(1f - (age - After));
-                Target.localScale = new Vector3(scale.x * (0.7f + 0.3f * k), scale.y * k, scale.z * (0.7f + 0.3f * k));
+                // it draws in toward its middle (the pool keeps lying on the ground as it goes)
+                Target.localScale = new Vector3(scale.x * k, scale.y, scale.z * k);
                 if (k <= 0f) { foreach (var b in GetComponents<Bubbler>()) b.enabled = false; }
             }
         }

@@ -321,6 +321,7 @@ namespace DeadlockOfRain
                 // let the character-select intro settle into the idle pose
                 yield return new WaitForSeconds(job.figure ? 0.3f : 3f);
                 // vanilla display models dither themselves out near a camera (CharacterModel's fade): switch it off, fully opaque
+                if (!go) continue;
                 foreach (var cm in go.GetComponentsInChildren<CharacterModel>()) cm.enabled = false;
                 var block = new MaterialPropertyBlock();
                 foreach (var r in go.GetComponentsInChildren<Renderer>())
@@ -330,6 +331,20 @@ namespace DeadlockOfRain
                 try { Render(go, job.name, job.rim, job.figure, origin); }
                 catch (Exception e) { Log.Warn($"portrait {job.name}: {e.Message}"); }
                 Destroy(go);
+                yield return null;
+            }
+            // Puddle Punch's fist (its hit effect) caught at the top of its punch, turned to the studio camera
+            foreach (var r in SkillRow.All.Where(r => r.Kind == "placed_punch"))
+            {
+                var fx = Vfx.Play(r.Vfx, "hit", origin, r.Radius);
+                if (!fx) continue;
+                fx.transform.rotation = Quaternion.LookRotation(Quaternion.Euler(0f, 22f, 0f) * Vector3.back);
+                Vfx.StudioView = origin + Vector3.up * 4f + Quaternion.Euler(0f, 22f, 0f) * Vector3.back * 30f;
+                yield return new WaitForSeconds(0.4f);
+                try { Render(fx, r.Id + "_fx", Sheet.Color(HeroRow.All.First(h => h.Id == r.Hero).PrimaryColor), false, origin); }
+                catch (Exception e) { Log.Warn($"portrait {r.Id}: {e.Message}"); }
+                Destroy(fx);
+                Vfx.StudioView = null;
                 yield return null;
             }
             Write($"portraits: {jobs.Count} written to {portraits}");
@@ -343,6 +358,7 @@ namespace DeadlockOfRain
                 if (!r.enabled || !r.gameObject.activeInHierarchy || r is ParticleSystemRenderer || r is TrailRenderer || r is LineRenderer) continue;
                 if (!any) { b = r.bounds; any = true; } else b.Encapsulate(r.bounds);
             }
+            Log.Info($"portrait {name}: {go.GetComponentsInChildren<Renderer>(true).Length} renderers, {(any ? "bounds " + b.size : "none drawn")}");
             if (figure) b = new Bounds(b.center, b.size / Equipment.FigurePadding);
             float h = Mathf.Max(0.3f, b.size.y);
             // a front three-quarter view, slightly from above for the figure, at eye level for the heroes

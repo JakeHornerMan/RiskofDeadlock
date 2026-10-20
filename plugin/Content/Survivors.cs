@@ -422,11 +422,11 @@ namespace DeadlockOfRain
             if (!grounded) airTime += Time.deltaTime;
             else
             {
-                // a heavy landing after a real fall: the thud and a short shake
+                // a heavy landing after a real fall: the thud and a short shake (heroes.landShake strong; Viscous' is a tenth)
                 if (!wasGrounded && airTime > 0.6f)
                 {
                     Fx.Sound(steps.Skill, "hit", body.footPosition);
-                    ShakeEmitter.CreateSimpleShakeEmitter(body.footPosition, new Wave { amplitude = 2f, frequency = 25f }, 0.3f, 12f, true);
+                    if (hero.LandShake > 0f) ShakeEmitter.CreateSimpleShakeEmitter(body.footPosition, new Wave { amplitude = hero.LandShake, frequency = 25f }, 0.3f, 12f, true);
                 }
                 airTime = 0f;
                 // footsteps paced by how fast he walks (one every 0.55 s at 5 m/s)

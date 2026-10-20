@@ -58,6 +58,10 @@ namespace DeadlockOfRain
             {
                 var def = asset.Materials[Mathf.Clamp(asset.Submeshes[s].Key, 0, asset.Materials.Length - 1)];
                 if (onlyMaterials != null && (def.Name == null || def.Name.IndexOf(onlyMaterials, System.StringComparison.OrdinalIgnoreCase) < 0)) continue;
+                // heroes.gooMaterials (Viscous' head): that part is drawn as living cel goo on its bone instead of the game material
+                // heroes.glassMaterials (Viscous' helmet): a clear glossy bubble over it, so the goo head shows through
+                if (System.Array.IndexOf(hero.GooMaterials, def.Name) >= 0 && GooPart(parts[s], bones, false)) continue;
+                if (System.Array.IndexOf(hero.GlassMaterials, def.Name) >= 0 && GooPart(parts[s], bones, true)) continue;
                 var meshGo = new GameObject("DeadlockMesh_" + def.Name);
                 meshGo.transform.SetParent(root.transform, false);
                 var smr = meshGo.AddComponent<SkinnedMeshRenderer>();
@@ -193,6 +197,30 @@ namespace DeadlockOfRain
         {
             foreach (var b in bones) if (b.name == name) return b;
             return null;
+        }
+
+        /// <summary>A part weighted wholly to one bone, re-made in that bone's space and drawn on it as see-through wobbling goo
+        /// or (glass) a clear glossy bubble (Vfx.GooPart). False (the normal renderer is used) when it is skinned to several bones or anything fails.</summary>
+        static bool GooPart(Mesh part, Transform[] bones, bool glass)
+        {
+            try
+            {
+                var w = part.boneWeights; var bp = part.bindposes;
+                if (w.Length == 0 || bp.Length != bones.Length) return false;
+                int bone = w[0].boneIndex0;
+                foreach (var bw in w) if (bw.boneIndex0 != bone || bw.weight0 < 0.99f) return false;
+                if (bone < 0 || bone >= bones.Length) return false;
+                var m = bp[bone];
+                var v = part.vertices; var n = part.normals;
+                for (int i = 0; i < v.Length; i++) { v[i] = m.MultiplyPoint3x4(v[i]); if (i < n.Length) n[i] = m.MultiplyVector(n[i]).normalized; }
+                var baked = new Mesh { name = part.name + "_goo" };
+                baked.indexFormat = part.indexFormat;
+                baked.vertices = v; if (n.Length == v.Length) baked.normals = n; else baked.RecalculateNormals();
+                baked.triangles = part.triangles;
+                baked.RecalculateBounds();
+                return Vfx.GooPart(bones[bone], baked, glass);
+            }
+            catch (System.Exception e) { Log.Warn($"goo part {part.name}: {e.Message}"); return false; }
         }
 
         static Material MakeMaterial(HeroAsset asset, MaterialDef def)

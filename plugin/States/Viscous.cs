@@ -92,7 +92,36 @@ namespace DeadlockOfRain.States
     /// fraction of its radius; the rounds travel with the state, so every machine throws the same ball. An empty magazine reloads.</summary>
     public sealed class SplatterThrow : DlrState
     {
-        bool thrown; int rounds = -1;
+        bool thrown, botAim; int rounds = -1;
+
+        /// <summary>The throw direction (same yaw as aim) whose landing is nearest the feet of the enemy closest to the aim line.</summary>
+        Vector3 FloorAim(Vector3 aim)
+        {
+            var from = MuzzlePos();
+            CharacterBody best = null; float bestScore = float.MaxValue;
+            foreach (var hb in Fx.Enemies(characterBody, from, row.Range * 0.5f))
+            {
+                var b = hb.healthComponent.body;
+                if (!b) continue;
+                var to = b.corePosition - from;
+                float along = Vector3.Dot(to, aim);
+                if (along <= 0f) continue;
+                float off = (to - aim * along).magnitude;
+                if (off < bestScore) { bestScore = off; best = b; }
+            }
+            if (!best) return aim;
+            var flat = best.footPosition - from; flat.y = 0f;
+            if (flat.sqrMagnitude < 0.01f) return aim;
+            var yaw = flat.normalized;
+            Vector3 bestDir = aim; float bestD = float.MaxValue;
+            for (float pitch = -70f; pitch <= 45f; pitch += 2.5f)
+            {
+                var dir = Vector3.RotateTowards(yaw, pitch < 0 ? Vector3.down : Vector3.up, Mathf.Abs(pitch) * Mathf.Deg2Rad, 0f);
+                float d = Vector3.Distance(DlrLob.Predict(characterBody, row, from, dir, null), best.footPosition);
+                if (d < bestD) { bestD = d; bestDir = dir; }
+            }
+            return bestDir;
+        }
 
         /// <summary>The splash's size for the rounds left: 1 with ammoCost or more, rounds / ammoCost below.</summary>
         public static float Scale(SkillRow row, HeroRuntime rt)
@@ -109,6 +138,9 @@ namespace DeadlockOfRain.States
                 rounds = Mathf.Max(1, Mathf.Min(rt.Ammo, (int)row.AmmoCost));
                 rt.Ammo = Mathf.Max(0, rt.Ammo - rounds);
             }
+            // test mode and the bench aim at an enemy's chest, which the ball now flies past: they lob it onto the floor at its feet
+            // as a player would (the aim travels with the state)
+            if (isAuthority && (MeltyTest.Active || DpsBench.Active)) { OwnerAim = FloorAim(GetAimRay().direction); botAim = true; }
             dur = row.Duration / attackSpeedStat;
             if (anim) anim.Gesture("secondary");
             Sound("cast");
@@ -120,7 +152,7 @@ namespace DeadlockOfRain.States
         void Throw()
         {
             thrown = true;
-            DlrLob.Launch(characterBody, row, MuzzlePos(), ThrowDir, Server, Fraction);
+            DlrLob.Launch(characterBody, row, MuzzlePos(), botAim ? OwnerAim : ThrowDir, Server, Fraction);
             // the magazine is empty now: the reload starts on its own
             var gun = Survivors.RowFor(skillLocator ? skillLocator.primary : null);
             if (isAuthority && rt != null && rt.Ammo <= 0 && !rt.Reloading && gun != null)
@@ -159,7 +191,7 @@ namespace DeadlockOfRain.States
     }
 
     // ---------------- Viscous: The Cube (Shift) ----------------
-    /// <summary>Viscous seals himself in a goo cube for duration: invulnerable (vanilla HiddenInvincibility), no moves, no steering,
+    /// <summary>Viscous seals himself in a goo cube for duration: frozen in place (no animation), invulnerable (vanilla HiddenInvincibility), no moves, no steering,
     /// sliding on with the momentum he had (low friction; walls stop him). RoR2's Mired Urn attachment tethers the chainCount nearest
     /// enemies within range, draining damagePct per second each and healing him for it; each tethered enemy gets one stack of the
     /// debuff (Gooed) a second. Then the cube bursts: splashPct to everything within radius, Gooed to buffStacks, a push of knockback
@@ -175,7 +207,8 @@ namespace DeadlockOfRain.States
             base.OnEnter();
             Sound("cast");
             loop = Fx.Loop(row.Id, transform.position);
-            if (anim) anim.Gesture("utility");
+            // trapped in the goo: the pose holds exactly as it is, nothing moves until the burst
+            Freeze(true);
             float size = CubeSize(characterBody);
             cube = Vfx.Play(row.Vfx, "loop", characterBody.footPosition, size, transform);
             tethers = Vfx.Play(row.Vfx, "tether", characterBody.corePosition, 1f);
@@ -262,9 +295,18 @@ namespace DeadlockOfRain.States
             if (exit != null) { Buffs.Clear(characterBody, row.Buff); Buffs.AddTimed(characterBody, row.Buff, exit.Duration); }
         }
 
+        /// <summary>Holds the hero's pose (Deadlock clips, or a vanilla body's Animator) or lets it go.</summary>
+        void Freeze(bool on)
+        {
+            if (anim) { anim.Freeze(on); return; }
+            var a = GetModelAnimator();
+            if (a) a.speed = on ? 0f : 1f;
+        }
+
         public override void OnExit()
         {
             if (row != null && !burst) Burst();
+            Freeze(false);
             DeadlockAudio.Stop(loop);
             if (locked) LockSkills(false);
             base.OnExit();

@@ -416,6 +416,13 @@ namespace DeadlockOfRain
                     var rest = EntityStateMachine.FindByCustomName(body.gameObject, "Weapon");
                     if (rest) rest.SetNextStateToMain();
                     yield return new WaitForSeconds(0.5f);
+                    // from the flat test spot, standing still (a 15 s Goo Ball can roll him far off it onto a slope or under a roof)
+                    if (arena != Vector3.zero)
+                    {
+                        TeleportHelper.TeleportBody(body, arena + Vector3.up * 0.5f, false);
+                        if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+                        yield return new WaitForSeconds(0.6f);
+                    }
                     var down = Vector3.down * 0.95f + body.transform.forward * 0.05f;
                     AimCamera(body, down);
                     for (int f = 0; f < 10; f++) { body.inputBank.aimDirection = down; yield return null; }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.0
+- A sixth hero for the Melty build (not part of this store release yet; the four heroes here are unchanged).
+- Moves of a future hero can use Deadlock's own effect models, read from your install like the heroes (extractor 1.5.0).
+
 ## 0.7.4
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6795 (v0.7.4, 2026-10-20).
 - The game no longer crashes when you quit after playing a run. It was Risk of Rain 2 and BepInEx together (it happened without this mod too); the mod now stops it.

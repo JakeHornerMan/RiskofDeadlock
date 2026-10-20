@@ -180,14 +180,16 @@ namespace DeadlockOfRain
             else transform.position = pos;
         }
 
-        /// <summary>One tick of the flight: gravity, then the first enemy or surface on the way (it flies through its own team).
-        /// True = it bursts at pos. Shared by the flask and the aim marker, so the marker shows exactly where it lands.</summary>
+        /// <summary>One tick of the flight: gravity, then the first enemy or surface on the way (it flies through its own team;
+        /// Splatter, lob_ammo, flies through enemies too and only bursts on the ground). True = it bursts at pos. Shared by the flask
+        /// and the aim marker, so the marker shows exactly where it lands.</summary>
         static bool Step(CharacterBody owner, SkillRow row, ref Vector3 pos, ref Vector3 velocity, ref float age, float dt)
         {
             age += dt;
             velocity += Physics.gravity * dt;
             var step = velocity * dt;
-            var hits = Physics.SphereCastAll(pos, 0.4f, step.normalized, step.magnitude, LayerIndex.world.mask | LayerIndex.entityPrecise.mask, QueryTriggerInteraction.Ignore);
+            int mask = row.Kind == "lob_ammo" ? LayerIndex.world.mask : LayerIndex.world.mask | LayerIndex.entityPrecise.mask;
+            var hits = Physics.SphereCastAll(pos, 0.4f, step.normalized, step.magnitude, mask, QueryTriggerInteraction.Ignore);
             System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
             foreach (var h in hits)
             {
@@ -200,6 +202,13 @@ namespace DeadlockOfRain
             return age * row.Speed > row.Range;
         }
 
+        /// <summary>Splatter splashes on the floor: a burst on a wall or ledge, or one that ran out of range in the air, drops to the
+        /// ground under it.</summary>
+        public static Vector3 Floor(Vector3 at)
+        {
+            return Physics.Raycast(at + Vector3.up * 0.5f, Vector3.down, out var g, 40f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore) ? g.point : at;
+        }
+
         /// <summary>Where a flask thrown now would burst; points gets the path (every few ticks) for the aim marker.</summary>
         public static Vector3 Predict(CharacterBody owner, SkillRow row, Vector3 from, Vector3 dir, List<Vector3> points)
         {
@@ -207,12 +216,14 @@ namespace DeadlockOfRain
             points?.Clear(); points?.Add(pos);
             while (!Step(owner, row, ref pos, ref vel, ref age, Time.fixedDeltaTime))
                 if (++n % 3 == 0) points?.Add(pos);
+            if (row.Kind == "lob_ammo") pos = Floor(pos);
             points?.Add(pos);
             return pos;
         }
 
         void Burst(Vector3 at)
         {
+            if (row.Kind == "lob_ammo") at = Floor(at);
             float radius = row.Radius * scale;
             Fx.Impact(row.Effect, at, radius);
             Vfx.Play(row.Vfx, "hit", at, radius);

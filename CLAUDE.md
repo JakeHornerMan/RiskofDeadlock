@@ -4,8 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Deadlock of Rain (RiskofDeadlock)
 
-A Melty mashup that adds Deadlock heroes (Haze, Abrams, Seven, Infernus, Mo & Krill) to Risk of Rain 2 as survivors. The first four
-were finished in v0.6.3 (2026-10-18); Mo & Krill were added in v0.7.0 (2026-10-19, not yet released); new heroes follow `docs/08-NEW-HERO-PLAYBOOK.md`. It reads
+A Melty mashup that adds Deadlock heroes (Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous) to Risk of Rain 2 as survivors. The first four
+were finished in v0.6.3 (2026-10-18); Mo & Krill were added in v0.7.0 (2026-10-19), Viscous in v0.8.0 (2026-10-20, not yet released); new heroes follow `docs/08-NEW-HERO-PLAYBOOK.md`. It reads
 Deadlock's assets from the player's own install; nothing from either game ships.
 
 ## Origin and goals (from Melty's original setup brief, as summarised by the creator)

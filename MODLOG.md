@@ -21,6 +21,7 @@
   during test_release). Dev screenshots: create %LOCALAPPDATA%\DeadlockOfRain\devshots.
 
 ## Balance
+- 0.8.0 (2026-10-20, not released): Viscous, matched to REX. 0.8.0b after the creator's first play: Puddle Punch 800 % and a cel-goo fist, Goo Ball 15 s with 70 % grip, Splatter through enemies onto the floor, The Cube frozen in a goo block, goo head in a glass helmet, landing shake 0.2. 0.8.0c: base damage 15 +3, Cube burst 600 %. Bench 2236 vs REX 1738 (inside, just; +25 % real damage from the base damage).
 - 0.7.0 (2026-10-19, not released): Mo & Krill, matched to MUL-T: 250 +75 health, 25 armor, 5 m/s. Yellow Canary 4 x 40 % fixed pattern; Sand Blast 450 % cone, Sanded = DisableAllSkills 2 s; Burrow 4 s x2 speed +100 armor, pop-out 3 x 100 %; Dust Devil 16 x 50 %, pull 16 m; Tag Team 20 x 1500 % hops. Bench 1620 vs MUL-T 1450 (inside).
 - 0.7.0b (2026-10-19, not released, after the creator's play-check): Tag Team to R (30 s, numbers unchanged, no target = no cooldown); Dust Devil to the Q ult (8 s, 32 x 200 % = 6400 %, any carrier spins); Burrow 8 s, pop-out 3 x 500 %, sinks and rises; Frenzy while Krill is away (x2 speed, punch 600 %, knockback 20 m/s, red aura); Sand Blast 0.4 s wind-up with a ground cone, shove 8 m/s; acceleration 80. Bench 3252 vs MUL-T 1450 (far above, the creator's numbers).
 - 0.4.2: each hero within ±500 %/s of its RoR2 match (means over bench runs; doc 05 §3.0).

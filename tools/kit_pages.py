@@ -15,7 +15,7 @@ OUT = os.path.join(ROOT, 'build', 'pages')
 IMG = os.path.join(OUT, 'img')
 os.makedirs(OUT, exist_ok=True)
 E = html.escape
-VERSION = 'v0.5.1'
+VERSION = 'v0.8.0'
 BAND = 500  # balanced = within ±500 %/s of the RoR2 match (creator, 2026-10-16)
 
 def sheet(name):
@@ -67,7 +67,12 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
- 'viscous': [('v0.8.0', ['New hero, matched to REX: Deep Sea Interpreter (goo blobs that drop and lose damage past 20 m), Splatter (no cooldown, costs 5 rounds: a goo splash that leaves a slowing puddle), The Cube (3 s invulnerable, tar tethers that drain and heal, then a 16 m burst), Puddle Punch (place a goo fist anywhere within 40 m; twice as wide on a puddle; bounces you and allies 20 m up), Goo Ball (Q: roll as a huge goo ball and smash everything)',
+ 'viscous': [('v0.8.0c', ['Base damage 12 → 15 (+3 a level, was +2.4): every move hits 25 % harder',
+                      'The Cube’s burst when he breaks out: 300 → 600 %']),
+             ('v0.8.0b', ['After the creator’s first play: Puddle Punch 400 → 800 % and a giant goo fist that punches up out of the ground; Goo Ball lasts 15 s (was 10) and steers much snappier',
+                      'Splatter flies through enemies and bosses and splashes on the floor; its puddle lies on the ground (it follows slopes) and adds 1 Gooed a second to anyone standing in it',
+                      'The Cube: he is frozen still inside a thick block of goo; his head is living goo in a glass helmet; landing shakes the screen a tenth as much']),
+             ('v0.8.0', ['New hero, matched to REX: Deep Sea Interpreter (goo blobs that drop and lose damage past 20 m), Splatter (no cooldown, costs 5 rounds: a goo splash that leaves a slowing puddle), The Cube (3 s invulnerable, tar tethers that drain and heal, then a 16 m burst), Puddle Punch (place a goo fist anywhere within 40 m; twice as wide on a puddle; bounces you and allies 20 m up), Goo Ball (Q: roll as a huge goo ball and smash everything)',
                      'Gooey: every goo hit stacks Gooed (-8 % move and attack speed per stack, up to -40 %); he never takes fall damage'])],
  'haze': [('v0.6.1', ['Falls as a ragdoll on death, like the RoR2 survivors']),
             ('v0.6.0', ['Co-op: up to 4 players; every move works the same when a friend joins your game and plays Haze']),
@@ -132,6 +137,11 @@ PAPER = {
 }
 
 ANALYSIS = {
+ 'viscous': ['Three runs after the 0.8.0c changes (base damage 15, Cube burst 600 %): 2,172, 2,225 and 2,312 %/s, mean 2,236 against REX’s 1,738. That is +498, just inside the ±500 band.',
+             'The %/s numbers are a share of each survivor’s own damage stat, so the base damage 15 (REX: 12) does not show in them: in real damage he does about 336 a second at level 1 against REX’s 209, about 60 % more.',
+             'Splatter is the biggest part (1,451 %/s alone): no cooldown, only 5 rounds a throw. Puddle Punch 871 %/s, The Cube 560 (was 303 before its burst doubled), the gun 400.',
+             'Goo Ball (Q, the ult) measured 2,062 %/s over its 30 s pass (one use; it swings a lot with how many enemies it rolls into). It isn’t in the all-together number.',
+             'REX’s Seed Barrage alone measured 7,465 %/s, far above REX’s 1,738 with everything; in god mode its health cost never bites. Compare all-together numbers, not that one.'],
  'mokrill': ['After the 0.7.1c balance pass he does about 2,425 %/s with every move (one run), against MUL-T’s 1,450: above the ±500 band, about Abrams’ level (2,460). The creator chose to keep it.',
              'Tag Team (1,407 %/s alone, with Mo’s punches) and Burrow’s pop-out spin (1,150 %/s alone, now every 14 s) are the biggest parts; Sand Blast is 333 %/s and is there for control.',
              'His gun is slower than MUL-T’s nailgun (443 against 876 alone). No healing in the kit: he starts at 200 health and grows it with every kill.'],
@@ -186,8 +196,14 @@ def avg_all(who):
 def runs_of(who):
     return len(all_runs(who)) or 1
 
+# one Q use on the pack (total %, enemies hit) from each hero's last bench, for heroes the current bench file doesn't cover
+# (bench_results.txt holds only the last run's heroes). Update a hero's row whenever it is benched.
+LAST_USE = {
+    'DeadlockMoKrill': dict(total=57150, enemies=11),  # 2026-10-19, v0.7.1e
+}
+
 def per_use(who):
-    return BENCH.get(who, {}).get('equipment')
+    return BENCH.get(who, {}).get('equipment') or LAST_USE.get(who)
 
 def img(name):
     p = os.path.join(IMG, name + '.webp')
@@ -369,6 +385,9 @@ p {{ margin: 0; max-width: 68ch; }}
 /* ability ledger */
 .ab {{ display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); background: var(--panel); border: 1px solid var(--rule); }}
 .ab .main {{ padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }}
+.ab .fx {{ margin: 0; display: grid; place-items: center; padding: 12px; border: 1px solid var(--rule);
+    background: radial-gradient(55% 50% at 50% 50%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 72%), var(--ink); }}
+.ab .fx img {{ max-height: 260px; width: auto; filter: drop-shadow(0 10px 14px rgba(0,0,0,.6)); }}
 .head {{ display: flex; align-items: center; gap: 14px; }}
 .key {{ flex: none; width: 52px; height: 58px; display: grid; place-items: center; font: 700 17px/1 var(--cond); letter-spacing: .06em;
     color: var(--ink); background: var(--accent); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }}
@@ -499,11 +518,15 @@ def ability_card(r, hid, v, scale):
     eq = f'<span class="eq">= {per:,.0f} %/s per target</span>' if per else ('<span class="eq">= 0 %/s</span>' if per == 0 else '')
     note = '<p class="note">Its arcs ride on the gun, so its damage shows in the all-together number, not alone.</p>' if r['kind'] == 'power_surge' else ''
     rows = [(r['name'], dps(hero_who(hid), slot), ''), (f"{v['name']}: {mname}", dps(v['who'], slot), ' match')]
+    # a studio render of the move's effect (<skill id>_fx.webp, DpsBench), when there is one
+    fx = img_tag(r['id'] + '_fx', 'The ' + r['name'] + ' effect, rendered in Risk of Rain 2')
+    fx = f'<figure class="fx">{fx}</figure>' if fx else ''
     return f'''<article class="ab">
   <div class="main">
     <div class="head"><span class="key">{KEY[slot]}</span><div><h3>{E(r["name"])}</h3><div class="eyebrow">{E(KIND_LABEL[slot])}</div></div></div>
     <p class="desc">{E(strip_tags(r["description"]))}</p>
     <div class="tiles">{tiles_html(tiles(r))}</div>
+    {fx}
   </div>
   <aside class="math" aria-label="{E(r['name'])} damage maths">
     <div class="eyebrow">The maths</div>

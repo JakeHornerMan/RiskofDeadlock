@@ -6,10 +6,10 @@
 
 **Pages (claude.ai Artifacts, shared "anyone with the link" since 2026-10-18; linked from the Melty listing and the README):** [Haze](https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p) ·
 [Abrams](https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG) · [Seven](https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m) ·
-[Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) · [Mo & Krill](https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa) (shared by the creator) · [Balance vs Commando](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3).
+[Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) · [Mo & Krill](https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa) (shared by the creator) · [Viscous](https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC) (new 2026-10-20, pictures since 2026-10-20 v3; the creator still has to share it) · [Balance vs Commando](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3).
 Built by `python tools/kit_pages.py` into `build/pages/`. Republish each page to its link whenever this doc or doc 05 changes.
 
-**Version:** 0.7.0 in progress (2026-10-19: Mo & Krill added; not released). 0.6.3 (2026-10-18; Flame Gun 75 %, Flame Dash a 5 s run laying Afterburn fire pockets. 0.6.2: Combustion fuse ticks. 0.6.1: Napalm aimed throw, Flame Dash 5 s / 13 s, Combustion range ring, ragdoll deaths).
+**Version:** 0.8.0c in progress (2026-10-20: Viscous added and reworked after the creator's play; not released). 0.7.4 live. 0.7.0 (2026-10-19: Mo & Krill added). 0.6.3 (2026-10-18; Flame Gun 75 %, Flame Dash a 5 s run laying Afterburn fire pockets. 0.6.2: Combustion fuse ticks. 0.6.1: Napalm aimed throw, Flame Dash 5 s / 13 s, Combustion range ring, ragdoll deaths).
 
 **DPS source:** the stored library `docs/dps-library.json` (doc 05 §6): every vanilla survivor measured 3 times on
 2026-10-17 and **never re-measured**; Haze, Abrams and Seven from the v0.5.1 heroes-only run, Infernus from his v0.6.3 run (2026-10-18).
@@ -25,7 +25,7 @@ How to read the DPS:
 - **Balance** compares the main moves (M1, M2, Shift, R) together, without equipment, with the hero's **own RoR2 match** (the
   survivor its stats are built on): balanced = within **±500 %/s** of the match, comparing the **means over every bench run of
   the current build** (doc 05 §3.0; one run is too noisy). Haze → Commando, Abrams → Loader,
-  Seven → Artificer, Infernus → Engineer, Mo & Krill → MUL-T.
+  Seven → Artificer, Infernus → Engineer, Mo & Krill → MUL-T, Viscous → REX.
 - Per-ability DPS below is the library entry of each survivor (means of 3 runs; one run for Haze, Abrams, Seven); single runs swing ±10 %.
 - **Q (equipment)** is **not balanced** (any survivor can carry it): its column is one use, spread over 30 s, plus its total, for fun.
 - Passives have no number of their own: they are inside their gun's (and other skills') numbers.
@@ -134,6 +134,21 @@ Stats: **180** +75 health (250 until v0.7.1c, then 200), 25 armor, 1 +0.2 regen,
 | Q | **Dust Devil** (equipment) | Spin as a sand tornado for **5 s**, walking at normal speed and **able to jump** (v0.7.1c); every enemy within 16 m is pulled in (bosses at ¼), everything within 8 m takes damage four times a second. Mo plays Deadlock's own `ability_tornado_idle` clip (arms out); **any other survivor holding it spins** (the whole model turns twice a second). | 20 × **450 %** = **9000 %**, 8 m, pull 14 m/s from 16 m (none inside 4 m), proc 0.5 | 120 s | **1905** · 210 (one use: 57150 % on 12 enemies) |
 
 Not in the kit: Scorn (its heal would repeat Abrams' Siphon Life) and Deadlock's innate (two headshot heads, tunnel vents).
+
+## Viscous: the goo (main moves at once: **2236 %/s**, mean of 3 v0.8.0c runs (2172, 2225, 2312); match REX 1738 (library): **inside** ±500, just (+498), doc 05 §3.6)
+
+Deadlock's model at its own size (≈1.84 m capsule); his **head is living goo inside a clear glass helmet** (`heroes.gooMaterials` / `glassMaterials`, v0.8.0b).
+Stats: 130 +39 health, 20 armor, 1 +0.2 regen, **15 +3 damage** (12 +2.4 until v0.8.0c; REX is 12, so his %/s numbers are 25 % more real damage), 7 m/s, 1 jump.
+In real damage at level 1 he does ≈336 a second with every move against REX's ≈209.
+
+| Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
+|---|---|---|---|---|---|
+| Passive | **Gooey** | Every goo hit stacks **Gooed** on enemies: −8 % move and attack speed per stack (bosses half). He and allies move 30 % faster on goo puddles (Slick). He never takes fall damage, and his landing shake is a tenth of the others' (v0.8.0b). | max 5 stacks (−40 %), 3 s, refreshed by every stack | – | – |
+| M1 | **Deep Sea Interpreter** | Fires blobs of goo that drop over distance and lose damage past 20 m. | **120 %**, 5/s, 20 rounds, 2 s reload, 100 m/s, gravity 22, falloff 20–45 m to 40 % | – | **400** · 60 |
+| M2 | **Splatter** | Right Click aims (the path and a goo dome the size of the splash), Left Click lobs a ball of goo that **flies through enemies and bosses and splashes on the floor** (v0.8.0b; a wall or ledge hit drops to the ground under it). It leaves a goo puddle lying on the ground (it follows slopes) that adds 1 Gooed a second to enemies in it and makes allies Slick. No cooldown: each throw costs 5 rounds of the gun; with fewer left the splash shrinks. | **200 %** in 10 m, 3 Gooed; puddle 8 m for 6 s, 1 Gooed per second (interval 1.0, was 0.5) | 5 rounds | **1451** · 218 |
+| Shift | **The Cube** | He is sealed in a thick block of goo for 3 s: **invulnerable and frozen still** (no animation at all, v0.8.0b), sliding on with his momentum. Tar tethers drain the 4 nearest enemies within 13 m and heal him. Then the cube bursts as he breaks out. | drain **100 %/s** each × 3 s; burst **600 %** in 16 m (300 % until v0.8.0c), Gooed to 5, knockback 8 m/s; then Cube Rush +30 % speed 3 s | 15 s (from the burst) | **560** · 84 (303 before the burst doubled) |
+| R | **Puddle Punch** | Place a **giant goo fist** anywhere within 40 m (Left Click): the ground bubbles, then the fist punches up out of it (v0.8.0b: a real fist, knuckles and fingers, cel goo). Twice as wide on a goo puddle; he and allies standing on it are bounced 20 m up. | **800 %** in 6 m (400 % until v0.8.0b), 2 Gooed, knock-up 16 m/s (not bosses) | 10 s, 2 charges | **871** · 131 |
+| Q | **Goo Ball** (equipment) | Become a huge ball of goo for **15 s** (10 until v0.8.0b): steer on the ground and in the air, faster downhill, bounces off walls; **70 % of the normal grip** (snappy steering, v0.8.0b; an eighth before). Smashing into enemies damages by speed, stuns, launches and maxes Gooed; landing after a jump slams. Q again ends it. Any survivor can roll it. | **500–2000 %** by speed, 0.5 s stun, launch 25 m/s (bosses ×0.1); slam **1500 %** in 8 m; top speed 20 m/s, +100 armor, double jump | 120 s | **2062** · 309 (mean of 3; one use 46,000–86,400 % on 12 enemies) |
 
 ## Sounds (every hero)
 Every sound is the hero's own Deadlock sound, read from the player's install (doc 01 §6.5) and played by our mixer

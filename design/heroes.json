@@ -23,6 +23,9 @@
     "interactRange",
     "immuneToForce",
     "noFallDamage",
+    "landShake",
+    "gooMaterials",
+    "glassMaterials",
     "riderBone",
     "primaryColor",
     "sortPosition",
@@ -61,6 +64,13 @@
       "interactRange": 1.0,
       "immuneToForce": false,
       "noFallDamage": false,
+      "landShake": 2.0,
+      "gooMaterials": [
+        "none"
+      ],
+      "glassMaterials": [
+        "none"
+      ],
       "riderBone": "none",
       "primaryColor": "#8C6BD9",
       "sortPosition": 100.1,
@@ -98,6 +108,13 @@
       "interactRange": 1.0,
       "immuneToForce": false,
       "noFallDamage": false,
+      "landShake": 2.0,
+      "gooMaterials": [
+        "none"
+      ],
+      "glassMaterials": [
+        "none"
+      ],
       "riderBone": "none",
       "primaryColor": "#C2572B",
       "sortPosition": 100.2,
@@ -136,6 +153,13 @@
       "interactRange": 1.0,
       "immuneToForce": false,
       "noFallDamage": false,
+      "landShake": 2.0,
+      "gooMaterials": [
+        "none"
+      ],
+      "glassMaterials": [
+        "none"
+      ],
       "riderBone": "none",
       "primaryColor": "#3FA7E6",
       "sortPosition": 100.3,
@@ -175,6 +199,13 @@
       "interactRange": 1.0,
       "immuneToForce": false,
       "noFallDamage": false,
+      "landShake": 2.0,
+      "gooMaterials": [
+        "none"
+      ],
+      "glassMaterials": [
+        "none"
+      ],
       "riderBone": "none",
       "primaryColor": "#F2762E",
       "sortPosition": 100.4,
@@ -212,6 +243,13 @@
       "interactRange": 1.6,
       "immuneToForce": true,
       "noFallDamage": false,
+      "landShake": 2.0,
+      "gooMaterials": [
+        "none"
+      ],
+      "glassMaterials": [
+        "none"
+      ],
       "riderBone": "rider_pelvis",
       "primaryColor": "#684B85",
       "sortPosition": 100.5,
@@ -248,6 +286,13 @@
       "interactRange": 1.0,
       "immuneToForce": false,
       "noFallDamage": true,
+      "landShake": 0.2,
+      "gooMaterials": [
+        "viscous_head"
+      ],
+      "glassMaterials": [
+        "viscous_glass"
+      ],
       "riderBone": "none",
       "primaryColor": "#4FB83A",
       "sortPosition": 100.6,

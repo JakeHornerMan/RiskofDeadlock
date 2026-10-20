@@ -9,6 +9,7 @@ Every hero's abilities, numbers and measured damage against their Risk of Rain 2
 - [Seven](https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m) (matched to Artificer)
 - [Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) (matched to Engineer)
 - [Mo & Krill](https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa) (matched to MUL-T)
+- [Viscous](https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC) (matched to REX)
 - [Balance overview](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3): every hero next to every Risk of Rain 2 survivor
 
 ## Features

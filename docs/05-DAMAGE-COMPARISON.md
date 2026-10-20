@@ -14,6 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
+| Viscous | 0.8.0b (creator's first play): Puddle Punch 400 → 800 %, Goo Ball 15 s and grip −0.3, Splatter flies through enemies and splashes on the floor, puddle Gooed every 1 s; then 0.8.0c: base damage 12 → 15 (+3/lvl), Cube burst 300 → 600 % | after the creator's play | this one | **benched**: 0.8.0b 1912 / 1942 / 1585 (mean 1813); 0.8.0c **2172 / 2225 / 2312, mean 2236** vs REX 1738 (+498, inside, just), §3.6; `run_test.sh viscous` every check pass | **done** |
 | Mo & Krill | speed 6.3, Sand Blast 750 % / knockback 22, Burrow ×3 speed, Dust Devil 450 % ×32 proc 0.5; then (same day) Tag Team 1000 % + 300 % splash, base health 200; then Tag Team 400 % + 150 %, 8 s, 20 s | v0.7.1c balance pass after the creator's play | this one | **benched** (2317 %/s, run of 2026-10-19); then Sand Blast 400 %, Dust Devil 5 s: **2227 %/s**; `run_test.sh mokrill` every check pass (second run; the first spawned below the map) then Burrow 14 s, punch knockback 10: **2425 %/s** (run of 2026-10-19 after one "no flat spot" retry), `run_test.sh mokrill` every check pass | **done** |
 | – | – | earlier: nothing open (v0.6.3 Flame Gun 75 % and Flame Dash pockets covered by the Infernus-only run of 2026-10-18, §3.3; Mo & Krill's play-check pass (Tag Team on R, Dust Devil on Q, Burrow 3 × 500 %, Frenzy punch 600 %, Sand Blast wind-up and shove) covered by the Mo & Krill-only run of 2026-10-19, §3.5) | – | – |
 
@@ -173,6 +174,24 @@ Bench caveats seen in this work:
 - Engineer's turrets land few hits in 30 s against a still pack.
 - Engineer's damage stat is 14 (Infernus 12): %/s removes it.
 - Q per use, last run: Abrams 88400 % (13 hit), Infernus 74800 %, Haze 52771 %, Preon 48400 %, Seven 27200 %.
+
+### 3.6 v0.8.0c Viscous (Viscous-only runs, 2026-10-20)
+New hero, matched to REX (`TreebotBody`, library 1738 %/s). Three runs after the creator's first-play changes (0.8.0b) and the
+0.8.0c pair (base damage 15, Cube burst 600 %); `VERSION` v0.8.0c in `dps_library.py`, so the 0.8.0b runs dropped.
+
+| Pass | Runs (%/s) | Mean | REX (library) |
+|---|---|---|---|
+| All main moves | 2172, 2225, 2312 | **2236** | 1738 |
+| M1 Deep Sea Interpreter | 400 ×3 | 400 | 392 (Inject) |
+| M2 Splatter | 1420, 1460, 1473 | 1451 | 7465 (Seed Barrage, god mode: its health cost never bites) |
+| Shift The Cube | 560 ×3 | 560 | 0 (Disperse) |
+| R Puddle Punch | 880, 907, 827 | 871 | 393 (Tangling Growth) |
+| Q Goo Ball (not balanced) | 1769, 1538, 2880 | 2062 | – |
+
+- +498 against REX: inside the ±500 band by 2 %/s. The 0.8.0b runs (before the burst and base damage) were 1912, 1942, 1585.
+- **%/s hides base damage**: it is a share of the survivor's own damage stat. Viscous's 15 against REX's 12 means 25 % more
+  real damage than the %/s says (≈336 dmg/s at level 1 against ≈209). Mo & Krill (11) are the only other hero off 12.
+- Levers if he needs pulling back: Splatter 200 → 150 % first (it is two thirds of the total), then the punch.
 
 ### 3.1 The headline: main moves together, 30 s (no equipment)
 Band: **1004–1506 %/s** (Commando 1255 ± 20 %).

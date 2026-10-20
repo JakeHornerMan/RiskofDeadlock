@@ -123,7 +123,8 @@ namespace DeadlockOfRain
                     m.vertices = a.Positions; m.normals = a.Normals; m.uv = a.Uvs;
                     m.SetTriangles(idx, 0, true);
                     m.RecalculateBounds();
-                    m.UploadMeshData(true);
+                    // kept readable: the cel goo re-colours and oozes its vertices every frame (a no-longer-readable mesh gives it none)
+                    m.UploadMeshData(false);
                 }
                 else Log.Warn($"effect model {id} not in the cache (extractor 1.5.0+ reads it); a simple shape stands in");
             }

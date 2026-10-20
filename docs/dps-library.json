@@ -1338,9 +1338,94 @@
      "max": 1905
     }
    }
+  },
+  "DeadlockViscous": {
+   "name": "Viscous",
+   "stats": {
+    "health": 130.0,
+    "healthPerLevel": 39.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 20.0,
+    "damage": 15.0,
+    "damagePerLevel": 3.0,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Deep Sea Interpreter",
+    "secondary": "Splatter",
+    "utility": "The Cube",
+    "special": "Puddle Punch"
+   },
+   "hero": true,
+   "measuredOn": "v0.8.0c",
+   "dps": {
+    "all": {
+     "runs": [
+      2172,
+      2225,
+      2312
+     ],
+     "mean": 2236,
+     "min": 2172,
+     "max": 2312
+    },
+    "primary": {
+     "runs": [
+      400,
+      400,
+      400
+     ],
+     "mean": 400,
+     "min": 400,
+     "max": 400
+    },
+    "secondary": {
+     "runs": [
+      1420,
+      1460,
+      1473
+     ],
+     "mean": 1451,
+     "min": 1420,
+     "max": 1473
+    },
+    "utility": {
+     "runs": [
+      560,
+      560,
+      560
+     ],
+     "mean": 560,
+     "min": 560,
+     "max": 560
+    },
+    "special": {
+     "runs": [
+      880,
+      907,
+      827
+     ],
+     "mean": 871,
+     "min": 827,
+     "max": 907
+    },
+    "equipment": {
+     "runs": [
+      1769,
+      1538,
+      2880
+     ],
+     "mean": 2062,
+     "min": 1538,
+     "max": 2880
+    }
+   }
   }
  },
  "about": "Stored DPS library (Deadlock of Rain). Main moves and each move alone, % of damage stat per second, measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, 30 s per pass, perfect aim, every move used when ready, no equipment except the \"equipment\" pass). \"all\" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are tagged with the build they were measured on. Built by tools/dps_library.py.",
- "updated": "2026-10-19",
+ "updated": "2026-10-20",
  "runsPerSurvivor": 3
 }

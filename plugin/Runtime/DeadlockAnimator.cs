@@ -25,7 +25,7 @@ namespace DeadlockOfRain
         float overrideUntil;
         bool wasGrounded = true;
         float landUntil;
-        bool dead;
+        bool dead, frozen;
         static readonly Dictionary<string, Dictionary<string, AnimationClip>> clipCache = new Dictionary<string, Dictionary<string, AnimationClip>>();
         Dictionary<string, AnimationClip> clips;
         readonly Dictionary<string, string> logical = new Dictionary<string, string>();
@@ -295,9 +295,16 @@ namespace DeadlockOfRain
 
         public bool HasClip(string logicalName) => Clip(logicalName) != null;
 
+        /// <summary>Holds the pose exactly as it is (The Cube: trapped in goo, nothing moves) until Freeze(false).</summary>
+        public void Freeze(bool on)
+        {
+            frozen = on;
+            if (anim) anim.enabled = !on;
+        }
+
         void Update()
         {
-            if (anim == null) return;
+            if (anim == null || frozen) return;
             if (overrideClip != null && Time.time > overrideUntil) StopOverride();
             if (body && body.healthComponent && !body.healthComponent.alive)
             {
@@ -350,7 +357,7 @@ namespace DeadlockOfRain
 
         void LateUpdate()
         {
-            if (anim == null || rigBones == null) return;
+            if (anim == null || rigBones == null || frozen) return;
             bool free = dead || overrideClip != null || Time.time < armFreeUntil;
             armWeight = Mathf.MoveTowards(armWeight, free ? 0f : 1f, Time.deltaTime / 0.15f);
 
