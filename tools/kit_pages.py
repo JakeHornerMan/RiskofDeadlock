@@ -67,7 +67,9 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
- 'viscous': [('v0.8.0e', ['Puddles last 3 s whole, then shrink away over 5 s (8 s in all)',
+ 'viscous': [('v0.8.0f', ['Puddle Punch leaves a goo puddle too (6.4 m), like Splatter and The Cube',
+                      'Every puddle is 20 % smaller: Splatter and Puddle Punch 6.4 m (was 8), The Cube 8 m (was 10)']),
+             ('v0.8.0e', ['Puddles last 3 s whole, then shrink away over 5 s (8 s in all)',
                       'A puddle is an ammo supply now: each holds 20 rounds and keeps your magazine topped up while you stand in it (no more +20 above the magazine)',
                       'Splatter 200 → 150 %; Viscous jumps a third higher (jump power 15 → 20)']),
              ('v0.8.0d', ['Goo puddles (Splatter and now The Cube) last 10 s, then shrink away over 20 s; stepping into a new puddle gives +20 rounds with no reload, so puddle-hopping keeps the gun firing',

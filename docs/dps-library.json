@@ -1360,17 +1360,17 @@
     "special": "Puddle Punch"
    },
    "hero": true,
-   "measuredOn": "v0.8.0e",
+   "measuredOn": "v0.8.0f",
    "dps": {
     "all": {
      "runs": [
-      2273,
-      2213,
-      2272
+      1660,
+      1805,
+      2410
      ],
-     "mean": 2253,
-     "min": 2213,
-     "max": 2273
+     "mean": 1958,
+     "min": 1660,
+     "max": 2410
     },
     "primary": {
      "runs": [
@@ -1384,48 +1384,48 @@
     },
     "secondary": {
      "runs": [
-      1575,
-      1555,
+      1240,
+      1355,
       1630
      ],
-     "mean": 1587,
-     "min": 1555,
+     "mean": 1408,
+     "min": 1240,
      "max": 1630
     },
     "utility": {
      "runs": [
-      440,
-      540,
-      520
+      460,
+      460,
+      560
      ],
-     "mean": 500,
-     "min": 440,
-     "max": 540
+     "mean": 493,
+     "min": 460,
+     "max": 560
     },
     "special": {
      "runs": [
-      827,
-      960,
-      827
+      587,
+      613,
+      907
      ],
-     "mean": 871,
-     "min": 827,
-     "max": 960
+     "mean": 702,
+     "min": 587,
+     "max": 907
     },
     "equipment": {
      "runs": [
-      1635,
-      1326,
-      2178
+      1421,
+      1386,
+      2029
      ],
-     "mean": 1713,
-     "min": 1326,
-     "max": 2178
+     "mean": 1612,
+     "min": 1386,
+     "max": 2029
     }
    }
   }
  },
  "about": "Stored DPS library (Deadlock of Rain). Main moves and each move alone, % of damage stat per second, measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, 30 s per pass, perfect aim, every move used when ready, no equipment except the \"equipment\" pass). \"all\" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are tagged with the build they were measured on. Built by tools/dps_library.py.",
- "updated": "2026-10-20",
+ "updated": "2026-10-21",
  "runsPerSurvivor": 3
 }

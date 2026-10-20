@@ -198,6 +198,9 @@ namespace DeadlockOfRain
             Vfx.Play(row.Vfx, "hit", at, radius);
             Fx.Sound(row.Id, "hit", at);
             if (!owner) return;
+            // a goo puddle like Splatter's where the fist came up (extra = the skill row whose puddle it is, reach m wide), on every machine
+            var puddle = row.Extra != "none" ? Sheet.Skill(row.Extra) : null;
+            if (puddle != null && row.Reach > 0) DlrPuddle.Plant(owner, puddle, at, row.Reach, damage);
             if (damage)
             {
                 Fx.Blast(owner, at + Vector3.up * 0.5f, radius, row.DamagePct / 100f, row.ProcCoefficient);
