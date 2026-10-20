@@ -176,6 +176,8 @@ if thunderstore:
         'CHANGELOG.md': 'thunderstore/CHANGELOG.md',
         'plugins/DeadlockOfRain.dll': 'plugin/bin/Release/netstandard2.1/DeadlockOfRain.dll',
         'plugins/LICENSE.txt': 'LICENSE.txt',
+        # the DLL holds code adapted from RoR2BepInExPack (MIT): its notice goes beside it too
+        'plugins/THIRD-PARTY-NOTICES.txt': 'THIRD-PARTY-NOTICES.txt',
     }
     files.update({'plugins/extract/' + k: v for k, v in EXTRACT.items()})
     generated = {'manifest.json': ts_manifest(), 'icon.png': icon_png(),

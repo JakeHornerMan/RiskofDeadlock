@@ -14,6 +14,8 @@ UM=/c/Users/jakeh/tools/universal-modder/bin/um
 L="$R/BepInEx/LogOutput.log"; P="$USERPROFILE/AppData/LocalLow/Hopoo Games, LLC/Risk of Rain 2/Player.log"
 # a first argument made of hero ids (letters and commas) picks the heroes; anything else is the checks file
 HEROES=""; if [[ "$1" =~ ^[a-z,]+$ ]]; then HEROES=", \"heroes\": \"$1\""; shift; fi
+# BREAK, STAGE and OFF go into the test file's JSON as they are: letters, digits and commas only
+for V in BREAK STAGE OFF; do [ -z "${!V}" ] || [[ "${!V}" =~ ^[A-Za-z0-9_,]+$ ]] || { echo "$V must be letters, digits and commas"; exit 1; }; done
 [ -n "$BREAK" ] && HEROES="$HEROES, \"break\": \"$BREAK\""
 # STAGE=blackbeach tools/run_test.sh haze   moves the run to that stage first (Distant Roost broke the test spot before 0.7.2)
 [ -n "$STAGE" ] && HEROES="$HEROES, \"stage\": \"$STAGE\""

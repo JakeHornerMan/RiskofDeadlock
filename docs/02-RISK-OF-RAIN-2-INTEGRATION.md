@@ -872,6 +872,10 @@ the other is the **host** (only the host writes checks). How to run it: doc 03 Â
       `push rbp` is replaced by a nop after checking the exact bytes (from RiskofThunder's RoR2BepInExPack, MIT, which
       r2modman players always have; Melty doesn't install it). Thunderstore players with the pack: the thunk is already
       patched ("already applied"). Test-mode switches `OFF=consolefix` / `OFF=soefix`.
+    - Hardening after a security review (2026-10-20): the patch runs only on the verified Mono build (PE SizeOfImage
+      0xA54000 + TimeDateStamp 0x66FD8CF6, read from the loaded module's header via GetModuleHandle), and only after
+      VirtualQuery shows the thunk is committed executable memory without a guard page. After a RoR2/Unity update it
+      logs "not needed for this Mono build" and does nothing; the console fix alone still prevents the crash.
     - How it was found: crash dumps (`%LOCALAPPDATA%\CrashDumps`), symbols from Microsoft's and Unity's symbol servers,
       then the nop patch turned the native crash into a logged StackOverflowException with the looping trace. RoR2 saves
       the profile synchronously in `OnApplicationQuit` before all this, so players never lost progress.

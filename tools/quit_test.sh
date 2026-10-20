@@ -5,7 +5,7 @@
 # usage: tools/quit_test.sh haze        prints QUIT_OK or QUIT_CRASH (+ the Windows crash event); run lab_restore.sh after
 T0=$(date +%s)
 bash "$(dirname "$0")/run_test.sh" "$@" | tail -3
-G=$(powershell -NoProfile -Command "(Get-Process -Name \"Risk of Rain 2\" -ErrorAction SilentlyContinue).Id")
+G=$(powershell -NoProfile -Command "(Get-Process -Name \"Risk of Rain 2\" -ErrorAction SilentlyContinue | Select-Object -First 1).Id")
 [ -z "$G" ] && { echo "QUIT_UNKNOWN: the game was not running after the test"; exit 1; }
 echo "steam overlay loaded: $(powershell -NoProfile -Command "[bool]((Get-Process -Id $G).Modules | Where-Object { \$_.ModuleName -like 'gameoverlayrenderer*' })")"
 powershell -NoProfile -Command "(Get-Process -Id $G).CloseMainWindow() | Out-Null"
@@ -15,3 +15,5 @@ sleep 3
 E=$(powershell -NoProfile -Command "Get-WinEvent -FilterHashtable @{LogName='Application'; Id=1000; StartTime=(Get-Date).AddSeconds(-($(date +%s)-$T0))} -ErrorAction SilentlyContinue | Where-Object { \$_.Message -like '*Risk of Rain 2*' } | ForEach-Object { (\$_.Message -split \"\`n\" | Select-String 'Faulting module name|Fault offset') -join ' ' }")
 if [ -n "$E" ]; then echo "QUIT_CRASH: $E"; else echo "QUIT_OK"; fi
 tail -2 "/c/Program Files (x86)/Steam/steamapps/common/Risk of Rain 2/BepInEx/LogOutput.log" | cut -c1-200
+# never leave the test-mode file behind (a leftover "off" would switch parts of the mod off in the creator's next game)
+rm -f "$LOCALAPPDATA/Melty/test/deadlock-of-rain.json"

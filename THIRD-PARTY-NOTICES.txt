@@ -1,4 +1,4 @@
-Deadlock of Rain bundles the following third-party software in extract/DeadlockExtract.exe. Each keeps its own license.
+Deadlock of Rain bundles the following third-party software (in extract/DeadlockExtract.exe unless noted). Each keeps its own license.
 
 ValveResourceFormat, ValvePak, ValveKeyValue - MIT License - Copyright (c) ValveResourceFormat contributors
   https://github.com/ValveResourceFormat/ValveResourceFormat
