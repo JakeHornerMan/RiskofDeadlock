@@ -15,7 +15,7 @@ OUT = os.path.join(ROOT, 'build', 'pages')
 IMG = os.path.join(OUT, 'img')
 os.makedirs(OUT, exist_ok=True)
 E = html.escape
-VERSION = 'v0.8.0'
+VERSION = 'v0.9.0'
 BAND = 500  # balanced = within ±500 %/s of the RoR2 match (creator, 2026-10-16)
 
 def sheet(name):
@@ -58,6 +58,11 @@ VANILLA = {
         'secondary': ('Seed Barrage', 'Lob a mortar for 450% in an area; costs health.'),
         'utility': ('DIRECTIVE: Disperse', 'Push enemies away and weaken them; no damage.'),
         'special': ('Tangling Growth', 'Fire a flower that roots and damages enemies around it; costs health.')}),
+ 'CaptainBody': dict(name='Captain', who='Captain',
+   kit={'primary': ('Vulcan Shotgun', 'Fire a blast of pellets for 8×120%; charge it to tighten the spread.'),
+        'secondary': ('Power Tazer', 'Fire a tazer for 100% that shocks and bounces.'),
+        'utility': ('Orbital Probe', 'Call down orbital probes for 700% each.'),
+        'special': ('Orbital Supply Beacon', 'Call down supply beacons that heal, shock or resupply.')}),
  'ToolbotBody': dict(name='MUL-T', who='Toolbot',
    kit={'primary': ('Auto-Nailgun', 'Fire nails for 70% each, faster the longer you hold.'),
         'secondary': ('Blast Canister', 'Launch a canister for 220% that bursts into bomblets, stunning.'),
@@ -67,6 +72,9 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
+ 'ratking': [('v0.9.0', ['New hero: Rat King, matched to Captain (Captain’s stats, +20 health, +10 armor, a second jump)',
+                         'His cape and tail swing as springs on top of his Deadlock animations; his gun’s ammo belt shortens shot by shot',
+                         'Deadlock’s own rat runs in the ring, bursts out of the ground at the slam and swarms in the Q, as a cheap crowd'])],
  'viscous': [('v0.8.0f', ['Puddle Punch leaves a goo puddle too (6.4 m), like Splatter and The Cube',
                       'Every puddle is 20 % smaller: Splatter and Puddle Punch 6.4 m (was 8), The Cube 8 m (was 10)']),
              ('v0.8.0e', ['Puddles last 3 s whole, then shrink away over 5 s (8 s in all)',
@@ -137,6 +145,10 @@ RUNS = {
 
 # a new hero's estimate from the sheet numbers, shown until its first bench run (then ANALYSIS takes over)
 PAPER = {
+ 'ratking': ['Not measured yet: paper estimates from the sheet, against Captain’s measured 3,490 %/s (balanced 2,990–3,990).',
+             'Sovereign’s Decree: 24 shots × 2 × 80 % in 4.8 s plus a 2 s reload, 565 %/s to one target. Scrap Grenade: 300 + 300 + 600 % every 8 s, 150 %/s per enemy caught by all three, about 1,250 across the pack.',
+             'Royal Pestments: 25 % four times a second for 6 s every 12 s, 50 %/s per enemy inside, about 900 on the pack. Rule, Ratannia!: 1,500 % in the centre or 150 % at the edge every 12 s, about 525.',
+             'About 3,150 %/s together on paper, near the bottom of the band on purpose: area moves have measured hotter than paper before.'],
  'viscous': ['Not measured yet: these are paper estimates from the sheet numbers, against REX’s measured 1,738 %/s (balanced 1,238–2,238).',
              'Splatter has no cooldown, only the 5 rounds a throw: 4 throws per magazine, 200 % to about 10 of the 12 each, every 7.2 s with the reload, about 1,100 %/s. In the test every move is pressed the moment it is ready, so Splatter crowds out the gun there.',
              'The Cube: 4 tethers × 100 %/s × 3 s plus the 300 % burst on all 12, every 18 s, about 270 %/s. Puddle Punch: 400 % to all 12 on a puddle (12 m), a charge every 10 s, about 480 %/s.',
@@ -306,6 +318,19 @@ def maths(r):
         return [f"{n(d)} % to everything within {n(r['radius'])} m ({n(r['radius'] * r['puddleMult'])} m on a puddle)", f"{n(r['stocks'])} charges, {n(cd)} s each"], d / cd
     if k == 'ult_gooball':
         return [f"{n(r['damageMinPct'])}–{n(d)} % a smash by speed, {n(r['splashPct'])} % slam in {n(r['radius'])} m", f"for {n(r['duration'])} s"], None
+    if k == 'lob_scrap':
+        small = r['chainCount'] - 1; tot = small * d + r['splashPct']
+        return [f"{n(small)} × {n(d)} % in {n(r['radius'])} m + {n(r['splashPct'])} % in {n(r['reach'])} m = {n(tot)} % to an enemy caught by all {n(r['chainCount'])}",
+                f"hops toward the nearest enemy between blasts; every {n(cd)} s"], tot / cd
+    if k == 'rat_ring':
+        tot = d / r['interval'] * r['duration']
+        return [f"{n(d)} % × {n(1 / r['interval'])}/s × {n(r['duration'])} s = {n(tot)} % to each enemy inside {n(r['radius'])} m", f"every {n(cd)} s"], tot / cd
+    if k == 'banner_leap':
+        return [f"{n(d)} % within {n(r['radius'])} m, {n(r['splashPct'])} % and a {n(r['stunDuration'])} s stun out to {n(r['reach'])} m",
+                f"every {n(cd)} s"], d / cd
+    if k == 'ult_swarm':
+        tot = r['chainCount'] * r['duration'] / r['interval'] * d
+        return [f"{n(r['buffStacks'])} rats, up to {n(r['chainCount'])} per enemy, {n(d)} % a bite each second: {n(tot)} % to one enemy over {n(r['duration'])} s"], None
     if k == 'self_buff':
         return ['no damage: invisibility and speed'], 0
     return [], None

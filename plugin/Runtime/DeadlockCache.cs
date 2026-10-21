@@ -133,6 +133,26 @@ namespace DeadlockOfRain
             return m;
         }
 
+        static readonly Dictionary<string, HeroAsset> propAssets = new Dictionary<string, HeroAsset>();
+
+        /// <summary>An effect model read whole: skeleton, clips and textures (extractor 1.6.0+: Rat King's rat and banner, drawn by
+        /// PropModels), or null when it isn't in the cache; the effect then draws without it.</summary>
+        public static HeroAsset PropAsset(string id)
+        {
+            if (string.IsNullOrEmpty(id) || id == "none" || Dir == null) return null;
+            if (propAssets.TryGetValue(id, out var a)) return a;
+            var dir = Path.Combine(Dir, "props", id);
+            var file = Path.Combine(dir, id + ".dlm");
+            try
+            {
+                if (File.Exists(file)) a = HeroAsset.Read(file, dir);
+                else Log.Warn($"effect model {id} not in the cache (extractor 1.6.0+ reads it)");
+            }
+            catch (Exception e) { Log.Warn($"effect model {id}: {e.Message}"); a = null; }
+            propAssets[id] = a;
+            return a;
+        }
+
         public static string ImageFile(string vtex) =>
             Path.Combine(Dir, "images", vtex.Replace('\\', '/').Replace(".vtex", "").Replace('/', '_') + ".png");
 

@@ -78,7 +78,7 @@ os.makedirs(os.path.join(ROOT, 'plugin', 'Generated'), exist_ok=True)
 open(os.path.join(ROOT, 'plugin', 'Generated', 'Sheets.g.cs'), 'w', encoding='utf-8').write('\n'.join(parts) + '\n')
 
 # extractor manifest
-ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'clothParents', 'ragdollBones', 'ragdollThickness', 'rigPrefix', 'loopSecondary'}  # animations columns that are not clip names
+ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'muzzleForward', 'clothParents', 'ragdollBones', 'ragdollThickness', 'rigPrefix', 'loopSecondary', 'springRoots', 'springStiffness', 'springDamping', 'springGravity', 'propBones'}  # animations columns that are not clip names
 anims = {r['hero']: r for r in load('animations')['rows']}
 skills = load('skills')['rows']
 buffs = load('buffs')['rows']
@@ -87,7 +87,9 @@ manifest = {'heroes': [], 'images': [], 'soundEvents': []}
 for hero in h['rows']:
     a = anims[hero['id']]
     clips = sorted({a[c] for c in load('animations')['columns'] if c not in ANIM_RIG_COLUMNS and a[c] != 'none'})
-    manifest['heroes'].append({'id': hero['id'], 'key': hero['deadlockKey'], 'vmdl': hero['vmdl'], 'meshes': hero['meshInclude'], 'clips': clips})
+    # split: meshes kept as their own part (Rat King's ammo belt; extractor 1.6.0+)
+    manifest['heroes'].append({'id': hero['id'], 'key': hero['deadlockKey'], 'vmdl': hero['vmdl'], 'meshes': hero['meshInclude'], 'clips': clips,
+                               'split': [m for m in hero['splitMeshes'] if m != 'none']})
     manifest['images'] += [hero['imageSmall'], hero['imageCard']]
     if hero['passiveIcon'] != 'none': manifest['images'].append(hero['passiveIcon'])
 manifest['images'] += [s['icon'] for s in skills] + [b['icon'] for b in buffs if b['icon'] != 'none']
@@ -98,7 +100,9 @@ manifest['soundEventFiles'] = sorted({hero['soundevents'] for hero in h['rows']}
 manifest['voiceGroups'] = sorted({r['group'] for r in load('voice')['rows']})
 # Deadlock models used as plain meshes by our effects (effects kind prop: the Cube, Goo Ball's sphere, the fist; extractor 1.5.0+)
 effects = load('effects')['rows']
-manifest['props'] = [{'id': e['id'], 'vmdl': e['addressable']} for e in effects if e['kind'] == 'prop']
+# extractor 1.6.0+: a prop's meshes (none = all) and the clips read with its skeleton (Rat King's rat, his banner's sewer)
+manifest['props'] = [{'id': e['id'], 'vmdl': e['addressable'], 'meshes': [m for m in e['meshes'] if m != 'none'], 'clips': [c for c in e['clips'] if c != 'none']}
+                     for e in effects if e['kind'] == 'prop']
 json.dump(manifest, open(os.path.join(ROOT, 'extractor', 'manifest.json'), 'w', encoding='utf-8'), indent=2)
 # which hero(es) use each image, sound event and voice group, so tools/package.py can cut the manifest down to a
 # release's heroes (thunderstore/release.json); an entry with no owner (shared buff icons) is always kept

@@ -54,9 +54,12 @@ namespace DeadlockOfRain
             // one skinned renderer per material: RoR2's CharacterModel drives exactly one material per renderer
             var parts = asset.Parts;
             var infos = new List<CharacterModel.RendererInfo>();
+            // heroes.splitMeshes (Rat King's ammo belt): parts named "<material>@<mesh>", drawn one at a time by AmmoBelt
+            var belt = new Dictionary<string, int>();
             for (int s = 0; s < parts.Length; s++)
             {
                 var def = asset.Materials[Mathf.Clamp(asset.Submeshes[s].Key, 0, asset.Materials.Length - 1)];
+                if (def.Name != null && def.Name.Contains("@")) { if (onlyMaterials == null) belt[def.Name.Substring(def.Name.IndexOf('@') + 1)] = s; continue; }
                 if (onlyMaterials != null && (def.Name == null || def.Name.IndexOf(onlyMaterials, System.StringComparison.OrdinalIgnoreCase) < 0)) continue;
                 // heroes.gooMaterials (Viscous' head): that part is drawn as living cel goo on its bone instead of the game material
                 // heroes.glassMaterials (Viscous' helmet): a clear glossy bubble over it, so the goo head shows through
@@ -75,6 +78,8 @@ namespace DeadlockOfRain
                 infos.Add(new CharacterModel.RendererInfo { renderer = smr, defaultMaterial = mat, defaultShadowCastingMode = ShadowCastingMode.On, ignoreOverlays = false });
             }
 
+            if (belt.Count > 0) infos.Add(AmmoBelt.Build(root, asset, parts, belt, bones, armature));
+
             // child locator (muzzles and anchors used by skills and effects)
             var locator = root.AddComponent<ChildLocator>();
             var pairs = new List<ChildLocator.NameTransformPair>();
@@ -84,6 +89,18 @@ namespace DeadlockOfRain
                 if (t) pairs.Add(new ChildLocator.NameTransformPair { name = name, transform = t });
             }
             // the end of the gun first (shots, tracers, muzzle flashes and thrown abilities start there), the hand otherwise
+            // muzzleForward: the muzzle bone sits at the grip (Rat King's), so the muzzle is a point that far along its forward axis
+            if (anims.Muzzle != "none" && anims.MuzzleForward > 0f)
+            {
+                var mb = Find(bones, anims.Muzzle);
+                if (mb)
+                {
+                    var tip = new GameObject("muzzle_tip").transform;
+                    tip.SetParent(mb, false);
+                    tip.localPosition = Vector3.forward * anims.MuzzleForward;
+                    pairs.Add(new ChildLocator.NameTransformPair { name = "MuzzleRight", transform = tip });
+                }
+            }
             if (anims.Muzzle != "none") Add("MuzzleRight", anims.Muzzle);
             if (anims.MuzzleLeft != "none") Add("MuzzleLeft", anims.MuzzleLeft);
             // the gun rig's bones may carry a prefix (Krill, who rides on Mo, holds the gun: rider_hand_R)
@@ -94,6 +111,8 @@ namespace DeadlockOfRain
             Add("HandR", "hand_R"); Add("HandL", "hand_L");
             AccessTools.Field(typeof(ChildLocator), "transformPairs").SetValue(locator, pairs.ToArray());
 
+            // the cape and tail springs (animations springRoots); added first, so the animator finds them and steps them after its gun rig
+            SpringBones.Add(root, anims, hero.SourceHeight * GlobalScale * hero.ModelScale);
             var anim = root.AddComponent<DeadlockAnimator>();
             anim.Setup(hero.Id, asset, bones, armature);
 
@@ -223,7 +242,7 @@ namespace DeadlockOfRain
             catch (System.Exception e) { Log.Warn($"goo part {part.name}: {e.Message}"); return false; }
         }
 
-        static Material MakeMaterial(HeroAsset asset, MaterialDef def)
+        internal static Material MakeMaterial(HeroAsset asset, MaterialDef def)
         {
             Material m = Template ? new Material(Template) : new Material(Shader.Find("Standard"));
             m.name = "matDeadlock_" + def.Name;

@@ -110,9 +110,13 @@ public static class DlmWriter
         var pos = new List<Vector3>(); var nrm = new List<Vector3>(); var uv = new List<Vector2>();
         var bones = new List<(int, int, int, int)>(); var weights = new List<Vector4>();
         var submeshes = new List<(int mat, List<int> idx)>();
-        var materials = new List<Material>();
+        // a material slot is a glTF material, or (1.6.0) a material on one of the hero's Split meshes, kept as its own submesh
+        // and named "<material>@<mesh>" so the plugin can tell it apart (Rat King's ammo belt: one mesh per round count)
+        var materials = new List<(Material? mat, string? tag)>();
         foreach (var mn in meshNodes)
         {
+            var meshShort = (mn.Mesh.Name ?? "").Split('.').Last();
+            string? tag = hero.Split.Contains(meshShort, StringComparer.OrdinalIgnoreCase) ? meshShort : null;
             var skinMap = new int[mn.Skin?.JointsCount ?? 0];
             for (int j = 0; j < skinMap.Length; j++) skinMap[j] = boneIndex[mn.Skin!.GetJoint(j).Joint];
             int nodeBone = 0;
@@ -154,8 +158,8 @@ public static class DlmWriter
                     list.Add(baseV + (int)idx[k]); list.Add(baseV + (int)idx[k + 2]); list.Add(baseV + (int)idx[k + 1]);
                 }
                 var mat = prim.Material;
-                int mi = mat == null ? -1 : materials.IndexOf(mat);
-                if (mat != null && mi < 0) { mi = materials.Count; materials.Add(mat); }
+                int mi = mat == null && tag == null ? -1 : materials.IndexOf((mat, tag));
+                if ((mat != null || tag != null) && mi < 0) { mi = materials.Count; materials.Add((mat, tag)); }
                 var existing = submeshes.FindIndex(sm => sm.mat == mi);
                 if (existing >= 0) submeshes[existing].idx.AddRange(list); else submeshes.Add((mi, list));
             }
@@ -177,14 +181,22 @@ public static class DlmWriter
             w.Write(Math.Max(0, mat)); w.Write(idx.Count);
             foreach (var i in idx) w.Write(i);
         }
-        if (materials.Count == 0) materials.Add(null!);
+        if (materials.Count == 0) materials.Add((null, null));
         w.Write(materials.Count);
+        // a split mesh's slot shares its material's textures: each real material's images are saved once
+        var saved = new Dictionary<Material, (string albedo, string normal)>();
         for (int m = 0; m < materials.Count; m++)
         {
-            var mat = materials[m];
-            string name = mat?.Name ?? "default";
-            string albedo = SaveChannel(mat, "BaseColor", dir, $"m{m}_albedo.png", 2048, log);
-            string normal = SaveChannel(mat, "Normal", dir, $"m{m}_normal.png", 1024, log);
+            var (mat, tag) = materials[m];
+            string name = (mat?.Name ?? "default") + (tag != null ? "@" + tag : "");
+            string albedo, normal;
+            if (mat != null && saved.TryGetValue(mat, out var files)) (albedo, normal) = files;
+            else
+            {
+                albedo = SaveChannel(mat, "BaseColor", dir, $"m{m}_albedo.png", 2048, log);
+                normal = SaveChannel(mat, "Normal", dir, $"m{m}_normal.png", 1024, log);
+                if (mat != null) saved[mat] = (albedo, normal);
+            }
             int alpha = mat == null ? 0 : mat.Alpha switch { AlphaMode.MASK => 1, AlphaMode.BLEND => 2, _ => 0 };
             w.Write(name); w.Write(albedo); w.Write(normal); w.Write(alpha);
             w.Write(mat?.AlphaCutoff ?? 0.5f);

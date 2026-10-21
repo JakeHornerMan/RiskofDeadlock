@@ -278,7 +278,7 @@ namespace DeadlockOfRain
                         body.inputBank.aimDirection = dir; yield return null;
                         float err = anim.AimError;
                         if (DevShots) { body.inputBank.aimDirection = dir; DevCam(body, $"{hero.Id}_aim{pitch:+0;-0;0}"); }
-                        Log.Info($"Melty test: {hero.Id} aim {pitch:+0;-0;0} deg: gun is {err:F1} deg off the aim");
+                        Log.Info($"Melty test: {hero.Id} aim {pitch:+0;-0;0} deg: gun is {err:F1} deg off the aim; pose: {anim.Describe()}");
                         if (err < 0f || err > 8f) { aimOk = false; aimWhy += $"{hero.Id} aim {pitch:+0;-0;0}: gun {err:F1} deg off; "; }
                     }
                 }
@@ -538,7 +538,7 @@ namespace DeadlockOfRain
             // Commando holding Dust Devil spins in the same tornado
             string anyWhy = ""; bool anyTested = false;
             // (only when its hero is among the tested ones)
-            foreach (var bomb in SkillRow.All.Where(r => (r.Kind == "ult_selfbomb" || r.Kind == "ult_devil" || r.Kind == "ult_gooball") && tested.Any(h => h.Id == r.Hero)).ToList())
+            foreach (var bomb in SkillRow.All.Where(r => (r.Kind == "ult_selfbomb" || r.Kind == "ult_devil" || r.Kind == "ult_gooball" || r.Kind == "ult_swarm") && tested.Any(h => h.Id == r.Hero)).ToList())
             {
                 master.TransformBody("CommandoBody");
                 yield return new WaitForSeconds(1.5f);
@@ -650,6 +650,7 @@ namespace DeadlockOfRain
                 models.Add(go);
             }
             yield return new WaitForSeconds(1.5f);
+            foreach (var m in models) { var da = m ? m.GetComponent<DeadlockAnimator>() : null; if (da) Log.Info($"Melty test: lineup {da.HeroId} pose: {da.Describe()}"); }
             var extra = new List<GameObject>();
             // the four ult pickups' hero figures, in a row in front of the models
             int k = 0;
@@ -1028,7 +1029,7 @@ namespace DeadlockOfRain
         /// <summary>How far in front of the hero the test's targets stand: guns, the leap, the blink and Tag Team's throw
         /// from 10 m, everything else 6 m.</summary>
         internal static float TargetDistance(SkillRow row) =>
-            row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "krill_hop" ? 10f : 6f;
+            row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "krill_hop" || row.Kind == "banner_leap" ? 10f : 6f;
 
         /// <summary>Hold M1 for 1.5 s against the targets still standing (Tag Team's Krill is away: Mo punches), measuring damage.</summary>
         IEnumerator Punches(CharacterBody body, Effects fx)

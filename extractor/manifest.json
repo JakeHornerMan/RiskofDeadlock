@@ -26,7 +26,8 @@
         "weapon_run_s",
         "weapon_run_w",
         "weapon_stand_idle"
-      ]
+      ],
+      "split": []
     },
     {
       "id": "abrams",
@@ -54,7 +55,8 @@
         "weapon_run_s",
         "weapon_run_w",
         "weapon_stand_idle"
-      ]
+      ],
+      "split": []
     },
     {
       "id": "seven",
@@ -82,7 +84,8 @@
         "weapon_run_s",
         "weapon_run_w",
         "weapon_stand_idle"
-      ]
+      ],
+      "split": []
     },
     {
       "id": "infernus",
@@ -110,7 +113,8 @@
         "weapon_run_s",
         "weapon_run_w",
         "weapon_stand_idle"
-      ]
+      ],
+      "split": []
     },
     {
       "id": "mokrill",
@@ -139,7 +143,8 @@
         "weapon_run_s",
         "weapon_run_w",
         "weapon_stand_idle"
-      ]
+      ],
+      "split": []
     },
     {
       "id": "viscous",
@@ -163,6 +168,73 @@
         "weapon_run_s",
         "weapon_run_w",
         "weapon_stand_idle"
+      ],
+      "split": []
+    },
+    {
+      "id": "ratking",
+      "key": "hero_ratking",
+      "vmdl": "models/heroes_wip/ratking/ratking.vmdl",
+      "meshes": [
+        "ratking_model",
+        "ratking_weapon_model",
+        "ratking_banner_model",
+        "ammo_full",
+        "ammo_18",
+        "ammo_17",
+        "ammo_16",
+        "ammo_15",
+        "ammo_14",
+        "ammo_13",
+        "ammo_12",
+        "ammo_11",
+        "ammo_10",
+        "ammo_09",
+        "ammo_08",
+        "ammo_07",
+        "ammo_06",
+        "ammo_05",
+        "ammo_04",
+        "ammo_03",
+        "ammo_02",
+        "ammo_01"
+      ],
+      "clips": [
+        "ability_bearer_charge_air",
+        "ability_bearer_flag_plant",
+        "ability_bearer_start",
+        "ability_nibble",
+        "ability_ratty_guard",
+        "ability_scrap_grenade_toss",
+        "in_air_loop_down",
+        "jump_ground",
+        "reload_stand_idle",
+        "weapon_run_e",
+        "weapon_run_n",
+        "weapon_run_s",
+        "weapon_run_w",
+        "weapon_stand_idle"
+      ],
+      "split": [
+        "ammo_full",
+        "ammo_18",
+        "ammo_17",
+        "ammo_16",
+        "ammo_15",
+        "ammo_14",
+        "ammo_13",
+        "ammo_12",
+        "ammo_11",
+        "ammo_10",
+        "ammo_09",
+        "ammo_08",
+        "ammo_07",
+        "ammo_06",
+        "ammo_05",
+        "ammo_04",
+        "ammo_03",
+        "ammo_02",
+        "ammo_01"
       ]
     }
   ],
@@ -178,11 +250,14 @@
     "panorama/images/heroes/guns/gigawatt_gun_psd.vtex",
     "panorama/images/heroes/guns/haze_gun_psd.vtex",
     "panorama/images/heroes/guns/inferno_gun_psd.vtex",
+    "panorama/images/heroes/guns/ratking_gun_psd.vtex",
     "panorama/images/heroes/guns/viscous_gun_psd.vtex",
     "panorama/images/heroes/haze_card_psd.vtex",
     "panorama/images/heroes/haze_sm_psd.vtex",
     "panorama/images/heroes/inferno_card_psd.vtex",
     "panorama/images/heroes/inferno_sm_psd.vtex",
+    "panorama/images/heroes/ratking_card_psd.vtex",
+    "panorama/images/heroes/ratking_sm_psd.vtex",
     "panorama/images/heroes/viscous_card_psd.vtex",
     "panorama/images/heroes/viscous_sm_psd.vtex",
     "panorama/images/hud/abilities/bull_beef_psd.vtex",
@@ -205,6 +280,10 @@
     "panorama/images/hud/abilities/inferno_dash_psd.vtex",
     "panorama/images/hud/abilities/inferno_deflect_psd.vtex",
     "panorama/images/hud/abilities/inferno_molotov_psd.vtex",
+    "panorama/images/hud/abilities/ratking/ratking_flag_psd.vtex",
+    "panorama/images/hud/abilities/ratking/ratking_grenade_psd.vtex",
+    "panorama/images/hud/abilities/ratking/ratking_shield_psd.vtex",
+    "panorama/images/hud/abilities/ratking/ratking_swarm_psd.vtex",
     "panorama/images/hud/abilities/viscous/viscous_goo_ball_psd.vtex",
     "panorama/images/hud/abilities/viscous/viscous_goo_puddle_psd.vtex",
     "panorama/images/hud/abilities/viscous/viscous_goo_punch_psd.vtex",
@@ -285,8 +364,34 @@
     "Mods.Armor.Phantom.Strike.Cast",
     "Mods.Armor.Phantom.Strike.Hit",
     "Mods.Tech.TormentPulse.Proc",
+    "Ratking.Charge.AOE.Expire",
+    "Ratking.Charge.Cast",
+    "Ratking.Charge.Cast.Delay",
+    "Ratking.Charge.Cast.Jump",
+    "Ratking.Charge.Explosion",
+    "Ratking.Charge.Travel.Lp",
+    "Ratking.Footstep",
+    "Ratking.Guards.Cast",
+    "Ratking.Guards.Expire",
+    "Ratking.Jumpland",
+    "Ratking.Nibble.Cast",
+    "Ratking.Nibble.Damage.Tick",
+    "Ratking.Nibble.DashOff",
+    "Ratking.Nibble.Hit",
+    "Ratking.Nibble.Rat.Scurry.Lp",
+    "Ratking.Rats.Emote",
+    "Ratking.ScrapGrenade.Bounce",
+    "Ratking.ScrapGrenade.Cast",
+    "Ratking.ScrapGrenade.Deselect",
+    "Ratking.ScrapGrenade.Explode",
+    "Ratking.ScrapGrenade.Explode.Big",
+    "Ratking.ScrapGrenade.Proj.Lp",
+    "Ratking.ScrapGrenade.Select",
+    "Ratking.ScrapGrenade.Select.Lp",
     "Ratking.ScrapGrenade.Timer",
     "Ratking.ScrapGrenade.Timer.Final",
+    "Ratking.Wpn.Fire.Main",
+    "Ratking.Wpn.Reload.Start",
     "Seven.Wpn.Fire",
     "Seven.Wpn.Impact",
     "Seven.Wpn.Reload.Start",
@@ -321,6 +426,7 @@
     "soundevents/hero/haze.vsndevts",
     "soundevents/hero/inferno.vsndevts",
     "soundevents/hero/krill.vsndevts",
+    "soundevents/hero/ratking.vsndevts",
     "soundevents/hero/viscous.vsndevts"
   ],
   "voiceGroups": [
@@ -378,6 +484,16 @@
     "krill/krill_use_power2",
     "krill/krill_use_power3",
     "krill/krill_use_power4",
+    "ratking/ratking_hunt",
+    "ratking/ratking_killstreak_high",
+    "ratking/ratking_killstreak_mid",
+    "ratking/ratking_killstreak_start",
+    "ratking/ratking_select",
+    "ratking/ratking_unselect",
+    "ratking/ratking_use_power1",
+    "ratking/ratking_use_power2",
+    "ratking/ratking_use_power3",
+    "ratking/ratking_use_power4",
     "viscous/viscous_happy",
     "viscous/viscous_hunt",
     "viscous/viscous_killstreak_high",
@@ -393,15 +509,52 @@
   "props": [
     {
       "id": "viscous_cube_prop",
-      "vmdl": "models/abilities/viscous_cube.vmdl"
+      "vmdl": "models/abilities/viscous_cube.vmdl",
+      "meshes": [],
+      "clips": []
     },
     {
       "id": "viscous_sphere_prop",
-      "vmdl": "models/abilities/viscous_sphere.vmdl"
+      "vmdl": "models/abilities/viscous_sphere.vmdl",
+      "meshes": [],
+      "clips": []
     },
     {
       "id": "viscous_fist_prop",
-      "vmdl": "models/abilities/viscous_fist_model.vmdl"
+      "vmdl": "models/abilities/viscous_fist_model.vmdl",
+      "meshes": [],
+      "clips": []
+    },
+    {
+      "id": "ratking_rat",
+      "vmdl": "models/heroes_wip/ratking/ratking_minion.vmdl",
+      "meshes": [],
+      "clips": [
+        "rat_pack_run_01",
+        "rat_pack_run_02",
+        "rat_release"
+      ]
+    },
+    {
+      "id": "ratking_grenade_prop",
+      "vmdl": "models/heroes_wip/ratking/ratking_grenade.vmdl",
+      "meshes": [],
+      "clips": []
+    },
+    {
+      "id": "ratking_banner_prop",
+      "vmdl": "models/heroes_wip/ratking/ratking_ult_banner.vmdl",
+      "meshes": [
+        "ratking_banner_model",
+        "ratking_ult_diorama_debris_model",
+        "ratking_ult_diorama_pipes_model",
+        "ratking_ult_diorama_slime_model",
+        "ratking_ult_diorama_eyes"
+      ],
+      "clips": [
+        "ratking_ult_diorama_emerge",
+        "ratking_ult_diorama_idle"
+      ]
     }
   ]
 }

@@ -36,7 +36,7 @@ Related documents:
 | NLayer (MP3 decoder) | 1.16.0 | `extractor/DeadlockExtract.csproj` |
 | .NET SDK for the extractor | **net10.0**. VRF 20 needs it; net8 does not compile against it. | csproj `TargetFramework` |
 | SharpGLTF, SkiaSharp, ValvePak, ValveKeyValue | transitive deps of VRF | `THIRD-PARTY-NOTICES.txt` |
-| Extractor version | `1.3.0` (`Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1) | `extractor/Program.cs`; also part of the cache stamp |
+| Extractor version | `1.6.0` (`Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1, 1.4.0 the heroes.vdata model lookup, 1.5.0 effect models (props), 1.6.0 props with meshes, skeleton and clips, and split hero meshes) | `extractor/Program.cs`; also part of the cache stamp |
 
 A Deadlock update can change asset paths, clip names, mesh names or sound event names. **Section 9** explains how to
 re-validate everything after an update.
@@ -129,7 +129,9 @@ Where every entry comes from:
 |---|---|---|
 | `heroes[].id`, `vmdl` | `heroes.json` → `id`, `vmdl` | |
 | `heroes[].meshes` | `heroes.json` → `meshInclude` | VRF **MeshFilter**: only these mesh names are exported. This drops LODs, alternate costumes, ability props and effect meshes. Mesh names are glTF mesh names (the part after the last `.`). |
-| `heroes[].clips` | `animations.json`: every column **except** `ANIM_RIG_COLUMNS` = {`hero`, `upperBodyBone`, `gunArms`, `gunBone`, `gunHand`, `muzzle`, `muzzleLeft`, `clothParents`}, de-duplicated, `none` dropped | VRF **AnimationFilter**. `aimPose` *is* a clip column (it names a clip). |
+| `heroes[].clips` | `animations.json`: every column **except** `ANIM_RIG_COLUMNS` = {`hero`, `upperBodyBone`, `gunArms`, `gunBone`, `gunHand`, `muzzle`, `muzzleLeft`, `clothParents`, `ragdollBones`, `ragdollThickness`, `rigPrefix`, `loopSecondary`, `springRoots`, `springStiffness`, `springDamping`, `springGravity`, `propBones`}, de-duplicated, `none` dropped | VRF **AnimationFilter**. `aimPose` *is* a clip column (it names a clip). |
+| `heroes[].split` | `heroes.json` → `splitMeshes` (none dropped; 1.6.0) | These meshes stay parts of their own: `DlmWriter` gives each of their materials its own submesh and material record named `<material>@<mesh>` (textures saved once per real material). Rat King's ammo belt: `ammo_full`, `ammo_18` … `ammo_01`, one mesh per round count. |
+| `props[]` | `effects.json` rows of kind `prop`: `id`, `addressable` (the vmdl), `meshes`, `clips` (none dropped; 1.6.0) | A prop's `meshes` filter which meshes are read (none = all) and its `clips` are read with its skeleton (none = a still mesh). |
 | `images` | `heroes.imageSmall`, `heroes.imageCard`, `heroes.passiveIcon` (unless `none`), `skills.icon` (the equipment ults use their skill's icon), `buffs.icon` (unless `none`) | sorted, unique |
 | `soundEvents` | `sounds.json` columns `cast`, `loop`, `hit`, `end`, `reload`, `castLayer`, `hitLayer`, `tick`, `tickFinal` (unless `none`; the layers, v0.5.1, and the ticks, v0.6.2, may be any hero's event, e.g. `Warden.Wpn.Fire` under Infernus' gun) | sorted, unique |
 | `soundEventFiles` | `heroes.soundevents` | **informational only.** The extractor indexes *every* `soundevents/*.vsndevts_c` in the VPK, so cross-file `base` inheritance resolves. |
@@ -240,9 +242,11 @@ It prints each submesh's Y range; take the body and head submeshes (not the gun,
 for Seven: body −0.18 to 2.65 includes the backpack antenna, head top 2.46, and the sheet says 2.43.
 
 ### 6.3b Effect models (props, 1.5.0, `ExportProp`)
-The manifest's `props` (from `effects.json` rows of kind `prop`: id + vmdl) are exported after the heroes, each on its own, with
-no animations: glTF → `DlmWriter.Write` with an empty clip list → `props/<id>/<id>.dlm` (0 bones; every vertex on bone 0, which the
-plugin ignores). A prop that fails is logged `prop <id> (...) SKIPPED` and listed in `ready.json` `failedProps`; it never costs a hero,
+The manifest's `props` (from `effects.json` rows of kind `prop`: id + vmdl) are exported after the heroes, each on its own:
+glTF → `DlmWriter.Write` → `props/<id>/<id>.dlm`. A still prop (Viscous' cube, sphere, fist) has no clips; the plugin reads it as one
+plain mesh (`DeadlockCache.Prop`). **1.6.0:** a prop's `meshes` are passed to VRF's MeshFilter and its `clips` to the AnimationFilter
+(with `ComposeAdditiveAnimations`), and the DLM keeps the skeleton and those clips, so the plugin can animate it
+(`DeadlockCache.PropAsset` + `PropModels.Build`: Rat King's rat runs and leaps, his banner's sewer rises). A prop that fails is logged `prop <id> (...) SKIPPED` and listed in `ready.json` `failedProps`; it never costs a hero,
 and the plugin draws a simple shape instead. `ready.json` `props` lists the ones read. `props/` is wiped on each run.
 Progress has one more step ("props"). `tools/package.py` keeps a release's props by the hero their id starts with (`manifest_owners.json`).
 
@@ -534,6 +538,39 @@ the source values. The RoR2-scale numbers next to them are our own balance (doc 
 - **Voice:** `sounds/vo/viscous/viscous_<group>`; `use_power4`'s takes start at `_11` (preflight accepts any numbered take since v0.8.0).
 - **Particles** (looked at for colours only): `particles/abilities/viscous/*` (goo_grenade_explode, viscous_goo_puddle, restorative_goo,
   glob_punch, bowling_*), materials `materials/particle/blobs/viscous_*`. Our goo palette: deep #1E5E2A, body #4FB83A, highlight #B6F26A.
+
+**Rat King (added 2026-10-21, v0.9.0; Deadlock build 6795):**
+- **Codename** `ratking` (`hero_ratking`); model `models/heroes_wip/ratking/ratking.vmdl` (`m_strModelName`), images
+  `panorama/images/heroes/ratking_sm_psd` / `ratking_card_psd`, gun icon `heroes/guns/ratking_gun_psd`, ability icons in
+  `hud/abilities/ratking/`: `ratking_grenade_psd` = Scrap Grenade (`ability_ratking_scrap_grenade`), `ratking_shield_psd` = Royal
+  Pestments (`ability_ratking_ratarmor`), `ratking_flag_psd` = Rule, Ratannia! (`ability_ratking_standard_bearer`, Deadlock's ult;
+  also our passive's icon), `ratking_swarm_psd` = Rat Swarm (`ability_ratking_ratnibble`), `ratking_nibble_psd` (unused).
+- **Meshes** (glb names): `ratking_model` (the body, 8 materials), `ratking_weapon_model` (the gun), `ratking_banner_model` (the
+  banner he carries in the leap, on bones `banner_0` → `bannerFlag_*`, hidden otherwise: `animations.propBones`), and the ammo belt
+  as **19 meshes**, `ammo_full` and `ammo_18` … `ammo_01` (one per round count; kept apart with `splitMeshes`). Dropped:
+  `ratking_sewer_lid_model`, `ratking_minion0..2_model` (rats on his shoulders), `rattyguard_a/b/c_model` (Royal Pestments' armour).
+  Body 3.003 m tall in the glb (`sourceHeight` 3.003, `heightScale` 1.245): a hunched giant rat with a long tail.
+- **Skeleton** (386 bones): the standard chain (the 12 ragdoll bones exist; `pelvis` under `root_motion`). The gun is skinned to
+  `root_motion/weaponPivot/weapon` like Abrams' (`gunBone` `weaponPivot`, welded to `hand_R`), `muzzle_fx` under `weapon`, belt bones
+  `ammo_belt_0..5`. **Cape:** five bone chains `cloakA_0..3 → cloakA2_*`, `cloakB_*`, `cloakC_*`, `cloakD_* → cloakD2_*`, `cloakE_*`
+  hanging from `clavicle_L/R_TWIST` and `spine_3`; **tail** `tail_0..7`. These are the `springRoots`.
+- **Clips** (glb names, 145): `weapon_stand_idle`, `weapon_run_n/s/e/w`, `jump_ground`, `in_air_loop_down`, `reload_stand_idle`,
+  `ability_scrap_grenade_start/idle/toss`, `ability_ratty_guard` (Royal Pestments), `ability_bearer_start/charge_air/flag_plant`
+  (the banner leap), `ability_nibble` (Rat Swarm). No sprint (run) or death clip (ragdoll).
+- **Gun** (`citadel_weapon_ratking_set`): 2 bullets of 6.0, cycle 0.2 s, clip 24, falloff 20 → 50 m (787 → 1968 units) to 10 %,
+  `m_bApplySpreadToFirstPellet` false (the first pellet goes dead on the aim).
+- **Abilities** (vdata): Scrap Grenade 26 s, 70 per shrapnel, slow 20 % (40 % on the upgrade) for 4 s, bounces;
+  Rat Nibble (Rat Swarm) 24 s, 8 a bite, 10 m; Rat Armor 22 s, 6 s; Standard Bearer 148 s.
+- **Effect models (props, extractor 1.6.0):** `ratking_minion.vmdl` (the rat: 44 bones, 3,818 triangles, 0.7 m with the tail; clips
+  `rat_pack_run_01..04`, `rat_release`), `ratking_grenade.vmdl` (0.95 m), `ratking_ult_banner.vmdl` (the planted banner, 7.6 m, and the
+  sewer diorama around it: meshes `ratking_banner_model`, `ratking_ult_diorama_debris/pipes/slime_model`, `_eyes`; clips
+  `ratking_ult_diorama_emerge`, `_idle`). Also present, unused: `ratking_minion_nibbler`, `ratking_fx_rat` (34 triangles), `ratking_knights`.
+- **Sounds** (`soundevents/hero/ratking.vsndevts`, 58 events): `Ratking.Wpn.Fire.Main/.First/.Release`, `.Wpn.Reload.Start/Mid/End`,
+  `Ratking.ScrapGrenade.Select/.Select.Lp/.Deselect/.Cast/.Proj.Lp/.Bounce/.Explode/.Explode.Big/.Timer/.Timer.Final/.Hit`,
+  `Ratking.Nibble.Cast/.Rat.Scurry.Lp/.Hit/.Damage.Tick/.DashOff`, `Ratking.Rats.Emote`, `Ratking.Guards.Cast/.Expire/...`,
+  `Ratking.Charge.Cast.Delay/.Cast.Jump/.Cast/.Explosion/.Travel.Lp/.AOE.Lp/.AOE.Expire`, `Ratking.Footstep`, `Ratking.Jumpland`.
+- **Voice:** `sounds/vo/ratking/ratking_<group>`: `select`, `unselect`, `use_power1..4`, `killstreak_start/_mid/_high`, `hunt`
+  (no `happy`).
 
 **Next-hero cheat-sheet: Wraith** (found in the build 6774 listings; verify before use):
 - **Model:** `models/heroes_wip/wraith/wraith.vmdl`. Other variants exist (`wraith_gen_man`, `wraith_magician`).

@@ -39,7 +39,8 @@
     "abrams"
   ],
   "Abrams.Wpn.Impact": [
-    "abrams"
+    "abrams",
+    "ratking"
   ],
   "Gigawatt.LightningBall.Cast": [
     "seven"
@@ -203,11 +204,91 @@
   "Mods.Tech.TormentPulse.Proc": [
     "infernus"
   ],
+  "Ratking.Charge.AOE.Expire": [
+    "ratking"
+  ],
+  "Ratking.Charge.Cast": [
+    "ratking"
+  ],
+  "Ratking.Charge.Cast.Delay": [
+    "ratking"
+  ],
+  "Ratking.Charge.Cast.Jump": [
+    "ratking"
+  ],
+  "Ratking.Charge.Explosion": [
+    "ratking"
+  ],
+  "Ratking.Charge.Travel.Lp": [
+    "ratking"
+  ],
+  "Ratking.Footstep": [
+    "ratking"
+  ],
+  "Ratking.Guards.Cast": [
+    "ratking"
+  ],
+  "Ratking.Guards.Expire": [
+    "ratking"
+  ],
+  "Ratking.Jumpland": [
+    "ratking"
+  ],
+  "Ratking.Nibble.Cast": [
+    "ratking"
+  ],
+  "Ratking.Nibble.Damage.Tick": [
+    "ratking"
+  ],
+  "Ratking.Nibble.DashOff": [
+    "ratking"
+  ],
+  "Ratking.Nibble.Hit": [
+    "ratking"
+  ],
+  "Ratking.Nibble.Rat.Scurry.Lp": [
+    "ratking"
+  ],
+  "Ratking.Rats.Emote": [
+    "ratking"
+  ],
+  "Ratking.ScrapGrenade.Bounce": [
+    "ratking"
+  ],
+  "Ratking.ScrapGrenade.Cast": [
+    "ratking"
+  ],
+  "Ratking.ScrapGrenade.Deselect": [
+    "ratking"
+  ],
+  "Ratking.ScrapGrenade.Explode": [
+    "ratking"
+  ],
+  "Ratking.ScrapGrenade.Explode.Big": [
+    "ratking"
+  ],
+  "Ratking.ScrapGrenade.Proj.Lp": [
+    "ratking"
+  ],
+  "Ratking.ScrapGrenade.Select": [
+    "ratking"
+  ],
+  "Ratking.ScrapGrenade.Select.Lp": [
+    "ratking"
+  ],
   "Ratking.ScrapGrenade.Timer": [
-    "infernus"
+    "infernus",
+    "ratking"
   ],
   "Ratking.ScrapGrenade.Timer.Final": [
-    "infernus"
+    "infernus",
+    "ratking"
+  ],
+  "Ratking.Wpn.Fire.Main": [
+    "ratking"
+  ],
+  "Ratking.Wpn.Reload.Start": [
+    "ratking"
   ],
   "Seven.Wpn.Fire": [
     "seven"
@@ -485,6 +566,9 @@
   "panorama/images/heroes/guns/inferno_gun_psd.vtex": [
     "infernus"
   ],
+  "panorama/images/heroes/guns/ratking_gun_psd.vtex": [
+    "ratking"
+  ],
   "panorama/images/heroes/guns/viscous_gun_psd.vtex": [
     "viscous"
   ],
@@ -499,6 +583,12 @@
   ],
   "panorama/images/heroes/inferno_sm_psd.vtex": [
     "infernus"
+  ],
+  "panorama/images/heroes/ratking_card_psd.vtex": [
+    "ratking"
+  ],
+  "panorama/images/heroes/ratking_sm_psd.vtex": [
+    "ratking"
   ],
   "panorama/images/heroes/viscous_card_psd.vtex": [
     "viscous"
@@ -566,6 +656,18 @@
   "panorama/images/hud/abilities/inferno_molotov_psd.vtex": [
     "infernus"
   ],
+  "panorama/images/hud/abilities/ratking/ratking_flag_psd.vtex": [
+    "ratking"
+  ],
+  "panorama/images/hud/abilities/ratking/ratking_grenade_psd.vtex": [
+    "ratking"
+  ],
+  "panorama/images/hud/abilities/ratking/ratking_shield_psd.vtex": [
+    "ratking"
+  ],
+  "panorama/images/hud/abilities/ratking/ratking_swarm_psd.vtex": [
+    "ratking"
+  ],
   "panorama/images/hud/abilities/viscous/viscous_goo_ball_psd.vtex": [
     "viscous"
   ],
@@ -596,6 +698,45 @@
   "panorama/images/items/weapon/tesla_bullets_psd.vtex": [
     "seven"
   ],
+  "ratking/ratking_hunt": [
+    "ratking"
+  ],
+  "ratking/ratking_killstreak_high": [
+    "ratking"
+  ],
+  "ratking/ratking_killstreak_mid": [
+    "ratking"
+  ],
+  "ratking/ratking_killstreak_start": [
+    "ratking"
+  ],
+  "ratking/ratking_select": [
+    "ratking"
+  ],
+  "ratking/ratking_unselect": [
+    "ratking"
+  ],
+  "ratking/ratking_use_power1": [
+    "ratking"
+  ],
+  "ratking/ratking_use_power2": [
+    "ratking"
+  ],
+  "ratking/ratking_use_power3": [
+    "ratking"
+  ],
+  "ratking/ratking_use_power4": [
+    "ratking"
+  ],
+  "ratking_banner_prop": [
+    "ratking"
+  ],
+  "ratking_grenade_prop": [
+    "ratking"
+  ],
+  "ratking_rat": [
+    "ratking"
+  ],
   "soundevents/hero/abrams.vsndevts": [
     "abrams"
   ],
@@ -610,6 +751,9 @@
   ],
   "soundevents/hero/krill.vsndevts": [
     "mokrill"
+  ],
+  "soundevents/hero/ratking.vsndevts": [
+    "ratking"
   ],
   "soundevents/hero/viscous.vsndevts": [
     "viscous"

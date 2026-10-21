@@ -78,6 +78,17 @@
       "enigmaCompatible": true,
       "randomTrigger": true,
       "figure": "all"
+    },
+    {
+      "id": "eq_ratking_swarm",
+      "hero": "ratking",
+      "skill": "ratking_swarm",
+      "pickupText": "Release 50 rats that latch onto enemies within 40m and bite until they die, for 15s.",
+      "lore": "Every sewer has a king. Every king has subjects. They are hungry.",
+      "canDrop": true,
+      "enigmaCompatible": true,
+      "randomTrigger": true,
+      "figure": "all"
     }
   ]
 }

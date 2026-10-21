@@ -1,6 +1,6 @@
 {
   "sheet": "heroes",
-  "about": "One row per Deadlock hero playable as a Risk of Rain 2 survivor. Heights are the hero's body-mesh height in metres as exported from the player's own Deadlock install (VRF glTF, 1 Source unit = 0.0254 m), measured 2026-10-12 on Deadlock ClientVersion 6774. heightScale keeps Deadlock's relative sizes: every hero is scaled by one global factor (anchorHero's height -> Commando's model height), so heightScale = sourceHeight / anchor sourceHeight. passiveName/passiveDescription/passiveIcon: the hero's passive on the character select screen (what the gun already does on hit), or none. damageHealBack/damageHealBackTime: the passive heals back that fraction of every hit taken over that many seconds (Abrams' Infernal Resilience), 0 = none. debuffResist: timed debuffs on the hero last that fraction less. modelScale: an extra even scale on the model only (1 = Deadlock's relative size; Mo & Krill are scaled up to Abrams' height), so heightScale = sourceHeight x modelScale / anchor sourceHeight. capsuleFrom: a vanilla body whose movement capsule the hero copies instead of scaling Commando's (none = scaled), so a huge model still fits through every stage. cameraFrom / cameraScale / cameraRight: a vanilla body whose camera settings are copied (none = Commando's scaled by height), pushed back by cameraScale and to the right by cameraRight metres. interactRange: multiplies the reach for chests, shrines and the teleporter. immuneToForce: the hero can't be pushed, pulled or knocked back by enemy hits (vanilla ImmuneToPhysicsForces). riderBone: a bone carrying a second character on the model (Krill), hidden by scaling it to 0 while a buff with melee=true is on (he is away), or none. noFallDamage: the hero never takes fall damage (Viscous: goo lands soft). landShake: the amplitude of the screen shake after a heavy landing (2 = the usual; Viscous 0.2). voiceGain: the hero's voice lines' loudness on top of the usual (1 = the usual; Viscous 1.2). gooMaterials/glassMaterials: model parts drawn as living goo / a clear glass helmet instead of the game material.",
+  "about": "One row per Deadlock hero playable as a Risk of Rain 2 survivor. Heights are the hero's body-mesh height in metres as exported from the player's own Deadlock install (VRF glTF, 1 Source unit = 0.0254 m), measured 2026-10-12 on Deadlock ClientVersion 6774. heightScale keeps Deadlock's relative sizes: every hero is scaled by one global factor (anchorHero's height -> Commando's model height), so heightScale = sourceHeight / anchor sourceHeight. passiveName/passiveDescription/passiveIcon: the hero's passive on the character select screen (what the gun already does on hit), or none. damageHealBack/damageHealBackTime: the passive heals back that fraction of every hit taken over that many seconds (Abrams' Infernal Resilience), 0 = none. debuffResist: timed debuffs on the hero last that fraction less. modelScale: an extra even scale on the model only (1 = Deadlock's relative size; Mo & Krill are scaled up to Abrams' height), so heightScale = sourceHeight x modelScale / anchor sourceHeight. capsuleFrom: a vanilla body whose movement capsule the hero copies instead of scaling Commando's (none = scaled), so a huge model still fits through every stage. cameraFrom / cameraScale / cameraRight: a vanilla body whose camera settings are copied (none = Commando's scaled by height), pushed back by cameraScale and to the right by cameraRight metres. interactRange: multiplies the reach for chests, shrines and the teleporter. immuneToForce: the hero can't be pushed, pulled or knocked back by enemy hits (vanilla ImmuneToPhysicsForces). riderBone: a bone carrying a second character on the model (Krill), hidden by scaling it to 0 while a buff with melee=true is on (he is away), or none. noFallDamage: the hero never takes fall damage (Viscous: goo lands soft). landShake: the amplitude of the screen shake after a heavy landing (2 = the usual; Viscous 0.2). voiceGain: the hero's voice lines' loudness on top of the usual (1 = the usual; Viscous 1.2). splitMeshes: meshes the extractor keeps as parts of their own instead of merging them into their material (Rat King's ammo belt, one mesh per round count, extractor 1.6.0+), or none. airJumpMult: the vertical speed of the jumps after the first is multiplied by this (Rat King's King's Leap: 1.3; 1 = the usual). gooMaterials/glassMaterials: model parts drawn as living goo / a clear glass helmet instead of the game material.",
   "anchorHero": "haze",
   "anchorRoR2Body": "CommandoBody",
   "columns": [
@@ -9,6 +9,7 @@
     "deadlockKey",
     "vmdl",
     "meshInclude",
+    "splitMeshes",
     "imageSmall",
     "imageCard",
     "soundevents",
@@ -23,6 +24,7 @@
     "interactRange",
     "immuneToForce",
     "noFallDamage",
+    "airJumpMult",
     "landShake",
     "voiceGain",
     "gooMaterials",
@@ -84,7 +86,11 @@
       "damageHealBack": 0,
       "damageHealBackTime": 0,
       "debuffResist": 0,
-      "lore": "Deadlock's twin-SMG assassin. Every hit stacks Fixation on her target, Smoke Bomb hides her, Sleep Dagger drops a target and Bullet Dance shreds everything around her."
+      "lore": "Deadlock's twin-SMG assassin. Every hit stacks Fixation on her target, Smoke Bomb hides her, Sleep Dagger drops a target and Bullet Dance shreds everything around her.",
+      "splitMeshes": [
+        "none"
+      ],
+      "airJumpMult": 1.0
     },
     {
       "id": "abrams",
@@ -129,7 +135,11 @@
       "damageHealBack": 0.1,
       "damageHealBackTime": 10,
       "debuffResist": 0.2,
-      "lore": "Deadlock's brawler detective. He drains life with Siphon Life, crashes through enemies with Shoulder Charge, shrugs off damage with Infernal Resilience and lands from the sky with Seismic Impact."
+      "lore": "Deadlock's brawler detective. He drains life with Siphon Life, crashes through enemies with Shoulder Charge, shrugs off damage with Infernal Resilience and lands from the sky with Seismic Impact.",
+      "splitMeshes": [
+        "none"
+      ],
+      "airJumpMult": 1.0
     },
     {
       "id": "seven",
@@ -175,7 +185,11 @@
       "damageHealBack": 0,
       "damageHealBackTime": 0,
       "debuffResist": 0,
-      "lore": "Deadlock's lightning caster. He throws Lightning Balls, plants Static Charges that stun, chains Power Surge through crowds and rises into a Storm Cloud."
+      "lore": "Deadlock's lightning caster. He throws Lightning Balls, plants Static Charges that stun, chains Power Surge through crowds and rises into a Storm Cloud.",
+      "splitMeshes": [
+        "none"
+      ],
+      "airJumpMult": 1.0
     },
     {
       "id": "infernus",
@@ -222,7 +236,11 @@
       "damageHealBack": 0,
       "damageHealBackTime": 0,
       "debuffResist": 0,
-      "lore": "Deadlock's arsonist. His bullets build Afterburn, Napalm's flask splashes a crowd with fire, Flame Dash leaves fire behind him and Concussive Combustion levels the room."
+      "lore": "Deadlock's arsonist. His bullets build Afterburn, Napalm's flask splashes a crowd with fire, Flame Dash leaves fire behind him and Concussive Combustion levels the room.",
+      "splitMeshes": [
+        "none"
+      ],
+      "airJumpMult": 1.0
     },
     {
       "id": "mokrill",
@@ -267,7 +285,11 @@
       "damageHealBack": 0,
       "damageHealBackTime": 0,
       "debuffResist": 0,
-      "lore": "Deadlock's tunnel rats: Mo, the giant mole who digs, and Krill, who rides him and does the shooting and the talking. Sand Blast stops monsters fighting back, Burrow carries Mo under the ground, Dust Devil drags a whole pack around him and Tag Team throws Krill from enemy to enemy."
+      "lore": "Deadlock's tunnel rats: Mo, the giant mole who digs, and Krill, who rides him and does the shooting and the talking. Sand Blast stops monsters fighting back, Burrow carries Mo under the ground, Dust Devil drags a whole pack around him and Tag Team throws Krill from enemy to enemy.",
+      "splitMeshes": [
+        "none"
+      ],
+      "airJumpMult": 1.0
     },
     {
       "id": "viscous",
@@ -311,7 +333,97 @@
       "damageHealBack": 0,
       "damageHealBackTime": 0,
       "debuffResist": 0,
-      "lore": "Deadlock's psychic sea anemone in a suit of goo. Everything his goo touches gets Gooed and slows down: the blobs from his gun, Splatter's puddles, the Cube's tar tethers and the fist of Puddle Punch. Goo Ball turns whoever holds it into a huge rolling ball of goo."
+      "lore": "Deadlock's psychic sea anemone in a suit of goo. Everything his goo touches gets Gooed and slows down: the blobs from his gun, Splatter's puddles, the Cube's tar tethers and the fist of Puddle Punch. Goo Ball turns whoever holds it into a huge rolling ball of goo.",
+      "splitMeshes": [
+        "none"
+      ],
+      "airJumpMult": 1.0
+    },
+    {
+      "id": "ratking",
+      "displayName": "Rat King",
+      "deadlockKey": "hero_ratking",
+      "vmdl": "models/heroes_wip/ratking/ratking.vmdl",
+      "meshInclude": [
+        "ratking_model",
+        "ratking_weapon_model",
+        "ratking_banner_model",
+        "ammo_full",
+        "ammo_18",
+        "ammo_17",
+        "ammo_16",
+        "ammo_15",
+        "ammo_14",
+        "ammo_13",
+        "ammo_12",
+        "ammo_11",
+        "ammo_10",
+        "ammo_09",
+        "ammo_08",
+        "ammo_07",
+        "ammo_06",
+        "ammo_05",
+        "ammo_04",
+        "ammo_03",
+        "ammo_02",
+        "ammo_01"
+      ],
+      "splitMeshes": [
+        "ammo_full",
+        "ammo_18",
+        "ammo_17",
+        "ammo_16",
+        "ammo_15",
+        "ammo_14",
+        "ammo_13",
+        "ammo_12",
+        "ammo_11",
+        "ammo_10",
+        "ammo_09",
+        "ammo_08",
+        "ammo_07",
+        "ammo_06",
+        "ammo_05",
+        "ammo_04",
+        "ammo_03",
+        "ammo_02",
+        "ammo_01"
+      ],
+      "imageSmall": "panorama/images/heroes/ratking_sm_psd.vtex",
+      "imageCard": "panorama/images/heroes/ratking_card_psd.vtex",
+      "soundevents": "soundevents/hero/ratking.vsndevts",
+      "sourceHeight": 3.003,
+      "heightScale": 1.245,
+      "modelScale": 1.0,
+      "widthScale": 1.2,
+      "capsuleFrom": "none",
+      "cameraFrom": "none",
+      "cameraScale": 1.0,
+      "cameraRight": 0.0,
+      "interactRange": 1.0,
+      "immuneToForce": false,
+      "noFallDamage": false,
+      "airJumpMult": 1.3,
+      "landShake": 1.0,
+      "voiceGain": 1.0,
+      "gooMaterials": [
+        "none"
+      ],
+      "glassMaterials": [
+        "none"
+      ],
+      "riderBone": "none",
+      "primaryColor": "#C9A227",
+      "sortPosition": 100.7,
+      "roR2Analog": "CaptainBody",
+      "subtitle": "The Sewer Sovereign",
+      "passiveName": "King's Leap",
+      "passiveDescription": "Rat King can <style=cIsUtility>double jump</style>, and the second jump goes <style=cIsUtility>30% higher</style>: a tucked spin with his cape swept up behind him.",
+      "passiveIcon": "panorama/images/hud/abilities/ratking/ratking_flag_psd.vtex",
+      "damageHealBack": 0,
+      "damageHealBackTime": 0,
+      "debuffResist": 0,
+      "lore": "Deadlock's king of the sewers, a giant rat in a cape with a belt-fed spreadshot and an army of rats. The Scrap Grenade blasts three times, hopping toward the nearest monster between blasts; Royal Pestments circles him with biting rats; Rule, Ratannia! leaps in and plants his banner; Rat Swarm sends fifty rats to latch on and bite."
     }
   ]
 }

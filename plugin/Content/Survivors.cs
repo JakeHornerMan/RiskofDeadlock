@@ -79,7 +79,7 @@ namespace DeadlockOfRain
 
         /// <summary>Movement skills run on the Body machine (they steer the character), everything else on Weapon.</summary>
         public static string MachineFor(string kind) =>
-            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "ult_devil" || kind == "goo_cube" ? "Body" : "Weapon";
+            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "ult_devil" || kind == "goo_cube" || kind == "banner_leap" ? "Body" : "Weapon";
 
         /// <summary>The hero never takes fall damage (heroes.json noFallDamage: Viscous). Moves that switch fall damage off for a while
         /// (Seismic Impact, Goo Ball) leave it off for such a hero when they end.</summary>
@@ -440,12 +440,17 @@ namespace DeadlockOfRain
             wasGrounded = grounded;
         }
 
+        float reloadTime;
+        /// <summary>How far the reload under way is (0 at its start, 1 done); 1 when not reloading (Rat King's belt fills along it).</summary>
+        public float ReloadFraction => Reloading && reloadTime > 0f ? Mathf.Clamp01(1f - (reloadEnd - Time.time) / reloadTime) : 1f;
+
         public void BeginReload(SkillRow gun, float attackSpeed)
         {
             if (Reloading) return;
             Reloading = true;
             clip = (int)gun.ClipSize;
-            reloadEnd = Time.time + gun.ReloadTime / Mathf.Max(0.1f, attackSpeed);
+            reloadTime = gun.ReloadTime / Mathf.Max(0.1f, attackSpeed);
+            reloadEnd = Time.time + reloadTime;
             Fx.Sound(gun.Id, "reload", transform.position);
         }
 
@@ -475,8 +480,20 @@ namespace DeadlockOfRain
         }
 
         float nextUntarget;
+        int lastJumps;
         void FixedUpdate()
         {
+            // King's Leap (heroes airJumpMult): a jump in the air climbs that much faster than the first, on the owner (who moves the body)
+            if (hero != null && hero.AirJumpMult != 1f && body && body.hasEffectiveAuthority && body.characterMotor)
+            {
+                var m = body.characterMotor;
+                if (m.jumpCount > lastJumps && lastJumps >= 1 && !m.isGrounded && m.velocity.y > 0f)
+                {
+                    var v = m.velocity; v.y *= hero.AirJumpMult; m.velocity = v;
+                    MeltyTest.Report("air-jump", true, body.baseNameToken);
+                }
+                lastJumps = m.jumpCount;
+            }
             // invisible (Smoke Bomb's vanilla Cloak): RoR2's AI won't pick a cloaked body as a new target, but keeps one it
             // already has, so drop the hero from every enemy AI that is aiming at them; the cloak stops them finding the hero again
             if (!UnityEngine.Networking.NetworkServer.active || !body || !body.hasCloakBuff || Time.fixedTime < nextUntarget) return;

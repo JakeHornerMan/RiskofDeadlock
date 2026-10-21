@@ -48,6 +48,18 @@ namespace DeadlockOfRain
         Vector3 gunRootInHand;
         public void ResetDrift() => GunDrift = 0f;
 
+        // the cape and tail springs (animations springRoots), stepped after the gun rig turns the spine they hang from
+        SpringBones springs;
+        // bones carrying a prop the hero only holds during a move (animations propBones: Rat King's banner), at scale 0 otherwise
+        Transform[] propBones;
+        Vector3[] propScale;
+        bool propsShown;
+        // King's Leap (heroes airJumpMult): a tucked forward spin of the whole skeleton on a jump in the air
+        Transform armature;
+        float flipStart = -1f, flipTime, lastY, lastVy;
+        Vector3 flipMid = Vector3.up;
+        bool airLeap;
+
         public void Setup(string heroId, HeroAsset asset, Transform[] bones, Transform armature)
         {
             HeroId = heroId;
@@ -87,6 +99,23 @@ namespace DeadlockOfRain
                 st.wrapMode = locomotion || kv.Key == rows.UltLoop || kv.Key == rows.UtilityLoop || kv.Key == rows.SpecialLoop || (kv.Key == rows.Secondary && rows.LoopSecondary) ? WrapMode.Loop : WrapMode.Once;
             }
             CaptureRig(all);
+            springs = GetComponent<SpringBones>();
+            armature = transform.Find("Armature");
+            var hero = Sheet.Hero(HeroId);
+            airLeap = hero != null && hero.AirJumpMult > 1f;
+            if (hero != null) flipMid = Vector3.up * hero.SourceHeight * 0.45f;
+            var props = new List<Transform>();
+            foreach (var n in rows.PropBones) { var t = n == "none" ? null : Bone(n); if (t) props.Add(t); }
+            propBones = props.ToArray();
+            propScale = new Vector3[propBones.Length];
+            // (a clone of the prefab, whose props are already hidden, keeps Deadlock's own scale 1)
+            for (int i = 0; i < propBones.Length; i++)
+            {
+                var sc = propBones[i].localScale;
+                propScale[i] = sc.sqrMagnitude < 1e-6f ? Vector3.one : sc;
+                propBones[i].localScale = Vector3.zero;
+            }
+            propsShown = false;
             loco = null;
             Play(rows.Idle, 0f);
             loco = rows.Idle;
@@ -125,8 +154,12 @@ namespace DeadlockOfRain
             if (gunRoot && mainHand) gunRootInHand = mainHand.InverseTransformPoint(gunRoot.position);
             var muzzle = Bone("muzzle_fx");
             var dir = muzzle && mainHand ? muzzle.position - mainHand.position : transform.forward;
+            // a muzzle at the grip (animations muzzleForward, Rat King): the gun points along its own axis
+            var tip = Bone("muzzle_tip");
+            if (tip && tip.parent) dir = tip.position - tip.parent.position;
             if (dir.sqrMagnitude < 1e-6f) dir = transform.forward;
             gunFwdLocal = mainHand ? Quaternion.Inverse(mainHand.rotation) * dir.normalized : Vector3.forward;
+            if (MeltyTest.Active) Log.Info($"gun rig {HeroId}: gun points {transform.InverseTransformDirection(dir.normalized).ToString("F2")} (model space) in {rows.AimPose}, tip {(tip ? "yes" : "no")}, hand {(mainHand ? mainHand.name : "-")}, gun bone {(gunBone ? gunBone.name : "-")}");
         }
 
         static void Snapshot(List<Transform> bones, out Transform[] t, out Vector3[] pos, out Quaternion[] rot)
@@ -141,16 +174,17 @@ namespace DeadlockOfRain
             clip == rows.Idle || clip == rows.RunN || clip == rows.RunS || clip == rows.RunE || clip == rows.RunW ||
             clip == rows.Sprint || clip == rows.JumpAir;
 
-        static Dictionary<string, AnimationClip> BuildClips(string hero, HeroAsset asset, Transform[] bones, Transform root)
+        internal static Dictionary<string, AnimationClip> BuildClips(string hero, HeroAsset asset, Transform[] bones, Transform root)
         {
             if (clipCache.TryGetValue(hero, out var cached)) return cached;
             var result = new Dictionary<string, AnimationClip>();
             var paths = new string[bones.Length];
             for (int i = 0; i < bones.Length; i++) paths[i] = PathTo(bones[i], root);
+            int rm = System.Array.FindIndex(asset.Bones, b => b.Name == "root_motion");
             foreach (var c in asset.Clips.Values)
             {
                 var clip = new AnimationClip { legacy = true, name = c.Name, frameRate = c.Fps };
-                foreach (var t in c.Tracks)
+                foreach (var t in RootFolded(asset, c, rm))
                 {
                     if (t.Bone < 0 || t.Bone >= bones.Length) continue;
                     // a parentless bone the model builder attached to the body (Abrams' coat cloth) keeps its rest pose:
@@ -192,6 +226,46 @@ namespace DeadlockOfRain
             }
             clipCache[hero] = result;
             return result;
+        }
+
+        /// <summary>The clip's tracks with root_motion's rotation folded into its direct children (pelvis, a gun pivot, a
+        /// banner), and no track on root_motion itself. Deadlock's clips turn root_motion (most to 270/90/0, some leave it at
+        /// rest), and a legacy clip without a track never resets it, so a clip played after one that turned it inherited the
+        /// turn: Rat King's idle (no root track) laid him on his back after his first run or jump. Folded, the root always
+        /// stays at rest and every clip poses the bones exactly as before on its own.</summary>
+        static List<TrackDef> RootFolded(HeroAsset asset, ClipDef c, int rm)
+        {
+            var root = rm >= 0 ? c.Tracks.Find(t => t.Bone == rm) : null;
+            if (root == null || root.Rot.Length == 0) return c.Tracks;
+            var restInv = Quaternion.Inverse(asset.Bones[rm].Rot);
+            var outList = new List<TrackDef>();
+            var done = new HashSet<int>();
+            foreach (var t in c.Tracks)
+            {
+                if (t.Bone == rm) continue;
+                if (t.Bone >= 0 && t.Bone < asset.Bones.Length && asset.Bones[t.Bone].Parent == rm) { outList.Add(Fold(asset, c, root, restInv, t)); done.Add(t.Bone); }
+                else outList.Add(t);
+            }
+            // children the clip doesn't move still hang off the turned root: give them their rest pose, turned the same way
+            for (int i = 0; i < asset.Bones.Length; i++)
+                if (asset.Bones[i].Parent == rm && !done.Contains(i))
+                    outList.Add(Fold(asset, c, root, restInv, new TrackDef { Bone = i, Pos = new[] { asset.Bones[i].Pos }, Rot = new[] { asset.Bones[i].Rot } }));
+            return outList;
+        }
+
+        static TrackDef Fold(HeroAsset asset, ClipDef c, TrackDef root, Quaternion restInv, TrackDef t)
+        {
+            var b = asset.Bones[t.Bone];
+            int n = root.Rot.Length > 1 || t.Rot.Length > 1 || t.Pos.Length > 1 ? Mathf.Max(1, c.Frames) : 1;
+            var pos = new Vector3[n]; var rot = new Quaternion[n];
+            for (int f = 0; f < n; f++)
+            {
+                var r = restInv * root.Rot[Mathf.Min(f, root.Rot.Length - 1)];
+                var q = t.Rot.Length > 0 ? t.Rot[Mathf.Min(f, t.Rot.Length - 1)] : b.Rot;
+                var p = t.Pos.Length > 0 ? t.Pos[Mathf.Min(f, t.Pos.Length - 1)] : b.Pos;
+                rot[f] = r * q; pos[f] = r * p;
+            }
+            return new TrackDef { Bone = t.Bone, Pos = pos, Rot = rot };
         }
 
         static AnimationCurve Linear(Keyframe[] k)
@@ -295,6 +369,38 @@ namespace DeadlockOfRain
 
         public bool HasClip(string logicalName) => Clip(logicalName) != null;
 
+        /// <summary>Test mode: how the pose stands (the spin, the skeleton's tilt, the head's height above the feet, the spine).</summary>
+        public string Describe()
+        {
+            var all = GetComponentsInChildren<Transform>(true);
+            Transform B(string n) { foreach (var t in all) if (t.name == n) return t; return null; }
+            var head = B("head"); var pelvis = B("pelvis");
+            string sp = "";
+            if (spine != null) foreach (var t in spine) if (t) sp += $" {t.name} {t.localEulerAngles.ToString("F0")}";
+            var tipT = B("muzzle_tip");
+            string gun = mainHand ? $"rig gun {transform.InverseTransformDirection(mainHand.rotation * gunFwdLocal).ToString("F2")}" : "";
+            if (tipT && tipT.parent) gun += $", barrel {transform.InverseTransformDirection((tipT.position - tipT.parent.position).normalized).ToString("F2")}";
+            return $"{gun}, flip {(flipStart >= 0f ? "on" : "off")}, armature {(armature ? armature.localEulerAngles.ToString("F0") : "-")}, model up {transform.up.ToString("F2")}, " +
+                   $"head {(head ? (head.position.y - transform.position.y).ToString("F2") : "-")} m, pelvis {(pelvis ? (pelvis.position.y - transform.position.y).ToString("F2") : "-")} m, override {overrideClip ?? "-"}, loco {loco},{sp}" +
+                   $", pelvis local {(pelvis ? pelvis.localPosition.ToString("F2") + " " + pelvis.localEulerAngles.ToString("F0") + " under " + pelvis.parent.name : "-")}" +
+                   $", root {(B("root_motion") ? B("root_motion").localPosition.ToString("F2") + " " + B("root_motion").localEulerAngles.ToString("F0") : "-")}, enabled {(anim ? anim.enabled.ToString() : "-")}, playing {(anim ? anim.isPlaying.ToString() : "-")}";
+        }
+
+        /// <summary>Shows or hides the props the hero only holds during a move (propBones: Rat King's banner while he leaps).</summary>
+        public void ShowProps(bool on)
+        {
+            if (propBones == null || propsShown == on) return;
+            propsShown = on;
+            for (int i = 0; i < propBones.Length; i++) if (propBones[i]) propBones[i].localScale = on ? propScale[i] : Vector3.zero;
+        }
+
+        /// <summary>King's Leap: one tucked forward spin of the whole body over the given time (the cape whips through it).</summary>
+        public void Flip(float time = 0.5f)
+        {
+            if (!armature || dead) return;
+            flipStart = Time.time; flipTime = time;
+        }
+
         /// <summary>Holds the pose exactly as it is (The Cube: trapped in goo, nothing moves) until Freeze(false).</summary>
         public void Freeze(bool on)
         {
@@ -335,6 +441,16 @@ namespace DeadlockOfRain
                     if (land != null) { Gesture("land"); landUntil = Time.time + 0.2f; }
                 }
                 if (!grounded && wasGrounded && inputs && inputs.jump.down) Gesture("jump_start");
+                // a jump in the air (King's Leap): read from the body's own climb, so every player's machine sees it, not only
+                // the owner's (the jump count lives there)
+                float y = transform.position.y, dt = Time.deltaTime;
+                if (airLeap && dt > 0f)
+                {
+                    float vy = (y - lastY) / dt;
+                    if (!grounded && !wasGrounded && vy - lastVy > 6f && vy > 4f && vy < 40f && Time.time > flipStart + flipTime + 0.1f) Flip();
+                    lastVy = vy;
+                }
+                lastY = y;
                 wasGrounded = grounded;
             }
             if (next != loco && clips.ContainsKey(next))
@@ -356,6 +472,27 @@ namespace DeadlockOfRain
         }
 
         void LateUpdate()
+        {
+            Rig();
+            FlipPose();
+            if (springs) springs.Step(Time.deltaTime);
+        }
+
+        /// <summary>The King's Leap spin: the skeleton turns once forward about the middle of the body.</summary>
+        void FlipPose()
+        {
+            if (!armature) return;
+            if (flipStart < 0f || dead) { armature.localRotation = Quaternion.identity; armature.localPosition = Vector3.zero; return; }
+            float t = (Time.time - flipStart) / Mathf.Max(0.1f, flipTime);
+            if (t >= 1f) { flipStart = -1f; armature.localRotation = Quaternion.identity; armature.localPosition = Vector3.zero; return; }
+            // ease in and out, so he tucks, whips round and opens up
+            float k = t * t * (3f - 2f * t);
+            var r = Quaternion.AngleAxis(360f * k, Vector3.right);
+            armature.localRotation = r;
+            armature.localPosition = flipMid - r * flipMid;
+        }
+
+        void Rig()
         {
             if (anim == null || rigBones == null || frozen) return;
             bool free = dead || overrideClip != null || Time.time < armFreeUntil;

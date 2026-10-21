@@ -192,6 +192,31 @@ namespace DeadlockOfRain.States
                     }.Fire();
                 }
             }
+            else if (isAuthority && row.Pattern == "ratking")
+            {
+                // Sovereign's Decree: the first pellet dead on the aim, every other one strayed up to spreadDeg; damage by
+                // distance from falloffStart to falloffEnd (RatPelletHit)
+                var side = Vector3.Cross(Vector3.up, aim.direction).normalized;
+                if (side.sqrMagnitude < 0.01f) side = Vector3.right;
+                bool crit = RollCrit();
+                for (int k = 0; k < Mathf.Max(1, (int)row.Pellets); k++)
+                {
+                    var dir = aim.direction;
+                    if (k > 0) dir = Quaternion.AngleAxis(Random.Range(0f, 360f), aim.direction) * Quaternion.AngleAxis(Random.Range(0.3f, 1f) * row.SpreadDeg, side) * aim.direction;
+                    new BulletAttack
+                    {
+                        owner = gameObject, weapon = gameObject,
+                        origin = aim.origin, aimVector = dir,
+                        minSpread = 0f, maxSpread = 0f, bulletCount = 1,
+                        damage = damageStat * Coef, procCoefficient = row.ProcCoefficient, force = 100f,
+                        tracerEffectPrefab = Fx.Prefab(row.Effect), muzzleName = "MuzzleRight", hitEffectPrefab = null,
+                        isCrit = crit, radius = 0.25f, smartCollision = true, maxDistance = row.Range,
+                        falloffModel = BulletAttack.FalloffModel.None,
+                        hitCallback = RatPelletHit,
+                        damageType = new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Primary },
+                    }.Fire();
+                }
+            }
             else if (isAuthority)
             {
                 var ba = new BulletAttack
@@ -219,6 +244,21 @@ namespace DeadlockOfRain.States
                 ba.Fire();
             }
             MeltyTest.Report("gun-fires", true, characterBody.baseNameToken);
+        }
+
+        /// <summary>A Sovereign's Decree pellet landed: full damage to falloffStart metres, falling in a line to falloffMinPct % at
+        /// falloffEnd and staying there; the row's hit spark; then RoR2's own hit handling with that damage.</summary>
+        bool RatPelletHit(BulletAttack attack, ref BulletAttack.BulletHit hit)
+        {
+            float full = attack.damage;
+            float k = 1f;
+            if (row != null && row.FalloffEnd > row.FalloffStart)
+                k = Mathf.Lerp(1f, row.FalloffMinPct / 100f, Mathf.InverseLerp(row.FalloffStart, row.FalloffEnd, hit.distance));
+            attack.damage = full * k;
+            if (row != null) Vfx.Play(row.Vfx, "hit", hit.point);
+            bool r = BulletAttack.defaultHitCallback(attack, ref hit);
+            attack.damage = full;
+            return r;
         }
 
         /// <summary>A gun whose shot is not a bullet (gun_goo: a goo blob) fires it here, on the owner; true = handled.</summary>

@@ -185,6 +185,13 @@ heavier; **gain** scales the whole row. In co-op every player hears each sound o
 | Mo & Krill | Q | Dust Devil | `MoKrill.Burrow.Spin` | `MoKrill.Burrow.Spin.Lp` | – | `MoKrill.Burrow.Spin.End` | – | – | 1.0 |
 | Mo & Krill | R | Tag Team | `MoKrill.Combo.Channel.Start` | – | `MoKrill.Combo.Hit` (each landing) | `MoKrill.Combo.Cast` (Krill back) | – | – | 1.0 |
 | Mo & Krill | – | Footsteps / landing | `MoKrill.Footstep` (one per stride) | – | `MoKrill.JumpLand` (after a fall over 0.6 s) | – | – | – | 0.7 |
+| Rat King | M1 | Sovereign's Decree | `Ratking.Wpn.Fire.Main` | – | `Abrams.Wpn.Impact` | – | `Ratking.Wpn.Reload.Start` | – | 1.0 |
+| Rat King | M2 | Scrap Grenade (ready) | `Ratking.ScrapGrenade.Select` | `Ratking.ScrapGrenade.Select.Lp` (while held) | `Ratking.ScrapGrenade.Bounce` (each hop) | – | – | – | 1.0 |
+| Rat King | M2 | Scrap Grenade | `Ratking.ScrapGrenade.Cast` (throw) | `Ratking.ScrapGrenade.Proj.Lp` | `Ratking.ScrapGrenade.Explode` (blasts 1–2) | `Ratking.ScrapGrenade.Explode.Big` (the last) | – | ticks `Ratking.ScrapGrenade.Timer` / `.Timer.Final` in the 0.8 s fuse | 1.0 |
+| Rat King | Shift | Royal Pestments | `Ratking.Rats.Emote` | `Ratking.Nibble.Rat.Scurry.Lp` | `Ratking.Nibble.Damage.Tick` (bites, at most every 0.5 s) | `Ratking.Guards.Expire` | – | start + `Ratking.Guards.Cast` | 1.0 |
+| Rat King | R | Rule, Ratannia! | `Ratking.Charge.Cast.Delay` (wind-up), `Ratking.Charge.Cast.Jump` at take-off | `Ratking.Charge.Travel.Lp` | `Ratking.Charge.Cast` (the plant) | `Ratking.Charge.AOE.Expire` | – | hit + `Ratking.Charge.Explosion` | 1.0 |
+| Rat King | Q | Rat Swarm | `Ratking.Nibble.Cast` | `Ratking.Nibble.Rat.Scurry.Lp` | `Ratking.Nibble.Hit` | `Ratking.Nibble.DashOff` (rats go home) | – | start + `Ratking.Rats.Emote`; bites `Ratking.Nibble.Damage.Tick` (tick, at most 5 a second) | 1.0 |
+| Rat King | – | Footsteps / landing | `Ratking.Footstep` | – | `Ratking.Jumpland` | – | – | – | 1.0 |
 
 Fuse ticks (v0.6.2, columns `tick` / `tickFinal`): Concussive Combustion plays `Ratking.ScrapGrenade.Timer` at 0 s and 1 s and
 `Ratking.ScrapGrenade.Timer.Final` at 2 s (cut at the blast), in time with its ring closing in. No other move has a fuse.
@@ -208,6 +215,7 @@ are never written out here or on the pages. When each hero speaks:
 - **Kill streaks:** 4, 7 and 10 kills in quick succession (gaps under 1.5 s).
 - **Idle:** after 2–5 min of silence.
 - Mo & Krill: Krill does the talking (Mo is silent in Deadlock): select, unselect, Sand Blast (`use_power3`) and Burrow (`use_power2`) 40 %, Tag Team (R) 50 % at most every 20 s; Dust Devil (Q) is silent (his `use_power1` lines are about Scorn).
+- Rat King: select, unselect, Scrap Grenade (`use_power1`) 30 %, Royal Pestments (`use_power3`) 40 %, Rule, Ratannia! (`use_power4`) 50 %, Rat Swarm (Q, `use_power2`) every time; idle `hunt` only (he has no `happy` lines).
 - Only the local player hears their own hero's voice.
 
 ---

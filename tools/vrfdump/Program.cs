@@ -7,7 +7,7 @@
 //   text   <x.vdata|x.vsndevts> <out>   decompiled to text (heroes.vdata, a hero's sound events)
 //   wav    <x.vsnd> <out>  one sound decoded to wav (then: python tools/sound_env.py out.wav)
 //   events x <out>         every sound event name (tools/dev/sound_events.txt)
-// Run it with stdin from /dev/null in a bash loop (it otherwise reads the loop's input), and strip  from list files.
+// Run it with stdin from /dev/null in a bash loop (it otherwise reads the loop's input), and strip CR () from list files.
 using SteamDatabase.ValvePak;
 using ValveResourceFormat;
 using ValveResourceFormat.IO;

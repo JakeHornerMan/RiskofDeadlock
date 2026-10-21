@@ -61,7 +61,7 @@ for r in sheets['skills']['rows']:
     ref('skills', r['id'], 'hero', r['hero'], heroes, False)
     ref('skills', r['id'], 'buff', r['buff'], buffs)
     ref('skills', r['id'], 'debuff', r['debuff'], buffs)
-    ref('skills', r['id'], 'pattern', r['pattern'], {'krill'})
+    ref('skills', r['id'], 'pattern', r['pattern'], {'krill', 'ratking'})
     if r['meleePct'] > 0 and r['slot'] != 'primary': bad(f'skills[{r["id"]}].meleePct: only a gun row punches')
     ref('skills', r['id'], 'effect', r['effect'], effects, False)
     ref('skills', r['id'], 'vfx', r['vfx'], effects)
@@ -163,6 +163,7 @@ for r in skills.values():
         elif r['kind'] == 'ult_zone': total = r['duration'] / r['interval'] * r['damagePct']  # per target: every tick strikes up to chainCount enemies
         elif r['kind'] == 'ult_devil': total = r['duration'] / r['interval'] * r['damagePct']  # every interval, everything within radius
         elif r['kind'] == 'ult_gooball': total = r['duration'] / r['interval'] * r['damageMinPct']  # a smash every re-hit interval, at the slowest speed
+        elif r['kind'] == 'ult_swarm': total = r['chainCount'] * r['duration'] / r['interval'] * r['damagePct']  # chainCount rats on one enemy, a bite each every interval
         else: total = r['damagePct']
         if total < 6000:
             bad(f'skills[{r["id"]}]: equipment ult total {total:.0f}% below the Preon level of 6000')
@@ -215,7 +216,7 @@ if ev:
             if r[c] != 'none' and r[c] not in events: bad(f'sounds[{r["skill"]}].{c}: event "{r[c]}" not in Deadlock soundevents')
 else:
     bad('dev listing tools/dev/sound_events.txt missing: sound events unverified')
-ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'clothParents', 'ragdollBones', 'ragdollThickness', 'rigPrefix', 'loopSecondary'}  # animations columns that are not clip names
+ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'muzzleForward', 'clothParents', 'ragdollBones', 'ragdollThickness', 'rigPrefix', 'loopSecondary', 'springRoots', 'springStiffness', 'springDamping', 'springGravity', 'propBones'}  # animations columns that are not clip names
 for r in sheets['animations']['rows']:
     if r['gunArms'] not in ('R', 'LR'): bad(f'animations[{r["hero"]}].gunArms: "{r["gunArms"]}" must be R or LR')
     if r['aimPose'] == 'none': bad(f'animations[{r["hero"]}].aimPose: the gun rig needs a holding pose clip')
@@ -252,6 +253,10 @@ for h in heroes.values():
     if abs(want - h['heightScale']) > 0.002: bad(f'heroes[{h["id"]}].heightScale: {h["heightScale"]} but sourceHeight x modelScale ratio is {want}')
     if h['modelScale'] <= 0: bad(f'heroes[{h["id"]}].modelScale: must be > 0')
     if h['riderBone'] != 'none' and not any(b['melee'] for b in buffs.values()): bad(f'heroes[{h["id"]}].riderBone: no melee buff ever hides it')
+    for m in h['splitMeshes']:
+        if m != 'none' and m not in h['meshInclude']: bad(f'heroes[{h["id"]}].splitMeshes: "{m}" is not in meshInclude')
+for e in effects.values():
+    if e['kind'] != 'prop' and (e['meshes'] != ['none'] or e['clips'] != ['none']): bad(f'effects[{e["id"]}].meshes/clips: only props read meshes or clips')
 
 cells = sum(len(s['rows']) * len(s['columns']) for s in sheets.values())
 if problems:

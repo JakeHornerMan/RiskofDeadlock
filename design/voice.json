@@ -661,6 +661,106 @@
       "group": "viscous/viscous_happy",
       "chance": 1.0,
       "gap": 0
+    },
+    {
+      "id": "ratking_select",
+      "hero": "ratking",
+      "trigger": "select",
+      "skill": "none",
+      "kills": 0,
+      "group": "ratking/ratking_select",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "ratking_unselect",
+      "hero": "ratking",
+      "trigger": "unselect",
+      "skill": "none",
+      "kills": 0,
+      "group": "ratking/ratking_unselect",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "ratking_scrap_vo",
+      "hero": "ratking",
+      "trigger": "skill",
+      "skill": "ratking_scrap",
+      "kills": 0,
+      "group": "ratking/ratking_use_power1",
+      "chance": 0.3,
+      "gap": 10
+    },
+    {
+      "id": "ratking_ring_vo",
+      "hero": "ratking",
+      "trigger": "skill",
+      "skill": "ratking_ring",
+      "kills": 0,
+      "group": "ratking/ratking_use_power3",
+      "chance": 0.4,
+      "gap": 8
+    },
+    {
+      "id": "ratking_banner_vo",
+      "hero": "ratking",
+      "trigger": "skill",
+      "skill": "ratking_banner",
+      "kills": 0,
+      "group": "ratking/ratking_use_power4",
+      "chance": 0.5,
+      "gap": 8
+    },
+    {
+      "id": "ratking_swarm_vo",
+      "hero": "ratking",
+      "trigger": "skill",
+      "skill": "ratking_swarm",
+      "kills": 0,
+      "group": "ratking/ratking_use_power2",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "ratking_streak4",
+      "hero": "ratking",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 4,
+      "group": "ratking/ratking_killstreak_start",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "ratking_streak7",
+      "hero": "ratking",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 7,
+      "group": "ratking/ratking_killstreak_mid",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "ratking_streak10",
+      "hero": "ratking",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 10,
+      "group": "ratking/ratking_killstreak_high",
+      "chance": 1.0,
+      "gap": 0
+    },
+    {
+      "id": "ratking_hunt",
+      "hero": "ratking",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "ratking/ratking_hunt",
+      "chance": 1.0,
+      "gap": 0
     }
   ]
 }

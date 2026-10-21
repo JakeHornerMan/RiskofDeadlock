@@ -301,8 +301,13 @@ namespace DeadlockOfRain
                 var rim = Sheet.Color(h.PrimaryColor);
                 if (Survivors.Defs.TryGetValue(h.Id, out var d) && d.displayPrefab) jobs.Add((h.Id, d.displayPrefab, rim, false));
                 var match = StatRow.All.FirstOrDefault(r => r.Hero == h.Id)?.Analog;
-                var md = string.IsNullOrEmpty(match) ? null : SurvivorCatalog.FindSurvivorDefFromBody(BodyCatalog.FindBodyPrefab(match));
-                if (md && md.displayPrefab && !jobs.Any(j => j.name == match)) jobs.Add((match, md.displayPrefab, new Color(0.75f, 0.85f, 0.8f), false));
+                // the match: its body's own model (the character-select display prefabs of vanilla survivors render empty, doc 02 §10.1),
+                // the display prefab only when the body has none
+                var bodyPrefab = string.IsNullOrEmpty(match) ? null : BodyCatalog.FindBodyPrefab(match);
+                var ml = bodyPrefab ? bodyPrefab.GetComponent<ModelLocator>() : null;
+                var md = bodyPrefab ? SurvivorCatalog.FindSurvivorDefFromBody(bodyPrefab) : null;
+                var matchModel = ml && ml.modelTransform ? ml.modelTransform.gameObject : md ? md.displayPrefab : null;
+                if (matchModel && !jobs.Any(j => j.name == match)) jobs.Add((match, matchModel, new Color(0.75f, 0.85f, 0.8f), false));
                 var def = Equipment.OfHero(h.Id);
 #pragma warning disable CS0618
                 if (def && def.pickupModelPrefab) jobs.Add((h.Id + "_figure", def.pickupModelPrefab, rim, true));

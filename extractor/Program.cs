@@ -22,7 +22,7 @@ namespace DeadlockExtract;
 
 public static class Program
 {
-    public const string Version = "1.5.0";
+    public const string Version = "1.6.0";
     static StreamWriter? log;
 
     public static int Main(string[] args)
@@ -348,7 +348,8 @@ public static class Program
         Directory.Delete(tmp, true);
     }
 
-    /// <summary>One effect model (a prop): its meshes and materials to DLM, no skeleton or clips.</summary>
+    /// <summary>One effect model (a prop): its meshes and materials to DLM; since 1.6.0 also its skeleton and the clips the
+    /// manifest names (Rat King's rats run, his banner's sewer rises), and only the meshes it names (none listed = all).</summary>
     static void ExportProp(GameFileLoader loader, PropEntry prop, string dir)
     {
         if (Directory.Exists(dir)) Directory.Delete(dir, true);
@@ -358,17 +359,20 @@ public static class Program
         var res = loader.LoadFileCompiled(prop.Vmdl) ?? throw new Exception("model not found: " + prop.Vmdl);
         var exporter = new GltfModelExporter(loader)
         {
-            ExportAnimations = false,
+            ExportAnimations = prop.Clips.Count > 0,
             ExportMaterials = true,
             AdaptTextures = true,
             SatelliteImages = false,
+            ComposeAdditiveAnimations = true,
             ProgressReporter = new Progress<string>(_ => { }),
         };
+        foreach (var c in prop.Clips) exporter.AnimationFilter.Add(c);
+        foreach (var m in prop.Meshes) exporter.MeshFilter.Add(m);
         var glb = Path.Combine(tmp, prop.Id + ".glb");
         exporter.Export(res, glb, CancellationToken.None);
         if (!File.Exists(glb)) throw new Exception("glTF export produced nothing");
         var model = ModelRoot.Load(glb);
-        var stats = DlmWriter.Write(model, new HeroEntry { Id = prop.Id, Vmdl = prop.Vmdl }, dir, Log);
+        var stats = DlmWriter.Write(model, new HeroEntry { Id = prop.Id, Vmdl = prop.Vmdl, Meshes = prop.Meshes, Clips = prop.Clips }, dir, Log);
         Log($"  prop {prop.Id}: {stats}");
         Directory.Delete(tmp, true);
     }
@@ -555,6 +559,8 @@ public sealed class PropEntry
 {
     public string Id { get; set; } = "";
     public string Vmdl { get; set; } = "";
+    public List<string> Meshes { get; set; } = new();   // 1.6.0: only these meshes (empty = every mesh)
+    public List<string> Clips { get; set; } = new();    // 1.6.0: these clips, with the skeleton they move
 }
 
 public sealed class HeroEntry
@@ -564,4 +570,5 @@ public sealed class HeroEntry
     public string Vmdl { get; set; } = "";
     public List<string> Meshes { get; set; } = new();
     public List<string> Clips { get; set; } = new();
+    public List<string> Split { get; set; } = new();    // 1.6.0: meshes kept as their own submesh (Rat King's ammo belt)
 }
