@@ -452,8 +452,8 @@ namespace DeadlockOfRain
                     passive = healed > 0f;
                     if (!passive) passiveWhy = "no heal-back";
                 }
-                // puddleAmmo (Viscous' puddles): standing in a fresh puddle refills an empty magazine; once its supply is used up it
-                // gives nothing more; a second fresh puddle refills again, with no reload in between
+                // puddleAmmo (Viscous' puddles): standing in a fresh puddle adds its rounds in front of the magazine ("20+5/20"); shots
+                // spend them first, then the magazine; stepping out leaves the magazine as it was
                 foreach (var pr in Sheet.SkillsOf(hero.Id).Where(s => s.PuddleAmmo > 0))
                 {
                     body = master.GetBody();
@@ -463,23 +463,30 @@ namespace DeadlockOfRain
                     // no other puddle in play (Puddle Punch's test just left one at his feet)
                     foreach (var old in DlrPuddle.Live.ToArray()) if (old) UnityEngine.Object.Destroy(old.gameObject);
                     yield return null;
-                    int wantAmmo = (int)Mathf.Min(pr.PuddleAmmo, gunRow.ClipSize);
-                    hr.Reloading = false; hr.Ammo = 0;
+                    int supply = (int)pr.PuddleAmmo, clipN = (int)gunRow.ClipSize, mag = Mathf.Min(5, clipN);
+                    hr.Reloading = false; hr.Ammo = mag;
                     DlrPuddle.Plant(body, pr, body.footPosition, pr.Reach, true);
                     yield return new WaitForSeconds(0.4f);
-                    int ammo1 = hr.Ammo;
-                    // spend what it gave: a puddle of puddleAmmo rounds that filled the magazine has puddleAmmo - want left
-                    hr.Ammo = 0;
-                    yield return new WaitForSeconds(0.4f);
-                    int ammo2 = hr.Ammo;
-                    hr.Ammo = 0;
+                    int extra1 = hr.Extra, mag1 = hr.Ammo;
+                    string shown1 = AmmoLabel.Shown;
+                    hr.Spend(3);
+                    int extra2 = hr.Extra, mag2 = hr.Ammo;
+                    // more than the puddle has left: the rest comes out of the magazine
+                    hr.Spend(supply);
+                    int extra3 = hr.Extra, mag3 = hr.Ammo;
+                    // a fresh puddle, then stepping out of it (it goes away): its rounds are gone, the magazine untouched
                     DlrPuddle.Plant(body, pr, body.footPosition, pr.Reach, true);
-                    yield return new WaitForSeconds(0.4f);
-                    int ammo3 = hr.Ammo;
-                    int left = (int)Mathf.Min(pr.PuddleAmmo - wantAmmo, gunRow.ClipSize);
-                    Log.Info($"Melty test: {hero.Id} {pr.Id} puddle ammo: empty -> {ammo1}, emptied again -> {ammo2} (its leftover {left}), new puddle -> {ammo3} (want {wantAmmo}), reloading {hr.Reloading}");
-                    if (ammo1 != wantAmmo || ammo2 != left || ammo3 < wantAmmo || hr.Reloading) kitWhy += $"{pr.Id}: puddle ammo {ammo1}/{ammo2}/{ammo3}; ";
-                    hr.Ammo = (int)gunRow.ClipSize;
+                    yield return new WaitForSeconds(0.2f);
+                    int extra4 = hr.Extra;
+                    foreach (var old in DlrPuddle.Live.ToArray()) if (old) UnityEngine.Object.Destroy(old.gameObject);
+                    yield return null;
+                    int extra5 = hr.Extra, mag5 = hr.Ammo;
+                    string want1 = $"{supply}+{mag}/{clipN}";
+                    Log.Info($"Melty test: {hero.Id} {pr.Id} puddle ammo: in {extra1}+{mag1} (counter {shown1}, want {want1}), 3 shots {extra2}+{mag2}, {supply} more {extra3}+{mag3}, new puddle {extra4}, stepped out {extra5}+{mag5}");
+                    if (extra1 != supply || mag1 != mag || shown1 != want1 || extra2 != supply - 3 || mag2 != mag || extra3 != 0 || mag3 != mag - 3
+                        || extra4 != supply || extra5 != 0 || mag5 != mag - 3)
+                        kitWhy += $"{pr.Id}: puddle ammo {extra1}+{mag1} ({shown1}), {extra2}+{mag2}, {extra3}+{mag3}, {extra4}, {extra5}+{mag5}; ";
+                    hr.Ammo = clipN;
                     yield return new WaitForSeconds(0.5f);
                     // every puddle lands on the floor: one made 25 m up (Puddle Punch or Goo Cube cast in the air) is on the ground below
                     foreach (var old in DlrPuddle.Live.ToArray()) if (old) UnityEngine.Object.Destroy(old.gameObject);

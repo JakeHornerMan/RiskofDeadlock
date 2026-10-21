@@ -47,7 +47,7 @@ namespace DeadlockOfRain.States
             if (!isAuthority) return;
             var gun = Survivors.RowFor(skillLocator ? skillLocator.primary : null);
             if (rt != null && rt.Ammo < 0 && gun != null) rt.Ammo = (int)gun.ClipSize;
-            if (rt != null && (rt.Reloading || rt.Ammo <= 0))
+            if (rt != null && !rt.CanFire)
             {
                 if (!rt.Reloading && gun != null) { rt.BeginReload(gun, attackSpeedStat); if (anim) anim.Gesture("reload", 1f); Relay.Reload(characterBody); }
                 outer.SetNextStateToMain();
@@ -127,7 +127,7 @@ namespace DeadlockOfRain.States
         public static float Scale(SkillRow row, HeroRuntime rt)
         {
             if (row.AmmoCost <= 0 || rt == null || rt.Ammo < 0) return 1f;
-            return Mathf.Clamp01(Mathf.Min(rt.Ammo, row.AmmoCost) / row.AmmoCost);
+            return Mathf.Clamp01(Mathf.Min(rt.Rounds, row.AmmoCost) / row.AmmoCost);
         }
 
         public override void OnEnter()
@@ -135,8 +135,8 @@ namespace DeadlockOfRain.States
             base.OnEnter();
             if (isAuthority && rt != null)
             {
-                rounds = Mathf.Max(1, Mathf.Min(rt.Ammo, (int)row.AmmoCost));
-                rt.Ammo = Mathf.Max(0, rt.Ammo - rounds);
+                rounds = Mathf.Max(1, Mathf.Min(rt.Rounds, (int)row.AmmoCost));
+                rt.Spend(rounds);
             }
             // test mode and the bench aim at an enemy's chest, which the ball now flies past: they lob it onto the floor at its feet
             // as a player would (the aim travels with the state)

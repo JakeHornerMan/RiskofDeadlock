@@ -834,3 +834,11 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Results:** `run_test.sh` all seven heroes: **7/7, every check pass**; counters 22/25, 6/9, 26/29, 24/27, 17/20, 17/20, 21/24; the 25 m puddle landed 0.02 m from his feet. Game closed, `lab_restore` run, final DLL installed.
 **Not done / open:** the counter's look not seen by eye (no screenshot checked); co-op not run (the counter is local only); no Melty release; pages not republished (no number changed).
 **Lessons:** a ground ray with a short reach is a floating-object bug waiting for someone to use the move in the air; look far.
+
+### 2026-10-21 · Puddle rounds in front of the magazine · v0.9.0e (not released) · the commit that adds this entry
+**Request (verbatim):** "so with viscous you need to allow a {number}+??/?? when they are standing in a puddle. {number}++ is what goes down first and as soon as viscous leave that puddle the {number}++ disappears!"
+**Questions asked → answers:** walking in with 5/20, should the puddle refill the magazine (as before) or sit in front of it? → "Puddle spent first" (20+5/20, 3 shots 17+5/20, leave 5/20). Test and bench? → "Don't launch".
+**Done:** `HeroRuntime.TopUp` replaced by `Extra`, `CanFire`, `Rounds`, `Spend` (puddle rounds first, then the magazine; they fire even while empty or reloading); `DlrPuddle.Supply`/`Draw`, supply set at planting, the refill effect on first stepping in; guns and Splatter spend through `Spend`; the counter puts the puddle rounds in front in goo green (`20+5/20`); the test's puddle-ammo block rewritten for the new rule (5 in the magazine, 20+5 in a puddle, 17+5 after 3, 0+2 after 20 more, a new puddle 20, stepping out 0+2). Docs 02, 05 (open row), 06, MODLOG, doc 00.
+**Results:** builds. Not run in game (the creator asked not to launch); build installed.
+**Not done / open:** `run_test.sh viscous` and `run_bench.sh 30 viscous` (the puddle no longer refills the magazine, so his DPS may drop a little); the counter's look and the green part not seen by eye; pages not republished.
+**Lessons:** a counter request can be a rules change: "goes down first" and "disappears when he leaves" meant the puddle no longer fills the magazine; ask with a worked example (5/20 walking in) before building.

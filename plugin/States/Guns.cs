@@ -49,8 +49,8 @@ namespace DeadlockOfRain.States
                     Punch();
                     return;
                 }
-                if (rt != null && rt.Reloading) return;
-                if (rt != null && rt.Ammo <= 0) { StartReload(); return; }
+                // rounds from a goo puddle fire even while the magazine is empty or reloading
+                if (rt != null && !rt.CanFire) { StartReload(); return; }
                 nextShot = t + row.Interval / attackSpeedStat;
                 int burst = (int)Mathf.Max(1, row.Burst);
                 if (row.Kind == "gun_burst" && burst > 1)
@@ -155,8 +155,8 @@ namespace DeadlockOfRain.States
         {
             if (rt != null)
             {
-                if (rt.Ammo <= 0) { StartReload(); burstLeft = 0; return; }
-                rt.Ammo--;
+                if (!rt.CanFire) { StartReload(); burstLeft = 0; return; }
+                rt.Spend(1);
                 rt.AltMuzzle = !rt.AltMuzzle;
             }
             // firing reveals Haze from Smoke Bomb (the server breaks it: here for the host's hero, from the relayed shot for a

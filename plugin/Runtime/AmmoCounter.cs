@@ -7,7 +7,7 @@ using UnityEngine;
 namespace DeadlockOfRain
 {
     /// <summary>The magazine as "rounds/clip" just above the M1 icon of the skill bar, for every hero whose gun has a clipSize
-    /// (just information: grey while a reload is under way). Rounds are kept by the owner (HeroRuntime.Ammo), so it shows only
+    /// (just information: grey while a reload is under way); in a goo puddle Viscous's puddle rounds go in front ("20+5/20"). Rounds are kept by the owner (HeroRuntime.Ammo), so it shows only
     /// for the body this machine moves and is hidden for vanilla survivors and while spectating.</summary>
     [HarmonyPatch(typeof(SkillIcon), "LateUpdate")]
     static class AmmoCounter
@@ -27,7 +27,7 @@ namespace DeadlockOfRain
         /// <summary>The last text shown and whose it was (test mode checks it).</summary>
         public static string Shown; public static CharacterBody ShownFor;
         TextMeshProUGUI text;
-        int shownAmmo = int.MinValue, shownClip = -1; bool shownReload;
+        int shownAmmo = int.MinValue, shownClip = -1, shownExtra = -1; bool shownReload;
 
         public void Show(SkillIcon icon)
         {
@@ -39,12 +39,14 @@ namespace DeadlockOfRain
             if (!on) { if (text) text.gameObject.SetActive(false); return; }
             if (!text) Build(icon);
             if (!text) return;
-            int clip = (int)gun.ClipSize, ammo = rt.Ammo < 0 ? clip : rt.Ammo;
+            int clip = (int)gun.ClipSize, ammo = rt.Ammo < 0 ? clip : rt.Ammo, extra = rt.Extra;
             if (!text.gameObject.activeSelf) text.gameObject.SetActive(true);
-            if (ammo == shownAmmo && clip == shownClip && rt.Reloading == shownReload) return;
-            shownAmmo = ammo; shownClip = clip; shownReload = rt.Reloading;
-            text.SetText($"{ammo}/{clip}");
-            Shown = $"{ammo}/{clip}"; ShownFor = body;
+            if (ammo == shownAmmo && clip == shownClip && extra == shownExtra && rt.Reloading == shownReload) return;
+            shownAmmo = ammo; shownClip = clip; shownExtra = extra; shownReload = rt.Reloading;
+            // a goo puddle's rounds (Viscous) in front, in goo green: spent first, gone when he steps out
+            string front = extra > 0 ? $"{extra}+" : "";
+            text.SetText(extra > 0 ? $"<color=#8CFF5A>{front}</color>{ammo}/{clip}" : $"{ammo}/{clip}");
+            Shown = $"{front}{ammo}/{clip}"; ShownFor = body;
             text.color = rt.Reloading ? Reload : Full;
         }
 
@@ -57,7 +59,7 @@ namespace DeadlockOfRain
             rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 1f);
             rect.pivot = new Vector2(0.5f, 0f);
             rect.anchoredPosition = new Vector2(0f, 4f);
-            rect.sizeDelta = new Vector2(120f, 28f);
+            rect.sizeDelta = new Vector2(160f, 28f);
             text = go.AddComponent<HGTextMeshProUGUI>();
             // the skill bar's own font (its stock number), so it reads like the rest of the HUD
             var like = icon.stockText ? icon.stockText : icon.cooldownText;

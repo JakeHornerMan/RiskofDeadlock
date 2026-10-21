@@ -455,19 +455,21 @@ namespace DeadlockOfRain
             Fx.Sound(gun.Id, "reload", transform.position);
         }
 
-        /// <summary>Owner: tops the magazine up from a supply of at most n rounds (Viscous's puddles, puddleAmmo), never above the
-        /// magazine; a reload under way is called off. Returns the rounds taken from the supply.</summary>
-        public int TopUp(SkillRow gun, int n)
+        /// <summary>Owner: rounds the goo puddles he stands in still hold (Viscous, puddleAmmo). They are spent before the
+        /// magazine and are gone the moment he steps out (the counter shows them as "20+5/20").</summary>
+        public int Extra => DlrPuddle.Supply(body);
+
+        /// <summary>Owner: a shot or throw can go off now: puddle rounds, or a loaded magazine that isn't reloading.</summary>
+        public bool CanFire => Extra > 0 || !Reloading && Ammo > 0;
+
+        /// <summary>Owner: every round a move can use now (Splatter's size): the puddle's and the magazine's.</summary>
+        public int Rounds => Extra + (Reloading ? 0 : Mathf.Max(0, Ammo));
+
+        /// <summary>Owner: spends n rounds, the puddle's first, then the magazine's.</summary>
+        public void Spend(int n)
         {
-            if (gun == null || gun.ClipSize <= 0 || n <= 0) return 0;
-            int clipSize = (int)gun.ClipSize;
-            if (Ammo < 0) Ammo = clipSize;
-            if (Reloading) { Reloading = false; Ammo = 0; }
-            int take = Mathf.Min(n, clipSize - Ammo);
-            if (take <= 0) return 0;
-            Ammo += take;
-            MeltyTest.Report("puddle-ammo", true, body ? body.baseNameToken : "");
-            return take;
+            n -= DlrPuddle.Draw(body, n);
+            if (n > 0 && !Reloading) Ammo = Mathf.Max(0, Ammo - n);
         }
 
         void Update()

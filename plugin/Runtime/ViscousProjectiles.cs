@@ -82,7 +82,7 @@ namespace DeadlockOfRain
     public sealed class DlrPuddle : MonoBehaviour
     {
         public static readonly List<DlrPuddle> Live = new List<DlrPuddle>();
-        CharacterBody owner; SkillRow row; float radius, age, next; bool damage, supplied; int supply = -1; GameObject vfx;
+        CharacterBody owner; SkillRow row; float radius, age, next; bool damage, supplied; int supply; GameObject vfx;
 
         /// <summary>How far above or below a puddle something can stand and still be on it.</summary>
         const float Reach = 3f;
@@ -95,7 +95,7 @@ namespace DeadlockOfRain
             var go = new GameObject("DlrPuddle_" + row.Id);
             go.transform.position = at;
             var p = go.AddComponent<DlrPuddle>();
-            p.owner = owner; p.row = row; p.radius = radius; p.damage = damage;
+            p.owner = owner; p.row = row; p.radius = radius; p.damage = damage; p.supply = (int)row.PuddleAmmo;
             p.vfx = Vfx.Play(row.Vfx, "puddle", at, radius, life: Life(row));
             Vfx.SetShrink(p.vfx, row.ChainCount, row.PuddleShrink);
             Live.Add(p);
@@ -122,6 +122,30 @@ namespace DeadlockOfRain
             return Mathf.Abs(d.y) < Reach && new Vector2(d.x, d.z).magnitude <= Radius;
         }
 
+        /// <summary>Rounds left in the body's own puddles it stands in (its machine's count).</summary>
+        public static int Supply(CharacterBody b)
+        {
+            int n = 0;
+            if (!b) return 0;
+            foreach (var p in Live) if (p && p.owner == b && p.supply > 0 && p.Inside(b.footPosition)) n += p.supply;
+            return n;
+        }
+
+        /// <summary>Takes up to n rounds from the body's puddles it stands in; returns how many it got.</summary>
+        public static int Draw(CharacterBody b, int n)
+        {
+            int took = 0;
+            if (!b) return 0;
+            foreach (var p in Live)
+            {
+                if (took >= n) break;
+                if (!p || p.owner != b || p.supply <= 0 || !p.Inside(b.footPosition)) continue;
+                int t = Mathf.Min(p.supply, n - took);
+                p.supply -= t; took += t;
+            }
+            return took;
+        }
+
         /// <summary>A live puddle under this point (Puddle Punch is twice as wide there).</summary>
         public static bool On(Vector3 at)
         {
@@ -133,21 +157,15 @@ namespace DeadlockOfRain
         {
             age += Time.fixedDeltaTime;
             if (!owner || age >= Life(row)) { Destroy(gameObject); return; }
-            // the owner's machine: the puddle holds puddleAmmo rounds; while the owner stands in it, it keeps the gun's magazine topped
-            // up from them (a reload is called off) until they are used up. Nothing extra stays once he steps out
-            if (supply < 0) supply = (int)row.PuddleAmmo;
-            if (supply > 0 && owner.hasEffectiveAuthority && Inside(owner.footPosition))
+            // the owner's machine: the puddle holds puddleAmmo rounds that his shots spend before the magazine while he stands
+            // in it (HeroRuntime.Spend); they are gone when he steps out. Stepping in the first time shows: goo spirals up into him
+            if (!supplied && supply > 0 && owner.hasEffectiveAuthority && Inside(owner.footPosition))
             {
-                var rt = owner.GetComponent<HeroRuntime>();
+                supplied = true;
                 var gun = Survivors.RowFor(owner.skillLocator ? owner.skillLocator.primary : null);
-                int took = rt && gun != null ? rt.TopUp(gun, supply) : 0;
-                if (took > 0)
-                {
-                    supply -= took;
-                    // the first draw from this puddle shows: goo spirals up into him with the reload sound
-                    if (!supplied) { Vfx.Play(row.Vfx, "refill", owner.footPosition, 1f, owner.transform); Fx.Sound(gun.Id, "reload", owner.footPosition); }
-                    supplied = true;
-                }
+                Vfx.Play(row.Vfx, "refill", owner.footPosition, 1f, owner.transform);
+                if (gun != null) Fx.Sound(gun.Id, "reload", owner.footPosition);
+                MeltyTest.Report("puddle-ammo", true, owner.baseNameToken);
             }
             if (!damage || age < next) return;
             next = age + Mathf.Max(0.1f, row.Interval);
