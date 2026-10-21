@@ -208,6 +208,8 @@ them**. Leave it installed and tell them it is ready.
 - Decompiled RoR2: `C:\Users\jakeh\ror2-decomp\ror2`, or `ilspycmd -t <Type> RoR2.dll`.
 
 ## 5b. Daily watch: game updates and Melty breaks (since 2026-10-21)
+The full manual is **doc 10** (`docs/10-DAILY-WATCH.md`); this is the summary.
+
 The creator asked: "is there a way we can tell is the deadlock or risk of rain game has been updated? can we run this every
 day? and if deadlock update can we start a claude instancce that check files that will validate our mod still works". It
 runs **on this PC only**, because GitHub's machines can't have Deadlock. It needs no GitHub Action and no repo secret.

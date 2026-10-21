@@ -32,6 +32,7 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 7. `docs/08-NEW-HERO-PLAYBOOK.md`: **adding a new hero in one go** (the four heroes are done; this is the next job):
    intake questions, sound and voice, Unity-built effects, tests, bench, pages, definition of done.
 8. `docs/09-PUBLIC-EXE-BUILD.md`: why the extractor is an exe, how GitHub builds it in public (releases `extractor-X.Y.Z`), and the DLL fallback plan.
+10. `docs/10-DAILY-WATCH.md`: the daily watch (`tools/watch/`): game-update and Melty-break checks, the unattended fix run, its permissions.
 `MODLOG.md` is the short journal of versions, lab notes and gotchas.
 
 ## Standing rules

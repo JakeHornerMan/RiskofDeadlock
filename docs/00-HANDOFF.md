@@ -248,7 +248,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ## 9. Last work: the daily watch (2026-10-21)
 
-- `tools/watch/` (doc 03 §5b, doc 07 entry). Task registered and the baseline seeded; the dry run and Melty triage have been tried.
+- `tools/watch/` (manual: doc 10; summary: doc 03 §5b; doc 07 entry). Task registered and the baseline seeded; the dry run and Melty triage have been tried.
 - Next: one `daily.ps1 -NoPublish` run with an older Deadlock build in `build/watch/state.json`, while nobody is playing;
   `gh` for GitHub issues if the creator wants them. Merge any `watch/*` branch the watch leaves.
 

@@ -862,3 +862,11 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Results:** both scripts parse cleanly. `-DryRun` stopped correctly: "a game is running (Steam app 1422450)" (the creator was playing Deadlock). Build reading was checked on its own. The triage run against Melty with the JSON schema: live 0.7.4, no breaks (the old 0.6.3 setup failures and the 0.7.2/0.7.3 crashes were left out as not current), 1.6 cents.
 **Not done / open:** the fix run was never run end to end (it starts the game, and the creator was playing). Try `daily.ps1 -NoPublish` after setting an older Deadlock build in `build/watch/state.json`, while nobody plays. `gh` isn't installed, so reports go only to `build/watch/` and a notification (`winget install GitHub.cli` + `gh auth login` adds issues).
 **Lessons:** in `claude -p`, the Melty MCP's own instructions turn the final answer into a prose report, so ask for structured output with `--output-format json --json-schema` and read `structured_output`. Windows PowerShell 5.1 drops bare `"` from native arguments, so escape them as `\"`. Under `2>&1`, `$ErrorActionPreference='Stop'` turns git's stderr into errors.
+
+### 2026-10-21 · Daily watch documentation · no version · the commit that adds this entry
+**Request (verbatim):** "please write documentation on this system!" (after "SO HOW DOES THIS WORK?", which was answered in plain words in chat)
+**Questions asked → answers:** none.
+**Done:** new `docs/10-DAILY-WATCH.md`, the full manual: why it runs on the PC, a day's flow diagram, guards, build numbers and `state.json`, triage, the fix run's steps, permissions table and standing permissions, files, install/run commands, a practice run, troubleshooting, limits. Linked from CLAUDE.md "Read these first", doc 03 §5b and doc 00 §9.
+**Results:** docs only.
+**Not done / open:** the practice fix run (doc 10 §8).
+**Lessons:** none.
