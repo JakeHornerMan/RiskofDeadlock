@@ -4,6 +4,7 @@
 - A seventh hero for the Melty build, Rat King (not part of this store release yet; the four heroes here are unchanged).
 - Heroes and effects can use Deadlock models with their own animations, and swinging capes (extractor 1.6.0).
 - Clips that left a hero's root turned no longer carry that turn into the next clip.
+- Effect models keep Deadlock's vertex colours and material tints (extractor 1.6.1).
 
 ## 0.8.0
 - A sixth hero for the Melty build (not part of this store release yet; the four heroes here are unchanged).

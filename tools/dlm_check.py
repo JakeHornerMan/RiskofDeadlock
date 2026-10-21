@@ -16,7 +16,7 @@ def quat_mat(x, y, z, w):
 
 def read(path):
     f = open(path, 'rb')
-    assert f.read(4) == b'DLM1'
+    assert f.read(4) in (b'DLM1', b'DLM2')
     nb = struct.unpack('<i', f.read(4))[0]
     bones = []
     for i in range(nb):

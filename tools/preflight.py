@@ -163,7 +163,7 @@ for r in skills.values():
         elif r['kind'] == 'ult_zone': total = r['duration'] / r['interval'] * r['damagePct']  # per target: every tick strikes up to chainCount enemies
         elif r['kind'] == 'ult_devil': total = r['duration'] / r['interval'] * r['damagePct']  # every interval, everything within radius
         elif r['kind'] == 'ult_gooball': total = r['duration'] / r['interval'] * r['damageMinPct']  # a smash every re-hit interval, at the slowest speed
-        elif r['kind'] == 'ult_swarm': total = r['chainCount'] * r['duration'] / r['interval'] * r['damagePct']  # chainCount rats on one enemy, a bite each every interval
+        elif r['kind'] == 'ult_swarm': total = r['chainCount'] * 15 / r['interval'] * r['damagePct']  # chainCount rats on one enemy biting until it dies (no time limit): counted over 15 s
         else: total = r['damagePct']
         if total < 6000:
             bad(f'skills[{r["id"]}]: equipment ult total {total:.0f}% below the Preon level of 6000')

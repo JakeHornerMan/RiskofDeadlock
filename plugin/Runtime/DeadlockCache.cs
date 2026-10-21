@@ -200,6 +200,9 @@ namespace DeadlockOfRain
         public int AlphaMode;
         public float Cutoff;
         public Color Color;
+        // DLM2 (extractor 1.6.1): Deadlock's self-illumination and whether the material takes the mesh's vertex colours
+        public Color Emission = Color.black;
+        public bool VertexColor;
     }
 
     public sealed class ClipDef
@@ -224,6 +227,7 @@ namespace DeadlockOfRain
         public BoneDef[] Bones;
         public Vector3[] Positions, Normals;
         public Vector2[] Uvs;
+        public Color[] Colors;     // vertex colours (DLM2, only when a material uses them), else null
         public BoneWeight[] Weights;
         public List<KeyValuePair<int, int[]>> Submeshes = new List<KeyValuePair<int, int[]>>();
         public MaterialDef[] Materials;
@@ -239,7 +243,8 @@ namespace DeadlockOfRain
             var h = new HeroAsset { Dir = dir };
             using (var r = new BinaryReader(File.OpenRead(file), Encoding.UTF8))
             {
-                if (new string(r.ReadChars(4)) != "DLM1") throw new InvalidDataException("not a DLM file: " + file);
+                var magic = new string(r.ReadChars(4));
+                if (magic != "DLM1" && magic != "DLM2") throw new InvalidDataException("not a DLM file: " + file);
                 int nb = r.ReadInt32();
                 h.Bones = new BoneDef[nb];
                 for (int i = 0; i < nb; i++)
@@ -295,6 +300,19 @@ namespace DeadlockOfRain
                     }
                     h.Clips[clip.Name] = clip;
                 }
+                if (magic == "DLM2")
+                {
+                    if (r.ReadInt32() == 1)
+                    {
+                        h.Colors = new Color[nv];
+                        for (int i = 0; i < nv; i++) h.Colors[i] = new Color(r.ReadSingle(), r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
+                    }
+                    foreach (var m in h.Materials)
+                    {
+                        m.Emission = new Color(r.ReadSingle(), r.ReadSingle(), r.ReadSingle(), 1f);
+                        m.VertexColor = r.ReadInt32() == 1;
+                    }
+                }
             }
             return h;
         }
@@ -330,7 +348,10 @@ namespace DeadlockOfRain
                     mesh.indexFormat = pos.Count > 65000 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16;
                     mesh.SetVertices(pos); mesh.SetNormals(nrm); mesh.SetUVs(0, uv);
                     var cols = new Color32[pos.Count];
-                    for (int i = 0; i < cols.Length; i++) cols[i] = new Color32(255, 255, 255, 255);
+                    var mat = Submeshes[s].Key;
+                    bool vc = Colors != null && mat >= 0 && mat < Materials.Length && Materials[mat].VertexColor;
+                    if (vc) foreach (var kv in map) cols[kv.Value] = Colors[kv.Key];
+                    else for (int i = 0; i < cols.Length; i++) cols[i] = new Color32(255, 255, 255, 255);
                     mesh.colors32 = cols;
                     mesh.boneWeights = bw.ToArray();
                     mesh.bindposes = bp;

@@ -56,7 +56,8 @@ namespace DeadlockOfRain
         bool propsShown;
         // King's Leap (heroes airJumpMult): a tucked forward spin of the whole skeleton on a jump in the air
         Transform armature;
-        float flipStart = -1f, flipTime, lastY, lastVy;
+        float flipStart = -1f, flipTime, lastY, lastVy, airSince;
+        int lastJumpCount;
         Vector3 flipMid = Vector3.up;
         bool airLeap;
 
@@ -447,7 +448,17 @@ namespace DeadlockOfRain
                 if (airLeap && dt > 0f)
                 {
                     float vy = (y - lastY) / dt;
-                    if (!grounded && !wasGrounded && vy - lastVy > 6f && vy > 4f && vy < 40f && Time.time > flipStart + flipTime + 0.1f) Flip();
+                    if (grounded) airSince = Time.time;
+                    bool ready = Time.time > flipStart + flipTime + 0.1f;
+                    if (body && body.hasEffectiveAuthority)
+                    {
+                        // the owner knows the jump count exactly: only a jump made in the air (the second) spins him
+                        if (motor.jumpCount > lastJumpCount && lastJumpCount >= 1 && !grounded && ready) Flip();
+                        lastJumpCount = motor.jumpCount;
+                    }
+                    // other players' machines: a sharp climb, but only once he has been in the air a while (the take-off's
+                    // first frames can still read grounded while he already rises)
+                    else if (!grounded && !wasGrounded && Time.time - airSince > 0.25f && vy - lastVy > 6f && vy > 4f && vy < 40f && ready) Flip();
                     lastVy = vy;
                 }
                 lastY = y;

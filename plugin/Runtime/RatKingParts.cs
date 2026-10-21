@@ -214,24 +214,33 @@ namespace DeadlockOfRain
         sealed class SRat
         {
             public Rat R; public S State; public HealthComponent Target; public HurtBox Box; public Transform Anchor;
-            public Vector3 Local, LocalNormal, From, To; public float T0, NextBite, Angle, Delay;
+            public Vector3 Local, LocalNormal, From, To; public float T0, NextBite, Angle, Delay; public bool Spent;
         }
 
-        CharacterBody owner; SkillRow row; float start, lastEnemy, nextPick, nextBiteSound; int loop; bool home;
+        CharacterBody owner; SkillRow row; float start, nextPick, nextBiteSound, idleSince; int loop; bool home;
         readonly List<SRat> rats = new List<SRat>();
         readonly Dictionary<HealthComponent, int> onTarget = new Dictionary<HealthComponent, int>();
         List<HurtBox> enemies = new List<HurtBox>();
-        public static int Bites;
+        public static int Bites, Spent;
 
         public static void Begin(CharacterBody owner, SkillRow row)
         {
-            foreach (var old in owner.GetComponents<RatSwarm>()) old.GoHome();
-            var s = owner.gameObject.AddComponent<RatSwarm>();
-            s.owner = owner; s.row = row; s.start = Time.time; s.lastEnemy = Time.time;
-            int n = Mathf.Max(1, (int)row.BuffStacks);
+            // no time limit: the rats stay with the carrier until each has bitten an enemy to death (or the stage ends);
+            // using it again tops the pack back up to buffStacks
+            var s = owner.GetComponent<RatSwarm>();
+            if (s && s.home) s = null;
+            if (!s)
+            {
+                s = owner.gameObject.AddComponent<RatSwarm>();
+                s.owner = owner; s.row = row;
+            }
+            s.start = Time.time; s.idleSince = -1f;
+            int have = 0;
+            foreach (var r in s.rats) if (r.State != S.Gone) have++;
+            int n = Mathf.Max(0, Mathf.Max(1, (int)row.BuffStacks) - have);
             foreach (var r in RatCrowd.Take(n))
                 s.rats.Add(new SRat { R = r, State = S.Pour, Angle = Random.value * Mathf.PI * 2f, Delay = Random.value * 0.5f });
-            s.loop = Fx.Loop(row.Id, owner.footPosition);
+            if (s.loop == 0) s.loop = Fx.Loop(row.Id, owner.footPosition);
             MeltyTest.Report("rat-swarm", true, owner.baseNameToken);
         }
 
@@ -266,11 +275,17 @@ namespace DeadlockOfRain
             return true;
         }
 
+        /// <summary>Most rats on one enemy: chainCount, x bossMult on a boss.</summary>
+        int Cap(HurtBox hb)
+        {
+            var b = hb.healthComponent.body;
+            return Mathf.RoundToInt(row.ChainCount * (b && b.isChampion && row.BossMult > 0f ? row.BossMult : 1f));
+        }
+
         void Pick()
         {
             enemies = owner ? Fx.Enemies(owner, owner.corePosition, row.SeekRange > 0 ? row.SeekRange : row.Range, 64) : new List<HurtBox>();
             enemies.RemoveAll(h => !Reachable(h, out _));
-            if (enemies.Count > 0) lastEnemy = Time.time;
             foreach (var r in rats)
             {
                 if (r.State != S.Wait) continue;
@@ -278,7 +293,7 @@ namespace DeadlockOfRain
                 foreach (var hb in enemies)
                 {
                     onTarget.TryGetValue(hb.healthComponent, out var c);
-                    if (c >= row.ChainCount) continue;
+                    if (c >= Cap(hb)) continue;
                     float d = (hb.transform.position - r.R.Pos).sqrMagnitude;
                     if (c < fewest || c == fewest && d < near) { best = hb; fewest = c; near = d; }
                 }
@@ -291,21 +306,29 @@ namespace DeadlockOfRain
         void Update()
         {
             float t = Time.time - start, dt = Time.deltaTime;
-            if (!home && (!owner || !owner.healthComponent || !owner.healthComponent.alive || t >= row.Duration || t > 1f && Time.time - lastEnemy > 2f)) GoHome();
+            if (!home && (!owner || !owner.healthComponent || !owner.healthComponent.alive)) GoHome();
             if (!home && Time.time >= nextPick) { nextPick = Time.time + 0.25f; Pick(); }
             var homeAt = Home;
-            int alive = 0;
+            int alive = 0, busy = 0;
             foreach (var r in rats)
             {
                 if (r.State == S.Gone || r.R == null || !r.R.Go) continue;
                 alive++;
                 var rat = r.R;
-                // the enemy died or went away: drop off and pick again
-                if ((r.State == S.Seek || r.State == S.Leap || r.State == S.Latched) && (!r.Target || !r.Target.alive || !r.Box))
+                // its enemy died with the rat on it: the rat drops off and is gone (spent)
+                if ((r.State == S.Leap || r.State == S.Latched) && (!r.Target || !r.Target.alive))
                 {
                     Release(r);
-                    r.State = S.Drop; r.T0 = Time.time; r.From = rat.Pos;
+                    r.Spent = true; r.State = S.Drop; r.T0 = Time.time; r.From = rat.Pos;
                 }
+                // not on it yet, or it went away alive: back to the carrier to wait for another
+                else if ((r.State == S.Seek || r.State == S.Leap || r.State == S.Latched) && (!r.Target || !r.Target.alive || !r.Box
+                         || r.State == S.Seek && owner && (r.Box.transform.position - owner.corePosition).sqrMagnitude > Sq(1.5f * (row.SeekRange > 0 ? row.SeekRange : row.Range))))
+                {
+                    Release(r);
+                    r.State = r.State == S.Seek ? S.Wait : S.Drop; r.T0 = Time.time; r.From = rat.Pos;
+                }
+                if (r.State == S.Seek || r.State == S.Leap || r.State == S.Latched) busy++;
                 switch (r.State)
                 {
                     case S.Pour:
@@ -377,9 +400,15 @@ namespace DeadlockOfRain
                         // fall off to the ground, then free again
                         float k = Time.time - r.T0;
                         var p = r.From + Vector3.down * 0.5f * 30f * k * k;
-                        if (Physics.Raycast(r.From + Vector3.up, Vector3.down, out var g, 40f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore) && p.y <= g.point.y) { p.y = g.point.y; r.State = home ? S.Home : S.Wait; }
-                        else if (k > 1f) r.State = home ? S.Home : S.Wait;
+                        bool down = false;
+                        if (Physics.Raycast(r.From + Vector3.up, Vector3.down, out var g, 40f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore) && p.y <= g.point.y) { p.y = g.point.y; down = true; }
+                        else if (k > 1f) down = true;
                         rat.Pose(p, rat.Go.transform.rotation, 1, 1f);
+                        if (down)
+                        {
+                            if (r.Spent) { Vfx.Play(row.Vfx, "hit", p, 0.6f); Gone(r); Spent++; }
+                            else r.State = home ? S.Home : S.Wait;
+                        }
                         break;
                     }
                     case S.Home:
@@ -388,8 +417,7 @@ namespace DeadlockOfRain
                         if (to.magnitude < 0.8f || !owner)
                         {
                             // under the cape: sink away
-                            rat.Show(false);
-                            r.State = S.Gone;
+                            Gone(r);
                             break;
                         }
                         rat.Run(rat.Pos + to.normalized * Mathf.Min(to.magnitude, 14f * dt), to, 14f, rat.Pos.y + 0.5f);
@@ -397,7 +425,23 @@ namespace DeadlockOfRain
                     }
                 }
             }
-            if (home && alive == 0) Destroy(this);
+            // the scurrying loop only while rats are on the hunt
+            if (busy > 0) { idleSince = -1f; if (loop == 0 && !home) loop = Fx.Loop(row.Id, homeAt); }
+            else if (loop != 0)
+            {
+                if (idleSince < 0f) idleSince = Time.time;
+                else if (Time.time - idleSince > 1.5f) { DeadlockAudio.Stop(loop); loop = 0; }
+            }
+            if (alive == 0 && t > 1f) Destroy(this);
+        }
+
+        static float Sq(float x) => x * x;
+
+        /// <summary>A rat leaves for good: hidden and back to the pool at once.</summary>
+        void Gone(SRat r)
+        {
+            r.State = S.Gone;
+            if (r.R != null) { r.R.Show(false); RatCrowd.Give(new[] { r.R }); r.R = null; }
         }
 
         void Bite(SRat r, Vector3 at)

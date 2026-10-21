@@ -4,7 +4,7 @@
 // matrices S*M*S with S = diag(-1,1,1,1), triangle winding reversed) and V is flipped (v -> 1-v).
 //
 // DLM layout (little endian, strings are BinaryWriter length-prefixed UTF-8):
-//   "DLM1"
+//   "DLM2" (1.6.1; "DLM1" before: the same without the trailing block)
 //   int boneCount; per bone: string name, int parent (-1 = model root), float3 localPos, float4 localRot(xyzw), float3 localScale,
 //                            float[16] bindpose (Unity row-major m00 m01 m02 m03 m10 ...)
 //   int vertexCount; float3 pos[]; float3 normal[]; float2 uv[]; per vertex: int4 bone, float4 weight
@@ -12,12 +12,19 @@
 //   int materialCount; per material: string name, string albedoFile, string normalFile, int alphaMode (0 opaque,1 mask,2 blend), float cutoff, float4 color
 //   int clipCount; per clip: string name, float length, float fps, int frames,
 //                  int trackCount; per track: int bone, int posFrames (0|1|frames), float3 pos[posFrames], int rotFrames (1|frames), float4 rot[rotFrames]
+//   DLM2 trailing block (Deadlock material settings the glTF leaves out, read from each .vmat):
+//   int hasColors; if 1: float4 color[vertexCount] (the mesh's vertex colours, COLOR_0, white where a mesh has none)
+//   per material: float3 emission (g_vSelfIllumTint1 x g_flSelfIllumScale1 when F_SELF_ILLUM, else 0), int vertexColor (F_VERTEX_COLOR)
+//   The material colour above already carries g_vColorTint1, and F_ALPHA_TEST turns alphaMode to 1 (mask).
 using System.Numerics;
 using SharpGLTF.Schema2;
 using SkiaSharp;
 using ValveResourceFormat.IO;
 
 namespace DeadlockExtract;
+
+/// <summary>The Deadlock material settings DLM2 carries beyond glTF's (null = the material wasn't found).</summary>
+public sealed record VmatInfo(Vector3 Tint, bool AlphaTest, bool VertexColor, Vector3 Emission);
 
 public static class DlmWriter
 {
@@ -52,7 +59,7 @@ public static class DlmWriter
         return m;
     }
 
-    public static string Write(ModelRoot model, HeroEntry hero, string dir, Action<string> log)
+    public static string Write(ModelRoot model, HeroEntry hero, string dir, Action<string> log, Func<string, VmatInfo?>? vmat = null)
     {
         // ---- skeleton: union of the joints of every skin used by an included mesh
         var meshNodes = model.LogicalNodes.Where(n => n.Mesh != null).ToList();
@@ -89,7 +96,7 @@ public static class DlmWriter
 
         using var fs = File.Create(Path.Combine(dir, hero.Id + ".dlm"));
         using var w = new BinaryWriter(fs);
-        w.Write("DLM1".ToCharArray());
+        w.Write("DLM2".ToCharArray());
         w.Write(boneNodes.Count);
         for (int i = 0; i < boneNodes.Count; i++)
         {
@@ -108,7 +115,7 @@ public static class DlmWriter
 
         // ---- mesh: merge every primitive of every included mesh node
         var pos = new List<Vector3>(); var nrm = new List<Vector3>(); var uv = new List<Vector2>();
-        var bones = new List<(int, int, int, int)>(); var weights = new List<Vector4>();
+        var bones = new List<(int, int, int, int)>(); var weights = new List<Vector4>(); var colors = new List<Vector4>();
         var submeshes = new List<(int mat, List<int> idx)>();
         // a material slot is a glTF material, or (1.6.0) a material on one of the hero's Split meshes, kept as its own submesh
         // and named "<material>@<mesh>" so the plugin can tell it apart (Rat King's ammo belt: one mesh per round count)
@@ -130,6 +137,7 @@ public static class DlmWriter
                 var ta = prim.GetVertexAccessor("TEXCOORD_0")?.AsVector2Array();
                 var ja = prim.GetVertexAccessor("JOINTS_0")?.AsVector4Array();
                 var wa = prim.GetVertexAccessor("WEIGHTS_0")?.AsVector4Array();
+                var ca = prim.GetVertexAccessor("COLOR_0")?.AsColorArray(1f);
                 // primitives of one VRF mesh share one vertex buffer: add it once
                 int posAccessor = prim.GetVertexAccessor("POSITION").LogicalIndex;
                 if (!sharedBase.TryGetValue(posAccessor, out int baseV))
@@ -142,6 +150,7 @@ public static class DlmWriter
                     nrm.Add(na != null ? P(na[v]) : Vector3.UnitY);
                     var t = ta != null ? ta[v] : Vector2.Zero;
                     uv.Add(new Vector2(t.X, 1f - t.Y));
+                    colors.Add(ca != null ? ca[v] : Vector4.One);
                     if (ja != null && wa != null && skinMap.Length > 0)
                     {
                         var jj = ja[v]; var ww = wa[v];
@@ -185,6 +194,7 @@ public static class DlmWriter
         w.Write(materials.Count);
         // a split mesh's slot shares its material's textures: each real material's images are saved once
         var saved = new Dictionary<Material, (string albedo, string normal)>();
+        var infos = new List<VmatInfo?>();
         for (int m = 0; m < materials.Count; m++)
         {
             var (mat, tag) = materials[m];
@@ -198,9 +208,13 @@ public static class DlmWriter
                 if (mat != null) saved[mat] = (albedo, normal);
             }
             int alpha = mat == null ? 0 : mat.Alpha switch { AlphaMode.MASK => 1, AlphaMode.BLEND => 2, _ => 0 };
+            var info = mat?.Name != null && vmat != null ? vmat(mat.Name) : null;
+            if (info != null && info.AlphaTest && alpha == 0) alpha = 1;
             w.Write(name); w.Write(albedo); w.Write(normal); w.Write(alpha);
             w.Write(mat?.AlphaCutoff ?? 0.5f);
             var col = mat?.FindChannel("BaseColor")?.Color ?? Vector4.One;
+            if (info != null) col = new Vector4(col.X * info.Tint.X, col.Y * info.Tint.Y, col.Z * info.Tint.Z, col.W);
+            infos.Add(info);
             w.Write(col.X); w.Write(col.Y); w.Write(col.Z); w.Write(col.W);
         }
 
@@ -247,6 +261,18 @@ public static class DlmWriter
                 for (int f = 0; f < (rotConst ? 1 : frames); f++) WriteQ(w, Q(rs[f]));
             }
         }
+        // ---- DLM2: vertex colours (only when a material uses them) and each material's glow and vertex-colour flag
+        bool anyVc = infos.Any(i => i != null && i.VertexColor);
+        w.Write(anyVc ? 1 : 0);
+        if (anyVc) foreach (var c in colors) { w.Write(c.X); w.Write(c.Y); w.Write(c.Z); w.Write(c.W); }
+        foreach (var i in infos)
+        {
+            var e = i?.Emission ?? Vector3.Zero;
+            w.Write(e.X); w.Write(e.Y); w.Write(e.Z); w.Write(i != null && i.VertexColor ? 1 : 0);
+        }
+        int tinted = infos.Count(i => i != null && (i.VertexColor || i.Emission != Vector3.Zero || i.Tint != Vector3.One || i.AlphaTest));
+        if (tinted > 0) log($"  {hero.Id}: {tinted} material(s) with Deadlock tint/glow/vertex colour/cut-out" + (anyVc ? ", vertex colours kept" : ""));
+
         var missing = hero.Clips.Where(c => !anims.Any(a => string.Equals(Short(a.Name), c, StringComparison.OrdinalIgnoreCase))).ToList();
         if (missing.Count > 0) log($"  {hero.Id}: clips not found: {string.Join(", ", missing)}");
 

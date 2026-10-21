@@ -19,7 +19,7 @@ def F(f, n): return struct.unpack(f'<{n}f', f.read(4 * n))
 
 def read(hero):
     f = open(os.path.join(CACHE, hero, hero + '.dlm'), 'rb')
-    assert f.read(4) == b'DLM1'
+    assert f.read(4) in (b'DLM1', b'DLM2')
     bones = []
     for _ in range(I(f)):
         name = rs(f); parent = I(f); p = F(f, 3); q = F(f, 4); s = F(f, 3); F(f, 16)

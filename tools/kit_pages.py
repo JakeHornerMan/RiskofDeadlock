@@ -15,7 +15,7 @@ OUT = os.path.join(ROOT, 'build', 'pages')
 IMG = os.path.join(OUT, 'img')
 os.makedirs(OUT, exist_ok=True)
 E = html.escape
-VERSION = 'v0.9.0'
+VERSION = 'v0.9.0b'
 BAND = 500  # balanced = within ±500 %/s of the RoR2 match (creator, 2026-10-16)
 
 def sheet(name):
@@ -72,7 +72,12 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
- 'ratking': [('v0.9.0', ['New hero: Rat King, matched to Captain (Captain’s stats, +20 health, +10 armor, a second jump)',
+ 'ratking': [('v0.9.0b', ['Footsteps 90 % quieter (the landing thud stays as loud)',
+                          'King’s Leap: the flip now only plays on the second (air) jump',
+                          'Rule, Ratannia!: the banner’s earth, garbage and sewer now carry Deadlock’s own colours (vertex colours, tints, the slime’s glow)',
+                          'Royal Pestments: 25 → 50 % a bite (double damage)',
+                          'Rat Swarm: no time limit. Rats stay at your feet until they find an enemy, each bites until its enemy dies and is then gone; up to 5 per enemy, 10 on bosses; spares follow you to the end of the stage, and using it again tops them back up to 50']),
+             ('v0.9.0', ['New hero: Rat King, matched to Captain (Captain’s stats, +20 health, +10 armor, a second jump)',
                          'His cape and tail swing as springs on top of his Deadlock animations; his gun’s ammo belt shortens shot by shot',
                          'Deadlock’s own rat runs in the ring, bursts out of the ground at the slam and swarms in the Q, as a cheap crowd'])],
  'viscous': [('v0.8.0f', ['Puddle Punch leaves a goo puddle too (6.4 m), like Splatter and The Cube',
@@ -157,10 +162,10 @@ PAPER = {
 }
 
 ANALYSIS = {
- 'ratking': ['Three runs on the first build: 2,959, 2,981 and 3,058 %/s, mean 2,999 against Captain’s 3,490. That is −491: inside the ±500 band, by 9. The spec’s lever for a miss below the band (Sovereign’s Decree 80 → 100 %) was not needed.',
-             'The Scrap Grenade carries him (1,170 %/s alone, 940–1,320): its hops keep it in the pack, so most of its three blasts land on most of the 12. Rule, Ratannia! 1,035 (the 1,500 % centre blast plus the stun ring every 12 s), the gun 547 (565 on paper), Royal Pestments 509 (the ring follows him, so the pack stays inside).',
+ 'ratking': ['Three runs after the 0.9.0b changes (Royal Pestments doubled, Rat Swarm without a time limit): 3,567, 3,189 and 3,869 %/s, mean 3,542 against Captain’s 3,490. That is +52: inside the ±500 band. (0.9.0: 2,999.)',
+             'The Scrap Grenade carries him (1,373 %/s alone, 1,260–1,530): its hops keep it in the pack, so most of its three blasts land on most of the 12. Rule, Ratannia! 1,123 (the 1,500 % centre blast plus the stun ring every 12 s), Royal Pestments 889 (was 509 at 25 %; the ring follows him, so the pack stays inside), the gun 547 (565 on paper).',
              'Captain’s own number is odd: his moves alone add up to about 800 (the shotgun; the probes and beacons barely touch a still pack) but together he measures 3,490, so compare the totals, not single moves.',
-             'Rat Swarm (Q, the ult) does about 2,070 %/s over its 30 s pass with one use: 50 rats, at most 5 on each of the 12. It isn’t in the all-together number.'],
+             'Rat Swarm (Q, the ult) does about 4,620 %/s over its 30 s pass with one use (2,070 with the old 15 s limit): with no time limit the 50 rats keep biting, 5 on each of the 12, until their enemies die. It isn’t in the all-together number.'],
  'viscous': ['Three runs after the 0.8.0f changes (Puddle Punch leaves a puddle, every puddle 20 % smaller): 1,660, 1,805 and 2,410 %/s, mean 1,958 against REX’s 1,738. That is +220, inside the ±500 band.',
              'The runs swing a lot (1,660 to 2,410): how often a smaller puddle reaches the bench’s fixed spot and tops up the magazine decides how many Splatters it throws.',
              'Splatter 1,408 %/s alone, Puddle Punch 702, The Cube 493, the gun 412.',
@@ -334,8 +339,8 @@ def maths(r):
         return [f"{n(d)} % within {n(r['radius'])} m, {n(r['splashPct'])} % and a {n(r['stunDuration'])} s stun out to {n(r['reach'])} m",
                 f"every {n(cd)} s"], d / cd
     if k == 'ult_swarm':
-        tot = r['chainCount'] * r['duration'] / r['interval'] * d
-        return [f"{n(r['buffStacks'])} rats, up to {n(r['chainCount'])} per enemy, {n(d)} % a bite each second: {n(tot)} % to one enemy over {n(r['duration'])} s"], None
+        per = r['chainCount'] / r['interval'] * d
+        return [f"{n(r['buffStacks'])} rats, up to {n(r['chainCount'])} per enemy ({n(r['chainCount'] * r['bossMult'])} on bosses), {n(d)} % a bite each second: {n(per)} % a second to one enemy until it dies (no time limit)"], None
     if k == 'self_buff':
         return ['no damage: invisibility and speed'], 0
     return [], None
@@ -554,7 +559,7 @@ def ability_card(r, hid, v, scale):
     rows = [(r['name'], dps(hero_who(hid), slot), ''), (f"{v['name']}: {mname}", dps(v['who'], slot), ' match')]
     return f'''<article class="ab">
   <div class="main">
-    <div class="head"><span class="key">{KEY[slot]}</span><div><h3>{E(r["name"])}</h3><div class="eyebrow">{E(KIND_LABEL[slot])}</div></div></div>
+    <div class="head"><span class="key">{KEY[slot]}</span><div><h3>{E(r["name"])}</h3><div class="eyebrow">{E(KIND_LABEL[slot] if slot != 'special' or r['hero'] in ('haze', 'abrams', 'seven', 'infernus') else 'Ability')}</div></div></div>
     <p class="desc">{E(strip_tags(r["description"]))}</p>
     <div class="tiles">{tiles_html(tiles(r))}</div>
   </div>

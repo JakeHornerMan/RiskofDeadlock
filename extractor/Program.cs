@@ -22,7 +22,7 @@ namespace DeadlockExtract;
 
 public static class Program
 {
-    public const string Version = "1.6.0";
+    public const string Version = "1.6.1";
     static StreamWriter? log;
 
     public static int Main(string[] args)
@@ -343,6 +343,7 @@ public static class Program
         if (!File.Exists(glb)) throw new Exception("glTF export produced nothing for " + hero.Id);
 
         var model = ModelRoot.Load(glb);
+        // heroes keep their look as approved (whole-material tints/glows would change them; Deadlock's glow is masked): props only
         var stats = DlmWriter.Write(model, hero, dir, Log);
         Log($"  {hero.Id}: {stats}");
         Directory.Delete(tmp, true);
@@ -372,9 +373,58 @@ public static class Program
         exporter.Export(res, glb, CancellationToken.None);
         if (!File.Exists(glb)) throw new Exception("glTF export produced nothing");
         var model = ModelRoot.Load(glb);
-        var stats = DlmWriter.Write(model, new HeroEntry { Id = prop.Id, Vmdl = prop.Vmdl, Meshes = prop.Meshes, Clips = prop.Clips }, dir, Log);
+        var stats = DlmWriter.Write(model, new HeroEntry { Id = prop.Id, Vmdl = prop.Vmdl, Meshes = prop.Meshes, Clips = prop.Clips }, dir, Log, n => Vmat(loader, n, prop.Vmdl));
         Log($"  prop {prop.Id}: {stats}");
         Directory.Delete(tmp, true);
+    }
+
+    // every .vmat in the VPK by its file name (built once), for the material settings glTF leaves out (DLM2)
+    static Dictionary<string, List<string>>? vmats;
+    static readonly Dictionary<string, VmatInfo?> vmatInfos = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>The Deadlock settings of the material named name (glTF names a material after its .vmat file), preferring the
+    /// one in the model's own folder: g_vColorTint1, F_ALPHA_TEST, F_VERTEX_COLOR, F_SELF_ILLUM with its tint and scale.</summary>
+    static VmatInfo? Vmat(GameFileLoader loader, string name, string vmdl)
+    {
+        if (vmats == null)
+        {
+            vmats = new(StringComparer.OrdinalIgnoreCase);
+            if (loader.CurrentPackage?.Entries.TryGetValue("vmat_c", out var list) == true)
+                foreach (var e in list)
+                {
+                    var f = e.GetFullPath(); f = f[..^2];
+                    var key = Path.GetFileNameWithoutExtension(f);
+                    if (!vmats.TryGetValue(key, out var paths)) vmats[key] = paths = new List<string>();
+                    paths.Add(f);
+                }
+        }
+        var folder = Path.GetDirectoryName(vmdl)?.Replace('\\', '/') ?? "";
+        if (vmatInfos.TryGetValue(folder + "|" + name, out var cached)) return cached;
+        VmatInfo? info = null;
+        try
+        {
+            if (vmats.TryGetValue(name, out var paths))
+            {
+                var path = paths.FirstOrDefault(p => p.StartsWith(folder, StringComparison.OrdinalIgnoreCase)) ?? paths[0];
+                if (loader.LoadFileCompiled(path)?.DataBlock is ValveResourceFormat.ResourceTypes.Material m)
+                {
+                    long I(string k) => m.IntParams.TryGetValue(k, out var v) ? v : 0;
+                    float F(string k, float d) => m.FloatParams.TryGetValue(k, out var v) ? v : d;
+                    Vector4 V(string k) => m.VectorParams.TryGetValue(k, out var v) ? v : Vector4.One;
+                    var tint = m.VectorParams.ContainsKey("g_vColorTint1") ? V("g_vColorTint1") : V("g_vColorTint");
+                    var em = Vector3.Zero;
+                    if (I("F_SELF_ILLUM") != 0)
+                    {
+                        var st = V("g_vSelfIllumTint1");
+                        em = new Vector3(st.X, st.Y, st.Z) * F("g_flSelfIllumScale1", 1f);
+                    }
+                    info = new VmatInfo(new Vector3(tint.X, tint.Y, tint.Z), I("F_ALPHA_TEST") != 0, I("F_VERTEX_COLOR") != 0, em);
+                }
+            }
+        }
+        catch (Exception e) { Log($"  material {name}: {e.Message}"); }
+        vmatInfos[folder + "|" + name] = info;
+        return info;
     }
 
     // ---------------- sounds ----------------

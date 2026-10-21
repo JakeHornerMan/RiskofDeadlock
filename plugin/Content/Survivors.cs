@@ -361,7 +361,7 @@ namespace DeadlockOfRain
         CharacterBody body;
 
         HeroRow hero;
-        SoundRow steps;
+        SoundRow steps, lands;
         Transform rider;
         Vector3 riderScale = Vector3.one;
         bool riderHidden;
@@ -379,6 +379,7 @@ namespace DeadlockOfRain
             if (hero.ImmuneToForce && NetworkServer.active && !body.HasBuff(RoR2Content.Buffs.ImmuneToPhysicsForces)) body.AddBuff(RoR2Content.Buffs.ImmuneToPhysicsForces);
             var gun = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Slot == "primary");
             steps = gun != null ? Sheet.Sound(gun.Id + "/step") : null;
+            lands = gun != null ? Sheet.Sound(gun.Id + "/land") ?? steps : null;
             var model = body.modelLocator ? body.modelLocator.modelTransform : null;
             if (model && hero.RiderBone != "none")
                 foreach (var tr in model.GetComponentsInChildren<Transform>(true)) if (tr.name == hero.RiderBone) { rider = tr; riderScale = tr.localScale; break; }
@@ -425,7 +426,7 @@ namespace DeadlockOfRain
                 // a heavy landing after a real fall: the thud and a short shake (heroes.landShake strong; Viscous' is a tenth)
                 if (!wasGrounded && airTime > 0.6f)
                 {
-                    Fx.Sound(steps.Skill, "hit", body.footPosition);
+                    Fx.Sound(lands.Skill, "hit", body.footPosition);
                     if (hero.LandShake > 0f) ShakeEmitter.CreateSimpleShakeEmitter(body.footPosition, new Wave { amplitude = hero.LandShake, frequency = 25f }, 0.3f, 12f, true);
                 }
                 airTime = 0f;

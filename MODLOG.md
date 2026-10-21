@@ -82,6 +82,12 @@
   every clip now folds the root's rotation into its children (doc 02 §12 gotcha 23). His muzzle bone sits at the grip
   (`animations.muzzleForward`). All seven heroes pass `run_test.sh`; bench 2999 vs Captain 3490 (inside).
 
+## 0.9.0b (2026-10-21): Rat King after the creator's first play
+- Footsteps a tenth (`ratking_gun/land` keeps the landing loud), flip only on the air jump, Royal Pestments 50 %, Rat Swarm with
+  no time limit (rats spent when their enemy dies; 5 per enemy, 10 on bosses). Bench 3542 vs Captain 3490.
+- Extractor 1.6.1 / DLM2: vertex colours and `.vmat` tint/alpha-test/glow, for props only. The banner's earth and garbage are
+  white 1×1 textures coloured by vertex colours in Deadlock. Whole-material glows on heroes went badly wrong in a first try (doc 01 §7).
+
 ## Gotchas found
 1. RoR2's CharacterModel keeps ONE material per renderer (it re-applies defaultMaterial), so a multi-material
    SkinnedMeshRenderer only drew submesh 0. Fix: one SkinnedMeshRenderer per material, one RendererInfo each.

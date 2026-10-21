@@ -14,6 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
+| Rat King | 0.9.0b (creator's first play): Royal Pestments 25 → 50 %; Rat Swarm without a time limit (each rat bites until its enemy dies, then is gone; 5 per enemy, 10 on bosses; spares stay to the end of the stage); footsteps quieter and the flip only on the air jump (no DPS effect); banner materials (visual) | the creator's play-check | this one | **benched**: 3567 / 3189 / 3869, **mean 3542** vs Captain 3490 (+52, inside), §3.11; `run_test.sh` all heroes every Rat King check pass | **done** |
 | Rat King | all (new hero, 0.9.0): Sovereign's Decree 2 × 80 % (one pellet dead on), Scrap Grenade 300/300/600 %, Royal Pestments 25 % × 4/s for 6 s, Rule, Ratannia! 1500 % / 150 % + 3 s stun, Rat Swarm 50 rats | new hero (spec of 2026-10-20) | this one | **benched**: 2959 / 2981 / 3058, **mean 2999** vs Captain 3490 (−491, inside by 9), §3.10; `run_test.sh` all seven heroes every check pass | **done** |
 | Viscous | 0.8.0f: Puddle Punch leaves a 6.4 m puddle (`extra` `viscous_splatter`); every puddle 20 % smaller (Splatter 8 → 6.4 m, Cube 10 → 8 m) | the creator's fourth round | this one | **benched**: 1660 / 1805 / 2410, **mean 1958** vs REX 1738 (+220, inside), §3.9; `run_test.sh viscous` every check pass | **done** |
 | Viscous | 0.8.0e: puddles 3 s + 5 s shrinking and a 20-round supply that tops the magazine up while he stands in them (no more +20 above it), Splatter 200 → 150 %, jump power 15 → 20 | the creator's third round | this one | **benched**: 2273 / 2213 / 2272, **mean 2253** vs REX 1738 (+515, 15 above), §3.8; `run_test.sh viscous` every check pass incl. puddle supply 0 → 20, same puddle → 0, new puddle → 20 | **done** |
@@ -178,6 +179,22 @@ Bench caveats seen in this work:
 - Engineer's turrets land few hits in 30 s against a still pack.
 - Engineer's damage stat is 14 (Infernus 12): %/s removes it.
 - Q per use, last run: Abrams 88400 % (13 hit), Infernus 74800 %, Haze 52771 %, Preon 48400 %, Seven 27200 %.
+
+### 3.11 v0.9.0b Rat King after the creator's first play (Rat King-only runs, 2026-10-21)
+`VERSION` v0.9.0b, so the 0.9.0 runs dropped. Royal Pestments 25 → 50 %; Rat Swarm has no time limit.
+
+| Pass | Runs (%/s) | Mean | 0.9.0 mean |
+|---|---|---|---|
+| All main moves | 3567, 3189, 3869 | **3542** | 2999 |
+| M1 Sovereign's Decree | 549, 549, 544 | 547 | 547 |
+| M2 Scrap Grenade | 1330, 1530, 1260 | 1373 | 1170 |
+| Shift Royal Pestments | 855, 940, 873 | 889 | 509 |
+| R Rule, Ratannia! | 1030, 1215, 1125 | 1123 | 1035 |
+| Q Rat Swarm (not balanced) | 4617, 4620, 4617 | 4618 | 2073 |
+
+- +52 against Captain's 3490: **inside** the ±500 band (it was −491, right at the bottom). Royal Pestments added about 380, as
+  doubling it should (not the full 509: its bites overlap the other moves' kills).
+- Rat Swarm doubled over the 30 s pass because its rats no longer leave at 15 s; it is still left out of balance (an ult anyone can carry).
 
 ### 3.10 v0.9.0 Rat King (Rat King-only runs, 2026-10-21)
 `VERSION` v0.9.0. Three runs in one launch (`REPEAT=3 run_bench.sh 30 ratking`); Captain from the library (never re-benched).

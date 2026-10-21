@@ -1,6 +1,6 @@
 {
   "sheet": "sounds",
-  "about": "Deadlock sound events (as referenced by the hero's abilities in scripts/abilities.vdata) played for each skill moment. The extractor resolves each event through the player's soundevents/*.vsndevts (following 'base' inheritance) to its vsnd files and decodes them to WAV in the local cache. 'none' = silent on purpose. RoR2 disables Unity audio, so the plugin plays these through its own small Windows audio mixer at the game's SFX volume. castLayer / hitLayer: a second event played together with cast / hit to make it heavier (another hero's or a generic Deadlock sound), or none. tick / tickFinal: a countdown tick played once a second through a fuse, and the last one before it goes off (its sound is stopped at the blast); none for moves without a fuse. gain: loudness multiplier for every event of the row (1 = as Deadlock mixes it). A row named <skill>/<part> is an extra sound set of that skill (mokrill_gun/step: Mo's footsteps (cast) and landing thud (hit); mokrill_gun/punch: the punch while Krill is away). ratking_banner/jump: Rule, Ratannia!'s take-off after the wind-up (cast). ratking_scrap/ready: Scrap Grenade held ready (cast as it comes out, loop while held, end when put away, hit on each hop's bounce). For Rat Swarm, tick is one rat's bite (a few at most at once).",
+  "about": "Deadlock sound events (as referenced by the hero's abilities in scripts/abilities.vdata) played for each skill moment. The extractor resolves each event through the player's soundevents/*.vsndevts (following 'base' inheritance) to its vsnd files and decodes them to WAV in the local cache. 'none' = silent on purpose. RoR2 disables Unity audio, so the plugin plays these through its own small Windows audio mixer at the game's SFX volume. castLayer / hitLayer: a second event played together with cast / hit to make it heavier (another hero's or a generic Deadlock sound), or none. tick / tickFinal: a countdown tick played once a second through a fuse, and the last one before it goes off (its sound is stopped at the blast); none for moves without a fuse. gain: loudness multiplier for every event of the row (1 = as Deadlock mixes it). A row named <skill>/<part> is an extra sound set of that skill (mokrill_gun/step: Mo's footsteps (cast) and landing thud (hit); mokrill_gun/punch: the punch while Krill is away). <gun>/land: the landing thud (hit) at its own gain when the footsteps need a different one (ratking_gun/land: Rat King's footsteps are at 0.1, his landing at 1); without it the /step row's hit is used. ratking_banner/jump: Rule, Ratannia!'s take-off after the wind-up (cast). ratking_scrap/ready: Scrap Grenade held ready (cast as it comes out, loop while held, end when put away, hit on each hop's bounce). For Rat Swarm, tick is one rat's bite (a few at most at once).",
   "columns": [
     "skill",
     "cast",
@@ -486,6 +486,19 @@
     {
       "skill": "ratking_gun/step",
       "cast": "Ratking.Footstep",
+      "loop": "none",
+      "hit": "none",
+      "end": "none",
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 0.1
+    },
+    {
+      "skill": "ratking_gun/land",
+      "cast": "none",
       "loop": "none",
       "hit": "Ratking.Jumpland",
       "end": "none",

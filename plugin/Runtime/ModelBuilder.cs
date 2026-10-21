@@ -242,6 +242,8 @@ namespace DeadlockOfRain
             catch (System.Exception e) { Log.Warn($"goo part {part.name}: {e.Message}"); return false; }
         }
 
+        static bool vcLogged;
+
         internal static Material MakeMaterial(HeroAsset asset, MaterialDef def)
         {
             Material m = Template ? new Material(Template) : new Material(Shader.Find("Standard"));
@@ -264,6 +266,15 @@ namespace DeadlockOfRain
             if (m.HasProperty("_BumpMap")) m.SetTexture("_BumpMap", null);
             if (m.HasProperty("_EmTex")) m.SetTexture("_EmTex", null);
             if (m.HasProperty("_EmPower")) m.SetFloat("_EmPower", 0f);
+            // def.Emission (Deadlock's self-illumination) is read but not used: Deadlock lights only the masked part of a
+            // material, and the mask isn't exported, so a whole-material glow would light the slime (or a hero) all over
+            // a material Deadlock colours by its vertices (the banner's earth and garbage): the shader's vertex colours on
+            if (def.VertexColor)
+            {
+                if (m.HasProperty("_ColorsOn")) m.SetFloat("_ColorsOn", 1f);
+                m.EnableKeyword("VERTEXCOLOR");
+                if (!vcLogged) { vcLogged = true; Log.Info($"vertex colours: shader {m.shader.name}, _ColorsOn {(m.HasProperty("_ColorsOn") ? "yes" : "no")}"); }
+            }
             if (m.HasProperty("_FresnelMask")) m.SetTexture("_FresnelMask", null);
             if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.2f);
             if (def.AlphaMode != 0)

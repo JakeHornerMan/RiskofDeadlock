@@ -36,7 +36,7 @@ Related documents:
 | NLayer (MP3 decoder) | 1.16.0 | `extractor/DeadlockExtract.csproj` |
 | .NET SDK for the extractor | **net10.0**. VRF 20 needs it; net8 does not compile against it. | csproj `TargetFramework` |
 | SharpGLTF, SkiaSharp, ValvePak, ValveKeyValue | transitive deps of VRF | `THIRD-PARTY-NOTICES.txt` |
-| Extractor version | `1.6.0` (`Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1, 1.4.0 the heroes.vdata model lookup, 1.5.0 effect models (props), 1.6.0 props with meshes, skeleton and clips, and split hero meshes) | `extractor/Program.cs`; also part of the cache stamp |
+| Extractor version | `1.6.1` (1.6.1: DLM2, each material's Deadlock tint, cut-out, glow and vertex colours; `Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1, 1.4.0 the heroes.vdata model lookup, 1.5.0 effect models (props), 1.6.0 props with meshes, skeleton and clips, and split hero meshes) | `extractor/Program.cs`; also part of the cache stamp |
 
 A Deadlock update can change asset paths, clip names, mesh names or sound event names. **Section 9** explains how to
 re-validate everything after an update.
@@ -369,11 +369,11 @@ Expect one `heroes/<id>` folder per hero and the image and sound counts from the
 
 ---
 
-## 7. The DLM file format (version tag `DLM1`)
+## 7. The DLM file format (version tag `DLM2` since extractor 1.6.1; `DLM1` before)
 
 Little-endian. Strings use .NET `BinaryWriter` format (7-bit-encoded length prefix, then UTF-8 bytes). Written by
 `extractor/DlmWriter.cs` and read by `plugin/Runtime/DeadlockCache.cs` (`HeroAsset.Read`). Both sides **must change
-together**. Python readers for debugging: `tools/dlm_check.py`, `tools/dlm_pose.py`, `tools/dlm_sub.py`, `tools/dlm_tris.py`.
+together**. Python readers for debugging: `tools/dlm_mats.py` (materials per model), `tools/dlm_check.py`, `tools/dlm_pose.py`, `tools/dlm_sub.py`, `tools/dlm_tris.py`.
 
 ```
 char[4]  "DLM1"
@@ -390,12 +390,28 @@ int32    materialCount
 int32    clipCount
   per clip: string name; float length; float fps; int32 frames; int32 trackCount;
     per track: int32 bone; int32 posFrames (0|1|frames); float3 pos[posFrames]; int32 rotFrames (1|frames); float4 rot[rotFrames]
+-- DLM2 only (1.6.1), after the clips:
+int32    hasColors; if 1: float4 color[vertexCount]   (glTF COLOR_0, white where a mesh has none; written only when a material uses them)
+  per material: float3 emission; int32 vertexColor
 ```
-(The writer never emits `posFrames = 0` today, but the reader accepts it.)
+(The writer never emits `posFrames = 0` today, but the reader accepts it. The plugin reads DLM1 and DLM2, so an older cache still loads.)
+
+**Material settings from the `.vmat` (1.6.1, `Program.Vmat`).** VRF's glTF names each material after its `.vmat` file but leaves out
+Deadlock's shader settings. The extractor indexes every `vmat_c` in the VPK by file name (the one in the model's own folder first),
+reads its int/float/vector params and writes: the colour × `g_vColorTint1` (or `g_vColorTint`); `alphaMode` 1 when `F_ALPHA_TEST`;
+emission = `g_vSelfIllumTint1` × `g_flSelfIllumScale1` when `F_SELF_ILLUM`; the vertex-colour flag from `F_VERTEX_COLOR`. Found on
+Rat King's banner: `ratking_ult_diorama` (the earth) and `ratking_garbage` have a 1×1 white `g_tColor` and take all their colour
+from vertex colours (and a dark olive tint); `ratking_ult_diorama_sewage` is alpha-tested, vertex-coloured and glows faintly; the
+grenade's `vertcolor_pbr_basic_glass` is vertex-coloured too. The log prints `N material(s) with Deadlock tint/glow/vertex colour/cut-out`
+per model. **Props only:** heroes are written without these settings (their DLM2 has no colours and zero extras), because the
+first try changed approved heroes: whole-material tints (Viscous' glass black, Seven's greybox grey) and glows (Infernus' clothes
+6.55/0.2/0 all over, Abrams' head white). Deadlock lights only the masked part of a self-illum material (`g_tSelfIllumMask`, not
+exported), so the plugin also ignores `emission` for now. To look at a material: `build/vrfdump/vrfdump.exe <vpk> text <path>.vmat out.txt` (path without `_c`).
 
 How the plugin turns this into Unity objects (details in doc 02 §4):
 - **`HeroAsset.Parts`** builds **one `Mesh` per submesh**, holding only the vertices that submesh uses, with shared bind
-  poses and all-white vertex colors. This is because RoR2's `CharacterModel` drives one material per renderer.
+  poses and all-white vertex colors (the file's own vertex colours for a material flagged `vertexColor`). This is because RoR2's
+  `CharacterModel` drives one material per renderer.
 - **`HeroAsset.Texture(file)`** loads PNGs, compressing them when the size is a multiple of 4.
 - **`DeadlockAnimator.BuildClips`** turns tracks into legacy `AnimationClip` curves with linear tangents, cached per
   hero. It **skips position curves on every parentless bone and on `root_motion`** (`Parent < 0 || Name ==
