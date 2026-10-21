@@ -207,6 +207,41 @@ them**. Leave it installed and tell them it is ready.
 - DLM: `python tools/dlm_pose.py <hero> [frame] [clip-substring]` reads the cache directly. `dlm_sub.py`, `dlm_check.py` and `dlm_tris.py` take a `.dlm` path and must be run from the repo root.
 - Decompiled RoR2: `C:\Users\jakeh\ror2-decomp\ror2`, or `ilspycmd -t <Type> RoR2.dll`.
 
+## 5b. Daily watch: game updates and Melty breaks (since 2026-10-21)
+The creator asked: "is there a way we can tell is the deadlock or risk of rain game has been updated? can we run this every
+day? and if deadlock update can we start a claude instancce that check files that will validate our mod still works". It
+runs **on this PC only**, because GitHub's machines can't have Deadlock. It needs no GitHub Action and no repo secret.
+Claude runs under the creator's own `claude` login.
+
+- **Task Scheduler** "DeadlockOfRain daily watch", daily at 04:00, only while the creator is logged on (the game test needs
+  Steam and the desktop); a missed run starts when the PC is next on. Register it with `powershell -File tools/watch/install.ps1`
+  (`-At 13:30` to change the time, `-Uninstall` to remove it).
+- **`tools/watch/daily.ps1`** (`-DryRun`, `-NoPublish`, `-SkipMelty`):
+  1. It uses a lock file. It stops if any Steam game is running (`HKCU\Software\Valve\Steam` `RunningAppID` ≠ 0, or
+     a RoR2 or Deadlock process) or if a game is still updating (`StateFlags` ≠ 4).
+  2. It reads `buildid` from `appmanifest_632360.acf` / `appmanifest_1422450.acf` and Deadlock's `steam.inf` ClientVersion, and
+     compares them with `build/watch/state.json` (the first run records the baseline; seeded 2026-10-21: RoR2 25921972,
+     Deadlock 26097978 / 6807).
+  3. **Melty triage** (every day; Haiku, read-only Melty tools, about 2 cents): `tools/watch/triage-prompt.md` with
+     `--json-schema tools/watch/triage-schema.json`. It looks at `install_outcomes`, `player_logs` and `player_reports`, **only
+     for the live release version** and only entries newer than `state.json` `meltySeenUntil`. The result goes to
+     `build/watch/triage.json`.
+  4. If nothing changed and there are no breaks, it stops. Otherwise it runs the **fix run** on a new branch `watch/<date>`,
+     made from a clean `main`. If the repo has uncommitted work or isn't on `main`, it skips the run and shows a notification.
+     The fix run is `claude -p` with `tools/watch/fix-prompt.md` and the permissions in `tools/watch/claude-settings.json`
+     (an allow list, never `--dangerously-skip-permissions`; unpublish, rollback and delete are denied, and so are pushes to
+     main and force-pushes). It checks the mod: tools/dev listings, preflight, a cache rebuild, `run_test.sh` with every hero,
+     the BREAK check and `lab_restore`. It fixes what broke, records the session (doc 07, doc 00) and publishes.
+  5. It writes `build/watch/<date>-report.md` (the first line is the summary) and `<date>.log`, shows a Windows notification,
+     goes back to `main`, and keeps the branch only if it has commits. If `gh` is installed and signed in, it also opens a
+     GitHub issue (gh isn't installed yet).
+- **Publishing:** the creator's standing permission for this watch (2026-10-21: "push the fix to melty when you are
+  done!") lets the fix run `publish` **only after every check passes** and Melty's `test_release` passes. Every other
+  session still asks before publishing. The branch is left for the creator to merge into `main`. The only push allowed
+  is an `extractor-<ver>` tag, when the extractor changed and Melty needs the GitHub-built exe.
+- **Game launches:** the creator allowed the watch to start RoR2 for its tests when no Steam game is running ("Yes, if the
+  game isn't open or anyother game on my steam").
+
 ---
 
 ## 6. Releasing on Melty

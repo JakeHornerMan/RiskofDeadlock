@@ -54,7 +54,9 @@ Deadlock's assets from the player's own install; nothing from either game ships.
   Code reads generated rows and never hard-codes a number, clip name, sound event, effect key or icon. Unused cells are `0` or `"none"`, never empty.
 - **Never ship or commit game files** (Deadlock or RoR2), and never modify the Deadlock install. Never work around anti-cheat.
 - **The Melty token is secret:** only in Melty's Authorization header, never in files, commits, logs or replies.
-- **Commit after each logical step; do not push unless asked.** Ask the creator before `publish` on Melty.
+- **Commit after each logical step; do not push unless asked.** Ask the creator before `publish` on Melty. The one
+  exception is the **daily watch** (`tools/watch/`, doc 03 §5b): its unattended fix run may publish a fix on its own, but
+  only after every check and Melty's `test_release` pass.
 - **Don't launch the game for the creator's playtests.** Leave the build installed and tell them it is ready.
   Launching for automated test runs is fine; run `tools/lab_restore.sh` afterwards.
 - **Keep the ability docs current.** `docs/06-CURRENT-ABILITIES.md` lists every survivor's abilities with their numbers
@@ -129,6 +131,7 @@ bash tools/lab_restore.sh                # restore the PC the way Melty set it u
 bash tools/run_bench.sh [seconds] [heroes]  # DPS bench of our heroes only (vanilla numbers come from docs/dps-library.json); closes the game itself
 python tools/package.py <version>        # release zip in build/
 python tools/dlm_pose.py <hero> [frame] [clip-substring]   # where each clip points the gun
+powershell -File tools/watch/daily.ps1 -DryRun   # daily watch: game updates + Melty breaks -> Claude fix run (doc 03 §5b)
 ```
 - **Test only the hero(es) being changed** (creator, 2026-10-18: "just test the one being changed"): `run_test.sh infernus`,
   `run_coop_test.sh infernus`. Run all four (no argument) only when code every hero shares changed (DlrState, ModelBuilder,

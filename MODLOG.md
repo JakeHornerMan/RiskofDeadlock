@@ -128,3 +128,8 @@
    straight ahead. A state that throws on the server must carry the owner's aim (DlrState.OwnerAim, serialized).
    Symptom: a joined Infernus' Napalm never landed while the straight-ahead Sleep Dagger did.
 lab restored Tue Oct 13 01:42:10 GMTST 2026
+
+## Daily watch (2026-10-21)
+- `tools/watch/daily.ps1` (Task Scheduler, 04:00): local Steam build numbers (appmanifest buildid + StateFlags, steam.inf) vs
+  `build/watch/state.json`; Melty triage on the live release (Haiku, `--json-schema`); if anything changed, a `claude -p` fix run
+  on branch `watch/<date>` that may publish after every check passes. Stops if any Steam game is running. Doc 03 §5b.

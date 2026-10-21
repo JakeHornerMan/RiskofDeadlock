@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "properties": {
+    "liveVersion": { "type": "string" },
+    "liveReleaseId": { "type": "string" },
+    "breaks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": { "type": "string" },
+          "id": { "type": "string" },
+          "when": { "type": "string" },
+          "deadlockBuild": { "type": "string" },
+          "summary": { "type": "string" },
+          "detail": { "type": "string" }
+        },
+        "required": ["source", "summary"]
+      }
+    },
+    "summary": { "type": "string" }
+  },
+  "required": ["liveVersion", "breaks", "summary"]
+}

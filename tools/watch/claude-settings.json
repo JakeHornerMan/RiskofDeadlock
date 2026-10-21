@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Read", "Edit", "Write", "Glob", "Grep", "TodoWrite",
+      "Bash(bash tools/run_test.sh:*)",
+      "Bash(BREAK=infernus bash tools/run_test.sh:*)",
+      "Bash(bash tools/lab_restore.sh:*)",
+      "Bash(bash tools/run_coop_test.sh:*)",
+      "Bash(python tools/:*)",
+      "Bash(python -c:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet publish:*)",
+      "Bash(build/extract/DeadlockExtract.exe:*)",
+      "Bash(ilspycmd:*)",
+      "Bash(um win:*)",
+      "Bash(reg query:*)",
+      "Bash(curl -X PUT:*)",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(git show:*)",
+      "Bash(git add:*)", "Bash(git commit:*)",
+      "Bash(git tag extractor-:*)",
+      "Bash(git push origin extractor-:*)",
+      "Bash(gh auth status:*)", "Bash(gh issue create:*)",
+      "Bash(ls:*)", "Bash(cat:*)", "Bash(head:*)", "Bash(tail:*)", "Bash(grep:*)", "Bash(find:*)", "Bash(wc:*)",
+      "Bash(sha256sum:*)", "Bash(mkdir:*)", "Bash(cp:*)",
+      "mcp__melty"
+    ],
+    "deny": [
+      "Bash(git push origin main:*)",
+      "Bash(git push --force:*)", "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git checkout main:*)",
+      "Bash(rm -rf:*)",
+      "mcp__melty__unpublish", "mcp__melty__rollback_release", "mcp__melty__delete_draft", "mcp__melty__set_price"
+    ]
+  }
+}
