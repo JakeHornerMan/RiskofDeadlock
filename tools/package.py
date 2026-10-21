@@ -7,6 +7,9 @@ Nothing from Risk of Rain 2 or Deadlock is included: the extractor reads Deadloc
   python tools/package.py <version> --release       the same Melty zip cut down to thunderstore/release.json's heroes
     (plugins/DeadlockOfRain/heroes.txt + a cut extractor manifest), e.g. the four originals without Mo & Krill
 
+  python tools/package.py <version> --melty         the Melty zip cut to thunderstore/release.json's melty heroes, with its
+    comingSoon heroes as greyed locked tiles (coming-soon.txt; their portrait stays in the manifest, nothing else of them)
+
   python tools/package.py <version> --thunderstore  Thunderstore zip (needs the GitHub-built exe: tools/fetch_extractor.py;
     r2modman installs plugins/ into
     BepInEx/plugins/<team>-DeadlockOfRain/; the plugin runs plugins/extract/DeadlockExtract.exe itself, FirstRun.cs)
@@ -28,6 +31,7 @@ args = [a for a in sys.argv[1:] if not a.startswith('--')]
 version = args[0] if args else '0.1.0'
 thunderstore = '--thunderstore' in sys.argv
 cut = '--release' in sys.argv
+melty = '--melty' in sys.argv
 TS = os.path.join(ROOT, 'thunderstore')
 EXTRACT = {
     'DeadlockExtract.exe': 'build/extract/DeadlockExtract.exe',
@@ -37,7 +41,11 @@ EXTRACT = {
 
 
 RELEASE = json.load(open(os.path.join(TS, 'release.json'), encoding='utf-8'))
-SHEET_HEROES = {r['id']: r['displayName'] for r in json.load(open(os.path.join(ROOT, 'design', 'heroes.json'), encoding='utf-8'))['rows']}
+HERO_ROWS = {r['id']: r for r in json.load(open(os.path.join(ROOT, 'design', 'heroes.json'), encoding='utf-8'))['rows']}
+SHEET_HEROES = {i: r['displayName'] for i, r in HERO_ROWS.items()}
+# --melty ships release.json's melty heroes (and shows comingSoon greyed); --release and Thunderstore its heroes
+CUT_HEROES = RELEASE['melty'] if melty else RELEASE['heroes']
+SOON = RELEASE.get('comingSoon', []) if melty else []
 
 
 STEAM = r'C:\Program Files (x86)\Steam'
@@ -95,11 +103,13 @@ def release_manifest():
     """extractor/manifest.json cut down to the release's heroes (owners from tools/gen.py; unowned entries stay)."""
     m = json.load(open(os.path.join(ROOT, 'extractor', 'manifest.json'), encoding='utf-8'))
     owners = json.load(open(os.path.join(ROOT, 'extractor', 'manifest_owners.json'), encoding='utf-8'))
-    keep = set(RELEASE['heroes'])
+    keep = set(CUT_HEROES)
     used = lambda e: e not in owners or bool(keep & set(owners[e]))
     m['heroes'] = [h for h in m['heroes'] if h['id'] in keep]
+    # a coming-soon hero keeps only its select-screen portrait
+    portraits = {HERO_ROWS[h]['imageSmall'] for h in SOON}
     for k in ['images', 'soundEvents', 'soundEventFiles', 'voiceGroups', 'voiceAllTakes']:
-        m[k] = [e for e in m.get(k, []) if used(e)]
+        m[k] = [e for e in m.get(k, []) if used(e) or (k == 'images' and e in portraits)]
     m['props'] = [p for p in m.get('props', []) if used(p['id'])]
     return json.dumps(m, indent=2).encode('utf-8')
 
@@ -199,10 +209,12 @@ else:
     # (0.7.1 shipped four) even if the installer leaves old files behind
     generated = {'plugins/DeadlockOfRain/built-with.txt': BW_TXT,
                  'plugins/DeadlockOfRain/heroes.txt': ''.join(h + '\n' for h in SHEET_HEROES).encode('utf-8')}
-    if cut:
+    if cut or melty:
         del files['extract/manifest.json']
-        generated.update({'plugins/DeadlockOfRain/heroes.txt': ''.join(h + '\n' for h in RELEASE['heroes']).encode('utf-8'),
+        generated.update({'plugins/DeadlockOfRain/heroes.txt': ''.join(h + '\n' for h in CUT_HEROES).encode('utf-8'),
                           'extract/manifest.json': release_manifest()})
+    # every Melty zip writes the list (empty in a full zip), so an update clears an older release's coming-soon tiles
+    generated['plugins/DeadlockOfRain/coming-soon.txt'] = ''.join(h + '\n' for h in SOON).encode('utf-8')
 
 if os.path.exists(out): os.remove(out)
 with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:

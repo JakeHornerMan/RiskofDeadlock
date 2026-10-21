@@ -83,6 +83,10 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
      every other hero loads, and the same title-screen box says "<names> couldn't be read from this Deadlock version; the
      other heroes are ready". This works on Melty starts too (no FirstRun needed). Co-op stays safe: the mod-list entry
      names only the heroes built (§7.7), so a friend missing one is refused at the lobby.
+   - **Coming soon (0.9.0):** a hero listed in `coming-soon.txt` beside the DLL (`package.py --melty`, from `thunderstore/release.json`
+     `comingSoon`) gets the same locked placeholder (`MissingHeroes.Add(..., why: null)`), with its own portrait (`imageSmall`, the only
+     thing of it the cut manifest keeps) greyed and darkened, a grey colour, and the hover "<name>: coming soon". Nothing else of it
+     loads (no body, ult or sounds). The 0.9.0 Melty release shows Rat King this way.
    - **Since v0.7.2 a skipped hero keeps a locked red "!" tile** (`Content/MissingHeroes.cs`, creator 2026-10-19). It is a
      Commando-clone body (`Deadlock<Name>MissingBody`, its own asset id) whose `portraitIcon` is a red "!" drawn in code (no
      Deadlock art), plus a `SurvivorDef` with an `UnlockableDef` (`DeadlockOfRain.Missing.<id>`) that is never granted. Two

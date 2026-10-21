@@ -62,6 +62,21 @@ namespace DeadlockOfRain
             }
         }
 
+        static HeroRow[] comingSoon;
+        /// <summary>Heroes this build shows as "coming soon": the ids in coming-soon.txt beside the DLL (tools/package.py --melty,
+        /// from thunderstore/release.json comingSoon). Each gets a greyed, locked tile with its portrait; nothing else of it loads.</summary>
+        public static HeroRow[] ComingSoon
+        {
+            get
+            {
+                if (comingSoon != null) return comingSoon;
+                var file = System.IO.Path.Combine(Plugin.PluginDir ?? "", "coming-soon.txt");
+                if (!System.IO.File.Exists(file)) return comingSoon = new HeroRow[0];
+                var ids = new HashSet<string>(System.IO.File.ReadAllLines(file).Select(l => l.Trim()).Where(l => l.Length > 0));
+                return comingSoon = HeroRow.All.Where(h => ids.Contains(h.Id) && !Released.Contains(h)).ToArray();
+            }
+        }
+
         public static bool IsHero(CharacterBody b, string id) { var h = b ? b.GetComponent<DeadlockHero>() : null; return h && h.HeroId == id; }
         public static string HeroOf(CharacterBody b) { var h = b ? b.GetComponent<DeadlockHero>() : null; return h ? h.HeroId : null; }
 
@@ -113,6 +128,7 @@ namespace DeadlockOfRain
             Fx.Preload();
             yield return null;
 
+            foreach (var hero in ComingSoon) MissingHeroes.Add(commando, holder.transform, hero, null);
             foreach (var hero in Released)
             {
                 if (DeadlockCache.Failed.ContainsKey(hero.Id) || DeadlockCache.LoadHero(hero.Id) == null)

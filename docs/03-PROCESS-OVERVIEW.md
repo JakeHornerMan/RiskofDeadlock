@@ -231,7 +231,9 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
    - `plugins/DeadlockOfRain/{DeadlockOfRain.dll, README.md, LICENSE.txt}`
    - `extract/{DeadlockExtract.exe, manifest.json, THIRD-PARTY-NOTICES.txt, LICENSE.txt}`
 
-   `extract/manifest.json` comes from `extractor/manifest.json`, so it is current. `--release` cuts the zip to `thunderstore/release.json`'s heroes (v0.7.1: the four originals); then `setup.done.contains` uses the hash of the **cut** manifest in the zip. If `extractor/*.cs` changed, publish the exe first.
+   `extract/manifest.json` comes from `extractor/manifest.json`, so it is current. **`--melty` (0.9.0)** cuts the Melty zip to
+   `thunderstore/release.json` `melty` (0.9.0: the six without Rat King) and writes `coming-soon.txt` from `comingSoon` (greyed locked
+   tiles; only their portrait stays in the manifest); every Melty zip writes that file, so a later full zip clears it. `--release` cuts the zip to `thunderstore/release.json`'s heroes (v0.7.1: the four originals); then `setup.done.contains` uses the hash of the **cut** manifest in the zip. If `extractor/*.cs` changed, publish the exe first.
    **Since v0.7.2 `package.py` also:** refuses to run if `Plugin.Version` isn't `<ver>` or `thunderstore/CHANGELOG.md` has no
    `## <ver>` section; reads the creator's RoR2 Steam build (`appmanifest_632360.acf`) and Deadlock ClientVersion
    (`steam.inf`; env `RoR2Dir` / `DEADLOCKOFRAIN_DEADLOCK` for other folders) and refuses if either is missing; writes them to
@@ -304,6 +306,11 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
   characters to melty!". Listing description rewritten (five heroes, red "!", "Built with" line).
 - **0.7.1 (2026-10-19)**: the Deadlock 6795 fix, four heroes (`--release`), release `2dcdb0d2-058c-4014-96a3-90198b7c99f6`, published on the
   creator's yes without a Melty test (a new version of a live mashup needs none). Melty's own fix 0.6.4 (extractor "1.2.1") stays a draft.
+- **0.9.0 (2026-10-21)**: six heroes (Viscous added), Rat King a greyed "coming soon" tile (`package.py 0.9.0 --melty`), Goo Ball 100 s,
+  ammo counter. Release `310d6466-e084-4f27-920c-5d33fb19c6ad` (upload `25e1a80c-…`), extractor 1.6.2 (local build), recipe checks
+  as 0.7.2 with `viscous-plays` instead of `trophies`, `setup.done.contains` `|1.6.2|56FD4A3C17A14E4F` (the cut manifest). **No test,
+  no BREAK run** (the creator: "no test just let upload to melty"); published on that request, in Melty's safety review at the
+  time of writing. Listing description and tagline rewritten for six heroes, Hero pages kept, Built-with line v0.9.0 / Deadlock 6807.
 - Listing pictures: the creator's own character select shots of the four heroes (Haze cover, then Abrams, Seven, Infernus);
   the four 0.1.0 shots were removed. Driving the select screen with `um win drive` is fiddly (client coords are half the
   shot's full size on this monitor; clicks lag a frame); asking the creator for shots was quicker.

@@ -1,6 +1,6 @@
 {
   "sheet": "equipment",
-  "about": "The heroes' Deadlock ultimates as RoR2 equipment (Q). One row per equipment; its numbers, kind, sounds and effects are the skill row it names (skills slot equipment, cooldown 120). hero: who starts every run holding it. canDrop/enigmaCompatible/randomTrigger follow the Preon Accumulator (anyone can find it in chests, the Artifact of Enigma and Bottled Chaos can fire it). The pickup is a small figure of the hero; the HUD and logbook icon is the skill's Deadlock icon. figure: which part of the hero's model the pickup figure shows: all, or a material-name filter (rider: just Krill).",
+  "about": "The heroes' Deadlock ultimates as RoR2 equipment (Q). One row per equipment; its numbers, kind, sounds and effects are the skill row it names (skills slot equipment, cooldown 120, or shorter where the creator asked: Goo Ball 100). hero: who starts every run holding it. canDrop/enigmaCompatible/randomTrigger follow the Preon Accumulator (anyone can find it in chests, the Artifact of Enigma and Bottled Chaos can fire it). The pickup is a small figure of the hero; the HUD and logbook icon is the skill's Deadlock icon. figure: which part of the hero's model the pickup figure shows: all, or a material-name filter (rider: just Krill).",
   "columns": [
     "id",
     "hero",

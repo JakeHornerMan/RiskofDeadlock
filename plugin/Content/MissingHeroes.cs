@@ -15,13 +15,15 @@ namespace DeadlockOfRain
     /// <summary>A released hero the extractor could not read from this player's Deadlock keeps a locked tile in character
     /// select: a red "!" where the portrait would be, and the reason and both version pairs on hover. The tile has an
     /// unlockable nobody ever gets, so it can never be picked, started or joined with; the bodies and defs live apart from
-    /// Survivors.Bodies/Defs, so the bench, test mode, co-op and the mod list never see them.</summary>
+    /// Survivors.Bodies/Defs, so the bench, test mode, co-op and the mod list never see them. A hero held back from this release
+    /// (Survivors.ComingSoon, why = null) gets the same locked tile with its own portrait greyed out and "coming soon".</summary>
     public static class MissingHeroes
     {
         public static readonly Dictionary<string, GameObject> Bodies = new Dictionary<string, GameObject>();
         public static readonly Dictionary<string, SurvivorDef> Defs = new Dictionary<string, SurvivorDef>();
         public static readonly Dictionary<string, UnlockableDef> Unlockables = new Dictionary<string, UnlockableDef>();
         static readonly HashSet<SurvivorDef> placeholders = new HashSet<SurvivorDef>();
+        static readonly HashSet<SurvivorDef> soon = new HashSet<SurvivorDef>();
         static Texture2D icon;
 
         public static bool Is(SurvivorDef def) => def && placeholders.Contains(def);
@@ -40,10 +42,11 @@ namespace DeadlockOfRain
             var cb = body.GetComponent<CharacterBody>();
             cb.baseNameToken = "DLR_MISSING_NAME_" + hero.Id.ToUpperInvariant();
             cb.subtitleNameToken = cb.baseNameToken;
-            cb.portraitIcon = Icon();
+            cb.portraitIcon = why == null ? Grey(DeadlockCache.Image(hero.ImageSmall)) ?? Icon() : Icon();
             Survivors.Tokens[cb.baseNameToken] = hero.DisplayName;
 
-            var text = $"{hero.DisplayName} couldn't be read from your Deadlock ({why}). The other heroes are ready to play.\n\n{BuiltWith.Versions()}";
+            var text = why == null ? $"{hero.DisplayName} is coming in a later update."
+                : $"{hero.DisplayName} couldn't be read from your Deadlock ({why}). The other heroes are ready to play.\n\n{BuiltWith.Versions()}";
             var unlock = ScriptableObject.CreateInstance<UnlockableDef>();
             unlock.cachedName = "DeadlockOfRain.Missing." + hero.Id;
             unlock.nameToken = cb.baseNameToken;
@@ -60,7 +63,7 @@ namespace DeadlockOfRain
             sd.displayPrefab = display;
             sd.displayNameToken = cb.baseNameToken;
             sd.descriptionToken = cb.baseNameToken;
-            sd.primaryColor = Color.red;
+            sd.primaryColor = why == null ? Color.grey : Color.red;
             sd.desiredSortPosition = hero.SortPosition;
             sd.unlockableDef = unlock;
 
@@ -68,7 +71,25 @@ namespace DeadlockOfRain
             Defs[hero.Id] = sd;
             Unlockables[hero.Id] = unlock;
             placeholders.Add(sd);
-            Log.Warn($"{hero.DisplayName}: shown as a locked red ! tile in character select ({why})");
+            if (why == null) { soon.Add(sd); Log.Info($"{hero.DisplayName}: shown as a greyed \"coming soon\" tile in character select"); }
+            else Log.Warn($"{hero.DisplayName}: shown as a locked red ! tile in character select ({why})");
+        }
+
+        /// <summary>A grey, darkened copy of a portrait (the coming-soon tile); null without one.</summary>
+        static Texture2D Grey(Texture2D src)
+        {
+            if (!src) return null;
+            var t = new Texture2D(src.width, src.height, TextureFormat.RGBA32, false) { name = src.name + "_soon", wrapMode = TextureWrapMode.Clamp };
+            var px = src.GetPixels32();
+            for (int i = 0; i < px.Length; i++)
+            {
+                var c = px[i];
+                byte g = (byte)((c.r * 0.3f + c.g * 0.59f + c.b * 0.11f) * 0.6f);
+                px[i] = new Color32(g, g, g, c.a);
+            }
+            t.SetPixels32(px);
+            t.Apply();
+            return t;
         }
 
         /// <summary>A red "!" in a dark red disc, drawn here (no Deadlock art).</summary>
@@ -116,9 +137,10 @@ namespace DeadlockOfRain
                 var def = __instance.survivorDef;
                 if (!Is(def)) return;
                 if (__instance.survivorIcon) __instance.survivorIcon.color = Color.white;
-                var title = Language.GetString(def.displayNameToken) + ": not available";
+                bool later = soon.Contains(def);
+                var title = Language.GetString(def.displayNameToken) + (later ? ": coming soon" : ": not available");
                 var body = def.unlockableDef ? def.unlockableDef.getHowToUnlockString() : "";
-                var red = new Color(0.9f, 0.2f, 0.2f, 1f);
+                var red = later ? new Color(0.6f, 0.6f, 0.6f, 1f) : new Color(0.9f, 0.2f, 0.2f, 1f);
                 if (__instance.tooltipProvider)
                 {
                     __instance.tooltipProvider.enabled = true;

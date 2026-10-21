@@ -114,8 +114,9 @@ for r in skills.values():
         bad(f'skills[{r["id"]}]: ability needs a cooldown (or an ammoCost)')
     if r['ammoCost'] > 0 and not any(g['hero'] == r['hero'] and g['slot'] == 'primary' and g['clipSize'] >= r['ammoCost'] for g in skills.values()):
         bad(f'skills[{r["id"]}].ammoCost: the gun of this hero has no magazine that big')
-    if r['slot'] == 'equipment' and r['cooldown'] != 120:
-        bad(f'skills[{r["id"]}]: equipment ults recharge in 120 s (cooldown {r["cooldown"]})')
+    # 120 s like the Preon Accumulator scaled; the creator may make one shorter (Goo Ball 100 s, 2026-10-21)
+    if r['slot'] == 'equipment' and not (60 <= r['cooldown'] <= 120):
+        bad(f'skills[{r["id"]}]: equipment ults recharge in 60-120 s (cooldown {r["cooldown"]})')
 equipment = sheets['equipment']['rows']
 for e in equipment:
     ref('equipment', e['id'], 'hero', e['hero'], heroes, False)

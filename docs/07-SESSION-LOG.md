@@ -842,3 +842,15 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Results:** builds. Not run in game (the creator asked not to launch); build installed.
 **Not done / open:** `run_test.sh viscous` and `run_bench.sh 30 viscous` (the puddle no longer refills the magazine, so his DPS may drop a little); the counter's look and the green part not seen by eye; pages not republished.
 **Lessons:** a counter request can be a rules change: "goes down first" and "disappears when he leaves" meant the puddle no longer fills the magazine; ask with a worked example (5/20 walking in) before building.
+
+### 2026-10-21 · Goo Ball 100 s and the 0.9.0 Melty release without Rat King · v0.9.0f · the commit that adds this entry
+**Request (verbatim):** "let reduce viscous item recharge to 100 second and no test just let upload to melty this new build but with no rat kind please... keep this picture in but grey him out!"
+**Questions asked → answers:** none. Read "this picture" as Rat King's portrait tile in character select: kept, greyed out and locked.
+**Done:**
+- Goo Ball cooldown 120 → 100 s; preflight now allows equipment ults 60-120 s (was exactly 120).
+- Coming-soon tiles: `Survivors.ComingSoon` (`coming-soon.txt` beside the DLL), `MissingHeroes.Add(..., why: null)`: locked, his own portrait greyed, "coming soon" hover. `package.py --melty` cuts to `release.json` `melty` (six heroes), keeps only the coming-soon heroes' portraits in the manifest, writes `coming-soon.txt`.
+- Melty: zip 0.9.0 (40.6 MB, sha256 5c72e642…), upload `25e1a80c-c979-4106-9e59-70d8b120d52d`, release `310d6466-e084-4f27-920c-5d33fb19c6ad` (one click yes, the usual executable-code review), listing description and tagline for six heroes with Hero pages and the Built-with line, **published: in Melty's safety review**.
+- Docs 02, 03, 05 (open row), 06, MODLOG, this entry, doc 00.
+**Results:** builds, preflight clean, the zip holds six heroes and only Rat King's portrait. **Not tested in game** (the creator: no test; no BREAK run either).
+**Not done / open:** the grey tile, the counter and the puddle rounds never seen in game; Goo Ball's Q DPS not re-benched; check `install_outcomes` / `player_logs` next session; the creator still has to share the Viscous and Rat King pages; extractor 1.6.2 is a local build (Thunderstore needs the GitHub tag).
+**Lessons:** a release can carry a hero as "coming soon" with only its portrait (the cut manifest keeps that one image).
