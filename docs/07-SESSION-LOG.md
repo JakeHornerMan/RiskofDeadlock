@@ -822,3 +822,15 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Results:** cache 1.6.2: 7/7 heroes, 74/74 voice groups, `ratking_use_power1` 125 takes (no other group has more than 24, so the cut changed nothing else). `run_test.sh ratking` pass; one Royal Pestments: takes 73, 14, 70 at 0.0, 2.4, 5.3 s ("Make 'em bleed, Donna!", "Nacho's comin'...", "Say hello to Denise.").
 **Not done / open:** extractor 1.6.2 local only (release tag `extractor-1.6.2`); the placeholder banner could say more clearly that the cache is incomplete.
 **Lessons:** never rebuild the cache while the creator may play (doc 00 §7); check the wiki's voice page for which `use_powerN` is which move.
+
+### 2026-10-21 · Puddles on the floor, ammo counter for every hero · v0.9.0d (not released) · the commit that adds this entry
+**Request (verbatim):** "lets work on viscous... all puddle must land on the floor! i found the bug with the Puddle Punch ability when it was triggered in the air! also can we please on all deadlock character please add a ammo counter right about the weapon slot, just a ??/?? just for infomration."
+**Questions asked → answers:** may I launch the game for an automated test of all seven (the counter is shared code)? → "Yes, test all 7".
+**Done:**
+- Cause: `DlrPuddle.Plant` looked only 8 m down for the floor, so Puddle Punch (and The Cube) used high in the air left the puddle floating. New `DlrPuddle.Floor` (1000 m down, from 1 m above): every puddle lies on the floor below where it was made, none over a bottomless pit; `DlrPunch` and the Puddle Punch aim ring use it too.
+- Ammo counter: `Runtime/AmmoCounter.cs`, a postfix on `RoR2.UI.SkillIcon.LateUpdate` puts "rounds/magazine" just above the M1 icon (skill bar font, grey while reloading) for any hero whose gun has a `clipSize`, only for the body this machine moves; hook row `ammo_counter` in `design/hooks.json`.
+- Test checks `ammo-counter` (each hero: magazine set to clip − 3, the label must say it) and `puddle-on-floor` (a puddle made 25 m up must land within 1 m of his feet).
+- Docs 02, 05 (row, no re-bench: the bench fights on the ground), 06, MODLOG, CHANGELOG, doc 00.
+**Results:** `run_test.sh` all seven heroes: **7/7, every check pass**; counters 22/25, 6/9, 26/29, 24/27, 17/20, 17/20, 21/24; the 25 m puddle landed 0.02 m from his feet. Game closed, `lab_restore` run, final DLL installed.
+**Not done / open:** the counter's look not seen by eye (no screenshot checked); co-op not run (the counter is local only); no Melty release; pages not republished (no number changed).
+**Lessons:** a ground ray with a short reach is a floating-object bug waiting for someone to use the move in the air; look far.

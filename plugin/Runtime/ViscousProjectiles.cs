@@ -89,8 +89,9 @@ namespace DeadlockOfRain
 
         public static void Plant(CharacterBody owner, SkillRow row, Vector3 at, float radius, bool damage)
         {
-            // on the ground under the splash (a hit on an enemy's chest still makes the puddle at its feet)
-            if (Physics.Raycast(at + Vector3.up * 1f, Vector3.down, out var g, 8f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) at = g.point;
+            // always on the floor under the splash: a hit on an enemy's chest, Goo Cube breaking open or Puddle Punch cast high in
+            // the air all make it on the ground below; with no ground under it (over a pit) there is no puddle
+            if (!Floor(at, out at)) return;
             var go = new GameObject("DlrPuddle_" + row.Id);
             go.transform.position = at;
             var p = go.AddComponent<DlrPuddle>();
@@ -98,6 +99,15 @@ namespace DeadlockOfRain
             p.vfx = Vfx.Play(row.Vfx, "puddle", at, radius, life: Life(row));
             Vfx.SetShrink(p.vfx, row.ChainCount, row.PuddleShrink);
             Live.Add(p);
+        }
+
+        /// <summary>The floor straight below a point (from a little above it, so a point just under the surface still finds it).</summary>
+        public static bool Floor(Vector3 at, out Vector3 floor)
+        {
+            floor = at;
+            if (!Physics.Raycast(at + Vector3.up * 1f, Vector3.down, out var g, 1000f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) return false;
+            floor = g.point;
+            return true;
         }
 
         /// <summary>A puddle lasts chainCount seconds whole, then puddleShrink seconds drawing in to nothing.</summary>
@@ -174,6 +184,8 @@ namespace DeadlockOfRain
 
         public static void Plant(CharacterBody owner, SkillRow row, Vector3 at, float radius, bool damage)
         {
+            // the fist comes up out of the floor, never out of the air
+            DlrPuddle.Floor(at, out at);
             var go = new GameObject("DlrPunch_" + row.Id);
             go.transform.position = at;
             var p = go.AddComponent<DlrPunch>();

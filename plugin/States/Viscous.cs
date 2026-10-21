@@ -353,7 +353,7 @@ namespace DeadlockOfRain.States
             var from = body.footPosition;
             var flat = point - from; flat.y = 0;
             if (flat.magnitude > range) point = from + flat.normalized * range + Vector3.up * (point.y - from.y);
-            if (Physics.Raycast(point + Vector3.up * 3f, Vector3.down, out var ground, 300f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) point = ground.point;
+            if (DlrPuddle.Floor(point + Vector3.up * 2f, out var floor)) point = floor;
             return point;
         }
 

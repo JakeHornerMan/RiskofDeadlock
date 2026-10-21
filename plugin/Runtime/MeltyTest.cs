@@ -221,7 +221,7 @@ namespace DeadlockOfRain
             // 3. every hero
             var master = user.cachedMaster;
             var commandoCap = BodyCatalog.FindBodyPrefab("CommandoBody").GetComponent<CapsuleCollider>();
-            bool scaleOk = true; string scaleWhy = "";
+            bool scaleOk = true; string scaleWhy = ""; string ammoWhy = "", floorWhy = "";
             bool levelOk = true; string levelWhy = "";
             bool aimOk = true, handOk = true, slotsOk = true; string aimWhy = "", handWhy = "", slotsWhy = "";
             string gunsWhy = "", abilitiesWhy = "", ultsWhy = "", equipWhy = "";
@@ -481,6 +481,30 @@ namespace DeadlockOfRain
                     if (ammo1 != wantAmmo || ammo2 != left || ammo3 < wantAmmo || hr.Reloading) kitWhy += $"{pr.Id}: puddle ammo {ammo1}/{ammo2}/{ammo3}; ";
                     hr.Ammo = (int)gunRow.ClipSize;
                     yield return new WaitForSeconds(0.5f);
+                    // every puddle lands on the floor: one made 25 m up (Puddle Punch or Goo Cube cast in the air) is on the ground below
+                    foreach (var old in DlrPuddle.Live.ToArray()) if (old) UnityEngine.Object.Destroy(old.gameObject);
+                    yield return null;
+                    DlrPuddle.Plant(body, pr, body.footPosition + Vector3.up * 25f, pr.Reach, false);
+                    var high = DlrPuddle.Live.LastOrDefault();
+                    float dy = high ? high.transform.position.y - body.footPosition.y : 99f;
+                    Log.Info($"Melty test: {hero.Id} {pr.Id} puddle made 25 m up landed {dy:F2} m above his feet");
+                    if (Mathf.Abs(dy) > 1f) floorWhy += $"{hero.Id} {pr.Id}: puddle {dy:F1} m off the floor; ";
+                    if (high) UnityEngine.Object.Destroy(high.gameObject);
+                }
+                // the ammo counter over the M1 icon shows this hero's magazine
+                {
+                    body = master.GetBody();
+                    var hr = body ? body.GetComponent<HeroRuntime>() : null;
+                    var gunRow = body ? Survivors.RowFor(body.skillLocator.primary) : null;
+                    if (hr && gunRow != null && gunRow.ClipSize > 0)
+                    {
+                        hr.Reloading = false; hr.Ammo = Mathf.Max(1, (int)gunRow.ClipSize - 3);
+                        yield return new WaitForSeconds(0.3f);
+                        string wantText = $"{hr.Ammo}/{(int)gunRow.ClipSize}";
+                        Log.Info($"Melty test: {hero.Id} ammo counter shows {AmmoLabel.Shown ?? "nothing"} (want {wantText})");
+                        if (AmmoLabel.ShownFor != body || AmmoLabel.Shown != wantText) ammoWhy += $"{hero.Id}: shows {AmmoLabel.Shown ?? "nothing"}, want {wantText}; ";
+                        hr.Ammo = (int)gunRow.ClipSize;
+                    }
                 }
                 if (anim)
                 {
@@ -575,6 +599,8 @@ namespace DeadlockOfRain
             Write("four-slots", slotsOk, slotsWhy);
             Write("level-stats", levelOk && lb && lb.level > 1, levelWhy == "" ? "level did not rise" : levelWhy);
             Write("hero-scale", scaleOk, scaleWhy);
+            Write("ammo-counter", ammoWhy == "", ammoWhy);
+            if (tested.Any(h => Sheet.SkillsOf(h.Id).Any(s => s.PuddleAmmo > 0))) Write("puddle-on-floor", floorWhy == "", floorWhy);
             // only this build's heroes (a release's heroes.txt leaves the others out of the cache)
             var built = new HashSet<string>(Survivors.Released.Select(h => h.Id));
             var missingVoice = VoiceRow.All.Where(v => built.Contains(v.Hero) && !DeadlockAudio.Has("vo:" + v.Group)).Select(v => v.Group).Distinct().ToList();
