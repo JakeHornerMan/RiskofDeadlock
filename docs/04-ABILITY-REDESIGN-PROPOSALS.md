@@ -285,3 +285,13 @@ That leaves each hero one ability short. The ask was for deep research and a lot
 | Infernus: Concussive Combustion | 6800 % in 18 m, stun 2 s, heal 10 % per kill |
 
 How it is built: doc 02 §7.1 (slots), §7.3 (kinds), §7.5 (equipment) and §8.1 (effects).
+
+## 8. Seven redesign, part 1 (2026-10-21, v0.9.1a)
+The creator is redesigning Seven one move at a time. Part 1, their picks (asked with AskUserQuestion):
+- **Deadlock yellow** for the Lightning Ball, Static Charge, Storm Cloud and the Shock Rifle's tracer ("make all the s projectile yellow just like in deadlock"); the tracer keeps its old electric line, only recoloured (Captain's golden tracer was tried and turned down). Thunderhead (Q) stays blue for now.
+- **Lightning Ball:** a clear sphere shows its 10 m reach (kept at 10 m). It slows while enemies are inside (Deadlock: 90 %; the
+  creator then chose **50 %**), and **keeps bouncing** off walls and floors (Deadlock's ball stops on the world; the creator kept the bounce).
+- **Static Charge:** damage halved, 450 → 225 %.
+- **R: Storm Cloud replaces Power Surge.** He flies inside a 15 m sphere that shocks everything in it (100 % every 0.5 s, 10 s).
+  Space (Jump) goes higher, Shift (Sprint, on the creator's keys) lower, and an on-screen hint shows the keys. He only channels: no gun or skills. Cooldown 24 s.
+Still to redesign: the Shock Rifle itself, Thunderhead, and the passive. How it is built: doc 02 §7.3 (`projectile_orb`, `storm_flight`).

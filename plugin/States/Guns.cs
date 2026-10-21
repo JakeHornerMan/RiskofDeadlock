@@ -299,12 +299,6 @@ namespace DeadlockOfRain.States
                 bool fired = Buffs.Stack(owner, victim, row.Buff, info.crit);
                 Relay.Vfx(row.Vfx, fired ? "trigger" : "hit", info.position, 1f, victim.gameObject);
             }
-            // Power Surge: once per burst (the gun's interval), Tesla arcs from the target to the enemies around it
-            var surge = PowerSurgeCast.Active(owner);
-            var rt = owner.GetComponent<HeroRuntime>();
-            if (surge == null || rt == null || Time.fixedTime < rt.NextSurge) return;
-            rt.NextSurge = Time.fixedTime + 0.9f * row.Interval / Mathf.Max(0.1f, owner.attackSpeed);
-            PowerSurgeCast.Arc(owner, victim, surge, row.Buff);
         }
     }
 

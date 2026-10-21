@@ -12,16 +12,44 @@ namespace DeadlockOfRain
     {
         static readonly Dictionary<string, GameObject> prefabs = new Dictionary<string, GameObject>();
 
-        public static GameObject Prefab(string effectId)
+        public static GameObject Prefab(string effectId) => Prefab(Sheet.Effect(effectId));
+
+        static GameObject Prefab(Sheets.EffectRow row)
         {
-            var row = Sheet.Effect(effectId);
+            var effectId = row?.Id;
             // materials are loaded by Vfx.Mat, custom visuals are built by Vfx, props come from the Deadlock cache (DeadlockCache.Prop)
             if (row == null || row.Addressable == "none" || row.Kind == "material" || row.Kind == "prop") return null;
-            if (prefabs.TryGetValue(row.Addressable, out var p)) return p;
+            bool tint = row.Tint != "none" && ColorUtility.TryParseHtmlString(row.Tint, out _);
+            string key = tint ? row.Addressable + "|" + row.Tint : row.Addressable;
+            if (prefabs.TryGetValue(key, out var p)) return p;
+            if (tint) { p = Tinted(row); prefabs[key] = p; return p; }
             try { p = Addressables.LoadAssetAsync<GameObject>(row.Addressable).WaitForCompletion(); }
             catch (System.Exception e) { Log.Warn($"effect {effectId}: {e.Message}"); }
-            prefabs[row.Addressable] = p;
+            prefabs[key] = p;
             return p;
+        }
+
+        /// <summary>Recoloured copies of RoR2 effects (effects rows with a tint), added to the content pack as our own effects:
+        /// RoR2 spawns tracers and impacts through its effect catalog, which only knows registered prefabs.</summary>
+        public static readonly List<EffectDef> TintedDefs = new List<EffectDef>();
+        static Transform tintHolder;
+
+        static GameObject Tinted(Sheets.EffectRow row)
+        {
+            var src = Prefab(new Sheets.EffectRow { Id = row.Id, Kind = row.Kind, Addressable = row.Addressable, Tint = "none" });
+            if (!src) return null;
+            ColorUtility.TryParseHtmlString(row.Tint, out var c);
+            if (!tintHolder)
+            {
+                var h = new GameObject("DeadlockOfRainTinted"); h.SetActive(false);
+                Object.DontDestroyOnLoad(h);
+                tintHolder = h.transform;
+            }
+            var copy = Object.Instantiate(src, tintHolder);
+            copy.name = src.name + "_Dlr_" + row.Id;
+            Vfx.Recolor(copy, c);
+            if (copy.GetComponent<EffectComponent>()) TintedDefs.Add(new EffectDef(copy));
+            return copy;
         }
 
         public static void Preload()

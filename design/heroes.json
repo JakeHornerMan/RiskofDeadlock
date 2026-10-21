@@ -185,7 +185,7 @@
       "damageHealBack": 0,
       "damageHealBackTime": 0,
       "debuffResist": 0,
-      "lore": "Deadlock's lightning caster. He throws Lightning Balls, plants Static Charges that stun, chains Power Surge through crowds and rises into a Storm Cloud.",
+      "lore": "Deadlock's lightning caster. He throws Lightning Balls, plants Static Charges that stun and rises into a Storm Cloud that shocks everything below.",
       "splitMeshes": [
         "none"
       ],

@@ -94,7 +94,7 @@ namespace DeadlockOfRain
 
         /// <summary>Movement skills run on the Body machine (they steer the character), everything else on Weapon.</summary>
         public static string MachineFor(string kind) =>
-            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "ult_devil" || kind == "goo_cube" || kind == "banner_leap" ? "Body" : "Weapon";
+            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "ult_devil" || kind == "goo_cube" || kind == "banner_leap" || kind == "storm_flight" ? "Body" : "Weapon";
 
         /// <summary>The hero never takes fall damage (heroes.json noFallDamage: Viscous). Moves that switch fall damage off for a while
         /// (Seismic Impact, Goo Ball) leave it off for such a hero when they end.</summary>
@@ -370,8 +370,6 @@ namespace DeadlockOfRain
         public bool Reloading;
         public bool AltMuzzle;
         public float SmokeUntil;
-        /// <summary>Server: when Power Surge may arc again (once per burst of the gun).</summary>
-        public float NextSurge;
         float reloadEnd;
         int clip;
         CharacterBody body;
@@ -557,6 +555,7 @@ namespace DeadlockOfRain
             pack.buffDefs.Add(Buffs.Defs.Values.ToArray());
             pack.equipmentDefs.Add(Equipment.Defs.Values.ToArray());
             if (Net.RelayDef != null) pack.effectDefs.Add(new[] { Net.RelayDef });
+            pack.effectDefs.Add(Fx.TintedDefs.ToArray());
             Net.RegisterModList();
             args.ReportProgress(1f);
         }

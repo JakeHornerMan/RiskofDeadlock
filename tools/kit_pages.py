@@ -110,7 +110,11 @@ CHANGES = {
             ('v0.4.1', ['Haymaker: a shockwave cone (6 m, 30° each side) hits everything in front', 'Shoulder Charge 350 → 500 % per enemy',
                         'Seismic Impact radius 12 → 18 m']),
             ('v0.4.0', ['Seismic Impact moves to Q as an equipment and slams on Left Click; new R: Haymaker'])],
- 'seven': [('v0.6.1', ['Falls as a ragdoll on death, like the RoR2 survivors']),
+ 'seven': [('v0.9.1a', ['Redesign, part 1: Seven turns Deadlock yellow (Lightning Ball, Static Charge, Storm Cloud and the Shock Rifle’s electric tracer)',
+                       'Lightning Ball: a clear yellow sphere shows its 10 m reach; it slows to half speed while enemies are inside, so it lingers on a pack (it still flies through them and bounces off walls and floors)',
+                       'Static Charge: 450 → 225 %',
+                       'New R, Storm Cloud (replaces Power Surge): he flies up inside a 15 m sphere for 10 s, shocking everything in it for 100 % every 0.5 s; Space (Jump) higher, Shift (Sprint) lower; no gun or skills meanwhile; 24 s cooldown after he lands']),
+           ('v0.6.1', ['Falls as a ragdoll on death, like the RoR2 survivors']),
             ('v0.6.0', ['Co-op: up to 4 players; every move works the same when a friend joins your game and plays Seven']),
             ('v0.5.1', ['Lightning Ball: slower (14 → 10.5 m/s), shocks within 10 m (was 6), bounces off walls and floors, a clear strike to each enemy', 'Thunderhead clouds 15 → 35 m up']),
            ('v0.4.2', ['To match Artificer: Shock Rifle 48 → 60 % per bullet; Lightning Ball 16 → 8 s, Static Charge 16 → 6 s, Power Surge 30 → 10 s']),
@@ -178,8 +182,9 @@ ANALYSIS = {
  'haze': ['0.5.1 made Phantom Strike cut every enemy within 5 m of the target. Every cut also gives each of them 5 Fixation, so the whole pack reaches the 10-stack burst together and the bursts splash one another: Phantom Strike alone went from 375 to 4,139 %/s, and she is far above Commando. Not retuned yet: the fix is the creator’s call (Fixation on the target only, or fewer stacks to the others).'],
  'abrams': ['0.5.1: Haymaker locks onto the enemy you aim at and rushes to it, even in the air. It does about what the old lunge did (1,760 %/s alone), and he stays just inside Loader’s band.',
             'Loader is the least steady survivor in the test (2,059 to 3,837 across the library’s runs), so the verdict uses the averages.'],
- 'seven': ['0.5.1: the Lightning Ball now bounces off walls and floors. In the still-pack test it bounces off the floor and flies on past the pack instead of settling in it, so it fell from 1,652 to 390 %/s and he dropped below Artificer. Not retuned yet: bouncing only off walls, or slowing on each bounce, would keep it in the fight.',
-           'Keep Lightning Ball at 8 s or more: below that the balls overlap and Capacitor discharges chain through the pack.'],
+ 'seven': ['0.9.1a, redesign part 1: about 2,827 %/s with every main move (one run), against Artificer’s 4,013: below the ±500 band (it was 3,164).',
+           'Halving Static Charge cost about 380 %/s; Storm Cloud adds 710 alone but locks his gun for 10 s, and Power Surge’s arcs no longer ride on the gun. The Lightning Ball doubled (390 → 812): at half speed it stays on the pack longer.',
+           'Levers, the creator’s call: Storm Cloud 100 → 200 % per shock, Static Charge back toward 300-450 %, or a stronger ball slow.'],
  'infernus': ['Unchanged in 0.4.2: inside the ±500 band. Engineer’s grenades carry him; his turrets land few hits in 30 s against a still pack.',
               'Engineer’s damage stat is 14 against Infernus’ 12, so in raw damage per second Engineer is about 17 % further ahead; %/s removes that difference.'],
 }
@@ -305,8 +310,9 @@ def maths(r):
     if k == 'aura_pulse':
         tot = d / r['interval'] * r['duration']
         return [f"{n(d)} % every {n(r['interval'])} s × {n(r['duration'])} s = {n(tot)} % to each enemy within {n(r['radius'])} m", f"every {n(cd)} s"], tot / cd
-    if k == 'power_surge':
-        return [f"{n(d)} % per arc, up to {n(r['chainCount'])} more enemies, once per gun burst, for {n(r['duration'])} s", f"every {n(cd)} s"], None
+    if k == 'storm_flight':
+        tot = d / r['interval'] * r['duration']
+        return [f"{n(d)} % every {n(r['interval'])} s × {n(r['duration'])} s = {n(tot)} % to each enemy within {n(r['radius'])} m", f"every {n(cd + r['duration'])} s ({n(r['duration'])} s flight + {n(cd)} s cooldown)"], tot / (cd + r['duration'])
     if k == 'cone_wave':
         return [f"{n(d)} % to every enemy in a {n(r['range'])} m cone ({n(r['radius'])} m wide at the start), Sanded", f"every {n(cd)} s"], d / cd
     if k == 'burrow':
@@ -557,11 +563,11 @@ def ability_card(r, hid, v, scale):
     mname = v['kit'].get(slot, ('–', ''))[0]
     lines = ''.join(f'<span>{E(w)}</span>' for w in work)
     eq = f'<span class="eq">= {per:,.0f} %/s per target</span>' if per else ('<span class="eq">= 0 %/s</span>' if per == 0 else '')
-    note = '<p class="note">Its arcs ride on the gun, so its damage shows in the all-together number, not alone.</p>' if r['kind'] == 'power_surge' else ''
+    note = ''
     rows = [(r['name'], dps(hero_who(hid), slot), ''), (f"{v['name']}: {mname}", dps(v['who'], slot), ' match')]
     return f'''<article class="ab">
   <div class="main">
-    <div class="head"><span class="key">{KEY[slot]}</span><div><h3>{E(r["name"])}</h3><div class="eyebrow">{E(KIND_LABEL[slot] if slot != 'special' or r['hero'] in ('haze', 'abrams', 'seven', 'infernus') else 'Ability')}</div></div></div>
+    <div class="head"><span class="key">{KEY[slot]}</span><div><h3>{E(r["name"])}</h3><div class="eyebrow">{E('Ability · new in 0.9.1' if r['kind'] == 'storm_flight' else KIND_LABEL[slot] if slot != 'special' or r['hero'] in ('haze', 'abrams', 'seven', 'infernus') else 'Ability')}</div></div></div>
     <p class="desc">{E(strip_tags(r["description"]))}</p>
     <div class="tiles">{tiles_html(tiles(r))}</div>
   </div>

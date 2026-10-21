@@ -222,7 +222,7 @@
       "id": "gun_hits",
       "method": "event",
       "target": "RoR2.GlobalEventManager.onServerDamageDealt",
-      "purpose": "a hero gun's bullet (damage source Primary, dealt by the hero) stacks the gun's buff and fires Power Surge's arcs, and a Frenzy punch (a melee buff on) throws the enemy meleeKnock m/s away, for the host's hero and a joined player's alike (their bullets are resolved on their own PC)",
+      "purpose": "a hero gun's bullet (damage source Primary, dealt by the hero) stacks the gun's buff, and a Frenzy punch (a melee buff on) throws the enemy meleeKnock m/s away, for the host's hero and a joined player's alike (their bullets are resolved on their own PC)",
       "reads": "skills.buff/vfx/interval/meleeKnock, buffs.*",
       "side": "server"
     },

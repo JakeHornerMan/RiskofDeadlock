@@ -1032,7 +1032,8 @@ namespace DeadlockOfRain
                     gs.ExecuteIfReady();
                 }
 
-                float window = row.Slot == "primary" ? 6f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
+                // Storm Cloud can't be cut short (skills locked, he flies the whole time): wait it out before the next skill
+                float window = row.Slot == "primary" ? 6f : row.Kind == "storm_flight" ? row.Duration + 1.5f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
                 float t0 = Time.time;
                 int shots = 0;
                 while (Time.time - t0 < window)

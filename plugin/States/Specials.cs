@@ -3,7 +3,6 @@ using System.Linq;
 using DeadlockOfRain.Sheets;
 using EntityStates;
 using RoR2;
-using RoR2.Orbs;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -238,74 +237,196 @@ namespace DeadlockOfRain.States
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.PrioritySkill;
     }
 
-    // ---------------- Seven: Power Surge (his Deadlock ability, built like RoR2's Unstable Tesla Coil) ----------------
-    [Kind("power_surge")]
-    public sealed class PowerSurgeCast : DlrState
+    // ---------------- Seven: Storm Cloud (his Deadlock ultimate, as an R flight since the 2026-10-21 redesign) ----------------
+    /// <summary>Seven rises launchHeight metres and flies for duration with gravity off, inside a sphere of radius: Jump climbs and
+    /// Sprint (Shift by default; Utility too) sinks at speed m/s, he drifts sideways at moveSpeedMult of his move speed, at most reach metres above where he
+    /// started. Every interval everything inside takes damagePct and a stack of buff (Static). No gun or skills meanwhile; the
+    /// cooldown starts when it ends (cooldownOnEnd). Runs on the Body machine, so RoR2's own jump and walk don't act on him.</summary>
+    [Kind("storm_flight")]
+    public sealed class StormFlight : DlrState
     {
+        const float RiseTime = 0.6f;
+        GameObject sphere, hint; int loop; float nextTick, startY, sinkFrom; bool floating, locked, ended;
+        readonly List<HurtBox> inside = new List<HurtBox>();
+
         public override void OnEnter()
         {
             base.OnEnter();
             Sound("cast");
-            if (anim) anim.Gesture("special");
-            if (Server)
+            loop = Fx.Loop(row.Id, transform.position);
+            if (anim) anim.Override("ult_start", RiseTime);
+            characterBody.bodyFlags |= CharacterBody.BodyFlags.IgnoreFallDamage;
+            startY = transform.position.y;
+            Vfx.Play(row.Vfx, "cast", characterBody.footPosition, row.Radius);
+            sphere = Vfx.Play(row.Vfx, "loop", characterBody.corePosition, row.Radius, characterBody.coreTransform ? characterBody.coreTransform : transform);
+            if (characterMotor)
             {
-                Buffs.Clear(characterBody, row.Buff);
-                Buffs.AddTimed(characterBody, row.Buff, row.Duration);
+                characterMotor.Motor.ForceUnground();
+                var gp = characterMotor.gravityParameters; gp.channeledAntiGravityGranterCount++; characterMotor.gravityParameters = gp;
+                floating = true;
             }
-            Vfx.Play(row.Vfx, "cast", characterBody.corePosition, 1f, transform);
-            TimedLoop.Run(gameObject, row, row.Duration, Vfx.Play(row.Vfx, "loop", characterBody.corePosition, 1f, characterBody.coreTransform ? characterBody.coreTransform : transform));
+            if (isAuthority)
+            {
+                LockSkills(true); locked = true;
+                hint = FlightHint.Show(characterBody, row.Duration);
+            }
+            nextTick = RiseTime;
         }
 
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (fixedAge >= 0.25f && isAuthority) outer.SetNextStateToMain();
-        }
-
-        public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Any;
-
-        /// <summary>The surge row whose buff is on the body right now (null when no surge runs).</summary>
-        public static SkillRow Active(CharacterBody body)
-        {
-            if (!body) return null;
-            foreach (var r in SkillRow.All) if (r.Kind == "power_surge" && Buffs.Count(body, r.Buff) > 0) return r;
-            return null;
-        }
-
-        /// <summary>One burst's arcs: RoR2 Tesla lightning from the target to up to chainCount more enemies, each within radius
-        /// of the last; each arc deals damagePct and adds buffStacks of the gun's stacking buff (Static).</summary>
-        public static void Arc(CharacterBody owner, CharacterBody victim, SkillRow surge, string stackBuff)
-        {
-            if (!NetworkServer.active || !owner || !victim || surge == null || !OrbManager.instance) return;
-            var hit = new HashSet<HealthComponent> { victim.healthComponent };
-            var from = victim;
-            for (int i = 0; i < surge.ChainCount; i++)
+            if (isAuthority && characterMotor)
             {
-                var next = Fx.Enemies(owner, from.corePosition, surge.Radius).FirstOrDefault(h => !hit.Contains(h.healthComponent));
-                if (!next) break;
-                hit.Add(next.healthComponent);
-                OrbManager.instance.AddOrb(new LightningOrb
+                characterBody.isSprinting = false;
+                characterMotor.moveDirection = Vector3.zero;
+                float vy;
+                if (fixedAge < RiseTime) vy = row.LaunchHeight / RiseTime;
+                else
                 {
-                    lightningType = LightningOrb.LightningType.Tesla,
-                    origin = from.corePosition,
-                    target = next,
-                    attacker = owner.gameObject,
-                    inflictor = owner.gameObject,
-                    teamIndex = owner.teamComponent.teamIndex,
-                    damageValue = owner.damage * surge.DamagePct / 100f,
-                    isCrit = owner.RollCrit(),
-                    procCoefficient = surge.ProcCoefficient,
-                    bouncesRemaining = 0,
-                    damageColorIndex = DamageColorIndex.Default,
-                });
-                var nb = next.healthComponent.body;
-                if (nb && stackBuff != "none")
-                    for (int k = 0; k < Mathf.Max(1, (int)surge.BuffStacks); k++) Buffs.Stack(owner, nb, stackBuff, false);
-                if (nb) from = nb;
+                    // Jump (Space) up, Sprint (Shift) or Utility down, neither holds him where he is; a ceiling above where he started.
+                    // rawSprintInput is the key itself (sprint is a toggle in RoR2, and he can't sprint while flying)
+                    bool sink = inputBank && (inputBank.rawSprintInput.down || inputBank.skill3.down);
+                    // test mode has no player to press: it sinks for the last 3 s, so the descent is measured
+                    if (MeltyTest.Active && fixedAge > row.Duration - 3f) sink = true;
+                    int dir = (inputBank && inputBank.jump.down ? 1 : 0) - (sink ? 1 : 0);
+                    vy = dir * row.Speed;
+                    if (vy > 0f && transform.position.y - startY >= row.Reach) vy = 0f;
+                }
+                var move = inputBank ? inputBank.moveVector : Vector3.zero;
+                var flat = move * moveSpeedStat * row.MoveSpeedMult;
+                characterMotor.velocity = new Vector3(flat.x, vy, flat.z);
+                // he turns smoothly to where he aims through RoR2's own CharacterDirection, but only while the aim has a clear
+                // sideways part: looking nearly straight down at enemies under him, the flat aim swings wildly and he whipped
+                // round with it (the test saw 1444 deg in one flight); then he keeps facing the way he was
+                var aim = GetAimRay().direction; aim.y = 0f;
+                if (characterDirection) characterDirection.moveVector = aim.sqrMagnitude > 0.09f ? aim.normalized : characterDirection.forward;
             }
-            // server only: every player hears it through the relay (the arcs themselves are RoR2 orbs, networked by RoR2)
-            if (hit.Count > 1) Relay.Sound(surge.Id, "hit", victim.corePosition);
-            MeltyTest.Report("surge-arcs", true, owner.baseNameToken);
+            if (fixedAge >= RiseTime && anim && fixedAge - Time.fixedDeltaTime < RiseTime) anim.Override("ult_loop", row.Duration, true);
+
+            if (fixedAge >= nextTick && fixedAge < row.Duration)
+            {
+                nextTick += row.Interval;
+                // on every machine: a bolt to each enemy inside (drawn) and the zap; on the server the damage and Static
+                inside.Clear();
+                inside.AddRange(Fx.Enemies(characterBody, characterBody.corePosition, row.Radius));
+                foreach (var hb in inside)
+                {
+                    var v = hb.healthComponent.body;
+                    if (Server)
+                    {
+                        Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, hb.transform.position);
+                        if (row.Buff != "none" && v) Buffs.Stack(characterBody, v, row.Buff, false);
+                    }
+                    Vfx.Play(row.Vfx, "hit", characterBody.corePosition, row.Radius, null, v ? v.corePosition : hb.transform.position);
+                }
+                if (inside.Count > 0) Sound("hit");
+            }
+
+            if (MeltyTest.Active && isAuthority)
+            {
+                if (fixedAge > row.Duration - 3f && sinkFrom == 0f) sinkFrom = transform.position.y;
+                if (fixedAge >= row.Duration && sinkFrom != 0f) { Log.Info($"storm flight: sank {sinkFrom - transform.position.y:F1} m in 3 s (want about {row.Speed * 3f:F0}, or to the ground)"); sinkFrom = 0f; }
+            }
+            if (fixedAge >= row.Duration && isAuthority) outer.SetNextStateToMain();
+        }
+
+        void End()
+        {
+            if (ended) return;
+            ended = true;
+            DeadlockAudio.Stop(loop);
+            Vfx.Stop(sphere, 0.4f); sphere = null;
+            if (hint) Object.Destroy(hint);
+            Sound("end");
+            Vfx.Play(row.Vfx, "end", characterBody.corePosition, row.Radius);
+            if (floating && characterMotor)
+            {
+                floating = false;
+                var gp = characterMotor.gravityParameters; gp.channeledAntiGravityGranterCount--; characterMotor.gravityParameters = gp;
+            }
+            if (locked) { LockSkills(false); locked = false; }
+        }
+
+        public override void OnExit()
+        {
+            bool natural = fixedAge >= row.Duration;
+            End();
+            // a soft fall: the landing never hurts; the end clip plays out on its own after a full flight
+            if (!Survivors.NoFallDamage(characterBody) && characterBody.GetComponent<SoftLanding>() == null) characterBody.gameObject.AddComponent<SoftLanding>();
+            if (anim) { if (natural) anim.Override("ult_end", 0.8f); else anim.StopOverride(); }
+            base.OnExit();
+        }
+
+        public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Frozen;
+    }
+
+    /// <summary>Keeps fall damage off after Storm Cloud until the hero next touches the ground.</summary>
+    public sealed class SoftLanding : MonoBehaviour
+    {
+        CharacterBody body; float age;
+        void Awake() => body = GetComponent<CharacterBody>();
+        void FixedUpdate()
+        {
+            age += Time.fixedDeltaTime;
+            bool down = body && body.characterMotor && body.characterMotor.isGrounded && age > 0.2f;
+            if (!body || down || age > 30f)
+            {
+                if (body) body.bodyFlags &= ~CharacterBody.BodyFlags.IgnoreFallDamage;
+                Destroy(this);
+            }
+        }
+    }
+
+    /// <summary>The flight controls on the flying player's own screen: "[Space] Higher [Shift] Lower" with the Jump and Sprint keys
+    /// they really bound (their Rewired player's keyboard maps), "Jump" / "Sprint" on a gamepad, and a bar for the time left.</summary>
+    public sealed class FlightHint : MonoBehaviour
+    {
+        float until, total; string up = "Space", down = "Shift"; GUIStyle box, keys;
+
+        public static GameObject Show(CharacterBody body, float duration)
+        {
+            var user = LocalUserManager.readOnlyLocalUsersList.FirstOrDefault(u => u != null && u.cachedBody == body);
+            if (user == null) return null;
+            var go = new GameObject("DlrFlightHint");
+            var h = go.AddComponent<FlightHint>();
+            h.total = Mathf.Max(0.1f, duration); h.until = Time.time + duration;
+            try
+            {
+                bool pad = user.eventSystem && user.eventSystem.currentInputSource == RoR2.UI.MPEventSystem.InputSource.Gamepad;
+                h.up = pad ? "Jump" : Key(user, RewiredConsts.Action.Jump) ?? "Space";
+                h.down = pad ? "Sprint" : Key(user, RewiredConsts.Action.Sprint) ?? "Shift";
+            }
+            catch (System.Exception e) { Log.Warn("flight hint keys: " + e.Message); }
+            return go;
+        }
+
+        static string Key(LocalUser user, int action)
+        {
+            var em = user.inputPlayer?.controllers.maps.GetFirstElementMapWithAction(Rewired.ControllerType.Keyboard, action, true);
+            return em != null && !string.IsNullOrEmpty(em.elementIdentifierName) ? em.elementIdentifierName : null;
+        }
+
+        void Update() { if (Time.time >= until + 0.2f) Destroy(gameObject); }
+
+        void OnGUI()
+        {
+            if (box == null)
+            {
+                var bg = new Texture2D(1, 1); bg.SetPixel(0, 0, new Color(0.05f, 0.05f, 0.03f, 0.75f)); bg.Apply();
+                box = new GUIStyle(GUI.skin.box) { normal = { background = bg } };
+                keys = new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, richText = true, normal = { textColor = new Color(1f, 0.95f, 0.8f) } };
+            }
+            float w = 460f, h = 64f;
+            var r = new Rect((Screen.width - w) / 2f, Screen.height * 0.72f, w, h);
+            GUI.Box(r, GUIContent.none, box);
+            GUI.Label(new Rect(r.x, r.y + 4f, w, 40f), $"<color=#FFD633>[{up}]</color> Higher      <color=#FFD633>[{down}]</color> Lower", keys);
+            // the time left
+            float left = Mathf.Clamp01((until - Time.time) / total);
+            var bar = new Rect(r.x + 16f, r.y + h - 14f, (w - 32f) * left, 6f);
+            var c = GUI.color; GUI.color = new Color(1f, 0.85f, 0.2f, 0.9f);
+            GUI.DrawTexture(bar, Texture2D.whiteTexture);
+            GUI.color = c;
         }
     }
 

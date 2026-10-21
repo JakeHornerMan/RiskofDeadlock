@@ -9,10 +9,11 @@ namespace DeadlockOfRain
     // server's copy (damage = true) deals damage, stuns and stacks. The other copies are the same flight, drawn and heard.
 
     /// <summary>Simulated projectile for Sleep Dagger (hit once: damage + sleep) and Lightning Ball
-    /// (flies through enemies, bounces off walls and floors, and shocks everything around it until its lifetime ends).</summary>
+    /// (flies through enemies, bounces off walls and floors, slows to moveSpeedMult of its speed while an enemy is inside its
+    /// radius, and shocks everything around it until its lifetime ends).</summary>
     public sealed class DlrProjectile : MonoBehaviour
     {
-        CharacterBody owner; SkillRow row; Vector3 dir; float travelled, age, nextTick; bool damage;
+        CharacterBody owner; SkillRow row; Vector3 dir; float travelled, age, nextTick, nextLook, speedMul = 1f; bool damage, crowded;
         GameObject ghost, vfx; int loop;
         // extra "pierce": the enemies this projectile has already gone through
         HashSet<HealthComponent> pierced;
@@ -36,8 +37,15 @@ namespace DeadlockOfRain
             age += dt;
             bool orb = row.Kind == "projectile_orb";
             {
-                float step = row.Speed * dt;
                 var pos = transform.position;
+                if (orb && row.MoveSpeedMult > 0f)
+                {
+                    // the orb crawls over a pack (Deadlock's Lightning Ball): moveSpeedMult of its speed while an enemy is in reach,
+                    // eased in and out over about 0.15 s; every machine sees the same enemies, so every copy flies alike
+                    if (age >= nextLook) { nextLook = age + 0.1f; crowded = Fx.Enemies(owner, pos, row.Radius, 1).Count > 0; }
+                    speedMul = Mathf.MoveTowards(speedMul, crowded ? row.MoveSpeedMult : 1f, dt / 0.15f);
+                }
+                float step = row.Speed * speedMul * dt;
                 // the orb flies through enemies (it shocks them on the way) and only stops on the world
                 int mask = orb ? (int)LayerIndex.world.mask : LayerIndex.world.mask | LayerIndex.entityPrecise.mask;
                 if (Physics.SphereCast(pos, Mathf.Max(0.3f, orb ? 1.0f : row.Radius * 0.5f), dir, out var hit, step, mask, QueryTriggerInteraction.Ignore))

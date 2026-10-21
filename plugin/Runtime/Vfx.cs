@@ -26,7 +26,7 @@ namespace DeadlockOfRain
                     case "haze_dance": return HazeDance(moment, at, radius, follow);
                     case "abrams_slam": return AbramsSlam(moment, at, radius, follow);
                     case "abrams_charge": return AbramsCharge(moment, at, follow);
-                    case "seven_ball": return SevenBall(moment, at, follow, to);
+                    case "seven_ball": return SevenBall(moment, at, radius, follow, to);
                     case "seven_static": return SevenStatic(moment, at, radius, follow);
                     case "seven_storm": return SevenStorm(moment, at, radius, to);
                     case "infernus_afterburn": return InfernusAfterburn(moment, at, follow);
@@ -37,7 +37,7 @@ namespace DeadlockOfRain
                     case "haze_phantom": return HazePhantom(moment, at, radius, to);
                     case "haze_dagger": return HazeDagger(moment, at, follow);
                     case "abrams_haymaker": return AbramsHaymaker(moment, at, radius, follow, to, angle);
-                    case "seven_surge": return SevenSurge(moment, at, follow);
+                    case "seven_flight": return SevenFlight(moment, at, radius, follow, to);
                     case "mokrill_gun": return MokrillGun(moment, at, follow);
                     case "mokrill_sand": return MokrillSand(moment, at, radius, follow, to, angle, life);
                     case "mokrill_burrow": return MokrillBurrow(moment, at, radius, follow);
@@ -192,43 +192,115 @@ namespace DeadlockOfRain
             return null;
         }
 
-        // ------------------------------------------------------------------ Seven: Lightning Ball, Static Charge, Thunderhead
-        static readonly Color sevenBlue = new Color(0.5f, 0.83f, 1f), sevenWhite = new Color(0.85f, 0.95f, 1f);
+        // ------------------------------------------------------------------ Seven: Lightning Ball, Static Charge, Storm Cloud, Thunderhead
+        // Deadlock's Seven is yellow (since the 2026-10-21 redesign); Thunderhead keeps the blue storm for now
+        static readonly Color sevenBlue = new Color(0.5f, 0.83f, 1f), sevenWhite = new Color(0.85f, 0.95f, 1f),
+            sevenYellow = new Color(1f, 0.85f, 0.2f), sevenGold = new Color(1f, 0.97f, 0.75f);
 
         static float nextBallImpact;
 
-        static GameObject SevenBall(string moment, Vector3 at, Transform follow, Vector3? to)
+        /// <summary>A see-through sphere of influence: RoR2's lightning sphere, tinted, radius metres round, slowly turning, with
+        /// sparks winking on its surface so its edge reads against any ground.</summary>
+        /// <param name="inside">also drawn from inside (the ball, seen from outside nearly always). Storm Cloud's camera is inside its
+        /// sphere, so there the sphere is drawn from outside only (other players see it) and RoR2's area dome draws where it meets
+        /// the ground: a yellow ring of its reach under him.</param>
+        static void Shell(GameObject root, float radius, Color c, bool inside = true)
+        {
+            var shell = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            Object.Destroy(shell.GetComponent<Collider>());
+            shell.transform.SetParent(root.transform, false);
+            shell.transform.localScale = Vector3.one * radius * 2f;
+            var mr = shell.GetComponent<MeshRenderer>();
+            mr.sharedMaterial = Remapped("mat_shell", new Color(c.r, c.g, c.b, 0.5f), inside);
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            mr.receiveShadows = false;
+            shell.AddComponent<Spin>().DegPerSec = 25f;
+            var edge = Particles(root, "mat_glow", c, rate: 6f * radius, life: 0.5f, speed: 0f, size: 0.5f, shapeRadius: radius);
+            var shape = edge.shape; shape.radiusThickness = 0f;
+            if (inside) return;
+            var dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            Object.Destroy(dome.GetComponent<Collider>());
+            dome.transform.SetParent(root.transform, false);
+            dome.transform.localScale = Vector3.one * radius * 2f;
+            dome.GetComponent<MeshRenderer>().sharedMaterial = Mat("mat_area", c);
+        }
+
+        static GameObject SevenBall(string moment, Vector3 at, float radius, Transform follow, Vector3? to)
         {
             switch (moment)
             {
                 case "loop":
                 {
-                    // a white-hot core, a blue halo, crackling arcs around it and a light
+                    // a white-gold core, a yellow halo, crackling arcs around it and a light, inside a clear sphere showing its reach
                     var root = Root(at, 0f, follow);
-                    Particles(root, "mat_glow", sevenWhite, rate: 40, life: 0.2f, speed: 0f, size: 1.4f);
-                    Particles(root, "mat_glow", sevenBlue, rate: 20, life: 0.4f, speed: 0f, size: 3.2f);
-                    Particles(root, "mat_spark", sevenBlue, rate: 50, life: 0.3f, speed: 5f, size: 0.06f, shapeRadius: 0.5f, world: true);
-                    var c = root.AddComponent<Crackle>(); c.Color = sevenBlue; c.Radius = 2.2f; c.Count = 4;
-                    Light(root, sevenBlue, 12f, 4f, Vector3.zero).gameObject.AddComponent<Flicker>();
+                    Particles(root, "mat_glow", sevenGold, rate: 40, life: 0.2f, speed: 0f, size: 1.4f);
+                    Particles(root, "mat_glow", sevenYellow, rate: 20, life: 0.4f, speed: 0f, size: 3.2f);
+                    Particles(root, "mat_spark", sevenYellow, rate: 50, life: 0.3f, speed: 5f, size: 0.06f, shapeRadius: 0.5f, world: true);
+                    var c = root.AddComponent<Crackle>(); c.Color = sevenYellow; c.Recolor = true; c.Radius = 2.2f; c.Count = 4;
+                    Light(root, sevenYellow, 12f, 4f, Vector3.zero).gameObject.AddComponent<Flicker>();
+                    Shell(root, radius, sevenYellow);
                     return root;
                 }
                 case "hit":
                 {
                     if (!to.HasValue) return null;
-                    // a clear lightning strike from the ball to the enemy: white core, blue glow, sparks and a flash on it,
+                    // a clear lightning strike from the ball to the enemy: white-gold core, yellow glow, sparks and a flash on it,
                     // and RoR2's lightning impact (rate-limited, it is bright)
-                    Bolt(at, to.Value, sevenWhite, 0.25f, 0.16f, 10, 0.6f);
-                    Bolt(at, to.Value, sevenBlue, 0.7f, 0.12f, 8, 0.9f);
-                    Burst(to.Value, "mat_spark", sevenWhite, 8, 0.3f, 7f, 0.07f);
-                    Flash(to.Value, sevenBlue, 5f, 0.12f, 2f);
-                    if (Time.time >= nextBallImpact) { nextBallImpact = Time.time + 0.1f; Fx.Impact("storm_strike", to.Value); }
+                    Bolt(at, to.Value, sevenGold, 0.25f, 0.16f, 10, 0.6f, recolor: true);
+                    Bolt(at, to.Value, sevenYellow, 0.7f, 0.12f, 8, 0.9f, recolor: true);
+                    Burst(to.Value, "mat_spark", sevenGold, 8, 0.3f, 7f, 0.07f);
+                    Flash(to.Value, sevenYellow, 5f, 0.12f, 2f);
+                    if (Time.time >= nextBallImpact) { nextBallImpact = Time.time + 0.1f; Fx.Impact("storm_strike_seven", to.Value); }
                     return null;
                 }
                 case "end":
-                    Burst(at, "mat_glow", sevenWhite, 3, 0.3f, 0f, 5f);
-                    Burst(at, "mat_spark", sevenBlue, 40, 0.5f, 14f, 0.1f);
-                    Ring(at, sevenBlue, 0.5f, 7f, 0.35f, 0.4f, vertical: true);
-                    Flash(at, sevenBlue, 14f, 0.3f, 6f);
+                    Burst(at, "mat_glow", sevenGold, 3, 0.3f, 0f, 5f);
+                    Burst(at, "mat_spark", sevenYellow, 40, 0.5f, 14f, 0.1f);
+                    Ring(at, sevenYellow, 0.5f, 7f, 0.35f, 0.4f, vertical: true);
+                    Flash(at, sevenYellow, 14f, 0.3f, 6f);
+                    return null;
+            }
+            return null;
+        }
+
+        /// <summary>Storm Cloud (R): Seven flies inside a clear yellow sphere of radius that shocks everything in it.</summary>
+        static GameObject SevenFlight(string moment, Vector3 at, float radius, Transform follow, Vector3? to)
+        {
+            switch (moment)
+            {
+                case "cast":
+                    Ring(at, sevenYellow, 0.5f, radius * 0.6f, 0.4f, 0.4f);
+                    Burst(at, "mat_spark", sevenGold, 30, 0.4f, 10f, 0.08f, upward: true);
+                    Burst(at, "mat_smoke", new Color(0.35f, 0.33f, 0.25f, 0.6f), 10, 0.8f, 5f, 2f, shapeRadius: 1.5f, flat: true);
+                    Flash(at, sevenYellow, 12f, 0.35f, 6f);
+                    return null;
+                case "loop":
+                {
+                    // Seven as the living storm: a faint dark haze and crackles on him, sparks, a yellow light, and the sphere
+                    var root = Root(at, 0f, follow);
+                    Particles(root, "mat_smoke", new Color(0.3f, 0.3f, 0.26f, 0.35f), rate: 6, life: 1.2f, speed: 0.5f, size: 3f, shapeRadius: 1.2f, world: true);
+                    Particles(root, "mat_glow", sevenYellow, rate: 12, life: 0.3f, speed: 0f, size: 2.2f);
+                    Particles(root, "mat_spark", sevenGold, rate: 40, life: 0.35f, speed: 4f, size: 0.06f, shapeRadius: 0.8f, world: true);
+                    var c = root.AddComponent<Crackle>(); c.Color = sevenYellow; c.Recolor = true; c.Radius = 1.8f; c.Count = 3;
+                    Light(root, sevenYellow, radius, 3f, Vector3.zero).gameObject.AddComponent<Flicker>();
+                    Shell(root, radius, sevenYellow, inside: false);
+                    return root;
+                }
+                case "hit":
+                {
+                    if (!to.HasValue) return null;
+                    Bolt(at, to.Value, sevenGold, 0.3f, 0.18f, 12, 0.8f, recolor: true);
+                    Bolt(at, to.Value, sevenYellow, 0.8f, 0.14f, 10, 1.2f, recolor: true);
+                    Burst(to.Value, "mat_spark", sevenGold, 10, 0.3f, 8f, 0.07f);
+                    Flash(to.Value, sevenYellow, 6f, 0.15f, 2.5f);
+                    if (Time.time >= nextBallImpact) { nextBallImpact = Time.time + 0.1f; Fx.Impact("storm_strike_seven", to.Value); }
+                    return null;
+                }
+                case "end":
+                    Burst(at, "mat_glow", sevenGold, 3, 0.3f, 0f, 6f);
+                    Burst(at, "mat_spark", sevenYellow, 50, 0.5f, 16f, 0.1f);
+                    Ring(at, sevenYellow, 0.5f, radius * 0.6f, 0.4f, 0.5f, vertical: true);
+                    Flash(at, sevenYellow, 16f, 0.3f, 6f);
                     return null;
             }
             return null;
@@ -243,25 +315,25 @@ namespace DeadlockOfRain
                     // the charge: a ring that closes in on the target while it counts down, sparks and a pulsing light
                     var root = Root(at, 0f, follow);
                     var ring = new GameObject("ring"); ring.transform.SetParent(root.transform, false); ring.transform.localPosition = Vector3.up * 0.4f;
-                    Particles(ring, "mat_glow", sevenBlue, rate: 120, life: 0.25f, speed: 0f, size: 0.5f, shapeRadius: radius, ring: true);
+                    Particles(ring, "mat_glow", sevenYellow, rate: 120, life: 0.25f, speed: 0f, size: 0.5f, shapeRadius: radius, ring: true);
                     ring.AddComponent<Spin>().DegPerSec = 200f;
                     ring.AddComponent<Shrink>().To = 0.12f;
-                    Particles(root, "mat_spark", sevenBlue, rate: 40, life: 0.3f, speed: 3f, size: 0.07f, shapeRadius: 0.8f, world: true);
-                    Particles(root, "mat_glow", sevenWhite, rate: 12, life: 0.25f, speed: 0f, size: 1.2f);
-                    var c = root.AddComponent<Crackle>(); c.Color = sevenBlue; c.Radius = 1.4f; c.Count = 2;
-                    Light(root, sevenBlue, 6f, 3f, Vector3.up).gameObject.AddComponent<Flicker>();
+                    Particles(root, "mat_spark", sevenYellow, rate: 40, life: 0.3f, speed: 3f, size: 0.07f, shapeRadius: 0.8f, world: true);
+                    Particles(root, "mat_glow", sevenGold, rate: 12, life: 0.25f, speed: 0f, size: 1.2f);
+                    var c = root.AddComponent<Crackle>(); c.Color = sevenYellow; c.Recolor = true; c.Radius = 1.4f; c.Count = 2;
+                    Light(root, sevenYellow, 6f, 3f, Vector3.up).gameObject.AddComponent<Flicker>();
                     return root;
                 }
                 case "hit":
                 {
                     // a thunderbolt from the sky like Risk of Rain 2's lightning strikes, a flash and a shock ring
                     var sky = at + Vector3.up * 40f + new Vector3(Random.Range(-3f, 3f), 0, Random.Range(-3f, 3f));
-                    Bolt(sky, at, sevenWhite, 1.4f, 0.35f, 14, 2.5f);
-                    Bolt(sky, at, sevenBlue, 2.6f, 0.25f, 10, 4f);
-                    Ring(at + Vector3.up * 0.3f, sevenBlue, 0.5f, radius, 0.35f, 0.7f);
-                    Burst(at, "mat_spark", sevenWhite, 50, 0.6f, 16f, 0.12f, upward: true);
-                    Burst(at, "mat_glow", sevenBlue, 3, 0.3f, 0f, radius * 0.9f);
-                    Flash(at + Vector3.up * 3f, sevenWhite, radius * 3f, 0.25f, 10f);
+                    Bolt(sky, at, sevenGold, 1.4f, 0.35f, 14, 2.5f, recolor: true);
+                    Bolt(sky, at, sevenYellow, 2.6f, 0.25f, 10, 4f, recolor: true);
+                    Ring(at + Vector3.up * 0.3f, sevenYellow, 0.5f, radius, 0.35f, 0.7f);
+                    Burst(at, "mat_spark", sevenGold, 50, 0.6f, 16f, 0.12f, upward: true);
+                    Burst(at, "mat_glow", sevenYellow, 3, 0.3f, 0f, radius * 0.9f);
+                    Flash(at + Vector3.up * 3f, sevenGold, radius * 3f, 0.25f, 10f);
                     Shake(at, radius * 3f, 1.5f, 0.3f);
                     return null;
                 }
@@ -694,29 +766,6 @@ namespace DeadlockOfRain
         }
 
         // ------------------------------------------------------------------ Seven: Power Surge
-        static GameObject SevenSurge(string moment, Vector3 at, Transform follow)
-        {
-            switch (moment)
-            {
-                case "cast":
-                    Ring(at, sevenBlue, 0.5f, 5f, 0.35f, 0.25f);
-                    Burst(at, "mat_spark", sevenWhite, 24, 0.35f, 9f, 0.07f);
-                    Flash(at, sevenBlue, 10f, 0.35f, 6f);
-                    return null;
-                case "loop":
-                {
-                    // Seven crackles with lightning the whole time it runs
-                    var root = Root(at, 0f, follow);
-                    var c = root.AddComponent<Crackle>(); c.Color = sevenBlue; c.Radius = 1.3f; c.Count = 2;
-                    Particles(root, "mat_glow", sevenBlue, rate: 10, life: 0.25f, speed: 0f, size: 1.6f);
-                    Particles(root, "mat_spark", sevenWhite, rate: 30, life: 0.3f, speed: 3f, size: 0.05f, shapeRadius: 0.6f, world: true);
-                    Light(root, sevenBlue, 6f, 2f, Vector3.zero).gameObject.AddComponent<Flicker>();
-                    return root;
-                }
-            }
-            return null;
-        }
-
         // ------------------------------------------------------------------ Mo & Krill (colours from Deadlock's own particles)
         // mat_dust is RoR2's opaque dust: keep its particles small, few and light-coloured, or they hide the screen (Dust Devil's
         // first build did) and turn into black blobs (dark tints, or seen from the unlit side); big clouds use mat_smoke
@@ -1134,6 +1183,82 @@ namespace DeadlockOfRain
             return m;
         }
 
+        /// <summary>A RoR2 material whose colour comes from its ramp (_RemapTex: the lightning materials are blue whatever the
+        /// tint), with that ramp recoloured to c (<see cref="RecolorMat"/>); twoSided draws it from inside too.</summary>
+        public static Material Remapped(string id, Color c, bool twoSided = false)
+        {
+            string key = "remap|" + id + "|" + ColorUtility.ToHtmlStringRGBA(c) + (twoSided ? "|2" : "");
+            if (tinted.TryGetValue(key, out var m) && m) return m;
+            m = RecolorMat(Mat(id, Color.white), c);
+            if (twoSided && m.HasProperty("_Cull")) m.SetFloat("_Cull", 0f);
+            tinted[key] = m;
+            return m;
+        }
+
+        static readonly Dictionary<string, Texture2D> ramps = new Dictionary<string, Texture2D>();
+
+        /// <summary>A copy of a material in c. A ramp material (_RemapTex) keeps its own ramp's brightness and see-through at
+        /// every step, only the hue becomes c (its white-hot end stays white), so it looks like RoR2's effect in another colour;
+        /// its tint alpha becomes c.a. Other materials take c as their tint, keeping their alpha.</summary>
+        static Material RecolorMat(Material src, Color c)
+        {
+            var m = new Material(src);
+            var orig = m.HasProperty("_RemapTex") ? m.GetTexture("_RemapTex") : null;
+            if (orig)
+            {
+                string key = orig.name + "|" + ColorUtility.ToHtmlStringRGB(c);
+                if (!ramps.TryGetValue(key, out var ramp) || !ramp)
+                {
+                    // the ramp textures aren't readable: draw the original into a render texture and read that back
+                    const int w = 128;
+                    var rt = RenderTexture.GetTemporary(w, 1, 0, RenderTextureFormat.ARGB32);
+                    var prev = RenderTexture.active;
+                    Graphics.Blit(orig, rt);
+                    RenderTexture.active = rt;
+                    ramp = new Texture2D(w, 1, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+                    ramp.ReadPixels(new Rect(0, 0, w, 1), 0, 0);
+                    RenderTexture.active = prev;
+                    RenderTexture.ReleaseTemporary(rt);
+                    for (int i = 0; i < w; i++)
+                    {
+                        var o = ramp.GetPixel(i, 0);
+                        float lum = Mathf.Max(o.r, Mathf.Max(o.g, o.b)), white = lum > 0.001f ? Mathf.Min(o.r, Mathf.Min(o.g, o.b)) / lum : 0f;
+                        // the white-hot core stays a little white, the rest takes the colour (RoR2's tracers are nearly white)
+                        var col = Color.Lerp(new Color(c.r, c.g, c.b), Color.white, white * 0.4f) * lum;
+                        col.a = o.a;
+                        ramp.SetPixel(i, 0, col);
+                    }
+                    ramp.Apply();
+                    ramps[key] = ramp;
+                }
+                m.SetTexture("_RemapTex", ramp);
+                if (m.HasProperty("_TintColor")) { var t = m.GetColor("_TintColor"); m.SetColor("_TintColor", new Color(1f, 1f, 1f, t.a * c.a)); }
+            }
+            else
+            {
+                if (m.HasProperty("_TintColor")) { var a = m.GetColor("_TintColor").a; m.SetColor("_TintColor", new Color(c.r, c.g, c.b, a)); }
+                if (m.HasProperty("_Color")) { var a = m.GetColor("_Color").a; m.SetColor("_Color", new Color(c.r, c.g, c.b, a)); }
+            }
+            return m;
+        }
+
+        /// <summary>Recolours a copied RoR2 effect in place: every renderer's materials (<see cref="RecolorMat"/>), line, trail and
+        /// particle colours, and lights.</summary>
+        public static void Recolor(GameObject root, Color c)
+        {
+            foreach (var r in root.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = r.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++) if (mats[i]) mats[i] = RecolorMat(mats[i], c);
+                r.sharedMaterials = mats;
+            }
+            Color Keep(Color o) => new Color(c.r, c.g, c.b, o.a);
+            foreach (var lr in root.GetComponentsInChildren<LineRenderer>(true)) { lr.startColor = Keep(lr.startColor); lr.endColor = Keep(lr.endColor); }
+            foreach (var tr in root.GetComponentsInChildren<TrailRenderer>(true)) { tr.startColor = Keep(tr.startColor); tr.endColor = Keep(tr.endColor); }
+            foreach (var ps in root.GetComponentsInChildren<ParticleSystem>(true)) { var main = ps.main; main.startColor = Keep(main.startColor.color); }
+            foreach (var l in root.GetComponentsInChildren<Light>(true)) l.color = c;
+        }
+
         /// <summary>A plain alpha-blended colour (Unity's built-in sprite shader) for lines that must read on bright ground.</summary>
         static Material Solid(Color tint)
         {
@@ -1278,10 +1403,12 @@ namespace DeadlockOfRain
         }
 
         /// <summary>A jagged lightning bolt between two points that flickers and fades.</summary>
-        public static void Bolt(Vector3 a, Vector3 b, Color c, float width, float life, int segments = 8, float jitter = 0f)
+        /// <param name="recolor">draw it in c through <see cref="Remapped"/> (the lightning material is otherwise blue: Seven's yellow)</param>
+        public static void Bolt(Vector3 a, Vector3 b, Color c, float width, float life, int segments = 8, float jitter = 0f, bool recolor = false)
         {
             var root = Root(a, life, null);
             var lr = Line(root.transform, c, width, Vector3.zero, b - a, "mat_lightning");
+            if (recolor) lr.sharedMaterial = Remapped("mat_lightning", c);
             lr.useWorldSpace = true;
             lr.SetPosition(0, a); lr.SetPosition(1, b);
             var bolt = lr.gameObject.AddComponent<BoltFx>();
@@ -1537,10 +1664,10 @@ namespace DeadlockOfRain
             }
         }
 
-        /// <summary>Short arcs leaping around a centre (Lightning Ball, Static Charge).</summary>
+        /// <summary>Short arcs leaping around a centre (Lightning Ball, Static Charge, Storm Cloud).</summary>
         sealed class Crackle : MonoBehaviour
         {
-            public Color Color; public float Radius = 2f; public int Count = 3;
+            public Color Color; public float Radius = 2f; public int Count = 3; public bool Recolor;
             float next;
             void Update()
             {
@@ -1549,7 +1676,7 @@ namespace DeadlockOfRain
                 for (int i = 0; i < Count; i++)
                 {
                     var end = transform.position + Random.onUnitSphere * Radius * Random.Range(0.5f, 1f);
-                    Bolt(transform.position, end, Color, 0.12f, 0.08f, 5, Radius * 0.2f);
+                    Bolt(transform.position, end, Color, 0.12f, 0.08f, 5, Radius * 0.2f, Recolor);
                 }
             }
         }

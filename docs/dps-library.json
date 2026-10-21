@@ -1138,50 +1138,50 @@
     "primary": "Shock Rifle",
     "secondary": "Lightning Ball",
     "utility": "Static Charge",
-    "special": "Power Surge"
+    "special": "Storm Cloud"
    },
    "hero": true,
-   "measuredOn": "v0.5.1",
+   "measuredOn": "v0.9.1a",
    "dps": {
     "all": {
      "runs": [
-      3164
+      2827
      ],
-     "mean": 3164,
-     "min": 3164,
-     "max": 3164
+     "mean": 2827,
+     "min": 2827,
+     "max": 2827
     },
     "primary": {
      "runs": [
-      554
+      660
      ],
-     "mean": 554,
-     "min": 554,
-     "max": 554
+     "mean": 660,
+     "min": 660,
+     "max": 660
     },
     "secondary": {
      "runs": [
-      390
+      812
      ],
-     "mean": 390,
-     "min": 390,
-     "max": 390
+     "mean": 812,
+     "min": 812,
+     "max": 812
     },
     "utility": {
      "runs": [
-      705
+      383
      ],
-     "mean": 705,
-     "min": 705,
-     "max": 705
+     "mean": 383,
+     "min": 383,
+     "max": 383
     },
     "special": {
      "runs": [
-      0
+      710
      ],
-     "mean": 0,
-     "min": 0,
-     "max": 0
+     "mean": 710,
+     "min": 710,
+     "max": 710
     },
     "equipment": {
      "runs": [

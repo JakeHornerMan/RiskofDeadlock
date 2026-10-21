@@ -327,10 +327,10 @@
       "skipTakes": "none"
     },
     {
-      "id": "seven_power_surge_vo",
+      "id": "seven_storm_cloud_vo",
       "hero": "seven",
       "trigger": "skill",
-      "skill": "seven_power_surge",
+      "skill": "seven_storm_cloud",
       "kills": 0,
       "group": "gigawatt/gigawatt_use_power3",
       "chance": 0.4,

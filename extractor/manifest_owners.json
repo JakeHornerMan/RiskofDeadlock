@@ -54,18 +54,6 @@
   "Gigawatt.LightningBall.Proj.Lp": [
     "seven"
   ],
-  "Gigawatt.PowerSurge.Cast": [
-    "seven"
-  ],
-  "Gigawatt.PowerSurge.ChainMod.Proc": [
-    "seven"
-  ],
-  "Gigawatt.PowerSurge.End": [
-    "seven"
-  ],
-  "Gigawatt.PowerSurge.Lp": [
-    "seven"
-  ],
   "Gigawatt.StaticCharge.Cast": [
     "seven"
   ],
@@ -609,9 +597,6 @@
     "abrams"
   ],
   "panorama/images/hud/abilities/giga_ball_psd.vtex": [
-    "seven"
-  ],
-  "panorama/images/hud/abilities/giga_chain_psd.vtex": [
     "seven"
   ],
   "panorama/images/hud/abilities/giga_static_psd.vtex": [

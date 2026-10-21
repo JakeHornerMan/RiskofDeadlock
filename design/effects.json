@@ -1,6 +1,6 @@
 {
   "sheet": "effects",
-  "about": "Visual effect ids used by skills.effect/vfx/extra. Deadlock's particle systems (.vpcf) are never read or copied: visuals reuse Risk of Rain 2's own effect prefabs and materials (Addressables keys checked against the installed catalog.json) or are built by our own code in Unity (kind custom: plugin/Runtime/Vfx.cs, made to look like Deadlock). kind: tracer (bullet line muzzle->hit), impact (one-shot at a point, scaled by radius when scaleWithRadius), ghost (attached visual that follows a mod-simulated projectile), orb (RoR2 OrbManager lightning orb), trail (vanilla DamageTrail fire trail), attachment (a RoR2 NetworkedBodyAttachment put on the hero), ward (a RoR2 BuffWard placed on the ground), material (a RoR2 material our custom visuals are drawn with), custom (built by Vfx.cs; addressable none), none. prop: a Deadlock model the extractor reads from the player's install as a plain mesh (addressable = its vmdl path; extractor 1.5.0+), drawn by Vfx with our own materials; a prop that could not be read falls back to a simple shape. meshes / clips (props only, extractor 1.6.0+): the model's meshes to read (none = all) and the clips to read with its skeleton (none = a still mesh): Rat King's rat runs and leaps, his banner's sewer rises out of the ground.",
+  "about": "Visual effect ids used by skills.effect/vfx/extra. Deadlock's particle systems (.vpcf) are never read or copied: visuals reuse Risk of Rain 2's own effect prefabs and materials (Addressables keys checked against the installed catalog.json) or are built by our own code in Unity (kind custom: plugin/Runtime/Vfx.cs, made to look like Deadlock). kind: tracer (bullet line muzzle->hit), impact (one-shot at a point, scaled by radius when scaleWithRadius), ghost (attached visual that follows a mod-simulated projectile), orb (RoR2 OrbManager lightning orb), trail (vanilla DamageTrail fire trail), attachment (a RoR2 NetworkedBodyAttachment put on the hero), ward (a RoR2 BuffWard placed on the ground), material (a RoR2 material our custom visuals are drawn with), custom (built by Vfx.cs; addressable none), none. prop: a Deadlock model the extractor reads from the player's install as a plain mesh (addressable = its vmdl path; extractor 1.5.0+), drawn by Vfx with our own materials; a prop that could not be read falls back to a simple shape. meshes / clips (props only, extractor 1.6.0+): the model's meshes to read (none = all) and the clips to read with its skeleton (none = a still mesh): Rat King's rat runs and leaps, his banner's sewer rises out of the ground. tint: a RoR2 prefab (tracer, impact) recoloured to this colour (#RRGGBB) as our own copy, registered as an effect of the mod (Fx.Prefab); its materials' colour ramps are redrawn in it (Seven's yellow Shock Rifle tracer), none = as RoR2 has it.",
   "columns": [
     "id",
     "kind",
@@ -8,6 +8,7 @@
     "scaleWithRadius",
     "meshes",
     "clips",
+    "tint",
     "notes"
   ],
   "rows": [
@@ -16,6 +17,7 @@
       "kind": "none",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "no visual",
       "meshes": [
         "none"
@@ -29,6 +31,7 @@
       "kind": "tracer",
       "addressable": "RoR2/Base/Commando/TracerCommandoDefault.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "SMG tracer",
       "meshes": [
         "none"
@@ -42,6 +45,7 @@
       "kind": "tracer",
       "addressable": "RoR2/Base/Bandit2/TracerBandit2Shotgun.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "shotgun pellets",
       "meshes": [
         "none"
@@ -55,7 +59,8 @@
       "kind": "tracer",
       "addressable": "RoR2/Base/Huntress/TracerHuntressSnipe.prefab",
       "scaleWithRadius": false,
-      "notes": "bright lightning-ish line",
+      "tint": "#FFD633",
+      "notes": "Shock Rifle: Huntress' snipe tracer, an electric line, recoloured Deadlock yellow (the creator kept its look in the 0.9.1a redesign)",
       "meshes": [
         "none"
       ],
@@ -68,6 +73,7 @@
       "kind": "tracer",
       "addressable": "RoR2/Base/Toolbot/TracerToolbotNails.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "fast orange tracer",
       "meshes": [
         "none"
@@ -81,6 +87,7 @@
       "kind": "impact",
       "addressable": "RoR2/Base/Common/VFX/Muzzleflash1.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "muzzle flash for every gun",
       "meshes": [
         "none"
@@ -94,6 +101,7 @@
       "kind": "ghost",
       "addressable": "RoR2/Base/Bandit2/mdlBanditKnife.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Sleep Dagger flying model",
       "meshes": [
         "none"
@@ -107,6 +115,7 @@
       "kind": "ghost",
       "addressable": "RoR2/DLC1/Molotov/MolotovGhost.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Napalm flask in flight (Molotov's bottle; a glowing sphere if it can't load)",
       "meshes": [
         "none"
@@ -120,6 +129,7 @@
       "kind": "impact",
       "addressable": "RoR2/Base/Bandit2/Bandit2SmokeBomb.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Smoke Bomb cast",
       "meshes": [
         "none"
@@ -133,6 +143,7 @@
       "kind": "impact",
       "addressable": "RoR2/Base/SiphonOnLowHealth/SiphonOrbEffect.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "spawned on each drained enemy per tick",
       "meshes": [
         "none"
@@ -146,6 +157,7 @@
       "kind": "impact",
       "addressable": "RoR2/Base/Toolbot/ImpactToolbotDashLarge.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Shoulder Charge hit",
       "meshes": [
         "none"
@@ -159,6 +171,7 @@
       "kind": "impact",
       "addressable": "RoR2/Base/Loader/OmniImpactVFXLoader.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Haymaker: Loader's big fist impact on the punch",
       "meshes": [
         "none"
@@ -172,6 +185,7 @@
       "kind": "impact",
       "addressable": "RoR2/Base/Medkit/MedkitHealEffect.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Infernal Resilience cast",
       "meshes": [
         "none"
@@ -185,6 +199,7 @@
       "kind": "impact",
       "addressable": "RoR2/Base/Loader/LoaderGroundSlam.prefab",
       "scaleWithRadius": true,
+      "tint": "none",
       "notes": "Seismic Impact landing",
       "meshes": [
         "none"
@@ -198,7 +213,8 @@
       "kind": "ghost",
       "addressable": "RoR2/Base/Mage/MageLightningBombGhost.prefab",
       "scaleWithRadius": false,
-      "notes": "Lightning Ball",
+      "tint": "#FFD633",
+      "notes": "Lightning Ball's core: Artificer's lightning bomb, recoloured Deadlock yellow",
       "meshes": [
         "none"
       ],
@@ -211,6 +227,7 @@
       "kind": "impact",
       "addressable": "RoR2/Base/Lightning/LightningStrikeImpact.prefab",
       "scaleWithRadius": true,
+      "tint": "none",
       "notes": "Static Charge discharge",
       "meshes": [
         "none"
@@ -224,6 +241,7 @@
       "kind": "orb",
       "addressable": "RoR2/Base/ChainLightning/ChainLightningOrbEffect.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Power Surge chains via RoR2.Orbs.LightningOrb (Ukulele type)",
       "meshes": [
         "none"
@@ -237,7 +255,22 @@
       "kind": "impact",
       "addressable": "RoR2/Base/Common/VFX/OmniImpactVFXLightning.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Storm Cloud strikes on enemies inside",
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ]
+    },
+    {
+      "id": "storm_strike_seven",
+      "kind": "impact",
+      "addressable": "RoR2/Base/Common/VFX/OmniImpactVFXLightning.prefab",
+      "scaleWithRadius": false,
+      "tint": "#FFD633",
+      "notes": "the same lightning impact in Deadlock yellow: Seven's Lightning Ball and Storm Cloud shocks (Thunderhead keeps storm_strike)",
       "meshes": [
         "none"
       ],
@@ -250,6 +283,7 @@
       "kind": "impact",
       "addressable": "RoR2/Base/LemurianBruiser/OmniExplosionVFXLemurianBruiserFireballImpact.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Catalyst splash, spawned along the cone",
       "meshes": [
         "none"
@@ -263,6 +297,7 @@
       "kind": "trail",
       "addressable": "RoR2/Base/Common/FireTrail.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Flame Dash trail (vanilla DamageTrail)",
       "meshes": [
         "none"
@@ -276,6 +311,7 @@
       "kind": "impact",
       "addressable": "RoR2/Base/Scav/OmniExplosionVFXScavCannonImpactExplosion.prefab",
       "scaleWithRadius": true,
+      "tint": "none",
       "notes": "Concussive Combustion",
       "meshes": [
         "none"
@@ -289,6 +325,7 @@
       "kind": "impact",
       "addressable": "RoR2/Base/StunChanceOnHit/ImpactStunGrenade.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "sleep / stun applied",
       "meshes": [
         "none"
@@ -302,6 +339,7 @@
       "kind": "attachment",
       "addressable": "RoR2/Base/SiphonOnLowHealth/SiphonNearbyBodyAttachment.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Mired Urn's tar tethers (SiphonNearbyController) for Siphon Life",
       "meshes": [
         "none"
@@ -315,6 +353,7 @@
       "kind": "ward",
       "addressable": "RoR2/Base/WardOnLevel/WarbannerWard.prefab",
       "scaleWithRadius": true,
+      "tint": "none",
       "notes": "Warbanner's ward and ground ring for Thunderhead (+30% attack and move speed to allies inside)",
       "meshes": [
         "none"
@@ -328,6 +367,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Common/VFX/matGlow1Soft.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "soft additive glow (cores, flashes)",
       "meshes": [
         "none"
@@ -341,6 +381,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Common/VFX/matTracerBright.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "bright line (arcs, tracers, bolts)",
       "meshes": [
         "none"
@@ -354,6 +395,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Common/VFX/matLightningLongBlue.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "lightning strip (bolts, arcs)",
       "meshes": [
         "none"
@@ -367,6 +409,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Common/VFX/matOmniRing1Generic.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "expanding ring billboard (shockwaves)",
       "meshes": [
         "none"
@@ -380,6 +423,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Common/VFX/matFireStatic.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "flame particles",
       "meshes": [
         "none"
@@ -393,6 +437,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Common/VFX/matGenericSmoke.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "smoke and cloud particles",
       "meshes": [
         "none"
@@ -406,6 +451,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Common/VFX/matOpaqueDustLarge.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "opaque, alpha-blended dust: dark storm clouds and haze (additive smoke can only brighten)",
       "meshes": [
         "none"
@@ -419,6 +465,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Common/VFX/matSpark1.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "spark particles",
       "meshes": [
         "none"
@@ -432,6 +479,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Bison/matSnowyOverlay.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Bison's snow coat, tinted sand: drawn over a Sanded enemy's whole model (TemporaryOverlay) so you see who the sand hit",
       "meshes": [
         "none"
@@ -445,7 +493,22 @@
       "kind": "material",
       "addressable": "RoR2/Base/Common/VFX/matAreaIndicatorIntersectionOnly.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "ground area indicator: draws only where its dome meets the ground (the slam reticle)",
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ]
+    },
+    {
+      "id": "mat_shell",
+      "kind": "material",
+      "addressable": "RoR2/Base/Common/VFX/matLightningSphere.mat",
+      "scaleWithRadius": false,
+      "tint": "none",
+      "notes": "RoR2's lightning sphere, tinted: the see-through sphere of influence of Seven's Lightning Ball and Storm Cloud",
       "meshes": [
         "none"
       ],
@@ -458,6 +521,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Bullet Dance: spinning violet blade ring, afterimage trails, pink muzzle bursts and hit sparks",
       "meshes": [
         "none"
@@ -471,6 +535,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": true,
+      "tint": "none",
       "notes": "Seismic Impact: ground reticle while hovering, dive streaks, shockwave ring, dust and debris on impact",
       "meshes": [
         "none"
@@ -484,7 +549,8 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
-      "notes": "Lightning Ball: glowing core with crackling arcs, and a bolt to every enemy it shocks",
+      "tint": "none",
+      "notes": "Lightning Ball (yellow): a white-gold core with crackling arcs inside a see-through yellow sphere the size of its radius (its reach), and a bolt to every enemy it shocks",
       "meshes": [
         "none"
       ],
@@ -497,7 +563,8 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": true,
-      "notes": "Static Charge: pulsing charge ring on the target, then a thunderbolt from the sky",
+      "tint": "none",
+      "notes": "Static Charge (yellow): pulsing charge ring on the target, then a yellow thunderbolt from the sky",
       "meshes": [
         "none"
       ],
@@ -510,6 +577,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": true,
+      "tint": "none",
       "notes": "Thunderhead: a thick dark cloud deck over the zone, a dim haze darkening the area under it, lightning flickering inside, bolts striking down from the clouds all over the storm and onto every enemy hit",
       "meshes": [
         "none"
@@ -523,6 +591,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Afterburn: embers on enemies that grow with build-up; on ignition RoR2's Helfire flare and a burst of large flames; big licking flames and a glow while they burn; muzzle smoke and a flash on every Flame Gun shot",
       "meshes": [
         "none"
@@ -536,6 +605,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": true,
+      "tint": "none",
       "notes": "Napalm: a glowing flask trailing fire, then a splash of large flames, smoke and a burning puddle of Gasoline ground fire",
       "meshes": [
         "none"
@@ -549,6 +619,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Common/VFX/matFireStaticLarge.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "big licking flames (Infernus fire: burning enemies, trail, pulse, blasts)",
       "meshes": [
         "none"
@@ -562,6 +633,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/FireBallDash/matGasolineFire.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Gasoline's ground fire (Napalm puddle, Flame Dash trail)",
       "meshes": [
         "none"
@@ -575,6 +647,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Common/VFX/matHelfirePuff.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Helfire's orange fire puffs (pulse rings, ignition flares)",
       "meshes": [
         "none"
@@ -588,20 +661,8 @@
       "kind": "impact",
       "addressable": "RoR2/Base/BurnNearby/HelfireIgniteEffect.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "RoR2's Helfire ignition flare on an enemy (Afterburn ignites, Torment Pulse hits)",
-      "meshes": [
-        "none"
-      ],
-      "clips": [
-        "none"
-      ]
-    },
-    {
-      "id": "tesla_arc",
-      "kind": "orb",
-      "addressable": "RoR2/Base/ShockNearby/TeslaOrbEffect.prefab",
-      "scaleWithRadius": false,
-      "notes": "Power Surge arcs via RoR2.Orbs.LightningOrb (Tesla type, like the Unstable Tesla Coil)",
       "meshes": [
         "none"
       ],
@@ -614,6 +675,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Phantom Strike: violet afterimage streak along the blink, a smoke puff where she left and arrives, slash arcs and hit flashes on each cut",
       "meshes": [
         "none"
@@ -627,6 +689,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Shoulder Charge: Abrams rockets forward: a hot yellow glow and sparks at his front (moment loop, turned to face the charge), thin yellow trails off his shoulders and a core streak behind, dust kicked up at his feet; a launch burst of dust and a yellow ring and flash as he sets off (cast)",
       "meshes": [
         "none"
@@ -640,6 +703,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Haymaker: fist glow and embers during the wind-up, a red streak on the lunge, an impact shockwave, dust and sparks on the punch",
       "meshes": [
         "none"
@@ -649,11 +713,12 @@
       ]
     },
     {
-      "id": "seven_surge",
+      "id": "seven_flight",
       "kind": "custom",
       "addressable": "none",
-      "scaleWithRadius": false,
-      "notes": "Power Surge: blue crackle and glow around Seven and his gun while it runs, a flash on cast",
+      "scaleWithRadius": true,
+      "tint": "none",
+      "notes": "Storm Cloud (R): a see-through yellow sphere of radius around Seven while he flies, a storm haze, crackles and sparks on him, a yellow bolt to every enemy shocked, and a burst at the end",
       "meshes": [
         "none"
       ],
@@ -666,6 +731,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": true,
+      "tint": "none",
       "notes": "Torment Pulse: a ring of fire racing out along the ground to the pulse radius every pulse, embers and heat glow around Infernus",
       "meshes": [
         "none"
@@ -679,6 +745,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Flame Dash: flames licking around Infernus' legs while he dashes, and burning patches of ground fire along his path that last as long as the trail",
       "meshes": [
         "none"
@@ -692,6 +759,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": true,
+      "tint": "none",
       "notes": "Concussive Combustion: a fire glow and embers building on Infernus through the fuse, then a fireball, a racing ring of flame, smoke and a burning ground",
       "meshes": [
         "none"
@@ -705,6 +773,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Sleep Dagger in flight: a violet glow and trail that always shows, with or without the knife model",
       "meshes": [
         "none"
@@ -718,6 +787,7 @@
       "kind": "tracer",
       "addressable": "RoR2/Base/Captain/TracerCaptainShotgun.prefab",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Yellow Canary pellets: Captain's shotgun tracer (golden); our mokrill_gun draws the orange smoke and the hits",
       "meshes": [
         "none"
@@ -731,6 +801,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Yellow Canary: a hot orange puff and smoke wisp at Krill's muzzle on each shot (muzzle); dirt sparks where a pellet lands (hit)",
       "meshes": [
         "none"
@@ -744,6 +815,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Sand Blast: the cone filled with sand colour on the ground plus its outline during the wind-up (telegraph); a ring, flash and a heavy spray of sand out of Mo's hands (cast); a tall wall of sand racing along the ground and widening with the cone, grains flying forward and dust settling behind it (loop); a big sand explosion and flash on each enemy hit, then its whole model coated in sand and sand swirling round it while Sanded (hit)",
       "meshes": [
         "none"
@@ -757,6 +829,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Burrow: a dirt burst with debris where he digs in (cast); the travelling mound: a dark crack trail, dust, bobbing rock chunks and faint orange streaks following him underground (loop); pop-out: glowing ground cracks, an orange ring at the spin's radius, an impact flash, tan smoke, a light and a camera shake (hit)",
       "meshes": [
         "none"
@@ -770,6 +843,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Dust Devil: a twisting column of sand around Mo, swirling dust, a ground dome at the damage radius and dust streaks flowing inward from the pull radius (loop); a burst of sand as it starts and ends (cast, end); a small sand puff on enemies it ticks (hit)",
       "meshes": [
         "none"
@@ -783,6 +857,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Tag Team: Krill (the little figure) flying in an arc with an orange trail to each enemy (hop), an orange ring, electric arcs, a flash and a splash ring where he lands (hit), a puff where he is thrown and returns (cast, end)",
       "meshes": [
         "none"
@@ -796,6 +871,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Mo's punch while Krill is away: a dust burst and an orange flash on each enemy hit",
       "meshes": [
         "none"
@@ -809,6 +885,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Croco/matCrocoGooLarge.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Acrid's big goo blobs: the body of every goo splash and drip, tinted",
       "meshes": [
         "none"
@@ -822,6 +899,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Croco/matCrocoGooSmall.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Acrid's small goo droplets",
       "meshes": [
         "none"
@@ -835,6 +913,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/ClayBoss/matTarball.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "the Clay Dunestrider's tarball: the goo blob's surface",
       "meshes": [
         "none"
@@ -848,6 +927,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Clay/matClayBubble.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Clay tar bubbles: the see-through skin of the cube and the ball, puddle bubbles",
       "meshes": [
         "none"
@@ -861,6 +941,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/Grandparent/matGrandparentGooOverlay.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "the Grandparent's goo overlay: Gooed enemies coated in goo",
       "meshes": [
         "none"
@@ -874,6 +955,7 @@
       "kind": "material",
       "addressable": "RoR2/Base/ClayBoss/matGooTrail.mat",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "the Clay Dunestrider's goo trail: tethers and trails",
       "meshes": [
         "none"
@@ -887,6 +969,7 @@
       "kind": "prop",
       "addressable": "models/abilities/viscous_cube.vmdl",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Deadlock's cube model (2.3 m box) for The Cube",
       "meshes": [
         "none"
@@ -900,6 +983,7 @@
       "kind": "prop",
       "addressable": "models/abilities/viscous_sphere.vmdl",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Deadlock's goo sphere (2.5 m) for Goo Ball",
       "meshes": [
         "none"
@@ -913,6 +997,7 @@
       "kind": "prop",
       "addressable": "models/abilities/viscous_fist_model.vmdl",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Deadlock's goo fist for Puddle Punch",
       "meshes": [
         "none"
@@ -926,6 +1011,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "M1 goo blob: a wobbling green blob stretched along its flight, drips, a splat of droplets where it lands",
       "meshes": [
         "none"
@@ -939,6 +1025,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Splatter: the aim dome (big, green, the current splash size), the goo ball in flight, the splash and the goo puddle",
       "meshes": [
         "none"
@@ -952,6 +1039,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "The Cube: Deadlock's cube model in see-through goo around Viscous, jiggling; the burst",
       "meshes": [
         "none"
@@ -965,6 +1053,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Puddle Punch: the placement ring, the bubbling ground, the goo fist rising and the splash",
       "meshes": [
         "none"
@@ -978,6 +1067,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Goo Ball: Deadlock's sphere in see-through goo around the carrier, rolling; smash splats, the landing slam",
       "meshes": [
         "none"
@@ -991,6 +1081,7 @@
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
+      "tint": "none",
       "notes": "Gooed enemies: goo dripping off them, more with every stack, and a goo coat over the model",
       "meshes": [
         "none"
@@ -1010,6 +1101,7 @@
       "clips": [
         "none"
       ],
+      "tint": "none",
       "notes": "Captain's shotgun tracer for Sovereign's Decree's two pellets"
     },
     {
@@ -1023,6 +1115,7 @@
       "clips": [
         "none"
       ],
+      "tint": "none",
       "notes": "Sovereign's Decree: a brass muzzle flash with a puff of grey smoke and sparks, and a spark where each pellet lands"
     },
     {
@@ -1036,6 +1129,7 @@
       "clips": [
         "none"
       ],
+      "tint": "none",
       "notes": "Scrap Grenade: the arc line from his hand to a ring the size of the first blast (aim), Deadlock's grenade model glowing hotter and rattling harder between blasts (loop), each blast a shower of bolts, gears and sheet metal that skitter on the ground with sparks, dust, a smoke puff, a scorch mark and a shake (hit), the big one bigger (end)"
     },
     {
@@ -1049,6 +1143,7 @@
       "clips": [
         "none"
       ],
+      "tint": "none",
       "notes": "Royal Pestments: the faint dust ring at the edge and the crowd rats running in three lanes on the ground (loop; Runtime/RatCrowd.cs draws the rats), a nip flash where a rat darts at an enemy (hit), the rats scattering and sinking (end)"
     },
     {
@@ -1062,6 +1157,7 @@
       "clips": [
         "none"
       ],
+      "tint": "none",
       "notes": "Rule, Ratannia!: a gold glint on the raised banner (cast), a gold streak behind him in the leap (loop), the slam: a dust ring, cracked ground, gold flash, heavy shake and rats bursting out of the ground across the outer ring (hit), Deadlock's banner and sewer planted for 8 s (banner)"
     },
     {
@@ -1075,6 +1171,7 @@
       "clips": [
         "none"
       ],
+      "tint": "none",
       "notes": "Rat Swarm: a dark puff under the carrier as the rats pour out (cast); the rats themselves are the crowd (Runtime/RatCrowd.cs); a small blood-red nip on each bite (hit)"
     },
     {
@@ -1090,6 +1187,7 @@
         "rat_pack_run_02",
         "rat_release"
       ],
+      "tint": "none",
       "notes": "Deadlock's rat with its skeleton, two runs and its release leap; baked into a few meshes per clip and drawn as a cheap crowd by Runtime/RatCrowd.cs"
     },
     {
@@ -1103,6 +1201,7 @@
       "clips": [
         "none"
       ],
+      "tint": "none",
       "notes": "Deadlock's scrap grenade model for the thrown grenade"
     },
     {
@@ -1121,6 +1220,7 @@
         "ratking_ult_diorama_emerge",
         "ratking_ult_diorama_idle"
       ],
+      "tint": "none",
       "notes": "Deadlock's planted banner and the sewer diorama that rises around it (its own emerge and idle clips) for Rule, Ratannia!"
     }
   ]

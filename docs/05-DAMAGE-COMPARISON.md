@@ -14,6 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
+| Seven | 0.9.1a redesign part 1: Lightning Ball half speed over enemies (`moveSpeedMult` 0.5), Static Charge 450 → 225 %, R Power Surge → Storm Cloud (100 % every 0.5 s within 15 m for 10 s, 24 s after landing); yellow visuals, upper-body cast clips | the creator's Seven redesign | this one | **benched** (one run, 2026-10-21): all **2827** vs Artificer 4013 (−1186, **below**), §3.12; `run_test.sh seven` every check pass | **done** |
 | Viscous | 0.9.0f: Goo Ball (Q) cooldown 120 → 100 s | the creator, with the 0.9.0 Melty release | this one | the bench leaves the ults out of the main-move DPS; the Q column needs a re-bench | **open** |
 | Viscous | 0.9.0e: a puddle's 20 rounds no longer top the magazine up; they come before it while he stands in the puddle and are gone when he steps out (stepping in with 5/20 now gives 20+5, not 20/20) | the creator's counter request | this one | **open**: not tested or benched (the creator asked not to launch the game) | **open** |
 | Viscous | 0.9.0d: every puddle (Splatter, The Cube, Puddle Punch) lies on the floor below where it was made (Puddle Punch or The Cube used high in the air left it floating); numbers unchanged | the creator found the floating puddle | this one | no DPS effect: the bench fights on the ground, where the puddle was already on the floor; no re-bench (`run_test.sh` check `puddle-on-floor`) | **done** |
@@ -282,6 +283,24 @@ New hero, matched to REX (`TreebotBody`, library 1738 %/s). Three runs after the
 - **%/s hides base damage**: it is a share of the survivor's own damage stat. Viscous's 15 against REX's 12 means 25 % more
   real damage than the %/s says (≈336 dmg/s at level 1 against ≈209). Mo & Krill (11) are the only other hero off 12.
 - Levers if he needs pulling back: Splatter 200 → 150 % first (it is two thirds of the total), then the punch.
+
+### 3.12 v0.9.1a Seven redesign, part 1 (Seven-only run, 2026-10-21)
+One run after the creator's picks (doc 04 §8); `VERSION` v0.9.1a in `dps_library.py`, so the v0.5.1 Seven run dropped.
+
+| Pass | v0.9.1a (%/s) | v0.5.1 | Artificer (library) |
+|---|---|---|---|
+| All main moves | **2827** | 3164 | 4013 |
+| M1 Shock Rifle | 660 | 704 | 3052 |
+| M2 Lightning Ball | 812 | 390 | 1741 |
+| Shift Static Charge | 383 | 765 | 78 |
+| R Storm Cloud (was Power Surge, 0 alone) | 710 | 0 | 1058 |
+| Q Thunderhead (not balanced) | 907 | 907 | – |
+
+- −1186 against Artificer: **below** the ±500 band (it was −849). Halving Static Charge cost about 380 %/s; Storm Cloud adds
+  710 alone, but Power Surge's arcs had been adding to the gun in the "all" pass, and the 10 s flight locks his gun.
+- The Lightning Ball doubled (390 → 812): at half speed over the pack it stays longer before bouncing on.
+- Levers, the creator's call (not applied): Storm Cloud 100 → 200 % per shock (+about 700 %/s), Static Charge back toward
+  300-450 %, or the ball's slow back toward Deadlock's 90 % (`moveSpeedMult` 0.1: the 90 % test run hit 5× harder).
 
 ### 3.1 The headline: main moves together, 30 s (no equipment)
 Band: **1004–1506 %/s** (Commando 1255 ± 20 %).

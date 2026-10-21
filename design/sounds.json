@@ -185,11 +185,11 @@
       "gain": 1.0
     },
     {
-      "skill": "seven_power_surge",
-      "cast": "Gigawatt.PowerSurge.Cast",
-      "loop": "Gigawatt.PowerSurge.Lp",
-      "hit": "Gigawatt.PowerSurge.ChainMod.Proc",
-      "end": "Gigawatt.PowerSurge.End",
+      "skill": "seven_storm_cloud",
+      "cast": "Gigawatt.StormCloud.Cast",
+      "loop": "Gigawatt.StormCloud.Lp",
+      "hit": "Gigawatt.StormCloud.Bolt.Detonate",
+      "end": "Gigawatt.StormCloud.End",
       "reload": "none",
       "castLayer": "none",
       "hitLayer": "none",
