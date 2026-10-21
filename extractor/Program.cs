@@ -22,7 +22,7 @@ namespace DeadlockExtract;
 
 public static class Program
 {
-    public const string Version = "1.6.1";
+    public const string Version = "1.6.2";
     static StreamWriter? log;
 
     public static int Main(string[] args)
@@ -190,7 +190,7 @@ public static class Program
         Progress(outDir, step, total, "sounds");
         Log($"[{++step}/{total}] Reading sounds...");
         int sounds = 0, voiceGroups = 0;
-        try { sounds = ExportSounds(package, loader, manifest.SoundEvents, manifest.VoiceGroups, Path.Combine(outDir, "sounds"), out voiceGroups); }
+        try { sounds = ExportSounds(package, loader, manifest.SoundEvents, manifest.VoiceGroups, manifest.VoiceAllTakes, Path.Combine(outDir, "sounds"), out voiceGroups); }
         catch (Exception e) { Log("SOUNDS FAILED: " + e); }
         Log($"Sound events: {sounds}/{manifest.SoundEvents.Count}, voice groups: {voiceGroups}/{manifest.VoiceGroups.Count}");
 
@@ -429,7 +429,7 @@ public static class Program
 
     // ---------------- sounds ----------------
 
-    static int ExportSounds(Package package, GameFileLoader loader, List<string> wanted, List<string> voiceGroups, string dir, out int voiceOk)
+    static int ExportSounds(Package package, GameFileLoader loader, List<string> wanted, List<string> voiceGroups, List<string> voiceAll, string dir, out int voiceOk)
     {
         if (Directory.Exists(dir)) Directory.Delete(dir, true);
         Directory.CreateDirectory(dir);
@@ -484,14 +484,14 @@ public static class Program
           }
           catch (Exception e) { Log($"  sound event {name}: {e.Message}"); }
         }
-        voiceOk = ExportVoice(package, loader, voiceGroups, dir, index);
+        voiceOk = ExportVoice(package, loader, voiceGroups, voiceAll, dir, index);
         File.WriteAllText(Path.Combine(dir, "sounds.json"), JsonSerializer.Serialize(index, new JsonSerializerOptions { WriteIndented = true }));
         return ok;
     }
 
     /// <summary>Voice lines are loose files, not sound events: every numbered take of a group, sounds/vo/&lt;group&gt;_NN.vsnd,
     /// becomes one event "vo:&lt;group&gt;" in sounds.json (the plugin picks a take at random).</summary>
-    static int ExportVoice(Package package, GameFileLoader loader, List<string> groups, string dir, Dictionary<string, object> index)
+    static int ExportVoice(Package package, GameFileLoader loader, List<string> groups, List<string> all, string dir, Dictionary<string, object> index)
     {
         if (groups.Count == 0 || !package.Entries.TryGetValue("vsnd_c", out var entries)) return 0;
         var paths = entries.Select(e => e.GetFullPath()).ToList();
@@ -500,11 +500,16 @@ public static class Program
         {
             var take = new System.Text.RegularExpressions.Regex("^sounds/vo/" + System.Text.RegularExpressions.Regex.Escape(g) + "_[0-9]+\\.vsnd_c$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
             var outFiles = new List<string>();
-            foreach (var full in paths.Where(p => take.IsMatch(p)).OrderBy(p => p, StringComparer.OrdinalIgnoreCase).Take(24))
+            // the first 24 takes, or every one for a group the manifest lists in voiceAllTakes (1.6.2: Rat King's named rats);
+            // each file is named with Deadlock's own take number (<group>_NN), so a sheet can leave single takes out
+            // (voice.skipTakes) and a chain can walk through them
+            int max = all.Contains(g, StringComparer.OrdinalIgnoreCase) ? 400 : 24;
+            foreach (var full in paths.Where(p => take.IsMatch(p)).OrderBy(p => p, StringComparer.OrdinalIgnoreCase).Take(max))
             {
                 var wav = DecodeSound(loader, full.Substring(0, full.Length - 2));
                 if (wav == null) continue;
-                var fn = "vo_" + SafeName(g) + "_" + outFiles.Count + ".wav";
+                var num = System.Text.RegularExpressions.Regex.Match(full, "_([0-9]+)\\.vsnd_c$").Groups[1].Value;
+                var fn = "vo_" + SafeName(g) + "_" + int.Parse(num) + ".wav";
                 File.WriteAllBytes(Path.Combine(dir, fn), wav);
                 outFiles.Add(fn);
             }
@@ -602,6 +607,7 @@ public sealed class Manifest
     public List<string> Images { get; set; } = new();
     public List<string> SoundEvents { get; set; } = new();
     public List<string> VoiceGroups { get; set; } = new();
+    public List<string> VoiceAllTakes { get; set; } = new();
     public List<PropEntry> Props { get; set; } = new();
 }
 

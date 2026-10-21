@@ -233,7 +233,7 @@ are never written out here or on the pages. When each hero speaks:
 - **Kill streaks:** 4, 7 and 10 kills in quick succession (gaps under 1.5 s).
 - **Idle:** after 2–5 min of silence.
 - Mo & Krill: Krill does the talking (Mo is silent in Deadlock): select, unselect, Sand Blast (`use_power3`) and Burrow (`use_power2`) 40 %, Tag Team (R) 50 % at most every 20 s; Dust Devil (Q) is silent (his `use_power1` lines are about Scorn).
-- Rat King: select, unselect, Scrap Grenade (`use_power1`) 30 %, Royal Pestments (`use_power3`) 40 %, Rule, Ratannia! (`use_power4`) 50 %, Rat Swarm (Q, `use_power2`) every time; idle `hunt` only (he has no `happy` lines).
+- Rat King: select, unselect, Scrap Grenade (`use_power2`) 30 %, **Royal Pestments: he calls out his rats by name one after another for the whole 6 s** (`use_power1`, Rat Swarm's named-rat lines, shuffled, no repeats until all ~120 have played, the five without a name left out; creator 2026-10-21), Rule, Ratannia! (`use_power4`) 50 %, Rat Swarm (Q, `use_power1`, one named rat) every time (0.9.0 had power 1 and 2 swapped); idle `hunt` only (he has no `happy` lines).
 - Only the local player hears their own hero's voice.
 
 ---

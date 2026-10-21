@@ -575,6 +575,10 @@ Steam invites and RoR2's lobby work as in vanilla; the Melty line is an extra wa
     player is about to leave.
   - **skill:** `onSkillActivatedAuthority` on the local body; the row's own line plays with its `chance` and after its
     `gap`.
+  - **Takes (0.9.0c):** a row with `skipTakes` or `chain` deals its takes from a shuffled deck (per row, reshuffled when empty,
+    `skipTakes` left out), so no line repeats until all have played; others pick a random take. A row with `chain` > 0 keeps
+    going for that many seconds, the next take 0.15 s after the last ends (`Voice.Chain` coroutine; an unimportant line can't
+    cut in, an important one stops it). Rat King's Royal Pestments: his rats' names (`use_power1`, Rat Swarm's lines) for 6 s.
   - **ult equipment:** `Equipment.Fire` calls `Voice.SkillLine(row)`, so the **item's hero** speaks, whoever fires it.
     Commando firing Seismic Impact says an Abrams line.
   - **multikill:** kills within 1.5 s of each other; the highest `kills` threshold reached (4 / 7 / 10 →

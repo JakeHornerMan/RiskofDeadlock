@@ -1,6 +1,6 @@
 {
   "sheet": "voice",
-  "about": "Deadlock voice lines (dialogue only, read from the player's install like every other sound; never shown on the pages). group: the line's files in the VPK, sounds/vo/<group>_NN.vsnd (every numbered take is extracted and one is picked at random). trigger: select = the hero's body starts a stage (run start and after every teleport); unselect = the teleporter finishes charging; skill = the skill row (or the ult equipment's row) starts, spoken by the hero the row belongs to, so an ult item used by anyone speaks with its own hero's voice; multikill = the player's hero kills at least `kills` enemies with gaps under 1.5 s (the highest reached plays once per burst); idle = the hero has said nothing for 2-5 min (random). chance: probability the line plays when triggered. gap: seconds since the hero's last line before this one may play (keeps abilities from chattering). One line at a time per hero; lines don't overlap.",
+  "about": "Deadlock voice lines (dialogue only, read from the player's install like every other sound; never shown on the pages). group: the line's files in the VPK, sounds/vo/<group>_NN.vsnd (every numbered take is extracted and one is picked at random). trigger: select = the hero's body starts a stage (run start and after every teleport); unselect = the teleporter finishes charging; skill = the skill row (or the ult equipment's row) starts, spoken by the hero the row belongs to, so an ult item used by anyone speaks with its own hero's voice; multikill = the player's hero kills at least `kills` enemies with gaps under 1.5 s (the highest reached plays once per burst); idle = the hero has said nothing for 2-5 min (random). chance: probability the line plays when triggered. gap: seconds since the hero's last line before this one may play (keeps abilities from chattering). One line at a time per hero; lines don't overlap. chain: seconds the line keeps going, a new take starting as soon as the last one ends, in a shuffled order that carries on across uses (no take repeats until every one has played); 0 = one line. skipTakes: Deadlock take numbers (the NN of <group>_NN) left out, comma-separated, or none. Rat King: Deadlock's Rat Swarm lines name his rats (ratking_use_power1, ~125 takes); the creator (2026-10-21) wanted those named ones called out one after another through Royal Pestments, so its row chains them for 6 s, skipping the five that name no rat (106, 111, 114, 116, 117). Deadlock's numbering: use_power1 = Rat Swarm, 2 = Scrap Grenade, 3 = Royal Pestments, 4 = Rule, Ratannia!.",
   "columns": [
     "id",
     "hero",
@@ -9,7 +9,9 @@
     "kills",
     "group",
     "chance",
-    "gap"
+    "gap",
+    "chain",
+    "skipTakes"
   ],
   "rows": [
     {
@@ -20,7 +22,9 @@
       "kills": 0,
       "group": "haze/haze_select",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "haze_unselect",
@@ -30,7 +34,9 @@
       "kills": 0,
       "group": "haze/haze_unselect",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "haze_sleep_dagger_vo",
@@ -40,7 +46,9 @@
       "kills": 0,
       "group": "haze/haze_use_power1",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "haze_smoke_bomb_vo",
@@ -50,7 +58,9 @@
       "kills": 0,
       "group": "haze/haze_use_power2",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "haze_phantom_strike_vo",
@@ -60,7 +70,9 @@
       "kills": 0,
       "group": "haze/haze_use_phantom_strike",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "haze_bullet_dance_vo",
@@ -70,7 +82,9 @@
       "kills": 0,
       "group": "haze/haze_use_power4",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "haze_killstreak_start",
@@ -80,7 +94,9 @@
       "kills": 4,
       "group": "haze/haze_killstreak_start",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "haze_killstreak_mid",
@@ -90,7 +106,9 @@
       "kills": 7,
       "group": "haze/haze_killstreak_mid",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "haze_killstreak_high",
@@ -100,7 +118,9 @@
       "kills": 10,
       "group": "haze/haze_killstreak_high",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "haze_idle_hunt",
@@ -110,7 +130,9 @@
       "kills": 0,
       "group": "haze/haze_hunt",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "haze_idle_happy",
@@ -120,7 +142,9 @@
       "kills": 0,
       "group": "haze/haze_happy",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "abrams_select",
@@ -130,7 +154,9 @@
       "kills": 0,
       "group": "atlas/atlas_select",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "abrams_unselect",
@@ -140,7 +166,9 @@
       "kills": 0,
       "group": "atlas/atlas_unselect",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "abrams_siphon_vo",
@@ -150,7 +178,9 @@
       "kills": 0,
       "group": "atlas/atlas_use_power1",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "abrams_charge_vo",
@@ -160,7 +190,9 @@
       "kills": 0,
       "group": "atlas/atlas_use_power2",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "abrams_haymaker_vo",
@@ -170,7 +202,9 @@
       "kills": 0,
       "group": "atlas/emote/atlas_effort_melee_big",
       "chance": 0.6,
-      "gap": 3
+      "gap": 3,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "abrams_seismic_vo",
@@ -180,7 +214,9 @@
       "kills": 0,
       "group": "atlas/atlas_use_power4",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "abrams_killstreak_start",
@@ -190,7 +226,9 @@
       "kills": 4,
       "group": "atlas/atlas_killstreak_start",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "abrams_killstreak_mid",
@@ -200,7 +238,9 @@
       "kills": 7,
       "group": "atlas/atlas_killstreak_mid",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "abrams_killstreak_high",
@@ -210,7 +250,9 @@
       "kills": 10,
       "group": "atlas/atlas_killstreak_high",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "abrams_idle_hunt",
@@ -220,7 +262,9 @@
       "kills": 0,
       "group": "atlas/atlas_hunt",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "abrams_idle_happy",
@@ -230,7 +274,9 @@
       "kills": 0,
       "group": "atlas/atlas_happy",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "seven_select",
@@ -240,7 +286,9 @@
       "kills": 0,
       "group": "gigawatt/gigawatt_select",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "seven_unselect",
@@ -250,7 +298,9 @@
       "kills": 0,
       "group": "gigawatt/gigawatt_unselect",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "seven_lightning_ball_vo",
@@ -260,7 +310,9 @@
       "kills": 0,
       "group": "gigawatt/gigawatt_use_power1",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "seven_static_charge_vo",
@@ -270,7 +322,9 @@
       "kills": 0,
       "group": "gigawatt/gigawatt_use_power2",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "seven_power_surge_vo",
@@ -280,7 +334,9 @@
       "kills": 0,
       "group": "gigawatt/gigawatt_use_power3",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "seven_thunderhead_vo",
@@ -290,7 +346,9 @@
       "kills": 0,
       "group": "gigawatt/gigawatt_use_power4",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "seven_killstreak_start",
@@ -300,7 +358,9 @@
       "kills": 4,
       "group": "gigawatt/gigawatt_killstreak_start",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "seven_killstreak_mid",
@@ -310,7 +370,9 @@
       "kills": 7,
       "group": "gigawatt/gigawatt_killstreak_mid",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "seven_killstreak_high",
@@ -320,7 +382,9 @@
       "kills": 10,
       "group": "gigawatt/gigawatt_killstreak_high",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "seven_idle_hunt",
@@ -330,7 +394,9 @@
       "kills": 0,
       "group": "gigawatt/gigawatt_hunt",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "seven_idle_happy",
@@ -340,7 +406,9 @@
       "kills": 0,
       "group": "gigawatt/gigawatt_happy",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "infernus_select",
@@ -350,7 +418,9 @@
       "kills": 0,
       "group": "inferno/inferno_select",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "infernus_unselect",
@@ -360,7 +430,9 @@
       "kills": 0,
       "group": "inferno/inferno_unselect",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "infernus_napalm_vo",
@@ -370,7 +442,9 @@
       "kills": 0,
       "group": "inferno/inferno_use_power1",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "infernus_flame_dash_vo",
@@ -380,7 +454,9 @@
       "kills": 0,
       "group": "inferno/inferno_use_power2",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "infernus_torment_pulse_vo",
@@ -390,7 +466,9 @@
       "kills": 0,
       "group": "inferno/emote/inferno_effort_general",
       "chance": 0.6,
-      "gap": 3
+      "gap": 3,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "infernus_combustion_vo",
@@ -400,7 +478,9 @@
       "kills": 0,
       "group": "inferno/inferno_use_power4",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "infernus_killstreak_start",
@@ -410,7 +490,9 @@
       "kills": 4,
       "group": "inferno/inferno_killstreak_start",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "infernus_killstreak_mid",
@@ -420,7 +502,9 @@
       "kills": 7,
       "group": "inferno/inferno_killstreak_mid",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "infernus_killstreak_high",
@@ -430,7 +514,9 @@
       "kills": 10,
       "group": "inferno/inferno_killstreak_high",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "infernus_idle_hunt",
@@ -440,7 +526,9 @@
       "kills": 0,
       "group": "inferno/inferno_hunt",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "infernus_idle_happy",
@@ -450,7 +538,9 @@
       "kills": 0,
       "group": "inferno/inferno_happy",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "mokrill_select",
@@ -460,7 +550,9 @@
       "kills": 0,
       "group": "krill/krill_select",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "mokrill_unselect",
@@ -470,7 +562,9 @@
       "kills": 0,
       "group": "krill/krill_unselect",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "mokrill_sand",
@@ -480,7 +574,9 @@
       "kills": 0,
       "group": "krill/krill_use_power3",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "mokrill_burrow",
@@ -490,7 +586,9 @@
       "kills": 0,
       "group": "krill/krill_use_power2",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "mokrill_tag_team",
@@ -500,7 +598,9 @@
       "kills": 0,
       "group": "krill/krill_use_power4",
       "chance": 0.5,
-      "gap": 20
+      "gap": 20,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "mokrill_streak4",
@@ -510,7 +610,9 @@
       "kills": 4,
       "group": "krill/krill_killstreak_start",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "mokrill_streak7",
@@ -520,7 +622,9 @@
       "kills": 7,
       "group": "krill/krill_killstreak_mid",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "mokrill_streak10",
@@ -530,7 +634,9 @@
       "kills": 10,
       "group": "krill/krill_killstreak_high",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "mokrill_hunt",
@@ -540,7 +646,9 @@
       "kills": 0,
       "group": "krill/krill_hunt",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "mokrill_happy",
@@ -550,7 +658,9 @@
       "kills": 0,
       "group": "krill/krill_happy",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "viscous_select",
@@ -560,7 +670,9 @@
       "kills": 0,
       "group": "viscous/viscous_select",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "viscous_unselect",
@@ -570,7 +682,9 @@
       "kills": 0,
       "group": "viscous/viscous_unselect",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "viscous_splatter_vo",
@@ -580,7 +694,9 @@
       "kills": 0,
       "group": "viscous/viscous_use_power1",
       "chance": 0.3,
-      "gap": 10
+      "gap": 10,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "viscous_cube_vo",
@@ -590,7 +706,9 @@
       "kills": 0,
       "group": "viscous/viscous_use_power2",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "viscous_punch_vo",
@@ -600,7 +718,9 @@
       "kills": 0,
       "group": "viscous/viscous_use_power3",
       "chance": 0.4,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "viscous_gooball_vo",
@@ -610,7 +730,9 @@
       "kills": 0,
       "group": "viscous/viscous_use_power4",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "viscous_streak4",
@@ -620,7 +742,9 @@
       "kills": 4,
       "group": "viscous/viscous_killstreak_start",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "viscous_streak7",
@@ -630,7 +754,9 @@
       "kills": 7,
       "group": "viscous/viscous_killstreak_mid",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "viscous_streak10",
@@ -640,7 +766,9 @@
       "kills": 10,
       "group": "viscous/viscous_killstreak_high",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "viscous_hunt",
@@ -650,7 +778,9 @@
       "kills": 0,
       "group": "viscous/viscous_hunt",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "viscous_happy",
@@ -660,7 +790,9 @@
       "kills": 0,
       "group": "viscous/viscous_happy",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "ratking_select",
@@ -670,7 +802,9 @@
       "kills": 0,
       "group": "ratking/ratking_select",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "ratking_unselect",
@@ -680,7 +814,9 @@
       "kills": 0,
       "group": "ratking/ratking_unselect",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "ratking_scrap_vo",
@@ -688,9 +824,11 @@
       "trigger": "skill",
       "skill": "ratking_scrap",
       "kills": 0,
-      "group": "ratking/ratking_use_power1",
+      "group": "ratking/ratking_use_power2",
       "chance": 0.3,
-      "gap": 10
+      "gap": 10,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "ratking_ring_vo",
@@ -698,9 +836,11 @@
       "trigger": "skill",
       "skill": "ratking_ring",
       "kills": 0,
-      "group": "ratking/ratking_use_power3",
-      "chance": 0.4,
-      "gap": 8
+      "group": "ratking/ratking_use_power1",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 6,
+      "skipTakes": "106,111,114,116,117"
     },
     {
       "id": "ratking_banner_vo",
@@ -710,7 +850,9 @@
       "kills": 0,
       "group": "ratking/ratking_use_power4",
       "chance": 0.5,
-      "gap": 8
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "ratking_swarm_vo",
@@ -718,9 +860,11 @@
       "trigger": "skill",
       "skill": "ratking_swarm",
       "kills": 0,
-      "group": "ratking/ratking_use_power2",
+      "group": "ratking/ratking_use_power1",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "106,111,114,116,117"
     },
     {
       "id": "ratking_streak4",
@@ -730,7 +874,9 @@
       "kills": 4,
       "group": "ratking/ratking_killstreak_start",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "ratking_streak7",
@@ -740,7 +886,9 @@
       "kills": 7,
       "group": "ratking/ratking_killstreak_mid",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "ratking_streak10",
@@ -750,7 +898,9 @@
       "kills": 10,
       "group": "ratking/ratking_killstreak_high",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     },
     {
       "id": "ratking_hunt",
@@ -760,7 +910,9 @@
       "kills": 0,
       "group": "ratking/ratking_hunt",
       "chance": 1.0,
-      "gap": 0
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     }
   ]
 }

@@ -24,6 +24,8 @@ namespace DeadlockOfRain
         Stage selectedOn;            // the stage the select line was played on
         CharacterBody watched;       // the local hero body whose skills are listened to
         int burst; float lastKill = -999f; int burstLevel;
+        Coroutine chain;                                                   // a chained row in progress (Royal Pestments' rat names)
+        readonly Dictionary<string, Queue<int>> decks = new Dictionary<string, Queue<int>>();  // shuffled takes left, per row
 
         public static void Init()
         {
@@ -116,18 +118,60 @@ namespace DeadlockOfRain
             if (!DeadlockAudio.Has(ev)) return;
             if (rng.NextDouble() > v.Chance) return;
             if (Time.time - lastLine < v.Gap) return;
-            if (DeadlockAudio.IsPlaying(playing))
+            if (DeadlockAudio.IsPlaying(playing) || chain != null)
             {
                 if (!important) return;
                 DeadlockAudio.Stop(playing);
             }
-            // heroes.voiceGain on top (Viscous' lines +20 %, creator 2026-10-20)
-            playing = DeadlockAudio.Play(ev, null, false, 1.15f * (Sheet.Hero(v.Hero)?.VoiceGain ?? 1f));
+            if (chain != null) { StopCoroutine(chain); chain = null; }
+            if (v.Chain > 0f) { chain = StartCoroutine(Chain(v, ev)); return; }
+            playing = Speak(v, ev, NextTake(v, ev));
             if (playing == 0) return;
             lastLine = Time.time;
             nextIdle = Time.time + Random.Range(IdleMin, IdleMax);
             Spoken++;
             MeltyTest.Report("voice-lines", true, v.Id);
+        }
+
+        // heroes.voiceGain on top (Viscous' lines +20 %, creator 2026-10-20)
+        static int Speak(VoiceRow v, string ev, int take) => DeadlockAudio.Play(ev, null, false, 1.15f * (Sheet.Hero(v.Hero)?.VoiceGain ?? 1f), take);
+
+        /// <summary>The row's next take: a shuffled deck of every take not in skipTakes, dealt in turn and reshuffled when empty,
+        /// so no line repeats until all have played. -1 = any (the row skips nothing, or the event has no numbered takes).</summary>
+        int NextTake(VoiceRow v, string ev)
+        {
+            if (v.Chain <= 0f && v.SkipTakes == "none") return -1;
+            if (!decks.TryGetValue(v.Id, out var deck) || deck.Count == 0)
+            {
+                var skip = new HashSet<int>();
+                if (v.SkipTakes != "none") foreach (var t in v.SkipTakes.Split(',')) if (int.TryParse(t.Trim(), out var n)) skip.Add(n);
+                var takes = DeadlockAudio.Takes(ev).Where(t => t >= 0 && !skip.Contains(t)).ToList();
+                if (takes.Count == 0) return -1;
+                for (int i = takes.Count - 1; i > 0; i--) { int j = rng.Next(i + 1); (takes[i], takes[j]) = (takes[j], takes[i]); }
+                decks[v.Id] = deck = new Queue<int>(takes);
+            }
+            return deck.Dequeue();
+        }
+
+        /// <summary>A chained row: one take after another, each as soon as the last ends, until chain seconds have passed.</summary>
+        IEnumerator Chain(VoiceRow v, string ev)
+        {
+            float end = Time.time + v.Chain;
+            lastLine = Time.time;
+            nextIdle = Time.time + Random.Range(IdleMin, IdleMax);
+            while (Time.time < end)
+            {
+                int take = NextTake(v, ev);
+                playing = Speak(v, ev, take);
+                if (playing == 0) break;
+                if (MeltyTest.Active) Log.Info($"Melty test: voice chain {v.Id}: take {take} at {Time.time - (end - v.Chain):F1} s");
+                Spoken++;
+                MeltyTest.Report("voice-lines", true, v.Id);
+                while (DeadlockAudio.IsPlaying(playing)) yield return null;
+                lastLine = Time.time;
+                yield return new WaitForSeconds(0.15f);
+            }
+            chain = null;
         }
 
         IEnumerator After(float s, System.Action a)

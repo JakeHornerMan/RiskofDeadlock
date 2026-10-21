@@ -492,7 +492,6 @@
     "ratking/ratking_unselect",
     "ratking/ratking_use_power1",
     "ratking/ratking_use_power2",
-    "ratking/ratking_use_power3",
     "ratking/ratking_use_power4",
     "viscous/viscous_happy",
     "viscous/viscous_hunt",
@@ -505,6 +504,9 @@
     "viscous/viscous_use_power2",
     "viscous/viscous_use_power3",
     "viscous/viscous_use_power4"
+  ],
+  "voiceAllTakes": [
+    "ratking/ratking_use_power1"
   ],
   "props": [
     {

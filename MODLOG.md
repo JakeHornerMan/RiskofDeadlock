@@ -88,6 +88,11 @@
 - Extractor 1.6.1 / DLM2: vertex colours and `.vmat` tint/alpha-test/glow, for props only. The banner's earth and garbage are
   white 1×1 textures coloured by vertex colours in Deadlock. Whole-material glows on heroes went badly wrong in a first try (doc 01 §7).
 
+## 0.9.0c (2026-10-21): Royal Pestments names the rats
+- Voice rows can chain takes (`chain`) and skip some (`skipTakes`); Royal Pestments calls out ~120 named rats in turn. Extractor
+  1.6.2 names voice files by Deadlock's take number and reads every take only for `voiceAllTakes` groups.
+- A game started during a cache rebuild drew the placeholder banner: rebuild only when the creator isn't playing.
+
 ## Gotchas found
 1. RoR2's CharacterModel keeps ONE material per renderer (it re-applies defaultMaterial), so a multi-material
    SkinnedMeshRenderer only drew submesh 0. Fix: one SkinnedMeshRenderer per material, one RendererInfo each.

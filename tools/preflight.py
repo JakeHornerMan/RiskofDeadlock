@@ -181,6 +181,8 @@ for r in sheets['voice']['rows']:
     if (r['trigger'] == 'multikill') != (r['kills'] > 0): bad(f'voice[{r["id"]}].kills: set (> 0) for multikill lines only')
     if not (0 < r['chance'] <= 1): bad(f'voice[{r["id"]}].chance: must be in (0, 1]')
     if r['gap'] < 0: bad(f'voice[{r["id"]}].gap: negative')
+    if r['chain'] < 0: bad(f'voice[{r["id"]}].chain: negative')
+    if r['skipTakes'] != 'none' and not re.fullmatch(r'[0-9]+(,[0-9]+)*', r['skipTakes']): bad(f'voice[{r["id"]}].skipTakes: comma-separated take numbers or none')
 for h in heroes:
     for t in ('select', 'unselect', 'idle'):
         if not any(r['hero'] == h and r['trigger'] == t for r in sheets['voice']['rows']): bad(f'voice: {h} has no {t} line')

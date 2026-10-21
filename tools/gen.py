@@ -98,6 +98,8 @@ manifest['soundEvents'] = sorted({r[c] for r in sounds for c in ['cast', 'loop',
 manifest['soundEventFiles'] = sorted({hero['soundevents'] for hero in h['rows']})
 # voice lines: every numbered take of each group, sounds/vo/<group>_NN.vsnd (design/voice.json)
 manifest['voiceGroups'] = sorted({r['group'] for r in load('voice')['rows']})
+# groups read whole (a chained row or one that skips takes: Rat King's named rats); the others keep the first 24 takes
+manifest['voiceAllTakes'] = sorted({r['group'] for r in load('voice')['rows'] if r['chain'] > 0 or r['skipTakes'] != 'none'})
 # Deadlock models used as plain meshes by our effects (effects kind prop: the Cube, Goo Ball's sphere, the fist; extractor 1.5.0+)
 effects = load('effects')['rows']
 # extractor 1.6.0+: a prop's meshes (none = all) and the clips read with its skeleton (Rat King's rat, his banner's sewer)

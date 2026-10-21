@@ -72,7 +72,9 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
- 'ratking': [('v0.9.0b', ['Footsteps 90 % quieter (the landing thud stays as loud)',
+ 'ratking': [('v0.9.0c', ['Royal Pestments: Rat King calls his rats out by name, one after another, for the whole 6 s (Deadlock’s own lines, no repeats until all have played)',
+                          'Scrap Grenade now speaks its own Deadlock lines (they were swapped with Rat Swarm’s)']),
+             ('v0.9.0b', ['Footsteps 90 % quieter (the landing thud stays as loud)',
                           'King’s Leap: the flip now only plays on the second (air) jump',
                           'Rule, Ratannia!: the banner’s earth, garbage and sewer now carry Deadlock’s own colours (vertex colours, tints, the slime’s glow)',
                           'Royal Pestments: 25 → 50 % a bite (double damage)',

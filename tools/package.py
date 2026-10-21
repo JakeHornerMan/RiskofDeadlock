@@ -98,8 +98,8 @@ def release_manifest():
     keep = set(RELEASE['heroes'])
     used = lambda e: e not in owners or bool(keep & set(owners[e]))
     m['heroes'] = [h for h in m['heroes'] if h['id'] in keep]
-    for k in ['images', 'soundEvents', 'soundEventFiles', 'voiceGroups']:
-        m[k] = [e for e in m[k] if used(e)]
+    for k in ['images', 'soundEvents', 'soundEventFiles', 'voiceGroups', 'voiceAllTakes']:
+        m[k] = [e for e in m.get(k, []) if used(e)]
     m['props'] = [p for p in m.get('props', []) if used(p['id'])]
     return json.dumps(m, indent=2).encode('utf-8')
 

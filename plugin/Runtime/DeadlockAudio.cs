@@ -13,7 +13,7 @@ namespace DeadlockOfRain
     public static class DeadlockAudio
     {
         const int Rate = 44100, BufferFrames = 882, Buffers = 4;
-        sealed class Clip { public float[] L, R; }
+        sealed class Clip { public float[] L, R; public int Take = -1; }
         sealed class Voice { public Clip clip; public int pos; public float vol, pan; public bool loop; public int id; }
         sealed class Event { public float volume; public List<Clip> clips = new List<Clip>(); }
 
@@ -108,7 +108,11 @@ namespace DeadlockOfRain
                     var fn = part.Trim().Trim('"');
                     if (fn.Length == 0) continue;
                     var clip = ReadWav(System.IO.Path.Combine(dir, fn));
-                    if (clip != null) ev.clips.Add(clip);
+                    if (clip == null) continue;
+                    // a voice take's number is the file name's last part (vo_<group>_<NN>.wav, extractor 1.6.2)
+                    var stem = System.IO.Path.GetFileNameWithoutExtension(fn);
+                    if (int.TryParse(stem.Substring(stem.LastIndexOf('_') + 1), out var take)) clip.Take = take;
+                    ev.clips.Add(clip);
                 }
                 if (ev.clips.Count > 0) events[name] = ev;
                 i = end + 1;
@@ -135,14 +139,16 @@ namespace DeadlockOfRain
                     if (data == null || bits != 16) return null;
                     int frames = data.Length / 2 / channels;
                     int outFrames = (int)((long)frames * Rate / rate);
-                    var c = new Clip { L = new float[outFrames], R = new float[outFrames] };
+                    // a mono file shares one array for both sides (half the memory: most voice lines are mono)
+                    var c = new Clip { L = new float[outFrames] };
+                    c.R = channels == 1 ? c.L : new float[outFrames];
                     for (int o = 0; o < outFrames; o++)
                     {
                         double src = (double)o * rate / Rate; int a = (int)src; float t = (float)(src - a);
                         int b = Math.Min(a + 1, frames - 1);
                         float S(int f, int ch) => BitConverter.ToInt16(data, (f * channels + Math.Min(ch, channels - 1)) * 2) / 32768f;
                         c.L[o] = S(a, 0) * (1 - t) + S(b, 0) * t;
-                        c.R[o] = S(a, 1) * (1 - t) + S(b, 1) * t;
+                        if (channels > 1) c.R[o] = S(a, 1) * (1 - t) + S(b, 1) * t;
                     }
                     return c;
                 }
@@ -152,8 +158,17 @@ namespace DeadlockOfRain
 
         public static bool Has(string ev) => ev != null && ev != "none" && events.ContainsKey(ev);
 
-        /// <summary>Play a Deadlock sound event at a world position (null = 2D). Returns a voice id for loops.</summary>
-        public static int Play(string ev, Vector3? at = null, bool loop = false, float gain = 1f)
+        /// <summary>The take numbers of an event's files (voice lines: Deadlock's own NN), in file order.</summary>
+        public static List<int> Takes(string ev)
+        {
+            var list = new List<int>();
+            if (Has(ev)) foreach (var c in events[ev].clips) list.Add(c.Take);
+            return list;
+        }
+
+        /// <summary>Play a Deadlock sound event at a world position (null = 2D). Returns a voice id for loops. take &gt;= 0 plays
+        /// that numbered take instead of a random one.</summary>
+        public static int Play(string ev, Vector3? at = null, bool loop = false, float gain = 1f, int take = -1)
         {
             if (!running || !Has(ev)) return 0;
             var e = events[ev];
@@ -173,7 +188,8 @@ namespace DeadlockOfRain
             lock (gate)
             {
                 if (voices.Count > 24) voices.RemoveAt(0);
-                var v = new Voice { clip = e.clips[rng.Next(e.clips.Count)], vol = vol, pan = pan, loop = loop, id = nextId++ };
+                var clip = take >= 0 ? e.clips.Find(c => c.Take == take) : null;
+                var v = new Voice { clip = clip ?? e.clips[rng.Next(e.clips.Count)], vol = vol, pan = pan, loop = loop, id = nextId++ };
                 voices.Add(v);
                 Played++;
                 return v.id;

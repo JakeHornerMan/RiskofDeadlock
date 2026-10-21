@@ -36,7 +36,7 @@ Related documents:
 | NLayer (MP3 decoder) | 1.16.0 | `extractor/DeadlockExtract.csproj` |
 | .NET SDK for the extractor | **net10.0**. VRF 20 needs it; net8 does not compile against it. | csproj `TargetFramework` |
 | SharpGLTF, SkiaSharp, ValvePak, ValveKeyValue | transitive deps of VRF | `THIRD-PARTY-NOTICES.txt` |
-| Extractor version | `1.6.1` (1.6.1: DLM2, each material's Deadlock tint, cut-out, glow and vertex colours; `Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1, 1.4.0 the heroes.vdata model lookup, 1.5.0 effect models (props), 1.6.0 props with meshes, skeleton and clips, and split hero meshes) | `extractor/Program.cs`; also part of the cache stamp |
+| Extractor version | `1.6.2` (1.6.2: voice takes named by Deadlock's take number, every take for `voiceAllTakes` groups; 1.6.1: DLM2, each material's Deadlock tint, cut-out, glow and vertex colours; `Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1, 1.4.0 the heroes.vdata model lookup, 1.5.0 effect models (props), 1.6.0 props with meshes, skeleton and clips, and split hero meshes) | `extractor/Program.cs`; also part of the cache stamp |
 
 A Deadlock update can change asset paths, clip names, mesh names or sound event names. **Section 9** explains how to
 re-validate everything after an update.
@@ -271,13 +271,19 @@ is the vtex path with `.vtex` removed and `/` replaced by `_`, plus `.png`. For 
 
 5. **Voice lines** (`ExportVoice`, since the voice update). They are loose files, not sound events.
    - For every manifest `voiceGroups` entry `<group>`, every VPK file `sounds/vo/<group>_NN.vsnd_c` (any number of digits,
-     sorted, at most 24) is decoded the same way.
-   - The takes are written as `sounds/vo_<group>_<n>.wav` and indexed as one event `"vo:<group>"` in the same `sounds.json`.
+     sorted, the first 24; since 1.6.2 every take for a group in the manifest's `voiceAllTakes`, which `gen.py` fills with the
+     groups of chained or take-skipping voice rows, Rat King's 125 named-rat lines) is decoded the same way. (All takes for every
+     group was tried once: 678 files, 173 MB, several times that in memory, since the plugin holds sounds as float arrays.)
+   - The takes are written as `sounds/vo_<group>_<NN>.wav`, NN being **Deadlock's own take number** (1.6.2; before, the
+     running index 0, 1, 2 ...), and indexed as one event `"vo:<group>"` in the same `sounds.json`. The plugin reads the number
+     back from the file name (`DeadlockAudio.Takes`), so `voice.skipTakes` and chained rows can pick single takes.
    - `ready.json` gets `voiceGroups` (how many were found).
    - **Where voice lives:**
      - Each hero's lines are under `sounds/vo/<code>/`; the codes are haze, **atlas** (Abrams), **gigawatt** (Seven) and
        **inferno** (Infernus).
      - Ability lines are `<code>_use_power1..4_NN`: Deadlock's ability slots, 4 = the ultimate, 3 = Seven's Power Surge.
+       Check the slot on the wiki's voice page before mapping (Rat King: 1 = Rat Swarm, 2 = Scrap Grenade, 3 = Royal
+       Pestments, 4 = Rule, Ratannia!; 0.9.0 had 1 and 2 swapped). Low-health variants are `<code>_desperation_power1..4_NN`.
      - Item lines are `<code>_use_<item>_NN` (e.g. `haze_use_phantom_strike`).
      - Also `<code>_select_NN` / `_unselect_NN`, `_killstreak_start|mid|high_NN`, and `_hunt` / `_happy`.
      - Grunts are under `emote/` (`<code>_effort_melee_big_NN`, `<code>_effort_general_NN`).
