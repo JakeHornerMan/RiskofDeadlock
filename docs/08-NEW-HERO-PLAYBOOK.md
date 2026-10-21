@@ -133,6 +133,19 @@ Tell the creator the count first: normally **3 launches** (test, bench, portrait
 - Effects: look at every devshot for black blobs (opaque `mat_dust`, dark tints) and for lines that vanish on bright ground; a wind-up's first screenshot is taken during the wind-up.
 - Launches: 4 test runs (one on the Distant Roost ledge), 1 bench. Run `lab_restore.sh` straight after each run (copy the devshots aside first if you need them).
 
+## 7c. Lessons from Rat King (the seventh hero, 2026-10-21)
+- A Deadlock prop can now carry its skeleton and clips (`effects` `meshes`/`clips`, extractor 1.6.0): animate it with `PropModels.Build`,
+  or bake a few frames per clip into meshes for a crowd (`RatCrowd`). A hero mesh that must be swapped by game state (an ammo belt) goes
+  in `heroes.splitMeshes`.
+- Check the muzzle bone sits at the barrel: Rat King's `muzzle_fx` was at the grip, and the gun rig then bent his spine to point the
+  wrong line at the crosshair. `python tools/dlm_pose.py <hero>` plus the gun's mesh extent tells you; `animations.muzzleForward` fixes it.
+- A hero who looks fine in the lineup but lies down in play: check `root_motion`'s rotation in each clip (fixed for every hero by
+  `RootFolded`, gotcha 23).
+- A throw from a gun off to the side must aim at the point under the crosshair, not along the camera's ray, or it sails past.
+- Long runs: start the test in the background and watch it with a foreground loop; a background job alone was reaped while the
+  session sat idle, and leading `sleep`s in a foreground watch are refused (loop on the log line instead).
+- Launches used: 6 test runs (5 Rat King-only, 1 all heroes after the shared clip fix), 2 bench launches (one stage had no flat spot).
+
 ## 8. Definition of done
 - [ ] `PREFLIGHT CLEAN`, build clean, cache rebuilt with the new content.
 - [ ] `run_test.sh <hero>`: every check passes (including `ragdoll`, `sound-events`, `voice-lines`), `1/1 heroes`.

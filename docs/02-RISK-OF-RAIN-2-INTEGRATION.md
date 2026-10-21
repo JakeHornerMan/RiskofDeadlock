@@ -215,6 +215,35 @@ The `SurvivorDef` gets:
   bones, the end of the gun (`muzzle_fx` for everyone, `muzzle_fx_L` for Haze's second SMG), falling back to the hands.
   Tracers (`BulletAttack.muzzleName`), muzzle flashes (`Fx.MuzzleFlash` → `EffectManager.SimpleMuzzleFlash`, parented to
   the muzzle so they move with the gun), Bullet Dance's bursts and thrown abilities all start there.
+- **Muzzle at the grip (v0.9.0, `animations.muzzleForward`):** Rat King's `muzzle_fx`, `weaponTip` and `weaponEnd` all sit at
+  the gun's own origin (its grip). With `muzzleForward` > 0, `ModelBuilder` makes a `muzzle_tip` child that many metres along the
+  muzzle bone's forward axis (1.02: the barrel's end), it becomes `MuzzleRight`, and `DeadlockAnimator.CaptureRig` aims the gun's
+  own axis (tip − muzzle bone) instead of the hand-to-muzzle line.
+- **Spring bones (v0.9.0, `Runtime/SpringBones.cs`, `animations.springRoots` / `springStiffness` / `springDamping` / `springGravity`):**
+  each listed bone and the chain below it (always the child with the most bones under it) is simulated as points that keep their
+  momentum, fall under gravity, are pulled back to the animated pose (stiff at the root, ×1.8, loose at the tip, ×0.45), keep
+  their length, bend at most 75° from the animated direction, stay out of capsules on the spine, upper legs and arms (a share of
+  the hero's height) and above the ground (a raycast every 0.2 s). The points live in the world, so the body's own movement drives
+  the trail. A bone the clip doesn't move goes back to its rest rotation before each step (otherwise it would keep our last
+  write). `DeadlockAnimator.LateUpdate` steps it after the gun rig and the King's Leap spin; with the animator off (the death
+  ragdoll) it steps itself. A teleport of over 5 m restarts it. Settings are public fields, chains are built on first use, so
+  every clone (display model, spawned body) builds its own. Rat King: the cape chains `cloakA_0`–`cloakE_0` and the tail `tail_1`.
+- **Props held only during a move (`animations.propBones`):** those bones are scaled to 0 at start and shown by
+  `DeadlockAnimator.ShowProps(true)` (Rat King's banner while he leaps; a clone of the hidden prefab falls back to scale 1).
+- **Split meshes / the ammo belt (`heroes.splitMeshes`, `AmmoBelt` in `Runtime/RatKingParts.cs`):** parts named
+  `<material>@<mesh>` (extractor 1.6.0) don't get renderers of their own; one skinned renderer shows the part for the rounds left
+  (`ammo_full` above 18, `ammo_NN`, an empty mesh at 0), filling with `HeroRuntime.ReloadFraction` during a reload.
+- **King's Leap (`heroes.airJumpMult`):** `HeroRuntime.FixedUpdate` on the owner multiplies the vertical speed of a jump made in
+  the air (`CharacterMotor.jumpCount` rising past 1 while airborne) by it; `DeadlockAnimator` spins the `Armature` once forward
+  about 0.45 × the height (0.5 s, eased) when it sees the body climb sharply in the air (from the transform, so every machine
+  sees it; a jump of over 40 m/s is a teleport and ignored).
+- **Animated effect models (`PropModels.Build`, `DeadlockCache.PropAsset`):** a prop with a skeleton is built like a hero
+  (bones, skinned renderers with the game's textures, its clips on a legacy Animation via `DeadlockAnimator.BuildClips`); a still
+  one as plain meshes. The rat crowd (`Runtime/RatCrowd.cs`) builds the rat once, poses it on 12 frames of its run and of its
+  leap (`rat_release`) and bakes each with `SkinnedMeshRenderer.BakeMesh`; every crowd rat is then one `MeshRenderer` swapping
+  meshes (no skeleton, no collider, not a character, never targeted), pooled per stage, frames advancing only while visible, the
+  run paced by its ground speed, ±10 % size and pace per rat. `Rat.Run` sticks it to the ground (a raycast every 3–4 frames,
+  tilted to the slope, hidden over a drop); `Rat.Pose` places it anywhere (leaping, clinging).
 
 ## 5. Scale: the rule and the numbers
 
@@ -779,7 +808,7 @@ a fill and two rim point lights in the hero's colour, framed from the renderers'
 fist at the top of its punch, a dev check of the effect; the creator asked for it off the page, 2026-10-20). CelGoo shades itself for
 `Camera.main`, which is far away during the shot, so `Vfx.StudioView` points it at the studio camera instead (without it, the
 halves facing away from the game camera come out see-through). Each render logs `portrait <name>: N renderers, bounds`.
-**Known gap (2026-10-20):** the vanilla body meshes of Commando, Loader, MUL-T, REX and Artificer come out empty (their
+**v0.9.0:** a match is now rendered from its body prefab's own model (`ModelLocator.modelTransform`) instead of its display prefab; MUL-T now renders, the others still come out empty. **Known gap (2026-10-20):** the vanilla body meshes of Commando, Loader, MUL-T, REX and Artificer come out empty (their
 renderers have no material: `CharacterModel` puts materials on only while a game camera sees them); Engineer shows only
 through its turrets. Assigning `baseRendererInfos[].defaultMaterial` before disabling `CharacterModel` did not fix Commando
 or Loader (tried once, reverted). The balance page shows letter badges for those. `seconds` 0 = portraits only. The script copies the game log to `build/bench_log.txt`.
@@ -892,6 +921,13 @@ the other is the **host** (only the host writes checks). How to run it: doc 03 �
     - How it was found: crash dumps (`%LOCALAPPDATA%\CrashDumps`), symbols from Microsoft's and Unity's symbol servers,
       then the nop patch turned the native crash into a logged StackOverflowException with the looping trace. RoR2 saves
       the profile synchronously in `OnApplicationQuit` before all this, so players never lost progress.
+
+23. **A clip without a root track inherits the last clip's root turn** (fixed in v0.9.0, `DeadlockAnimator.RootFolded`). Most Deadlock
+    clips turn `root_motion` (to 270/90/0) while its rest pose is identity; a legacy clip never writes a bone it has no curve for,
+    so after a turned clip, one without a root track (Rat King's idle) played with the root still turned: he lay on his back,
+    pelvis below his feet, while the display model (only ever idle) stood fine. Every clip now has root_motion's rotation folded
+    into the root's direct children (child' = rest⁻¹ × root × child, rotation and position, per frame) and no root track at all;
+    each clip poses exactly as before, and blends between clips no longer swing the root. Checked on all seven heroes.
 
 - **Flat max health from buffs (trophies) and vanilla's heal/clamp (v0.7.1f).** `RecalculateStats` compares the new max health
   with the old one and heals the gain or cuts health above the new max. Our `StatsPatch` adds `maxHealthAdd` in a postfix,

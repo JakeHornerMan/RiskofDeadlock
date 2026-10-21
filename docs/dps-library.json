@@ -1423,6 +1423,91 @@
      "max": 2029
     }
    }
+  },
+  "DeadlockRatKing": {
+   "name": "Rat King",
+   "stats": {
+    "health": 130.0,
+    "healthPerLevel": 39.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 10.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 2,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Sovereign's Decree",
+    "secondary": "Scrap Grenade",
+    "utility": "Royal Pestments",
+    "special": "Rule, Ratannia!"
+   },
+   "hero": true,
+   "measuredOn": "v0.9.0",
+   "dps": {
+    "all": {
+     "runs": [
+      3058,
+      2959,
+      2981
+     ],
+     "mean": 2999,
+     "min": 2959,
+     "max": 3058
+    },
+    "primary": {
+     "runs": [
+      549,
+      549,
+      544
+     ],
+     "mean": 547,
+     "min": 544,
+     "max": 549
+    },
+    "secondary": {
+     "runs": [
+      940,
+      1250,
+      1320
+     ],
+     "mean": 1170,
+     "min": 940,
+     "max": 1320
+    },
+    "utility": {
+     "runs": [
+      512,
+      521,
+      494
+     ],
+     "mean": 509,
+     "min": 494,
+     "max": 521
+    },
+    "special": {
+     "runs": [
+      1115,
+      975,
+      1015
+     ],
+     "mean": 1035,
+     "min": 975,
+     "max": 1115
+    },
+    "equipment": {
+     "runs": [
+      2073,
+      2013,
+      2133
+     ],
+     "mean": 2073,
+     "min": 2013,
+     "max": 2133
+    }
+   }
   }
  },
  "about": "Stored DPS library (Deadlock of Rain). Main moves and each move alone, % of damage stat per second, measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, 30 s per pass, perfect aim, every move used when ready, no equipment except the \"equipment\" pass). \"all\" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are tagged with the build they were measured on. Built by tools/dps_library.py.",

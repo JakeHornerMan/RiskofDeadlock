@@ -412,6 +412,12 @@ doc 02 §11. In short:
 | Effects built in Unity, not ripped | The creator: "make it similar to the Deadlock game, not a rip from the Deadlock engine files". `Runtime/Vfx.cs` builds them at runtime from Unity components and RoR2 materials (doc 02 §8.1) |
 
 ---
+| Rat King (v0.9.0, 2026-10-21) matched to Captain; Captain's stats +20 health, +10 armor, 2 jumps | The creator's spec (pasted 2026-10-20): "Captain is the match because both are commanders with a spreadshot gun who plant things into the battlefield"; Deadlock's ult Rule, Ratannia! on R, Rat Swarm on Q |
+| Scrap Grenade: Right Click readies, any click throws | The creator's answer (2026-10-21): "no jsut right click readys it and any click will throw it, lmb or rmb i beleiev its the same on viscous" |
+| No extras on top of the spec (no banner aura, no Shift barrier, no armor shred on the Q bites) | The creator's answer: "just damage and stun please!" |
+| Rats are a baked-mesh crowd, not characters; the cape and tail are our own spring bones (no Dynamic Bone, no Unity Cloth) | The spec asked for ~300 rats in co-op and a cape that reacts to movement; a mesh renderer per rat and a spring chain per cape strip are cheap and need nothing shipped. Every rat, the grenade and the banner are Deadlock's own models, read from the player's install (extractor 1.6.0), never exported to Blender/Unity as the spec suggested (that would ship Deadlock files) |
+| Rat King's balance left as the spec wrote it | Bench mean 2999 vs Captain 3490: inside the band, so the spec's lever (M1 80 → 100 %) was not needed |
+
 
 ## 10. Known open items and ideas
 

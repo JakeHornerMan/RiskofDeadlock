@@ -74,6 +74,14 @@
   makes BepInEx's LoggedTextWriter write to itself. `Runtime/QuitSafety.cs` skips `Disengage` and keeps the nop patch.
   Details: doc 02 §12 gotcha 22.
 
+## 0.9.0 (2026-10-21): Rat King
+- Seventh hero from the creator's spec, matched to Captain. Extractor 1.6.0: props with a skeleton and clips (the rat, the banner's
+  sewer), hero meshes kept as their own parts (the 19-mesh ammo belt). Spring bones for his cape and tail, a baked-mesh rat crowd
+  (ring, slam burst, 50-rat swarm), a three-blast hopping grenade, a banner leap with line-of-sight blasts and a 3 s stun.
+- Found on the way: a clip without a root_motion track inherited the last clip's root turn (Rat King's idle laid him on his back);
+  every clip now folds the root's rotation into its children (doc 02 §12 gotcha 23). His muzzle bone sits at the grip
+  (`animations.muzzleForward`). All seven heroes pass `run_test.sh`; bench 2999 vs Captain 3490 (inside).
+
 ## Gotchas found
 1. RoR2's CharacterModel keeps ONE material per renderer (it re-applies defaultMaterial), so a multi-material
    SkinnedMeshRenderer only drew submesh 0. Fix: one SkinnedMeshRenderer per material, one RendererInfo each.

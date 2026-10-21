@@ -26,7 +26,7 @@ SKILLS = sheet('skills'); BUFFS = {r['id']: r for r in sheet('buffs')}
 EQUIP = {r['hero']: r for r in sheet('equipment')}
 LINKS = {'haze': 'https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p', 'abrams': 'https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG',
          'seven': 'https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m', 'infernus': 'https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF',
-         'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'viscous': 'https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
+         'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'viscous': 'https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC', 'ratking': 'https://claude.ai/artifact/Kw4rTyRrvXTb2eEyT9oTYa', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
 SLOTS = ['primary', 'secondary', 'utility', 'special']
 KEY = {'primary': 'M1', 'secondary': 'M2', 'utility': 'Shift', 'special': 'R', 'equipment': 'Q'}
 KIND_LABEL = {'primary': 'Weapon', 'secondary': 'Ability', 'utility': 'Ability', 'special': 'Ability · new in 0.4'}
@@ -157,6 +157,10 @@ PAPER = {
 }
 
 ANALYSIS = {
+ 'ratking': ['Three runs on the first build: 2,959, 2,981 and 3,058 %/s, mean 2,999 against Captain’s 3,490. That is −491: inside the ±500 band, by 9. The spec’s lever for a miss below the band (Sovereign’s Decree 80 → 100 %) was not needed.',
+             'The Scrap Grenade carries him (1,170 %/s alone, 940–1,320): its hops keep it in the pack, so most of its three blasts land on most of the 12. Rule, Ratannia! 1,035 (the 1,500 % centre blast plus the stun ring every 12 s), the gun 547 (565 on paper), Royal Pestments 509 (the ring follows him, so the pack stays inside).',
+             'Captain’s own number is odd: his moves alone add up to about 800 (the shotgun; the probes and beacons barely touch a still pack) but together he measures 3,490, so compare the totals, not single moves.',
+             'Rat Swarm (Q, the ult) does about 2,070 %/s over its 30 s pass with one use: 50 rats, at most 5 on each of the 12. It isn’t in the all-together number.'],
  'viscous': ['Three runs after the 0.8.0f changes (Puddle Punch leaves a puddle, every puddle 20 % smaller): 1,660, 1,805 and 2,410 %/s, mean 1,958 against REX’s 1,738. That is +220, inside the ±500 band.',
              'The runs swing a lot (1,660 to 2,410): how often a smaller puddle reaches the bench’s fixed spot and tops up the magazine decides how many Splatters it throws.',
              'Splatter 1,408 %/s alone, Puddle Punch 702, The Cube 493, the gun 412.',
@@ -219,6 +223,7 @@ def runs_of(who):
 # (bench_results.txt holds only the last run's heroes). Update a hero's row whenever it is benched.
 LAST_USE = {
     'DeadlockMoKrill': dict(total=57150, enemies=11),  # 2026-10-19, v0.7.1e
+    'DeadlockViscous': dict(total=60884, enemies=12),  # 2026-10-21, v0.8.0f
 }
 
 def per_use(who):

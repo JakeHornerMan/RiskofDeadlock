@@ -14,6 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
+| Rat King | all (new hero, 0.9.0): Sovereign's Decree 2 × 80 % (one pellet dead on), Scrap Grenade 300/300/600 %, Royal Pestments 25 % × 4/s for 6 s, Rule, Ratannia! 1500 % / 150 % + 3 s stun, Rat Swarm 50 rats | new hero (spec of 2026-10-20) | this one | **benched**: 2959 / 2981 / 3058, **mean 2999** vs Captain 3490 (−491, inside by 9), §3.10; `run_test.sh` all seven heroes every check pass | **done** |
 | Viscous | 0.8.0f: Puddle Punch leaves a 6.4 m puddle (`extra` `viscous_splatter`); every puddle 20 % smaller (Splatter 8 → 6.4 m, Cube 10 → 8 m) | the creator's fourth round | this one | **benched**: 1660 / 1805 / 2410, **mean 1958** vs REX 1738 (+220, inside), §3.9; `run_test.sh viscous` every check pass | **done** |
 | Viscous | 0.8.0e: puddles 3 s + 5 s shrinking and a 20-round supply that tops the magazine up while he stands in them (no more +20 above it), Splatter 200 → 150 %, jump power 15 → 20 | the creator's third round | this one | **benched**: 2273 / 2213 / 2272, **mean 2253** vs REX 1738 (+515, 15 above), §3.8; `run_test.sh viscous` every check pass incl. puddle supply 0 → 20, same puddle → 0, new puddle → 20 | **done** |
 | Viscous | 0.8.0d: puddles 10 s + 20 s shrinking and +20 rounds per new puddle (`puddleAmmo`), The Cube leaves a 10 m puddle, base damage back to 12, Goo Ball 75 % (375–1500 %, slam 1125 %) and grip −0.5 | the creator's second round | this one | **benched**: 2607 / 2367 / 2293, **mean 2422** vs REX 1738 (+684, above), §3.7; `run_test.sh viscous` every check pass incl. puddle ammo 0 → 20 → 40 | **done** |
@@ -177,6 +178,24 @@ Bench caveats seen in this work:
 - Engineer's turrets land few hits in 30 s against a still pack.
 - Engineer's damage stat is 14 (Infernus 12): %/s removes it.
 - Q per use, last run: Abrams 88400 % (13 hit), Infernus 74800 %, Haze 52771 %, Preon 48400 %, Seven 27200 %.
+
+### 3.10 v0.9.0 Rat King (Rat King-only runs, 2026-10-21)
+`VERSION` v0.9.0. Three runs in one launch (`REPEAT=3 run_bench.sh 30 ratking`); Captain from the library (never re-benched).
+
+| Pass | Runs (%/s) | Mean | Captain (library) |
+|---|---|---|---|
+| All main moves | 3058, 2959, 2981 | **2999** | 3490 |
+| M1 Sovereign's Decree | 549, 549, 544 | 547 | 800 (Vulcan Shotgun) |
+| M2 Scrap Grenade | 940, 1250, 1320 | 1170 | 7 (Power Tazer) |
+| Shift Royal Pestments | 512, 521, 494 | 509 | 0 (Orbital Probe) |
+| R Rule, Ratannia! | 1115, 975, 1015 | 1035 | 0 (Supply Beacon) |
+| Q Rat Swarm (not balanced) | 2073, 2013, 2133 | 2073 | – |
+
+- −491 against Captain's 3490: **inside** the ±500 band, by 9. The spec's paper estimate was about 3150; the lever it named for a miss
+  below 2990 (Sovereign's Decree 80 → 100 %) was not needed, so the numbers stay as the spec wrote them.
+- The gun measures 547 against 565 on paper (the stray pellet sometimes misses at 10–15 m). The grenade's hops keep it in the
+  pack, so most blasts land on most of the 12. Captain's moves alone barely touch a still pack (the probes and beacons), but his
+  total is 3490: compare totals, not single moves.
 
 ### 3.9 v0.8.0f Viscous (Viscous-only runs, 2026-10-21)
 `VERSION` v0.8.0f, so the 0.8.0e runs dropped.
