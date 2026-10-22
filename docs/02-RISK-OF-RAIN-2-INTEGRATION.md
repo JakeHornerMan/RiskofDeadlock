@@ -963,6 +963,9 @@ the other is the **host** (only the host writes checks). How to run it: doc 03 Â
     `ability_storm_cloud_*` set in the pelvis, the current `storm_cloud_intro`/`storm_cloud_scalar` too). On top of RoR2's own
     facing that reads as a body whirling round; list such clips in `steadyClips`. Spot them by the hips' yaw over the clip
     (the scratch scripts in the 2026-10-22 session log entry).
+28. **`SetStateOnHurt.SetStun` throws on an enemy spawned this frame** (daily watch 2026-10-22, a player's 0.9.0 log: Abrams'
+    Shoulder Charge): `buffDurationControllers` is only filled in its `Start`, so `GetModifiedDuration` hits null.
+    `Fx.Stun` skips the stun until that array exists (read through `AccessTools.FieldRefAccess`); the next frame it works.
 
 - **Flat max health from buffs (trophies) and vanilla's heal/clamp (v0.7.1f).** `RecalculateStats` compares the new max health
   with the old one and heals the gain or cuts health above the new max. Our `StatsPatch` adds `maxHealthAdd` in a postfix,

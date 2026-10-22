@@ -2,7 +2,7 @@
 
 ## Versions
 - Risk of Rain 2 1.5.0#1210 (Unity 2021.3.45, Mono), BepInEx 5.4.23.5 (Melty installs it)
-- Deadlock ClientVersion 6795 (update of 2026-10-19; 6774 before), Source 2
+- Deadlock ClientVersion 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
 ## Route
@@ -25,6 +25,7 @@
 - 0.8.0d (2026-10-20): puddles 10 s + 20 s shrink and +20 rounds per new puddle (puddleAmmo, HeroRuntime.GiveAmmo), The Cube leaves a 10 m puddle (extra = viscous_splatter), BigSplash for Splatter and the Cube, base damage back to 12, Goo Ball 75 % and grip -0.5, voiceGain 1.2. Bench 2422 vs REX 1738 (above, +684).
 - 0.8.0e (2026-10-20): puddles 3 s + 5 s shrink; a puddle is a 20-round supply that tops the magazine up while he stands in it (HeroRuntime.TopUp, never above the magazine); Splatter 150 %; jump power 20. Bench 2253 vs REX 1738 (15 above the band).
 - 0.8.0f (2026-10-21): Puddle Punch leaves a 6.4 m puddle; puddles 20 % smaller (Splatter 6.4 m, Cube 8 m). Bench 1958 vs REX 1738 (inside).
+- Daily watch 2026-10-22 (not released): Deadlock 6812 needs no change; Fx.Stun skips enemies whose SetStateOnHurt hasn't run Start (players' 0.9.0 logs: NullReferenceException from Shoulder Charge); tools/dev_listings.py.
 - 0.9.1b (2026-10-22, not released): Storm Cloud the 3 nearest per shock; Thunderhead icon surge_of_power (preflight: one icon per skill); gestures in model space (ModelSpaceGesture, all heroes); steadyClips de-spins Seven's storm_cloud_intro/scalar hover; Thunderhead casts ability_power_surge; equipment test accepts 60-120 s. Bench 1759 vs Artificer 4013 (far below).
 - 0.9.1a (2026-10-21, not released): Seven redesign part 1. Lightning Ball half speed over enemies (moveSpeedMult 0.5), yellow with a clear 10 m sphere; Static Charge 225 %; R Storm Cloud (storm_flight) replaces Power Surge; effects tint column (yellow electric tracer, ball core, impact); upper-body cast clips (cache rebuilt). Bench 2827 vs Artificer 4013 (below).
 - 0.9.0f / Melty 0.9.0 (2026-10-21): Goo Ball 100 s (preflight allows equipment 60-120 s); Melty release without Rat King (package.py --melty, coming-soon.txt, greyed portrait tile). Published untested at the creator's request.

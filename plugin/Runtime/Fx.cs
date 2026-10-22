@@ -147,8 +147,12 @@ namespace DeadlockOfRain
         {
             if (!hc || duration <= 0 || !UnityEngine.Networking.NetworkServer.active) return;
             var s = hc.GetComponent<SetStateOnHurt>();
-            if (s && s.canBeStunned) s.SetStun(duration);
+            // an enemy spawned this frame hasn't run SetStateOnHurt.Start yet: SetStun would throw (players' 0.9.0 logs)
+            if (s && s.canBeStunned && stunControllers(s) != null) s.SetStun(duration);
         }
+
+        static readonly HarmonyLib.AccessTools.FieldRef<SetStateOnHurt, AlterBuffDuration[]> stunControllers =
+            HarmonyLib.AccessTools.FieldRefAccess<SetStateOnHurt, AlterBuffDuration[]>("buffDurationControllers");
 
         /// <summary>Knock an enemy out of a dash's path: to whichever side of the path it stands on, a bit forward and up,
         /// at speed m/s (scaled by its mass, so big and small enemies fly the same).</summary>

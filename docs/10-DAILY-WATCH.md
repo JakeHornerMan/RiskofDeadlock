@@ -104,7 +104,7 @@ rule keeps the creator's own work in progress out of the watch's commits.
 
 What the prompt tells Claude to do:
 1. Read CLAUDE.md, doc 00 §1/§7, doc 02 §12, doc 03 §5–§6, and the doc 00 entry about the 6795 break (the last time this happened).
-2. **Deadlock changed:** refresh the `tools/dev` listings (doc 01 §8) and run `python tools/preflight.py`. Then rebuild the
+2. **Deadlock changed:** refresh the `tools/dev` listings (`python tools/dev_listings.py`, doc 01 §8) and run `python tools/preflight.py`. Then rebuild the
    cache with the extractor (`--manifest extractor/manifest.json --force`) and look for `HERO FAILED`, `SKIPPED` and
    `ready.json` `failed`.
 3. **RoR2 changed:** `dotnet build plugin -c Release`. If the build fails, decompile RoR2 again and compare the APIs.
@@ -200,6 +200,7 @@ first). If it published, Melty already has that version.
 | "Melty triage gave no readable answer" | No network, Melty down, or the Claude login expired (`claude` in a terminal to sign in again). The same window is checked again next day. |
 | Triage answers in prose instead of JSON | Melty's MCP instructions make Claude write a report; that is why the schema flag is there. If it comes back, check that `--json-schema` is still passed and that `structured_output` exists. |
 | Fix run stops early, or the log shows refused tools | The command wasn't in the allow list (`claude-settings.json`). Add the narrowest rule that covers it. |
+| `python tools/x.py` refused although the list allows it (first real run, 2026-10-22) | In that run every `python tools/...` call was refused while `python -c` worked; the run used `python -c "import runpy,sys;sys.argv=[...];runpy.run_path('tools/x.py',run_name='__main__')"`. Commands with a pipe, `&&`, `cd`, or a `$VAR` are refused too (each part is checked), so keep every call one plain command with literal paths. Worth checking how `--settings` rules are matched before the next run. |
 | Nothing happens at 04:00 | The PC was off or the user was logged out (the task runs only while logged on). It runs at the next logon. Check `Get-ScheduledTaskInfo` → `LastTaskResult`. |
 | Stale `build/watch/lock` | A run crashed hard. It is ignored after 12 h, or delete it. |
 
@@ -209,7 +210,10 @@ Windows PowerShell 5.1 gotchas found while building it:
   script uses `Continue`.
 
 ## 8. Limits and open items
-- **The fix run has not run end to end yet** (on 2026-10-21 the creator was playing). Do the practice run in §6 once.
+- **First real fix run 2026-10-22** (Deadlock 6807 → 6812): it worked through the listings, preflight, cache rebuild and game
+  tests (doc 07 entry). The triage that day called live 0.9.0 clean, but `player_logs` held a real code error
+  (`load:errors`: a stun exception from Abrams' Shoulder Charge); the fix run found it. The triage only flags breaks, so the fix
+  run should read `player_logs` itself whenever it runs.
 - It runs only while the PC is on and the creator is logged on. A patch on a day the PC is off is caught on the next run.
 - It only sees updates Steam has installed on this PC. If Steam auto-update is off, the watch won't know about a patch.
 - `gh` isn't installed, so there are no GitHub issues yet (`winget install GitHub.cli`, `gh auth login`).

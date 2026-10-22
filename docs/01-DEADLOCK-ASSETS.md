@@ -452,6 +452,11 @@ Viscous lookup `tools/vrfdump` (a small console tool on that NuGet package; its 
 `events`, and since 0.9.1b `png`: one texture as a png, to look at a candidate icon before picking it; keep the png out of the repo) did the same jobs; the dev listings `vpk_files.txt`, `sound_events.txt` and `anim_names.json`
 (all six heroes) were regenerated with it at 6795. A newer CLI release (20.1+) would do the same with the commands above.
 
+**One command for all three Deadlock listings (since 2026-10-22, the daily watch):** `python tools/dev_listings.py` (needs
+`build/vrfdump`, see above). It reads every VPK path, every sound event and each sheet hero's clips and meshes, replaces the
+listings only when every read worked, keeps the old ones in `build/watch/old-dev/` and prints what changed. At build 6812:
+158,306 files, 87,188 sound events, no clip or mesh of our seven heroes changed.
+
 **Dev listings in `tools/dev/` (gitignored, made on this PC from its install, used by `preflight.py`):**
 - `vpk_files.txt`: every VPK path, used to check that `vmdl` and `vtex` paths in the sheets exist.
 - `sound_events.txt`: every sound event name. Made by decompiling all `soundevents/*.vsndevts_c` and grepping top-level keys (`^\s<name> = $`).

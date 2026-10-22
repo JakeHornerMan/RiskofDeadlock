@@ -21,7 +21,8 @@ Rules for this run:
 - Don't change balance, abilities or anything a player would notice beyond the fix.
 
 Steps:
-1. **If Deadlock changed:** refresh the Deadlock listings in `tools/dev/` (doc 01 §8), run `python tools/preflight.py`, then
+1. **If Deadlock changed:** refresh the Deadlock listings in `tools/dev/` with `python tools/dev_listings.py` (doc 01 §8; it
+   prints what changed), run `python tools/preflight.py`, then
    rebuild the cache:
    `build/extract/DeadlockExtract.exe --deadlock "C:/Program Files (x86)/Steam/steamapps/common/Deadlock" --out "$LOCALAPPDATA/DeadlockOfRain/cache" --manifest extractor/manifest.json --force`
    and look for `HERO FAILED`, `SKIPPED` and `ready.json` `failed`.
