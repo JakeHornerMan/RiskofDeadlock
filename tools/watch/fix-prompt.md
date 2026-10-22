@@ -13,6 +13,8 @@ anywhere). First read `docs/00-HANDOFF.md` §1 and §7, `docs/02-RISK-OF-RAIN-2-
 §5–§6 and the doc 00 entry "Deadlock update 6795 broke the heroes" (the last time a Deadlock update broke the mod).
 
 Rules for this run:
+- Run each command as one plain command with literal paths: no `$VARS`, no `cd x &&`. Pipes into read-only tools
+  (grep, head, tail, sort) are fine. A refused command means it isn't in `tools/watch/claude-settings.json`; say so in the report.
 - Never open a game while another Steam game is running (`reg query HKCU\Software\Valve\Steam /v RunningAppID` must be 0).
   If the creator starts a game while you work, stop testing, write the report and finish.
 - After every game launch run `bash tools/lab_restore.sh`.
@@ -24,7 +26,7 @@ Steps:
 1. **If Deadlock changed:** refresh the Deadlock listings in `tools/dev/` with `python tools/dev_listings.py` (doc 01 §8; it
    prints what changed), run `python tools/preflight.py`, then
    rebuild the cache:
-   `build/extract/DeadlockExtract.exe --deadlock "C:/Program Files (x86)/Steam/steamapps/common/Deadlock" --out "$LOCALAPPDATA/DeadlockOfRain/cache" --manifest extractor/manifest.json --force`
+   `build/extract/DeadlockExtract.exe --deadlock "C:/Program Files (x86)/Steam/steamapps/common/Deadlock" --out "C:/Users/jakeh/AppData/Local/DeadlockOfRain/cache" --manifest extractor/manifest.json --force`
    and look for `HERO FAILED`, `SKIPPED` and `ready.json` `failed`.
 2. **If Risk of Rain 2 changed:** `dotnet build plugin -c Release`; if it fails, regenerate the decompiled source
    (doc 03 §5) and compare the APIs the plugin uses.
@@ -41,7 +43,11 @@ Steps:
    (2 runs) → poll `test_result` until done, then `publish` and `mod_status`. If the Melty test fails, fix and test again or stop
    without publishing. If you rewrite the listing text, keep the "Hero pages" section and the "Built with" line. For a
    Melty break, `report_bug_fix` after publishing.
-8. Record it: append an entry to `docs/07-SESSION-LOG.md` (Request: "daily watch {{DATE}}: <what changed>"), refresh
+8. For every Melty break you handled (fixed, or found not to be ours), append its `signature` (from the triage JSON above) to
+   `build/watch/known-breaks.txt` as `<signature> | <date> <what happened>: <fixed on main / released in X / not ours, why>`.
+   A break with a listed signature never starts a fix run again. If a signature was wrong (two causes share it), make the
+   line more specific and say so in the report.
+9. Record it: append an entry to `docs/07-SESSION-LOG.md` (Request: "daily watch {{DATE}}: <what changed>"), refresh
    `docs/00-HANDOFF.md` §1 and §9, update MODLOG and any doc the fix touched, in the same commit as the work.
 
 ## Report (always, even when you stop early)

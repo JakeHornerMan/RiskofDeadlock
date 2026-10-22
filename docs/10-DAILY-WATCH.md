@@ -35,7 +35,7 @@ secret and no Action are needed.
         │
         ├─ read build numbers ──► compare with build/watch/state.json ──► "changes"
         │
-        ├─ Melty triage (Claude Haiku, read-only Melty tools, ~2 cents) ──► "breaks"
+        ├─ Melty triage (Claude Sonnet, read-only Melty tools, ~30 cents) ──► breaks of ours with a new signature
         │
         ├─ no changes and no breaks ──► save lastChecked / meltySeenUntil ──► stop ("all clear")
         │
@@ -79,19 +79,37 @@ If the file is missing, the first run writes today's values as the baseline, and
 seeded on 2026-10-21 with the values above.
 
 ### 3.3 Melty triage
-- `claude -p tools/watch/triage-prompt.md --model haiku --max-turns 20`
+- `claude -p tools/watch/triage-prompt.md --model sonnet --max-turns 40`
 - Allowed tools: `list_releases`, `mod_status`, `install_outcomes`, `player_logs`, `player_reports` (read only; it
   can't publish or change anything).
 - `--output-format json --json-schema tools/watch/triage-schema.json`: the answer is read from `structured_output` as
-  `{liveVersion, liveReleaseId, breaks:[{source,id,when,deadlockBuild,summary,detail}], summary}` and saved to
+  `{liveVersion, liveReleaseId, breaks:[{source,signature,ours,id,when,deadlockBuild,summary,detail}], summary}` and saved to
   `build/watch/triage.json`.
 - **Only breaks that matter now:** entries for the **live (published) release version** that are newer than
-  `meltySeenUntil`. Old versions, drafts and Melty test runs are ignored. A "break" is a failed or partial setup,
-  `HERO FAILED` or `SKIPPED`, a DeadlockOfRain exception, a crash, missing heroes, or a player report of a fault.
+  `meltySeenUntil`. Old versions, drafts and Melty test runs are ignored.
+- **What counts as a break:** a failed or partial setup, `HERO FAILED` / `SKIPPED`, a crash, missing heroes, a player report
+  of a fault, an item behind Melty's "needs attention" flag, and **any exception whose stack mentions our code, even if the
+  game carried on** (namespace `DeadlockOfRain`, `Dlr*`, `Fx.`, `Vfx.`, ...). The prompt makes it open every player log and
+  read the error lines itself, instead of trusting Melty's "N worked, 0 crashes" counts.
+- **Each break gets a fixed signature and an `ours` flag:**
+  - our code threw: `exception:<Type>:<first frame of our code>`, e.g. `exception:NullReferenceException:Fx.Stun`;
+  - otherwise one of `hero-unreadable:<hero>`, `setup-failed:…`, `not-loaded:…`, `crash:<module>`, `coop:…`, `report:…`.
+
+  `ours` is false for old Deadlock builds, other mods, Steam, network or the player's PC.
+- **The script, not the model, decides what starts a fix run:** only breaks that are `ours` **and** whose signature isn't
+  in `build/watch/known-breaks.txt` (`<signature> | <date> <note>`, `#` comments). The fix run adds a line for each break it
+  handles (fixed but not released yet, or not ours), so a new player hitting an already-fixed bug doesn't start another
+  fix run. The log prints every break as `known` or `new` with its signature. The list was seeded on 2026-10-22 with
+  `exception:NullReferenceException:Fx.Stun` (fixed on main) and `hero-unreadable:infernus` (a player's Deadlock 5977).
 - If triage fails (no answer, no network), the script logs it, carries on as if there were no breaks, and leaves
   `meltySeenUntil` alone, so the next day looks at the same window again.
-- First real run (2026-10-21): live 0.7.4, no breaks. The 0.6.3 setup failures and the 0.7.2/0.7.3 crashes were correctly
-  left out. Cost: 1.6 cents.
+- **History:**
+  - 2026-10-21: Haiku with a plain prompt, 1.6 cents. On 2026-10-22 it called 0.9.0 clean and missed the Shoulder Charge
+    exception in `player_logs`; the fix run found it.
+  - 2026-10-22: the stricter prompt. Haiku still found nothing (1.7 cents). Sonnet found the exception, a Steam lobby
+    timeout and a "didn't load" report, with stable signatures (about 30 cents).
+  - An earlier try had the model judge "known" itself: it marked everything known with an empty list, and missed matches
+    with the list given. That is why the script now does the matching.
 
 ### 3.4 Fix run
 It only starts when there is a game change or a Melty break, and only from a clean `main` (no uncommitted files). That
@@ -159,6 +177,7 @@ Nothing uses `--dangerously-skip-permissions`.
 | `build/watch/state.json` | Last seen builds, `meltySeenUntil`, `lastChecked` |
 | `build/watch/<date>.log` | Everything the script and both Claude runs printed |
 | `build/watch/triage.json` | The last triage answer |
+| `build/watch/known-breaks.txt` | Break signatures already handled; they never start a fix run again |
 | `build/watch/<date>-report.md` | The fix run's report (first line = notification) |
 | `build/watch/lock` | Present while a run is going |
 
@@ -200,7 +219,8 @@ first). If it published, Melty already has that version.
 | "Melty triage gave no readable answer" | No network, Melty down, or the Claude login expired (`claude` in a terminal to sign in again). The same window is checked again next day. |
 | Triage answers in prose instead of JSON | Melty's MCP instructions make Claude write a report; that is why the schema flag is there. If it comes back, check that `--json-schema` is still passed and that `structured_output` exists. |
 | Fix run stops early, or the log shows refused tools | The command wasn't in the allow list (`claude-settings.json`). Add the narrowest rule that covers it. |
-| `python tools/x.py` refused although the list allows it (first real run, 2026-10-22) | In that run every `python tools/...` call was refused while `python -c` worked; the run used `python -c "import runpy,sys;sys.argv=[...];runpy.run_path('tools/x.py',run_name='__main__')"`. Commands with a pipe, `&&`, `cd`, or a `$VAR` are refused too (each part is checked), so keep every call one plain command with literal paths. Worth checking how `--settings` rules are matched before the next run. |
+| `python tools/x.py` refused although the list allows it (first real run, 2026-10-22) | **Fixed 2026-10-22.** The rule was `Bash(python tools/:*)`. A `:*` rule is a word prefix: the command must continue with a space after it, so `python tools/gen.py` never matched (`python -c:*` worked). Partial-word rules now use a plain `*` (`Bash(python tools/*)`, `Bash(git tag extractor-*)`, `Bash(git push origin extractor-*)`). A headless test ran `python tools/preflight.py` with no refusal. Each part of a `&&` or `|` chain is checked on its own, and `$VARS` are refused, so the prompt asks for plain commands with literal paths (`cd`, `echo`, `sort`, `uniq`, `sed -n` are allowed now). |
+| The triage misses an error that is in `player_logs` | Check the log's `known`/`new` lines. If nothing was listed, the model didn't open the logs: re-run with `-DryRun` off and read `triage.json`. If the signature was listed as `known` wrongly, make that line in `known-breaks.txt` more specific. |
 | Nothing happens at 04:00 | The PC was off or the user was logged out (the task runs only while logged on). It runs at the next logon. Check `Get-ScheduledTaskInfo` → `LastTaskResult`. |
 | Stale `build/watch/lock` | A run crashed hard. It is ignored after 12 h, or delete it. |
 
@@ -211,12 +231,12 @@ Windows PowerShell 5.1 gotchas found while building it:
 
 ## 8. Limits and open items
 - **First real fix run 2026-10-22** (Deadlock 6807 → 6812): it worked through the listings, preflight, cache rebuild and game
-  tests (doc 07 entry). The triage that day called live 0.9.0 clean, but `player_logs` held a real code error
-  (`load:errors`: a stun exception from Abrams' Shoulder Charge); the fix run found it. The triage only flags breaks, so the fix
-  run should read `player_logs` itself whenever it runs.
+  tests, all 7 heroes passing, and fixed the Shoulder Charge stun exception from players' logs without publishing (`main`
+  also held the unreleased Seven redesign). It also found the two watch problems fixed the same day: the `python tools/*`
+  rule and the triage missing the exception (§3.3, §7).
 - It runs only while the PC is on and the creator is logged on. A patch on a day the PC is off is caught on the next run.
 - It only sees updates Steam has installed on this PC. If Steam auto-update is off, the watch won't know about a patch.
 - `gh` isn't installed, so there are no GitHub issues yet (`winget install GitHub.cli`, `gh auth login`).
 - Thunderstore isn't covered: the fix run publishes to Melty only.
-- Cost: the triage is about 2 cents a day. A fix run is a full Claude session (game tests, perhaps a Melty test) and counts
+- Cost: the triage is about 30 cents a day (Sonnet; Haiku was cheaper but missed real errors). A fix run is a full Claude session (game tests, perhaps a Melty test) and counts
   against the creator's plan like any long session.

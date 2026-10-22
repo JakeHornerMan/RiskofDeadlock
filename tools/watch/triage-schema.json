@@ -1,24 +1,57 @@
 {
   "type": "object",
   "properties": {
-    "liveVersion": { "type": "string" },
-    "liveReleaseId": { "type": "string" },
+    "liveVersion": {
+      "type": "string"
+    },
+    "liveReleaseId": {
+      "type": "string"
+    },
     "breaks": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "source": { "type": "string" },
-          "id": { "type": "string" },
-          "when": { "type": "string" },
-          "deadlockBuild": { "type": "string" },
-          "summary": { "type": "string" },
-          "detail": { "type": "string" }
+          "source": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "when": {
+            "type": "string"
+          },
+          "deadlockBuild": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "signature": {
+            "type": "string"
+          },
+          "ours": {
+            "type": "boolean"
+          }
         },
-        "required": ["source", "summary"]
+        "required": [
+          "source",
+          "signature",
+          "ours",
+          "summary"
+        ]
       }
     },
-    "summary": { "type": "string" }
+    "summary": {
+      "type": "string"
+    }
   },
-  "required": ["liveVersion", "breaks", "summary"]
+  "required": [
+    "liveVersion",
+    "breaks",
+    "summary"
+  ]
 }

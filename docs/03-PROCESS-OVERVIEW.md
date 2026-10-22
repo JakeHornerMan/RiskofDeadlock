@@ -224,10 +224,11 @@ Claude runs under the creator's own `claude` login.
   2. It reads `buildid` from `appmanifest_632360.acf` / `appmanifest_1422450.acf` and Deadlock's `steam.inf` ClientVersion, and
      compares them with `build/watch/state.json` (the first run records the baseline; seeded 2026-10-21: RoR2 25921972,
      Deadlock 26097978 / 6807).
-  3. **Melty triage** (every day; Haiku, read-only Melty tools, about 2 cents): `tools/watch/triage-prompt.md` with
+  3. **Melty triage** (every day; Sonnet, read-only Melty tools, about 30 cents; Haiku missed real errors): `tools/watch/triage-prompt.md` with
      `--json-schema tools/watch/triage-schema.json`. It looks at `install_outcomes`, `player_logs` and `player_reports`, **only
      for the live release version** and only entries newer than `state.json` `meltySeenUntil`. The result goes to
-     `build/watch/triage.json`.
+     `build/watch/triage.json`. Each break gets a signature (`exception:<Type>:<our frame>`, ...) and an `ours` flag. The
+     script starts a fix run only for breaks that are ours and not in `build/watch/known-breaks.txt` (doc 10 §3.3).
   4. If nothing changed and there are no breaks, it stops. Otherwise it runs the **fix run** on a new branch `watch/<date>`,
      made from a clean `main`. If the repo has uncommitted work or isn't on `main`, it skips the run and shows a notification.
      The fix run is `claude -p` with `tools/watch/fix-prompt.md` and the permissions in `tools/watch/claude-settings.json`

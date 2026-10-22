@@ -912,3 +912,14 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Results:** `run_test.sh` (all seven heroes): **7/7 heroes, 27/27 checks pass**, 706 Deadlock sounds, no exceptions; Shoulder Charge still stuns. `BREAK=infernus run_test.sh haze`: **19/19 pass** incl. `missing-hero-tile`. `lab_restore` after each.
 **Not done / open:** **Not published.** Deadlock 6812 needs no fix: players on 0.9.0 keep working. The stun error is minor (one-frame exception, no crash). Shipping it alone would mean a hotfix cut from the 0.9.0 commit, because `main` carries the unreleased Seven redesign (0.9.1a/b), and choosing what goes out is the creator's call. It ships with the next release once `watch/2026-10-22` is merged. The stun race itself can't be forced in the test (it needs an enemy spawning under the charge).
 **Lessons:** in this `claude -p` run, `python tools/x.py` was refused although `claude-settings.json` allows it, while `python -c` worked; pipes, `&&`, `cd` and `$VARS` were refused too. Read `player_logs` in the fix run even when the triage says "no breaks".
+
+### 2026-10-22 · The watch's first night, merged; its two problems fixed · no version · the commit that adds this entry
+**Request (verbatim):** "DID IT RUN LAST NIGHT?" then "YES FIX AND RESOLVE THOSE 2 PROBLEMS"
+**Questions asked → answers:** none (the two problems were named in the report: the `python tools/*` rule and the triage missing the stun exception).
+**Done:**
+- Merged `watch/2026-10-22` (Deadlock 6812 checked, Fx.Stun fix, `tools/dev_listings.py`) into `main`.
+- Permissions: `Bash(python tools/:*)` → `Bash(python tools/*)` (a `:*` rule needs a space after it), same for the extractor tag and push rules; added `cd`, `echo`, `sort`, `uniq`, `sed -n`; fix-prompt asks for plain commands with literal paths (no `$LOCALAPPDATA`).
+- Triage: Sonnet instead of Haiku, prompt opens every live-version log and counts any exception in our code; each break gets a `signature` and `ours`; `daily.ps1` starts a fix run only for ours + a signature not in `build/watch/known-breaks.txt` (seeded with Fx.Stun and Infernus-on-5977); fix-prompt adds a line per handled break. Docs 10 §3.3/§5/§7/§8, 03 §5b.
+**Results:** a headless run with the watch's settings ran `python tools/preflight.py` with no refusal (PREFLIGHT CLEAN). Triage on the last two days: Sonnet found `exception:NullReferenceException:Fx.Stun` (ours), `coop:steam-lobby-join-timeout` and `not-loaded:…` (not ours), about 30 cents. Haiku found nothing (1.7 cents). The script's matching skipped the known Fx.Stun and would start a run for a new exception in our code. An earlier try that let the model judge "known" was unreliable both ways.
+**Not done / open:** the Fx.Stun fix ships with the next release; `gh` still not installed.
+**Lessons:** let the model describe (signature, ours) and let the script decide; a `:*` permission rule is a word prefix.

@@ -98,7 +98,7 @@ try {
     $claude = Claude-Exe
     Set-Location $Root
 
-    # --- Melty triage: breaks reported on the live release since the last check (small model, read-only Melty tools)
+    # --- Melty triage: breaks reported on the live release since the last check (Sonnet, read-only Melty tools)
     $breaks = @()
     $checkedAt = (Get-Date).ToUniversalTime().ToString('o')
     if (-not $SkipMelty) {
@@ -107,14 +107,20 @@ try {
         # Windows PowerShell drops bare double quotes from native arguments, hence the \"
         $schema = ((Get-Content (Join-Path $PSScriptRoot 'triage-schema.json') -Raw) -replace '\s+', ' ').Replace('"', '\"')
         Say 'Melty triage...'
-        $out = & $claude -p $prompt --model haiku --max-turns 20 --allowedTools $ro --output-format json --json-schema $schema | Out-String
+        $out = & $claude -p $prompt --model sonnet --max-turns 40 --allowedTools $ro --output-format json --json-schema $schema | Out-String
         Add-Content -Path $Log -Value $out -Encoding utf8
         try {
             $triage = ($out | ConvertFrom-Json).structured_output
             if (-not $triage) { throw 'no structured_output' }
             $triage | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $Watch 'triage.json') -Encoding utf8
-            $breaks = @($triage.breaks | Where-Object { $_ })
-            Say "Melty: live $($triage.liveVersion), $($breaks.Count) new break(s). $($triage.summary)"
+            # A break starts a fix run only if it is ours and its signature isn't in build/watch/known-breaks.txt
+            # (handled before: fixed but unreleased, or judged not ours). The script matches, not the model.
+            $knownFile = Join-Path $Watch 'known-breaks.txt'
+            $known = @(if (Test-Path $knownFile) { Get-Content $knownFile | Where-Object { $_ -and $_ -notmatch '^#' } | ForEach-Object { ($_ -split '\|')[0].Trim() } })
+            $all = @($triage.breaks | Where-Object { $_ })
+            foreach ($b in $all) { Say ("  {0} ours={1} {2}: {3}" -f $(if ($known -contains $b.signature) { 'known' } else { 'new  ' }), $b.ours, $b.signature, $b.summary) }
+            $breaks = @($all | Where-Object { $_.ours -and ($known -notcontains $_.signature) })
+            Say "Melty: live $($triage.liveVersion), $($breaks.Count) new break(s) of ours out of $($all.Count). $($triage.summary)"
         } catch {
             Say 'Melty triage gave no readable answer; treating as no breaks (see the log)'
             $checkedAt = $state.meltySeenUntil
