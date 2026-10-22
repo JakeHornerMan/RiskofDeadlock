@@ -21,6 +21,9 @@ Rules for this run:
 - Don't push to `main` and never force-push. The only push allowed is a tag `extractor-<Program.Version>` when
   `extractor/*.cs` changed (GitHub builds the exe that Melty needs; then `python tools/fetch_extractor.py <ver>`).
 - Don't change balance, abilities or anything a player would notice beyond the fix.
+- Never close the creator's programs to free memory. The co-op test (`run_coop_test.sh`, two copies of the game) needs
+  about 5 GB free; run it only if the fix touched co-op code (`Net.cs`, `Relay`, a state's server/owner split) and
+  enough memory is free, otherwise say in the report that it is owed.
 
 Steps:
 1. **If Deadlock changed:** refresh the Deadlock listings in `tools/dev/` with `python tools/dev_listings.py` (doc 01 §8; it
@@ -33,16 +36,31 @@ Steps:
 3. **If Melty breaks were reported:** read them, reproduce from the logs, find the cause. Only breaks on the live version count.
 4. Test: `bash tools/run_test.sh` (every hero, because a game update touches all of them; for a Melty break that
    concerns one hero, that hero only), then `BREAK=infernus bash tools/run_test.sh haze` (the fallback check),
-   then `bash tools/lab_restore.sh`. A healthy run ends with every check `pass` and `N/N heroes`.
+   then `bash tools/lab_restore.sh`. A healthy run ends with every check `pass` and `N/N heroes`. These dev runs load
+   every sheet hero (Rat King too); the release check in step 7 uses the Melty cut.
 5. **If everything passes and nothing needed fixing:** commit nothing but the report (below); don't publish.
 6. **If something failed:** fix it, rebuild, re-test until every check passes. Commit after each logical step.
-7. **Publish (only if allowed above and every check passed after a fix):** follow doc 03 §6 exactly. Bump the patch
-   version (`plugin/Plugin.cs` and a `thunderstore/CHANGELOG.md` section), `python tools/package.py <ver> --melty` (same cut as
-   the live release: `thunderstore/release.json` `melty`), `inspect_package`, the last recipe with the new fileName and
-   `setup.done.contains`, `validate_recipe`, `start_upload` → curl PUT → `finish_upload`, `submit_release`, `test_release`
-   (2 runs) → poll `test_result` until done, then `publish` and `mod_status`. If the Melty test fails, fix and test again or stop
-   without publishing. If you rewrite the listing text, keep the "Hero pages" section and the "Built with" line. For a
-   Melty break, `report_bug_fix` after publishing.
+7. **Publish (only if allowed above and every check passed after a fix):**
+   - **First make sure you would ship only the fix.** Find the commit that set `plugin/Plugin.cs` `Version` to Melty's live
+     version (`mod_status` `liveVersion`; `git log -S'Version = "<live>"' -- plugin/Plugin.cs`). If `main` has commits after
+     it that change `plugin/`, `design/` or `extractor/` and aren't yours from this run, that is the creator's unreleased
+     work: **don't publish**; leave the fix on the branch and say so in the report (the first night, 2026-10-22, did exactly
+     this because the Seven redesign was unreleased).
+   - Then follow doc 03 §6 exactly (the 0.9.1 entry there is the latest reference). Bump the patch version (`plugin/Plugin.cs`
+     and a `thunderstore/CHANGELOG.md` section), `python tools/package.py <ver> --melty` (same cut as the live release:
+     `thunderstore/release.json` `melty` and `comingSoon`).
+   - Test the zip as players get it: `RELEASE_ZIP=build/DeadlockOfRain-<ver>.zip bash tools/run_test.sh` and
+     `RELEASE_ZIP=build/DeadlockOfRain-<ver>.zip BREAK=infernus bash tools/run_test.sh haze`, then `lab_restore`.
+   - Recipe: the last one with the new fileName and `setup.done.contains` (`|<extractor ver>|<first 16 hex of the SHA-256 of
+     the zip's extract/manifest.json>`), and `test.checks` = **the first 12 lines of `build/checks.txt`** from the release run,
+     in that order (Melty reads only the first 12). `inspect_package`, `validate_recipe`, `start_upload` -> curl PUT ->
+     `finish_upload`, `submit_release`.
+   - `test_release` (2 runs, 12 minutes). Nobody may touch the PC; it plays itself. Poll `test_result`. After each run, look at
+     its recording with `test_footage` (both parts) and give `test_review` with frames you looked at: a run only counts with a
+     passing review. If the test fails, fix and test again, or stop without publishing.
+   - Listing: edit `thunderstore/melty-description.md` (keep "Hero pages", set the "Built with" line to the new version and
+     builds) and pass it to `update_mod`. Then `publish` and `mod_status` ("in review" is not "live").
+   - For a Melty break, `report_bug_fix` with its issue key after publishing.
 8. For every Melty break you handled (fixed, or found not to be ours), append its `signature` (from the triage JSON above) to
    `build/watch/known-breaks.txt` as `<signature> | <date> <what happened>: <fixed on main / released in X / not ours, why>`.
    A break with a listed signature never starts a fix run again. If a signature was wrong (two causes share it), make the

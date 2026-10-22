@@ -57,7 +57,7 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 - **The Melty token is secret:** only in Melty's Authorization header, never in files, commits, logs or replies.
 - **Commit after each logical step; do not push unless asked.** Ask the creator before `publish` on Melty. The one
   exception is the **daily watch** (`tools/watch/`, doc 03 §5b): its unattended fix run may publish a fix on its own, but
-  only after every check and Melty's `test_release` pass.
+  only after every check and Melty's `test_release` pass, and only when `main` holds no unreleased work besides the fix (doc 10 §3.4).
 - **Don't launch the game for the creator's playtests.** Leave the build installed and tell them it is ready.
   Launching for automated test runs is fine; run `tools/lab_restore.sh` afterwards.
 - **Keep the ability docs current.** `docs/06-CURRENT-ABILITIES.md` lists every survivor's abilities with their numbers

@@ -128,13 +128,24 @@ What the prompt tells Claude to do:
 3. **RoR2 changed:** `dotnet build plugin -c Release`. If the build fails, decompile RoR2 again and compare the APIs.
 4. **Melty breaks:** read the logs and find the cause (live version only).
 5. Test: `bash tools/run_test.sh` (every hero for a game update; only the affected hero for a one-hero Melty break), then
-   `BREAK=infernus bash tools/run_test.sh haze` (the fallback system), then `bash tools/lab_restore.sh`.
+   `BREAK=infernus bash tools/run_test.sh haze` (the fallback system), then `bash tools/lab_restore.sh`. The co-op test
+   only if the fix touched co-op code **and** about 5 GB of memory is free (two game copies; on 2026-10-22 Claude Code killed
+   it at 1.9 GB free). The run never closes the creator's programs to make room; it reports the test as owed instead.
 6. Everything passes and nothing needs fixing: no release, just the report.
 7. Something failed: fix it, rebuild and re-test until every check passes, committing after each step.
-8. **Publish** (only if allowed and every check passed): doc 03 §6 step by step. Bump the patch version and add a CHANGELOG
-   section, run `package.py <ver> --melty` (same cut as the live release), then `inspect_package` → recipe →
-   `validate_recipe` → upload → `submit_release` → `test_release` (2 runs) → `test_result` → `publish` → `mod_status`.
-   Keep "Hero pages" and the "Built with" line in the listing. Use `report_bug_fix` for a Melty break.
+8. **Publish** (only if allowed and every check passed):
+   - **Only the fix may ship.** If `main` has commits since the live version's release that change `plugin/`, `design/` or
+     `extractor/` and aren't the run's own, that is unreleased work: the run doesn't publish and says so (the first night
+     held the Abrams fix back because the Seven redesign was unreleased; it went out with 0.9.1).
+   - doc 03 §6 step by step (0.9.1 is the reference): bump the patch version and add a CHANGELOG section, `package.py <ver>
+     --melty` (same cut as the live release, `coming-soon.txt` included).
+   - Test the zip as players get it: `RELEASE_ZIP=build/DeadlockOfRain-<ver>.zip` on `run_test.sh` and the BREAK run.
+   - Recipe `test.checks` = the **first 12 lines** of that run's `build/checks.txt`, in order (Melty reads only 12; since 0.9.1
+     `coming-soon-tile` is the third). `setup.done.contains` from the zip's own manifest hash.
+   - `inspect_package` -> `validate_recipe` -> upload -> `submit_release` -> `test_release` (2 runs) -> `test_result`, plus
+     `test_footage` and a `test_review` for **each** run (a run only counts with a passing review).
+   - Listing from `thunderstore/melty-description.md` (Hero pages kept, Built-with line updated) -> `update_mod` ->
+     `publish` -> `mod_status`. `report_bug_fix` for a Melty break.
 9. Record it: a doc 07 entry ("daily watch <date>: ..."), doc 00 §1/§9, MODLOG and any doc the fix touched, all in the same commit.
 10. **Report:** always write `build/watch/<date>-report.md`, even after stopping early. Its first line is the notification
     text. If `gh` is installed and signed in, also open a GitHub issue with the same text.
@@ -178,6 +189,7 @@ Nothing uses `--dangerously-skip-permissions`.
 | `build/watch/<date>.log` | Everything the script and both Claude runs printed |
 | `build/watch/triage.json` | The last triage answer |
 | `build/watch/known-breaks.txt` | Break signatures already handled; they never start a fix run again |
+| `thunderstore/melty-description.md` | The Melty listing text the fix run edits and passes to `update_mod` (since 0.9.1) |
 | `build/watch/<date>-report.md` | The fix run's report (first line = notification) |
 | `build/watch/lock` | Present while a run is going |
 
@@ -222,6 +234,8 @@ first). If it published, Melty already has that version.
 | `python tools/x.py` refused although the list allows it (first real run, 2026-10-22) | **Fixed 2026-10-22.** The rule was `Bash(python tools/:*)`. A `:*` rule is a word prefix: the command must continue with a space after it, so `python tools/gen.py` never matched (`python -c:*` worked). Partial-word rules now use a plain `*` (`Bash(python tools/*)`, `Bash(git tag extractor-*)`, `Bash(git push origin extractor-*)`). A headless test ran `python tools/preflight.py` with no refusal. Each part of a `&&` or `|` chain is checked on its own, and `$VARS` are refused, so the prompt asks for plain commands with literal paths (`cd`, `echo`, `sort`, `uniq`, `sed -n` are allowed now). |
 | The triage misses an error that is in `player_logs` | Check the log's `known`/`new` lines. If nothing was listed, the model didn't open the logs: re-run with `-DryRun` off and read `triage.json`. If the signature was listed as `known` wrongly, make that line in `known-breaks.txt` more specific. |
 | Nothing happens at 04:00 | The PC was off or the user was logged out (the task runs only while logged on). It runs at the next logon. Check `Get-ScheduledTaskInfo` → `LastTaskResult`. |
+| Fix run published nothing although every check passed | Either `-NoPublish`, or `main` held unreleased work (§3.4 step 8). The report says which; release it with the creator in a normal session. |
+| Co-op test killed for memory | Two game copies need about 5 GB free. The fix run skips it and reports it owed; run `run_coop_test.sh <heroes>` yourself after closing big apps. |
 | Stale `build/watch/lock` | A run crashed hard. It is ignored after 12 h, or delete it. |
 
 Windows PowerShell 5.1 gotchas found while building it:
@@ -234,6 +248,9 @@ Windows PowerShell 5.1 gotchas found while building it:
   tests, all 7 heroes passing, and fixed the Shoulder Charge stun exception from players' logs without publishing (`main`
   also held the unreleased Seven redesign). It also found the two watch problems fixed the same day: the `python tools/*`
   rule and the triage missing the exception (§3.3, §7).
+- **0.9.1 (2026-10-22)** shipped the first night's Abrams fix, with the creator at the PC. What that release taught the fix
+  run is now in its prompt (§3.4 step 8): test with `RELEASE_ZIP`, the 12-check limit, footage reviews, the listing file,
+  the co-op memory need, and never shipping unreleased work. `known-breaks.txt` now says the Fx.Stun fix is in 0.9.1.
 - It runs only while the PC is on and the creator is logged on. A patch on a day the PC is off is caught on the next run.
 - It only sees updates Steam has installed on this PC. If Steam auto-update is off, the watch won't know about a patch.
 - `gh` isn't installed, so there are no GitHub issues yet (`winget install GitHub.cli`, `gh auth login`).

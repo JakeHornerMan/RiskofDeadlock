@@ -266,6 +266,8 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
   join address; Melty test `65dcf162-…` passed 2/2. Release `09294a1d-…` **published, in safety review**.
 - The installed build is now Melty's 0.9.1 (six heroes) and the cache is the release cut (no Rat King model): run
   `dev_run.sh` or a full-manifest extraction before working on Rat King again.
+- The overnight check's prompt and doc 10 now carry what 0.9.1 taught (RELEASE_ZIP, 12 checks, footage reviews, listing file,
+  only-the-fix rule, co-op memory).
 - Next: `mod_status` to confirm live; `install_outcomes` / `player_logs` on 0.9.1; a real friend joining over Steam; the Mina conflict.
 
 ## 9-prev10. The watch's two fixes (2026-10-22)

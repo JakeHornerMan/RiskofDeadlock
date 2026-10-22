@@ -239,7 +239,7 @@ Claude runs under the creator's own `claude` login.
      goes back to `main`, and keeps the branch only if it has commits. If `gh` is installed and signed in, it also opens a
      GitHub issue (gh isn't installed yet).
 - **Publishing:** the creator's standing permission for this watch (2026-10-21: "push the fix to melty when you are
-  done!") lets the fix run `publish` **only after every check passes** and Melty's `test_release` passes. Every other
+  done!") lets the fix run `publish` **only after every check passes** and Melty's `test_release` passes (with a footage review of each run), and **only when the release would hold nothing but the fix** (no unreleased work of the creator's on `main`; doc 10 §3.4). Every other
   session still asks before publishing. The branch is left for the creator to merge into `main`. The only push allowed
   is an `extractor-<ver>` tag, when the extractor changed and Melty needs the GitHub-built exe.
 - **Game launches:** the creator allowed the watch to start RoR2 for its tests when no Steam game is running ("Yes, if the
