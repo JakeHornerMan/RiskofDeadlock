@@ -241,6 +241,7 @@ namespace DeadlockOfRain
             foreach (var r in RatCrowd.Take(n))
                 s.rats.Add(new SRat { R = r, State = S.Pour, Angle = Random.value * Mathf.PI * 2f, Delay = Random.value * 0.5f });
             if (s.loop == 0) s.loop = Fx.Loop(row.Id, owner.footPosition);
+            Log.Info($"rat swarm: {n} rats out for {owner.GetUserName()} (server {NetworkServer.active}), {Bites} bites so far");
             MeltyTest.Report("rat-swarm", true, owner.baseNameToken);
         }
 

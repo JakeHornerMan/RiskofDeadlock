@@ -2,7 +2,7 @@
 
 ## Versions
 - Risk of Rain 2 1.5.0#1210 (Unity 2021.3.45, Mono), BepInEx 5.4.23.5 (Melty installs it)
-- Deadlock ClientVersion 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
+- Deadlock ClientVersion 6817 (build 26143760, 2026-10-22 evening; no clip, mesh or sound change for our heroes); 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
 ## Route
@@ -138,6 +138,11 @@ lab restored Tue Oct 13 01:42:10 GMTST 2026
   on branch `watch/<date>` that may publish after every check passes. Stops if any Steam game is running. Doc 03 §5b.
 - 2026-10-22: first night caught Deadlock 6812 (nothing broke) and a Shoulder Charge stun exception (fixed, merged). Triage now Sonnet with
   signatures + `build/watch/known-breaks.txt`; `Bash(python tools/*)` rule fixed (a `:*` rule needs a space after the prefix).
+
+## 0.10.0 (2026-10-22)
+- Melty: seven heroes (Rat King playable), Billy the black-silhouette coming-soon tile (his work in progress ships inert).
+  Built with Deadlock 6817 (updated that evening; listings: +2 files, no clip/mesh/sound change; cache 8/8). Joined-player
+  Scrap Grenade sends its start point (doc 02 gotcha 30); co-op Rat Swarm window 5 s. No Melty test, at the creator's request.
 
 ## 0.9.1 (2026-10-22)
 - Melty: six heroes (new Seven), Rat King a black-silhouette coming-soon tile, co-op joinable from Melty's Play (title-screen

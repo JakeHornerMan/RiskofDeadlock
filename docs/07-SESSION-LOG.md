@@ -945,3 +945,16 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Results:** docs and prompt only; nothing run.
 **Not done / open:** the fix run's publish path is still untried end to end.
 **Lessons:** none new.
+
+### 2026-10-22 · 0.10.0: Rat King playable, Billy coming soon, checked on Deadlock 6817 · v0.10.0 · commits f2a5a11 and the commit that adds this entry
+**Request (verbatim):** "can we do a new release with the rat  king but not billy, billy will be out new greyed out character! just disable his button so you can never select him"; then "deadlock just had and update can you also make sure we are not pushing any bigs justa  quick check on the new file that everything is in working order for our release"; "imm updaating deadlock no make sure everythings ok"; "ok so please when this dont do the melty test and uplad staright away no more question... if something is brokene fix it and then upload"
+**Questions asked → answers:** version → "0.10.0"; publish after Melty's test passes → "Publish when it passes" (later: no Melty test at all); start the game for tests → "Yes, start now"; after the co-op run was stopped for low memory → "Re-run co-op test".
+**Done:**
+- Billy's uncommitted work committed as work in progress (`f2a5a11`); his notes relabelled v0.11.0; his shared-code touches read and found inert for other heroes.
+- `thunderstore/release.json`: `melty` + ratking, `comingSoon: ["billy"]` (the existing coming-soon tile: locked, black silhouette). Version 0.10.0, CHANGELOG, `melty-description.md`.
+- Deadlock 6817: waited for Steam to finish, `dev_listings.py` (+2 files, nothing for our heroes), PREFLIGHT CLEAN, cache rebuilt 8/8.
+- Co-op fixes: `ScrapThrow` sends `ownerFrom` (doc 02 gotcha 30); co-op test window 5 s for `ult_swarm`; a `rat swarm:` log line and rat bites in the co-op result.
+- Docs 02 (coming soon, gotcha 30), 03, 06, MODLOG, doc 00 §1/§9.
+**Results:** run_test (release zip) 7/7 heroes 28/28 incl. `coming-soon-tile` for Billy; BREAK=infernus haze 20/20; run_test ratking 20/20 after the fix. Co-op ratking: run 1 swarm 0 damage (test window); run 2 desynced (the joiner never moved on the host; no conclusion); run 3 stopped for low memory (two copies ~5.5 GB, 1.5 GB free); run 4 swarm 444 / 37 bites, scrap 0 (start-point bug); run 5 after the fix scrap 288 + both slows, swarm 924 / 77 bites, banner hit and stunned but showed 1.3 m of movement (8-17 m in runs 1, 2-desync aside, 4). Melty release `ab990a7a-…` published without a Melty test, in safety review.
+**Not done / open:** the co-op banner leap's movement on the host (one run in four); Rat King's kit page still to be shared by the creator; Billy for 0.11.0.
+**Lessons:** a throw needs its start point sent as well as its direction; a move with no duration needs a longer co-op window; check free memory before a co-op run (a run gets killed below ~2 GB).

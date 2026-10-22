@@ -84,12 +84,20 @@ namespace DeadlockOfRain.States
     public sealed class ScrapThrow : DlrState
     {
         bool thrown;
+        /// <summary>Where the owner's throw leaves from, against its body's core. Elsewhere the gun and aim origin of a joined
+        /// player's body sit elsewhere (the host saw it 1.2 m higher), so the grenade flew over the enemy it hit on the owner.</summary>
+        Vector3 ownerFrom;
         public override void OnEnter()
         {
             base.OnEnter();
             dur = row.Duration / attackSpeedStat;
-            // the owner aims it at the crosshair point; the direction travels with the state (OwnerAim) to everyone else
-            if (isAuthority) OwnerAim = ScrapAim.Dir(characterBody, GetAimRay(), ScrapAim.From(characterBody, MuzzlePos()));
+            // the owner aims it at the crosshair point; the direction and start travel with the state (OwnerAim, ownerFrom) to everyone else
+            if (isAuthority)
+            {
+                var from = ScrapAim.From(characterBody, MuzzlePos());
+                ownerFrom = from - characterBody.corePosition;
+                OwnerAim = ScrapAim.Dir(characterBody, GetAimRay(), from);
+            }
             if (anim) anim.Gesture("secondary", 1.4f);
             Sound("cast");
             characterBody.SetAimTimer(2f);
@@ -103,8 +111,20 @@ namespace DeadlockOfRain.States
         void Throw()
         {
             thrown = true;
-            var from = ScrapAim.From(characterBody, MuzzlePos());
+            var from = isAuthority || ownerFrom == Vector3.zero ? ScrapAim.From(characterBody, MuzzlePos()) : characterBody.corePosition + ownerFrom;
             DlrScrap.Launch(characterBody, row, from, OwnerAim != Vector3.zero ? OwnerAim : ThrowDir, Server);
+        }
+
+        public override void OnSerialize(UnityEngine.Networking.NetworkWriter writer)
+        {
+            base.OnSerialize(writer);
+            writer.Write(ownerFrom);
+        }
+
+        public override void OnDeserialize(UnityEngine.Networking.NetworkReader reader)
+        {
+            base.OnDeserialize(reader);
+            ownerFrom = reader.ReadVector3();
         }
         public override void OnExit()
         {

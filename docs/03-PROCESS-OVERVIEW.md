@@ -270,7 +270,7 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
    - `extract/{DeadlockExtract.exe, manifest.json, THIRD-PARTY-NOTICES.txt, LICENSE.txt}`
 
    `extract/manifest.json` comes from `extractor/manifest.json`, so it is current. **`--melty` (0.9.0)** cuts the Melty zip to
-   `thunderstore/release.json` `melty` (0.9.0: the six without Rat King) and writes `coming-soon.txt` from `comingSoon` (locked
+   `thunderstore/release.json` `melty` (0.9.0: the six without Rat King; 0.10.0: seven with Rat King, Billy coming soon) and writes `coming-soon.txt` from `comingSoon` (locked
    tiles, black silhouettes since 0.9.1; only their portrait stays in the manifest); every Melty zip writes that file, so a later full zip clears it. `--release` cuts the zip to `thunderstore/release.json`'s heroes (v0.7.1: the four originals); then `setup.done.contains` uses the hash of the **cut** manifest in the zip. If `extractor/*.cs` changed, publish the exe first.
    **Since v0.7.2 `package.py` also:** refuses to run if `Plugin.Version` isn't `<ver>` or `thunderstore/CHANGELOG.md` has no
    `## <ver>` section; reads the creator's RoR2 Steam build (`appmanifest_632360.acf`) and Deadlock ClientVersion

@@ -87,7 +87,7 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
      `comingSoon`) gets the same locked placeholder (`MissingHeroes.Add(..., why: null)`), with its own portrait (`imageSmall`, the only
      thing of it the cut manifest keeps) blacked out to a silhouette (0.9.1: RGB 0, its alpha kept; 0.9.0 greyed it), a black colour,
      and the hover "<name>: coming soon". Nothing else of it loads (no body, ult or sounds). The 0.9.0 and 0.9.1 Melty releases show
-     Rat King this way. Test check `coming-soon-tile` (written whenever `coming-soon.txt` lists a hero): the tile exists, can't be
+     Rat King this way; 0.10.0 (Rat King playable) shows Billy. Test check `coming-soon-tile` (written whenever `coming-soon.txt` lists a hero): the tile exists, can't be
      picked, and its portrait has a shape (10 %â€“99 % of pixels opaque) with no lit pixel.
    - **Since v0.7.2 a skipped hero keeps a locked red "!" tile** (`Content/MissingHeroes.cs`, creator 2026-10-19). It is a
      Commando-clone body (`Deadlock<Name>MissingBody`, its own asset id) whose `portraitIcon` is a red "!" drawn in code (no
@@ -983,6 +983,12 @@ the other is the **host** (only the host writes checks). How to run it: doc 03 Â
     server deals, never happens. Now a copy that ends within 1.5 s of the fuse goes off in `OnExit` (`Explode()`); one ended
     earlier (the bearer died) doesn't. Any state whose server-side effect waits on `fixedAge` near the owner's exit has the same
     risk: let it fire on exit, or give the owner enough slack.
+30. **A throw's start point differs between machines** (0.10.0, a joined player's Scrap Grenade did no damage on the host in
+    one of two co-op tests): `OwnerAim` carried the direction, but each machine took the start from its own view of the gun and
+    aim origin, and the host saw a joined player's 1.2 m higher. The owner's grenade landed on the enemy at once; the host's
+    flew over it and 170 m away. `ScrapThrow` now also sends `ownerFrom` (the start against the body's core) in
+    `OnSerialize`. Any throw whose first metre decides the hit should send its start too. (The same tests showed the co-op
+    window for Rat Swarm, which has no duration, was too short for its rats to reach a bite: it is 5 s now.)
 
 - **Flat max health from buffs (trophies) and vanilla's heal/clamp (v0.7.1f).** `RecalculateStats` compares the new max health
   with the old one and heals the gain or cuts health above the new max. Our `StatsPatch` adds `maxHealthAdd` in a postfix,

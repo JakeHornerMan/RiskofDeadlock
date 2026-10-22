@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.0
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6817 (v0.10.0, 2026-10-22).
+- Rat King joins the Melty build as its seventh playable hero: Sovereign's Decree, the hopping Scrap Grenade, Royal Pestments, the banner leap Rule, Ratannia! and the Rat Swarm ult (not part of this store release yet; the four heroes here are unchanged).
+- Billy takes Rat King's place as the locked "coming soon" tile.
+- Co-op: a friend's Scrap Grenade now always hits on the host too (it could fly over the enemy it hit on their screen).
+- Checked against Deadlock's update of 22 October (build 6817): every hero reads and plays.
+
 ## 0.9.1
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6813 (v0.9.1, 2026-10-22).
 - Seven is redesigned: a yellow Lightning Ball that slows to half speed over enemies, a retuned Static Charge, and Storm Cloud on R in place of Power Surge (fly for 10 s inside a storm that shocks the 3 nearest enemies). Thunderhead has its own icon.

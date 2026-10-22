@@ -1,6 +1,6 @@
 {
   "name": "Risk_of_Deadlock",
   "heroes": ["haze", "abrams", "seven", "infernus"],
-  "melty": ["haze", "abrams", "seven", "infernus", "mokrill", "viscous"],
-  "comingSoon": ["ratking"]
+  "melty": ["haze", "abrams", "seven", "infernus", "mokrill", "viscous", "ratking"],
+  "comingSoon": ["billy"]
 }

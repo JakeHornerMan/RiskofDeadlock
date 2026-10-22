@@ -171,7 +171,8 @@ namespace DeadlockOfRain
 
                     var fx = new Effects();
                     var victims = new HashSet<CharacterBody>(targets);
-                    float window = row.Slot == "primary" ? 6f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
+                    // Rat Swarm has no duration: its rats pour out, run and leap before the first bite (~2 s, plus the joiner's lag)
+                    float window = row.Slot == "primary" ? 6f : Mathf.Clamp(row.Duration + 1.5f, row.Kind == "ult_swarm" ? 5f : 2.5f, 7f);
                     System.Action<DamageReport> onDamage = rep => { if (rep != null && rep.attackerBody == body && rep.victimBody && victims.Contains(rep.victimBody)) fx.Damage += rep.damageDealt; };
                     System.Action<HealthComponent, float, ProcChainMask> onHeal = (hc, amount, mask) => { if (hc == body.healthComponent && amount > 0f) fx.Healed += amount; };
                     GlobalEventManager.onServerDamageDealt += onDamage;
@@ -202,7 +203,7 @@ namespace DeadlockOfRain
                     }
                     var missing = fx.Missing(row);
                     if (row.Slot == "equipment" && !fx.Charged) missing.Add($"{row.Cooldown:0} s cooldown");
-                    Log.Info($"Melty test: co-op {row.Id} (joined player): {fx} -> {(missing.Count == 0 ? "ok" : "MISSING " + string.Join(", ", missing))}");
+                    Log.Info($"Melty test: co-op {row.Id} (joined player): {fx}, rat bites {RatSwarm.Bites} -> {(missing.Count == 0 ? "ok" : "MISSING " + string.Join(", ", missing))}");
                     if (missing.Count == 0) ok++; else heroWhy += $"{row.Id}: no {string.Join(", ", missing)}; ";
                     yield return new WaitForSeconds(0.5f);
                 }
