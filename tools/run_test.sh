@@ -23,6 +23,13 @@ for V in BREAK STAGE OFF; do [ -z "${!V}" ] || [[ "${!V}" =~ ^[A-Za-z0-9_,]+$ ]]
 [ -n "$OFF" ] && HEROES="$HEROES, \"off\": \"$OFF\""
 # VANILLA=1: a plain Commando run instead of the hero checks (with OFF=mod: the quit test's control run)
 [ -n "$VANILLA" ] && HEROES="$HEROES, \"vanilla\": true"
+# PRACTICE=1: when the test is done the game stays open on the test spot with 10 harmless enemies (AI off) within 10 m,
+# brought back when they die, for the creator to try the moves (creator, 2026-10-22); close it yourself afterwards
+[ -n "$PRACTICE" ] && HEROES="$HEROES, \"practice\": true"
+# PLAY=1 tools/run_test.sh billy: no checks, an ordinary run as that hero; the game stays open for the creator
+# (GOD=1 as well: the hero can't be hurt)
+[ -n "$PLAY" ] && HEROES="$HEROES, \"play\": true"
+[ -n "$GOD" ] && HEROES="$HEROES, \"god\": true"
 CHECKS="${1:-$(cygpath -aw "$(dirname "$0")/../build")\\checks.txt}"
 # stop any running game first, so the old logs can be removed and never mistaken for this run
 G=$(powershell -NoProfile -Command "(Get-Process -Name \"Risk of Rain 2\" -ErrorAction SilentlyContinue).Id"); [ -n "$G" ] && $UM win kill $G >/dev/null

@@ -1,6 +1,6 @@
 {
   "sheet": "animations",
-  "about": "Which of the hero's own Deadlock animation clips (names as VRF exports them from the player's install) plays for each RoR2 action. Locomotion columns play full-body; gesture columns (reload, secondary, utility, special*, ult*) play on the upper body from upperBodyBone so the legs keep running. 'none' = no clip for that action on purpose. The extractor exports only the clips named here. 'land' is none for Haze, Abrams and Seven: their Deadlock jump_landing clips are partial layers that crush the pose when played on their own. Gun rig: gunArms ('R' or 'LR') are held rigid in the aimPose clip's first frame and the chest turns so the gun points where the camera aims (no fire clip on the arms); gunBone (when the gun is not a child of the hand, e.g. Abrams' weaponPivot) is welded to gunHand with its aimPose offset. The heroes' shoot_idle clips are additive layers that point the guns ~60 deg at the floor on their own, so fire and fire_alt are none: shots use a procedural recoil kick on the rigid gun arms instead. muzzle/muzzleLeft: the bone at the end of the gun (right / second gun) where shots, tracers, muzzle flashes and thrown abilities start (none = the hand). ragdollBones / ragdollThickness: on death the hero goes limp (RoR2's RagdollController, as vanilla survivors): each listed bone gets a capsule (radius = ragdollThickness x its length to the next listed bone) and a joint to the nearest listed bone above it. clothParents: Deadlock cloth bones ($cloth_*) are exported without a parent; each is attached to the nearest of these bones (Abrams' coat), or none. rigPrefix: the gun rig's bones carry this prefix (Krill rides on Mo: rider_spine_1..3 aim, rider_clavicle_* hold the gun arms, rider_weapon_hand_* is the gun), none = the hero's own spine. loopSecondary: the secondary clip loops (Abrams' Siphon Life). special_loop: a looping full-body clip while the R move lasts (Dust Devil's tornado). melee/melee_alt: the punches thrown, alternating, by a melee M1 (Mo while Krill is away). special_start/special: the R move (special_start plays as it begins, e.g. Phantom Strike's blink or the haymaker wind-up; special on each hit or cast). ult*: the hero's ultimate, now their Q equipment (played only when the hero fires it). springRoots: chains of bones simulated as springs on top of the animation (Rat King's cape and tail; Runtime/SpringBones.cs): every bone below each root lags behind its parent, pulled back to its animated pose by springStiffness (0-1 per frame at 60 fps, stiff at the root, looser down the chain), slowed by springDamping (0-1) and pulled down by springGravity (m/s2), kept out of the body by capsules on the spine, arms and legs; the body's own motion drives how far they trail. none = no springs. propBones: bones carrying a prop the hero only holds during a move (Rat King's banner), scaled to 0 except while that move's state shows them. muzzleForward: when the muzzle bone sits at the gun's grip (Rat King's muzzle_fx), a muzzle point this many metres along its forward axis is made at the barrel's end (muzzle_tip), shots start there, and the gun rig aims the gun's own axis instead of the hand-to-muzzle line; 0 = the muzzle bone itself. Gesture columns are laid on in model space (since 0.9.1b): the upper body keeps the clip's own facing, as Deadlock layers it, instead of adding the clip's twist on top of the legs' hips (Seven's static_charge_upper_body had turned his head 100 deg sideways). steadyClips: clips whose own spin is taken out (the pelvis keeps the idle's facing, every limb still moves), for clips that turn the whole body round on the spot where RoR2 already turns the body (Seven's Storm Cloud hover); none = no clip.",
+  "about": "Which of the hero's own Deadlock animation clips (names as VRF exports them from the player's install) plays for each RoR2 action. Locomotion columns play full-body; gesture columns (reload, secondary, utility, special*, ult*) play on the upper body from upperBodyBone so the legs keep running. 'none' = no clip for that action on purpose. The extractor exports only the clips named here. 'land' is none for Haze, Abrams and Seven: their Deadlock jump_landing clips are partial layers that crush the pose when played on their own. Gun rig: gunArms ('R' or 'LR') are held rigid in the aimPose clip's first frame and the chest turns so the gun points where the camera aims (no fire clip on the arms); gunBone (when the gun is not a child of the hand, e.g. Abrams' weaponPivot) is welded to gunHand with its aimPose offset. The heroes' shoot_idle clips are additive layers that point the guns ~60 deg at the floor on their own, so fire and fire_alt are none: shots use a procedural recoil kick on the rigid gun arms instead. muzzle/muzzleLeft: the bone at the end of the gun (right / second gun) where shots, tracers, muzzle flashes and thrown abilities start (none = the hand). ragdollBones / ragdollThickness: on death the hero goes limp (RoR2's RagdollController, as vanilla survivors): each listed bone gets a capsule (radius = ragdollThickness x its length to the next listed bone) and a joint to the nearest listed bone above it. clothParents: Deadlock cloth bones ($cloth_*) are exported without a parent; each is attached to the nearest of these bones (Abrams' coat), or none. rigPrefix: the gun rig's bones carry this prefix (Krill rides on Mo: rider_spine_1..3 aim, rider_clavicle_* hold the gun arms, rider_weapon_hand_* is the gun), none = the hero's own spine. loopSecondary: the secondary clip loops (Abrams' Siphon Life). special_loop: a looping full-body clip while the R move lasts (Dust Devil's tornado). melee/melee_alt: the punches thrown, alternating, by a melee M1 (Mo while Krill is away). special_start/special: the R move (special_start plays as it begins, e.g. Phantom Strike's blink or the haymaker wind-up; special on each hit or cast). ult*: the hero's ultimate, now their Q equipment (played only when the hero fires it). springRoots: chains of bones simulated as springs on top of the animation (Rat King's cape and tail; Runtime/SpringBones.cs): every bone below each root lags behind its parent, pulled back to its animated pose by springStiffness (0-1 per frame at 60 fps, stiff at the root, looser down the chain), slowed by springDamping (0-1) and pulled down by springGravity (m/s2), kept out of the body by capsules on the spine, arms and legs; the body's own motion drives how far they trail. none = no springs. propBones: bones carrying a prop the hero only holds during a move (Rat King's banner), scaled to 0 except while that move's state shows them. muzzleForward: when the muzzle bone sits at the gun's grip (Rat King's muzzle_fx), a muzzle point this many metres along its forward axis is made at the barrel's end (muzzle_tip), shots start there, and the gun rig aims the gun's own axis instead of the hand-to-muzzle line; 0 = the muzzle bone itself. Gesture columns are laid on in model space (since 0.9.1b): the upper body keeps the clip's own facing, as Deadlock layers it, instead of adding the clip's twist on top of the legs' hips (Seven's static_charge_upper_body had turned his head 100 deg sideways). steadyClips: clips whose own spin is taken out (the pelvis keeps the idle's facing, every limb still moves), for clips that turn the whole body round on the spot where RoR2 already turns the body (Seven's Storm Cloud hover); none = no clip. melee_heavy / melee_air: the last, heaviest swing of a melee combo and a swing in the air (Billy's bat; melee and melee_alt are the first two swings); dash_air: the air dodge (G.O.A.T.); slam: diving down onto a target from the air (air Bashdown).",
   "columns": [
     "hero",
     "upperBodyBone",
@@ -45,7 +45,11 @@
     "special_loop",
     "melee",
     "melee_alt",
-    "death"
+    "death",
+    "melee_heavy",
+    "melee_air",
+    "dash_air",
+    "slam"
   ],
   "rows": [
     {
@@ -113,7 +117,11 @@
       "special_loop": "none",
       "melee": "none",
       "melee_alt": "none",
-      "death": "death_static_1"
+      "death": "death_static_1",
+      "melee_heavy": "none",
+      "melee_air": "none",
+      "dash_air": "none",
+      "slam": "none"
     },
     {
       "hero": "abrams",
@@ -184,7 +192,11 @@
       "special_loop": "none",
       "melee": "none",
       "melee_alt": "none",
-      "death": "death_generic"
+      "death": "death_generic",
+      "melee_heavy": "none",
+      "melee_air": "none",
+      "dash_air": "none",
+      "slam": "none"
     },
     {
       "hero": "seven",
@@ -252,7 +264,11 @@
       "special_loop": "storm_cloud_scalar",
       "melee": "none",
       "melee_alt": "none",
-      "death": "death_static_1"
+      "death": "death_static_1",
+      "melee_heavy": "none",
+      "melee_air": "none",
+      "dash_air": "none",
+      "slam": "none"
     },
     {
       "hero": "infernus",
@@ -319,7 +335,11 @@
       "special_loop": "none",
       "melee": "none",
       "melee_alt": "none",
-      "death": "none"
+      "death": "none",
+      "melee_heavy": "none",
+      "melee_air": "none",
+      "dash_air": "none",
+      "slam": "none"
     },
     {
       "hero": "mokrill",
@@ -386,7 +406,11 @@
       "special_loop": "ability_tornado_idle",
       "melee": "melee_quick_1",
       "melee_alt": "melee_quick_2",
-      "death": "none"
+      "death": "none",
+      "melee_heavy": "none",
+      "melee_air": "none",
+      "dash_air": "none",
+      "slam": "none"
     },
     {
       "hero": "viscous",
@@ -453,7 +477,11 @@
       "special_loop": "none",
       "melee": "none",
       "melee_alt": "none",
-      "death": "none"
+      "death": "none",
+      "melee_heavy": "none",
+      "melee_air": "none",
+      "dash_air": "none",
+      "slam": "none"
     },
     {
       "hero": "ratking",
@@ -525,7 +553,82 @@
       "special_loop": "ability_bearer_charge_air",
       "melee": "none",
       "melee_alt": "none",
-      "death": "none"
+      "death": "none",
+      "melee_heavy": "none",
+      "melee_air": "none",
+      "dash_air": "none",
+      "slam": "none"
+    },
+    {
+      "hero": "billy",
+      "upperBodyBone": "spine_0",
+      "gunArms": "R",
+      "gunBone": "weaponPivot",
+      "gunHand": "hand_R",
+      "muzzle": "muzzle_fx",
+      "muzzleLeft": "none",
+      "muzzleForward": 0.0,
+      "clothParents": [
+        "none"
+      ],
+      "ragdollBones": [
+        "pelvis",
+        "spine_1",
+        "spine_3",
+        "head",
+        "arm_upper_L",
+        "arm_lower_L",
+        "arm_upper_R",
+        "arm_lower_R",
+        "leg_upper_L",
+        "leg_lower_L",
+        "leg_upper_R",
+        "leg_lower_R"
+      ],
+      "ragdollThickness": 0.3,
+      "rigPrefix": "none",
+      "loopSecondary": false,
+      "springRoots": [
+        "none"
+      ],
+      "springStiffness": 0,
+      "springDamping": 0,
+      "springGravity": 0,
+      "propBones": [
+        "none"
+      ],
+      "steadyClips": [
+        "none"
+      ],
+      "aimPose": "weapon_stand_idle",
+      "idle": "weapon_stand_idle",
+      "run_n": "weapon_run_n",
+      "run_s": "weapon_run_s",
+      "run_e": "weapon_run_e",
+      "run_w": "weapon_run_w",
+      "sprint": "weapon_run_n",
+      "jump_start": "jump_ground",
+      "jump_air": "in_air_loop_down",
+      "land": "none",
+      "fire": "none",
+      "fire_alt": "none",
+      "reload": "reload_idle",
+      "secondary": "melee_quick_1",
+      "utility": "ult_intro_throw_bat_in_air",
+      "utility_loop": "none",
+      "special_start": "ability_goat_ram_intro",
+      "special": "ability_goat_ram_end",
+      "ult_start": "throw",
+      "ult_loop": "ability_ult_tether_loop",
+      "ult_end": "ability_ult_tether_pull",
+      "special_loop": "ability_goat_ram_loop",
+      "melee": "melee_quick_1",
+      "melee_alt": "melee_quick_2",
+      "death": "none",
+      "melee_heavy": "melee_quick_overhand_1",
+      "melee_air": "melee_in_air_hit",
+      "dash_air": "dash_air_forward",
+      "slam": "melee_in_air_dash_down"
     }
   ]
 }

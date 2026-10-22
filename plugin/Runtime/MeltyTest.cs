@@ -22,6 +22,12 @@ namespace DeadlockOfRain
         static MeltyTest instance;
         static readonly HashSet<string> seen = new HashSet<string>();
         static readonly HashSet<string> written = new HashSet<string>();
+        /// <summary>Test-mode file "practice": true: the practice ring after the checks (<see cref="PracticeRing"/>).</summary>
+        static bool Practice;
+        /// <summary>Test-mode file "play": true: an ordinary run as the first asked hero, unhurtable (<see cref="PlayRun"/>).</summary>
+        static bool Play;
+        /// <summary>Test-mode file "god": true (GOD=1, with PLAY=1): the player can't be hurt in the play run.</summary>
+        static bool God;
         static CharacterBody fireBody;
         static float fireUntil;
         /// <summary>The heroes this test run plays (test-mode file "heroes"); null = all of them.</summary>
@@ -71,6 +77,9 @@ namespace DeadlockOfRain
                 // the co-op test ("coop": true): the copy started with a join= line joins, the other hosts
                 Coop = System.Text.RegularExpressions.Regex.IsMatch(text, "\"coop\"\\s*:\\s*true");
                 Vanilla = System.Text.RegularExpressions.Regex.IsMatch(text, "\"vanilla\"\\s*:\\s*true");
+                Practice = System.Text.RegularExpressions.Regex.IsMatch(text, "\"practice\"\\s*:\\s*true");
+                Play = System.Text.RegularExpressions.Regex.IsMatch(text, "\"play\"\\s*:\\s*true");
+                God = System.Text.RegularExpressions.Regex.IsMatch(text, "\"god\"\\s*:\\s*true");
                 Joiner = Coop && MeltyJoin.JoinAddress != "";
                 // optional "heroes": "haze,abrams": the test (solo or co-op) plays only these
                 var hm = System.Text.RegularExpressions.Regex.Match(text, "\"heroes\"\\s*:\\s*\"([^\"]*)\"");
@@ -227,6 +236,19 @@ namespace DeadlockOfRain
                 while ((UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != TestStage || !user.cachedBody || user.cachedBody == old) && Time.unscaledTime - t0 < 90f) yield return null;
             }
             Log.Info($"Melty test: stage {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
+            // "play": true (PLAY=1 run_test.sh): no checks, an ordinary run as the hero that can't be hurt, through every stage
+            if (Play && Practice)
+            {
+                // PLAY=1 PRACTICE=1: no checks, straight into the practice ring (out of the drop pod first)
+                Log.Info("Melty test finished: play mode, straight to the practice ring");
+                yield return new WaitForSeconds(4f);
+                var pod = user.cachedBody;
+                if (pod && pod.currentVehicle) pod.currentVehicle.EjectPassenger(pod.gameObject);
+                yield return new WaitForSeconds(1.5f);
+                yield return PracticeRing(user.cachedMaster);
+                yield break;
+            }
+            if (Play) { yield return PlayRun(user); yield break; }
             yield return new WaitForSeconds(4f);
             // leave the drop pod so the hero stands in the open
             var first = user.cachedBody;
@@ -426,7 +448,7 @@ namespace DeadlockOfRain
                 }
                 // a bounce-pad R (Puddle Punch, launchHeight): placed at the hero's own feet it throws the hero up
                 var pad = Sheet.SkillOf(hero.Id, "special");
-                if (pad.LaunchHeight > 0)
+                if (pad.LaunchHeight > 0 && pad.Kind == "placed_punch")
                 {
                     body = master.GetBody();
                     KillTargets();
@@ -451,6 +473,16 @@ namespace DeadlockOfRain
                     Log.Info($"Melty test: {hero.Id} {pad.Id} at his feet: rose {top - y0:F1} m (want about {pad.LaunchHeight:F0})");
                     if (top - y0 < pad.LaunchHeight * 0.5f) kitWhy += $"{pad.Id}: bounced only {top - y0:F1} m; ";
                     yield return new WaitForSeconds(2.5f);
+                }
+                // Billy's air combat: the G.O.A.T. dodges, then an air bat swing at a floating enemy (it hits, holds him up, keeps
+                // the enemy floating past its float time and reloads part of Biquette)
+                if (hero.AirDodges > 0)
+                {
+                    var why = new string[1];
+                    yield return TestBillyBat(master, hero, why);
+                    kitWhy += why[0];
+                    yield return TestBillyAir(master, hero, why);
+                    kitWhy += why[0];
                 }
                 // a heal-back passive (Abrams' Infernal Resilience) gives part of a hit back over the next seconds
                 if (hero.DamageHealBack > 0f)
@@ -586,7 +618,7 @@ namespace DeadlockOfRain
             // Commando holding Dust Devil spins in the same tornado
             string anyWhy = ""; bool anyTested = false;
             // (only when its hero is among the tested ones)
-            foreach (var bomb in SkillRow.All.Where(r => (r.Kind == "ult_selfbomb" || r.Kind == "ult_devil" || r.Kind == "ult_gooball" || r.Kind == "ult_swarm") && tested.Any(h => h.Id == r.Hero)).ToList())
+            foreach (var bomb in SkillRow.All.Where(r => (r.Kind == "ult_selfbomb" || r.Kind == "ult_devil" || r.Kind == "ult_gooball" || r.Kind == "ult_swarm" || r.Kind == "ult_chains") && tested.Any(h => h.Id == r.Hero)).ToList())
             {
                 master.TransformBody("CommandoBody");
                 yield return new WaitForSeconds(1.5f);
@@ -635,6 +667,7 @@ namespace DeadlockOfRain
                                            .Where(e => e != "none" && !DeadlockAudio.Has(e)).Distinct().ToList();
             Write("sound-events", missingSound.Count == 0, "not in the cache: " + string.Join(", ", missingSound.Take(5)));
             Log.Info($"Melty test finished: {heroes}/{tested.Length} heroes: every skill did what its sheet expects; Deadlock sounds played: {DeadlockAudio.Played}");
+            if (Practice) { yield return PracticeRing(master); yield break; }
             if (lb) lb.healthComponent.godMode = false;
         }
 
@@ -828,6 +861,63 @@ namespace DeadlockOfRain
             foreach (var d in UnityEngine.Object.FindObjectsOfType<CombatDirector>()) d.enabled = false;
             foreach (var tc in TeamComponent.GetTeamMembers(TeamIndex.Monster).ToList())
                 if (tc && tc.body && tc.body.master && !targets.Contains(tc.body)) tc.body.master.TrueKill();
+        }
+
+        /// <summary>Test-mode file "play": true (PLAY=1 run_test.sh billy): the run goes on as normal (monsters spawn and attack, the
+        /// teleporter, every stage) with no checks; with "god": true (GOD=1) the player's body can't be hurt, on every stage and
+        /// after every respawn (creator, 2026-10-22). Logs "Melty test finished" at once so run_test.sh lets go.</summary>
+        static IEnumerator PlayRun(LocalUser user)
+        {
+            Log.Info($"Melty test finished: play mode, no checks; can't be hurt: {God}; the game stays open");
+            if (!God) yield break;
+            while (true)
+            {
+                var b = user != null ? user.cachedBody : null;
+                if (b && b.healthComponent && !b.healthComponent.godMode) b.healthComponent.godMode = true;
+                yield return new WaitForSeconds(0.5f);
+            }
+        }
+
+        /// <summary>Test-mode file "practice": true (PRACTICE=1 run_test.sh): after the checks the player stays on the test spot, can't be
+        /// hurt, and 10 enemies (Lemurians and Beetles, AI off: they never move or attack) stand in a ring 6-9.5 m around them, each
+        /// brought back a few seconds after it dies; the stage spawns nothing else. For the creator to try the moves (2026-10-22).</summary>
+        static IEnumerator PracticeRing(CharacterMaster master)
+        {
+            var body = master ? master.GetBody() : null;
+            if (!body) yield break;
+            KillTargets();
+            QuietStage();
+            var centre = arena != Vector3.zero ? arena : body.footPosition;
+            TeleportHelper.TeleportBody(body, centre + Vector3.up * 0.5f, false);
+            if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+            var spots = new List<Vector3>();
+            for (int i = 0; i < 10; i++)
+            {
+                float a = i * Mathf.PI * 2f / 10f;
+                var p = centre + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * (i % 2 == 0 ? 6f : 9.5f);
+                if (Physics.Raycast(p + Vector3.up * 6f, Vector3.down, out var g, 20f, LayerIndex.world.mask)) p = g.point;
+                spots.Add(p + Vector3.up * 0.5f);
+            }
+            var pack = new CharacterBody[spots.Count];
+            Log.Info("Melty test: practice ring: 10 harmless enemies within 10 m of the test spot; the game stays open");
+            while (true)
+            {
+                var b = master.GetBody();
+                if (b && b.healthComponent) b.healthComponent.godMode = true;
+                for (int i = 0; i < pack.Length; i++)
+                {
+                    if (pack[i] && pack[i].healthComponent && pack[i].healthComponent.alive) continue;
+                    var prefab = MasterCatalog.FindMasterPrefab(i % 3 == 2 ? "BeetleMaster" : "LemurianMaster");
+                    if (!prefab) continue;
+                    var m = new MasterSummon { masterPrefab = prefab, position = spots[i], rotation = Quaternion.identity, teamIndexOverride = TeamIndex.Monster, ignoreTeamMemberLimit = true }.Perform();
+                    if (!m) continue;
+                    foreach (var ai in m.GetComponents<RoR2.CharacterAI.BaseAI>()) ai.enabled = false;
+                    if (m.inventory) m.inventory.GiveItem(RoR2Content.Items.BoostHp, 30);
+                    pack[i] = m.GetBody();
+                }
+                foreach (var d in UnityEngine.Object.FindObjectsOfType<CombatDirector>()) d.enabled = false;
+                yield return new WaitForSeconds(3f);
+            }
         }
 
         static void KillTargets()
@@ -1077,10 +1167,230 @@ namespace DeadlockOfRain
             yield return new WaitForSeconds(0.5f);
         }
 
+        /// <summary>Billy's bat (M2), as the creator asked for it (2026-10-22): the key held down for 2 s swings once (a press
+        /// per swing); the swing lasts its row's duration (Deadlock's whole melee clip) and the cooldown is the same; pressed
+        /// again mid-swing nothing happens; three presses, each as the last swing ends, run the 3-hit combo (the third the
+        /// heavy one, splashPct). The player's own input is switched off meanwhile so the held key stays held. why[0] = "" on success.</summary>
+        IEnumerator TestBillyBat(CharacterMaster master, HeroRow hero, string[] why)
+        {
+            why[0] = "";
+            var body = master.GetBody();
+            var rt = body ? body.GetComponent<HeroRuntime>() : null;
+            var bat = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "bat_combo");
+            var gs = body ? body.skillLocator.secondary : null;
+            var weapon = body ? EntityStateMachine.FindByCustomName(body.gameObject, "Weapon") : null;
+            if (!rt || bat == null || !gs || !weapon) { why[0] = "billy bat: no runtime, row, slot or weapon machine; "; yield break; }
+            KillTargets();
+            if (arena != Vector3.zero)
+            {
+                TeleportHelper.TeleportBody(body, arena + Vector3.up * 0.5f, false);
+                if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+            }
+            var fwd = arenaForward;
+            var t = Summon(body, body.footPosition + fwd * 3f + Vector3.up * 0.5f);
+            if (t && t.master && t.master.inventory) t.master.inventory.GiveItem(RoR2Content.Items.BoostHp, 200);
+            if (t) targets.Add(t);
+            yield return new WaitForSeconds(1f);
+            weapon.SetNextStateToMain();
+            var pcmc = master.GetComponent<PlayerCharacterMasterController>();
+            if (pcmc) pcmc.enabled = false;
+            var ib = body.inputBank;
+            var look = t ? (t.corePosition - ib.aimOrigin).normalized : fwd;
+            float swingWant = bat.Duration / body.attackSpeed;
+            try
+            {
+                // 1. the skill: a key press per swing, cooldown = the swing
+                var def = gs.skillDef;
+                if (def.mustKeyPress != true) why[0] += "billy bat: holding the key repeats it (mustKeyPress off); ";
+                if (Mathf.Abs(def.baseRechargeInterval - bat.Duration) > 0.01f) why[0] += $"billy bat: cooldown {def.baseRechargeInterval:F2} s, swing {bat.Duration:F2} s; ";
+                gs.Reset();
+                ib.skill2.PushState(false);
+                yield return new WaitForFixedUpdate();
+
+                // 2. held down for 2 s: one swing only, lasting the clip
+                int before = States.BatCombo.Swings;
+                float start = -1f, end = -1f;
+                for (float w = 0f; w < 2f; w += Time.fixedDeltaTime)
+                {
+                    ib.aimDirection = look;
+                    ib.skill2.PushState(true);
+                    bool swinging = weapon.state is States.BatCombo;
+                    if (swinging && start < 0f) start = Time.time;
+                    if (!swinging && start >= 0f && end < 0f) end = Time.time;
+                    yield return new WaitForFixedUpdate();
+                }
+                ib.skill2.PushState(false);
+                int held = States.BatCombo.Swings - before;
+                float len = end > 0f ? end - start : -1f;
+                Log.Info($"Melty test: {hero.Id} M2 held 2 s: {held} swing(s), the swing lasted {len:F2} s (want 1, {swingWant:F2} s), cooldown {gs.skillDef.baseRechargeInterval:F2} s");
+                if (held != 1) why[0] += $"billy bat: holding M2 for 2 s swung {held} times (want 1); ";
+                if (len < swingWant - 0.08f || len > swingWant + 0.12f) why[0] += $"billy bat: a swing lasted {len:F2} s, want {swingWant:F2}; ";
+                yield return new WaitForSeconds(0.5f);
+
+                // 3. three presses, each right as the last swing ends: swings 1, 2, 3 of the combo; pressing mid-swing does nothing
+                rt.LastSwingEnd = -99f;
+                gs.Reset();
+                before = States.BatCombo.Swings;
+                int extra = 0;
+                for (int k = 0; k < 3; k++)
+                {
+                    // press: down for one step, then up
+                    ib.aimDirection = look;
+                    ib.skill2.PushState(true); yield return new WaitForFixedUpdate();
+                    ib.skill2.PushState(false); yield return new WaitForFixedUpdate();
+                    // a second press half way through the swing must not start another
+                    yield return new WaitForSeconds(swingWant * 0.4f);
+                    int mid = States.BatCombo.Swings;
+                    ib.skill2.PushState(true); yield return new WaitForFixedUpdate();
+                    ib.skill2.PushState(false); yield return new WaitForFixedUpdate();
+                    if (States.BatCombo.Swings != mid) extra++;
+                    while (weapon.state is States.BatCombo) yield return new WaitForFixedUpdate();
+                    // the cooldown ends with the swing
+                    for (float w = 0f; w < 0.3f && gs.stock < 1; w += Time.fixedDeltaTime) yield return new WaitForFixedUpdate();
+                    if (gs.stock < 1) why[0] += $"billy bat: not ready {0.3f:F1} s after swing {k + 1} ended; ";
+                }
+                int combo = States.BatCombo.Swings - before;
+                Log.Info($"Melty test: {hero.Id} M2 three presses: {combo} swings (want 3), combo at {rt.Combo} (want 3), {extra} extra swing(s) from mid-swing presses");
+                if (combo != 3) why[0] += $"billy bat: three presses gave {combo} swings; ";
+                if (rt.Combo != 3) why[0] += $"billy bat: the combo reached swing {rt.Combo}, want 3; ";
+                if (extra > 0) why[0] += $"billy bat: a press mid-swing started {extra} more; ";
+            }
+            finally
+            {
+                ib.skill2.PushState(false);
+                if (pcmc) pcmc.enabled = true;
+            }
+            KillTargets();
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        /// <summary>Billy's air combat (heroes airDodges): from the test spot he is put 6 m up; every dodge he has carries him most of
+        /// dodgeDistance and one more is refused; then a target is floated (Rising Ram's float) and he swings the bat at it from
+        /// 4.5 m away in the air (inside lockRange, out of the bat's reach): he must snap onto it, the swing must land, hold him up,
+        /// keep the target floating past its float time and reload part of the magazine. why[0] = "" on success.</summary>
+        IEnumerator TestBillyAir(CharacterMaster master, HeroRow hero, string[] why)
+        {
+            why[0] = "";
+            var body = master.GetBody();
+            var rt = body ? body.GetComponent<HeroRuntime>() : null;
+            var ram = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "rising_ram");
+            var bat = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "bat_combo");
+            var gunRow = body ? Survivors.RowFor(body.skillLocator.primary) : null;
+            if (!rt || ram == null || bat == null || gunRow == null) { why[0] = "billy air: no runtime, ram or bat; "; yield break; }
+            KillTargets();
+            var rest = EntityStateMachine.FindByCustomName(body.gameObject, "Weapon");
+            if (rest) rest.SetNextStateToMain();
+            var fwd = arenaForward;
+            var spot = arena != Vector3.zero ? arena : body.footPosition;
+            // the dodges
+            int done = 0; float least = 99f;
+            for (int i = 0; i <= hero.AirDodges; i++)
+            {
+                TeleportHelper.TeleportBody(body, spot + Vector3.up * 6f, false);
+                if (body.characterMotor) { body.characterMotor.velocity = Vector3.zero; body.characterMotor.jumpCount = body.maxJumpCount; }
+                AimCamera(body, fwd);
+                for (int f = 0; f < 5; f++) { body.inputBank.aimDirection = fwd; yield return new WaitForFixedUpdate(); }
+                var p0 = body.corePosition;
+                bool went = BillyAir.TryDodge(body);
+                yield return new WaitForSeconds(hero.DodgeTime + 0.1f);
+                var moved = body.corePosition - p0; moved.y = 0;
+                if (i < hero.AirDodges)
+                {
+                    if (!went) { why[0] += $"billy dodge {i + 1}: refused; "; continue; }
+                    done++; least = Mathf.Min(least, moved.magnitude);
+                }
+                else if (went) why[0] += $"billy dodge {i + 1}: allowed past airDodges {hero.AirDodges}; ";
+            }
+            Log.Info($"Melty test: {hero.Id} G.O.A.T.: {done}/{hero.AirDodges} dodges, the shortest went {least:F1} m (want about {hero.DodgeDistance:F0})");
+            if (done == hero.AirDodges && least < hero.DodgeDistance * 0.6f) why[0] += $"billy dodge went only {least:F1} m; ";
+            // land again before the swing
+            TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+            if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+            yield return new WaitForSeconds(0.6f);
+
+            // a floating target, Billy beside it in the air
+            var t = Summon(body, spot + fwd * 4f + Vector3.up * 0.5f);
+            if (!t) { why[0] += "billy air bat: no target; "; yield break; }
+            if (t.master && t.master.inventory) t.master.inventory.GiveItem(RoR2Content.Items.BoostHp, 200);
+            targets.Add(t);
+            yield return new WaitForSeconds(0.8f);
+            DlrLift.Float(t, ram.LaunchHeight, ram.MinDuration, ram.FloatTime);
+            float floatStart = Time.time;
+            yield return new WaitForSeconds(ram.MinDuration + 0.1f);
+            // 8 m off to one side and a little below: only the dodge-in brings the bat to it
+            var side = Vector3.Cross(Vector3.up, fwd);
+            TeleportHelper.TeleportBody(body, t.footPosition - (fwd * 0.8f + side * 0.6f).normalized * 8f - Vector3.up * 1f, false);
+            if (body.characterMotor) { body.characterMotor.velocity = Vector3.zero; body.characterMotor.jumpCount = body.maxJumpCount; }
+            rt.Reloading = false; rt.Ammo = 0;
+            float dealt = 0f;
+            System.Action<DamageReport> onDamage = r => { if (r != null && r.attackerBody == body && r.victimBody == t) dealt += r.damageDealt; };
+            GlobalEventManager.onServerDamageDealt += onDamage;
+            var look = (t.corePosition - body.inputBank.aimOrigin).normalized;
+            AimCamera(body, look);
+            body.inputBank.aimDirection = look;
+            var gs = body.skillLocator.secondary;
+            gs.Reset();
+            gs.ExecuteIfReady();
+            float swing = bat.Duration / body.attackSpeed;
+            float gap0 = Vector3.Distance(body.corePosition, t.corePosition);
+            yield return new WaitForSeconds(swing * 0.4f + 0.05f);
+            float gap1 = Vector3.Distance(body.corePosition, t.corePosition);
+            float y1 = body.footPosition.y;
+            yield return new WaitForSeconds(bat.HangTime * 0.6f);
+            float y2 = body.footPosition.y;
+            int ammo = rt.Ammo;
+            Shot(hero.Id + "_air_bat");
+            while (Time.time - floatStart < ram.FloatTime + bat.HangTime * 0.5f) yield return null;
+            bool stillUp = DlrLift.Floating(t);
+            GlobalEventManager.onServerDamageDealt -= onDamage;
+            int wantAmmo = Mathf.RoundToInt(gunRow.ClipSize * bat.RefillPct / 100f);
+            Log.Info($"Melty test: {hero.Id} air bat snap: {gap0:F1} m -> {gap1:F1} m from the target at the hit (bat reach {bat.Radius:F0} m)");
+            if (gap1 > bat.Radius) why[0] += $"billy air bat: no snap ({gap0:F1} m -> {gap1:F1} m); ";
+            Log.Info($"Melty test: {hero.Id} air bat at a floating target: dealt {dealt:F0}, fell {y1 - y2:F2} m in {bat.HangTime * 0.6f:F2} s after the hit, magazine 0 -> {ammo} (want {wantAmmo}), target still floating at {ram.FloatTime + bat.HangTime * 0.5f:F2} s: {stillUp}");
+            if (dealt <= 0f) why[0] += "billy air bat: no damage; ";
+            if (y1 - y2 > 0.35f) why[0] += $"billy air bat: fell {y1 - y2:F2} m right after the hit; ";
+            if (ammo < wantAmmo) why[0] += $"billy air bat: magazine {ammo}, want {wantAmmo}; ";
+            if (!stillUp) why[0] += "billy air bat: the float was not kept up; ";
+            KillTargets();
+
+            // M2 the instant after a jump from the ground, at an enemy standing 7 m away: he must dodge in and hit it
+            TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+            if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+            var g = Summon(body, spot + fwd * 7f + Vector3.up * 0.5f);
+            if (g && g.master && g.master.inventory) g.master.inventory.GiveItem(RoR2Content.Items.BoostHp, 200);
+            if (g) targets.Add(g);
+            yield return new WaitForSeconds(1.2f);
+            if (g && body.characterMotor)
+            {
+                float hit2 = 0f;
+                System.Action<DamageReport> onHit2 = r => { if (r != null && r.attackerBody == body && r.victimBody == g) hit2 += r.damageDealt; };
+                GlobalEventManager.onServerDamageDealt += onHit2;
+                var at = (g.corePosition - body.inputBank.aimOrigin).normalized;
+                AimCamera(body, at); body.inputBank.aimDirection = at;
+                float jgap0 = Vector3.Distance(body.corePosition, g.corePosition);
+                body.characterMotor.Motor.ForceUnground();
+                body.characterMotor.velocity = Vector3.up * body.jumpPower;
+                gs.Reset();
+                gs.ExecuteIfReady();
+                yield return new WaitForSeconds(bat.Duration / body.attackSpeed);
+                float jgap1 = Vector3.Distance(body.corePosition, g.corePosition);
+                GlobalEventManager.onServerDamageDealt -= onHit2;
+                Log.Info($"Melty test: {hero.Id} M2 right after a jump: {jgap0:F1} m -> {jgap1:F1} m from the target, dealt {hit2:F0}");
+                if (hit2 <= 0f || jgap1 > bat.Radius) why[0] += $"billy jump + M2: no dodge-in ({jgap0:F1} -> {jgap1:F1} m, dealt {hit2:F0}); ";
+            }
+            KillTargets();
+            TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+            if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+            rt.Ammo = (int)gunRow.ClipSize;
+            yield return new WaitForSeconds(0.6f);
+        }
+
         /// <summary>How far in front of the hero the test's targets stand: guns, the leap, the blink and Tag Team's throw
-        /// from 10 m, everything else 6 m.</summary>
+        /// from 10 m, Billy's bat and Bashdown 3.5 m, everything else 6 m.</summary>
         internal static float TargetDistance(SkillRow row) =>
-            row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "krill_hop" || row.Kind == "banner_leap" ? 10f : 6f;
+            row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "krill_hop" || row.Kind == "banner_leap" ? 10f :
+            // Billy's bat and Bashdown reach a few metres (Bashdown locks on within 5 m)
+            row.Kind == "bat_combo" || row.Kind == "bashdown" ? 3.5f : 6f;
 
         /// <summary>Hold M1 for 1.5 s against the targets still standing (Tag Team's Krill is away: Mo punches), measuring damage.</summary>
         IEnumerator Punches(CharacterBody body, Effects fx)

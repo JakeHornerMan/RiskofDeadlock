@@ -1,6 +1,6 @@
 {
   "sheet": "heroes",
-  "about": "One row per Deadlock hero playable as a Risk of Rain 2 survivor. Heights are the hero's body-mesh height in metres as exported from the player's own Deadlock install (VRF glTF, 1 Source unit = 0.0254 m), measured 2026-10-12 on Deadlock ClientVersion 6774. heightScale keeps Deadlock's relative sizes: every hero is scaled by one global factor (anchorHero's height -> Commando's model height), so heightScale = sourceHeight / anchor sourceHeight. passiveName/passiveDescription/passiveIcon: the hero's passive on the character select screen (what the gun already does on hit), or none. damageHealBack/damageHealBackTime: the passive heals back that fraction of every hit taken over that many seconds (Abrams' Infernal Resilience), 0 = none. debuffResist: timed debuffs on the hero last that fraction less. modelScale: an extra even scale on the model only (1 = Deadlock's relative size; Mo & Krill are scaled up to Abrams' height), so heightScale = sourceHeight x modelScale / anchor sourceHeight. capsuleFrom: a vanilla body whose movement capsule the hero copies instead of scaling Commando's (none = scaled), so a huge model still fits through every stage. cameraFrom / cameraScale / cameraRight: a vanilla body whose camera settings are copied (none = Commando's scaled by height), pushed back by cameraScale and to the right by cameraRight metres. interactRange: multiplies the reach for chests, shrines and the teleporter. immuneToForce: the hero can't be pushed, pulled or knocked back by enemy hits (vanilla ImmuneToPhysicsForces). riderBone: a bone carrying a second character on the model (Krill), hidden by scaling it to 0 while a buff with melee=true is on (he is away), or none. noFallDamage: the hero never takes fall damage (Viscous: goo lands soft). landShake: the amplitude of the screen shake after a heavy landing (2 = the usual; Viscous 0.2). voiceGain: the hero's voice lines' loudness on top of the usual (1 = the usual; Viscous 1.2). splitMeshes: meshes the extractor keeps as parts of their own instead of merging them into their material (Rat King's ammo belt, one mesh per round count, extractor 1.6.0+), or none. airJumpMult: the vertical speed of the jumps after the first is multiplied by this (Rat King's King's Leap: 1.3; 1 = the usual). gooMaterials/glassMaterials: model parts drawn as living goo / a clear glass helmet instead of the game material.",
+  "about": "One row per Deadlock hero playable as a Risk of Rain 2 survivor. Heights are the hero's body-mesh height in metres as exported from the player's own Deadlock install (VRF glTF, 1 Source unit = 0.0254 m), measured 2026-10-12 on Deadlock ClientVersion 6774. heightScale keeps Deadlock's relative sizes: every hero is scaled by one global factor (anchorHero's height -> Commando's model height), so heightScale = sourceHeight / anchor sourceHeight. passiveName/passiveDescription/passiveIcon: the hero's passive on the character select screen (what the gun already does on hit), or none. damageHealBack/damageHealBackTime: the passive heals back that fraction of every hit taken over that many seconds (Abrams' Infernal Resilience), 0 = none. debuffResist: timed debuffs on the hero last that fraction less. modelScale: an extra even scale on the model only (1 = Deadlock's relative size; Mo & Krill are scaled up to Abrams' height), so heightScale = sourceHeight x modelScale / anchor sourceHeight. capsuleFrom: a vanilla body whose movement capsule the hero copies instead of scaling Commando's (none = scaled), so a huge model still fits through every stage. cameraFrom / cameraScale / cameraRight: a vanilla body whose camera settings are copied (none = Commando's scaled by height), pushed back by cameraScale and to the right by cameraRight metres. interactRange: multiplies the reach for chests, shrines and the teleporter. immuneToForce: the hero can't be pushed, pulled or knocked back by enemy hits (vanilla ImmuneToPhysicsForces). riderBone: a bone carrying a second character on the model (Krill), hidden by scaling it to 0 while a buff with melee=true is on (he is away), or none. noFallDamage: the hero never takes fall damage (Viscous: goo lands soft). landShake: the amplitude of the screen shake after a heavy landing (2 = the usual; Viscous 0.2). voiceGain: the hero's voice lines' loudness on top of the usual (1 = the usual; Viscous 1.2). splitMeshes: meshes the extractor keeps as parts of their own instead of merging them into their material (Rat King's ammo belt, one mesh per round count, extractor 1.6.0+), or none. airJumpMult: the vertical speed of the jumps after the first is multiplied by this (Rat King's King's Leap: 1.3; 1 = the usual). gooMaterials/glassMaterials: model parts drawn as living goo / a clear glass helmet instead of the game material. airDodges / dodgeDistance / dodgeTime / dodgePct: Billy's G.O.A.T. passive: he has one jump, and pressing jump again in the air dodges dodgeDistance metres in dodgeTime seconds (Deadlock's air dash: along the held keys, or at the crosshair with none held, pitch included), goring every enemy he passes through once for dodgePct % damage; airDodges per trip in the air, all back on landing and when Rising Ram launches him (0 = no dodge).",
   "anchorHero": "haze",
   "anchorRoR2Body": "CommandoBody",
   "columns": [
@@ -40,7 +40,11 @@
     "damageHealBack",
     "damageHealBackTime",
     "debuffResist",
-    "lore"
+    "lore",
+    "airDodges",
+    "dodgeDistance",
+    "dodgeTime",
+    "dodgePct"
   ],
   "rows": [
     {
@@ -90,7 +94,11 @@
       "splitMeshes": [
         "none"
       ],
-      "airJumpMult": 1.0
+      "airJumpMult": 1.0,
+      "airDodges": 0,
+      "dodgeDistance": 0,
+      "dodgeTime": 0,
+      "dodgePct": 0
     },
     {
       "id": "abrams",
@@ -139,7 +147,11 @@
       "splitMeshes": [
         "none"
       ],
-      "airJumpMult": 1.0
+      "airJumpMult": 1.0,
+      "airDodges": 0,
+      "dodgeDistance": 0,
+      "dodgeTime": 0,
+      "dodgePct": 0
     },
     {
       "id": "seven",
@@ -189,7 +201,11 @@
       "splitMeshes": [
         "none"
       ],
-      "airJumpMult": 1.0
+      "airJumpMult": 1.0,
+      "airDodges": 0,
+      "dodgeDistance": 0,
+      "dodgeTime": 0,
+      "dodgePct": 0
     },
     {
       "id": "infernus",
@@ -240,7 +256,11 @@
       "splitMeshes": [
         "none"
       ],
-      "airJumpMult": 1.0
+      "airJumpMult": 1.0,
+      "airDodges": 0,
+      "dodgeDistance": 0,
+      "dodgeTime": 0,
+      "dodgePct": 0
     },
     {
       "id": "mokrill",
@@ -289,7 +309,11 @@
       "splitMeshes": [
         "none"
       ],
-      "airJumpMult": 1.0
+      "airJumpMult": 1.0,
+      "airDodges": 0,
+      "dodgeDistance": 0,
+      "dodgeTime": 0,
+      "dodgePct": 0
     },
     {
       "id": "viscous",
@@ -337,7 +361,11 @@
       "splitMeshes": [
         "none"
       ],
-      "airJumpMult": 1.0
+      "airJumpMult": 1.0,
+      "airDodges": 0,
+      "dodgeDistance": 0,
+      "dodgeTime": 0,
+      "dodgePct": 0
     },
     {
       "id": "ratking",
@@ -423,7 +451,63 @@
       "damageHealBack": 0,
       "damageHealBackTime": 0,
       "debuffResist": 0,
-      "lore": "Deadlock's king of the sewers, a giant rat in a cape with a belt-fed spreadshot and an army of rats. The Scrap Grenade blasts three times, hopping toward the nearest monster between blasts; Royal Pestments circles him with biting rats; Rule, Ratannia! leaps in and plants his banner; Rat Swarm sends fifty rats to latch on and bite."
+      "lore": "Deadlock's king of the sewers, a giant rat in a cape with a belt-fed spreadshot and an army of rats. The Scrap Grenade blasts three times, hopping toward the nearest monster between blasts; Royal Pestments circles him with biting rats; Rule, Ratannia! leaps in and plants his banner; Rat Swarm sends fifty rats to latch on and bite.",
+      "airDodges": 0,
+      "dodgeDistance": 0,
+      "dodgeTime": 0,
+      "dodgePct": 0
+    },
+    {
+      "id": "billy",
+      "displayName": "Billy",
+      "deadlockKey": "hero_punkgoat",
+      "vmdl": "models/heroes_wip/punkgoat/punkgoat.vmdl",
+      "meshInclude": [
+        "punkgoat_model",
+        "weapon"
+      ],
+      "splitMeshes": [
+        "none"
+      ],
+      "imageSmall": "panorama/images/heroes/punkgoat_sm_psd.vtex",
+      "imageCard": "panorama/images/heroes/punkgoat_card_psd.vtex",
+      "soundevents": "soundevents/hero/punkgoat.vsndevts",
+      "sourceHeight": 2.69,
+      "heightScale": 1.115,
+      "modelScale": 1.0,
+      "widthScale": 1.1,
+      "capsuleFrom": "none",
+      "cameraFrom": "none",
+      "cameraScale": 1.0,
+      "cameraRight": 0.0,
+      "interactRange": 1.0,
+      "immuneToForce": false,
+      "noFallDamage": false,
+      "airJumpMult": 1.0,
+      "landShake": 1.0,
+      "voiceGain": 1.0,
+      "gooMaterials": [
+        "none"
+      ],
+      "glassMaterials": [
+        "none"
+      ],
+      "riderBone": "none",
+      "primaryColor": "#A43C87",
+      "sortPosition": 100.8,
+      "roR2Analog": "MercBody",
+      "subtitle": "The Punk Goat",
+      "passiveName": "G.O.A.T.",
+      "passiveDescription": "Billy has <style=cIsUtility>one jump</style>. Press jump again in the air to <style=cIsUtility>dodge 8m</style> along your keys (or at the crosshair with none held), goring everything you pass through for <style=cIsDamage>300% damage</style>. <style=cIsUtility>Two dodges</style> per trip in the air; landing or Rising Ram gives them back.",
+      "passiveIcon": "panorama/images/hud/abilities/punkgoat/punkgoat_capricious_psd.vtex",
+      "damageHealBack": 0,
+      "damageHealBackTime": 0,
+      "debuffResist": 0,
+      "lore": "Deadlock's punk goat, a brawler with a spiked bat in one hand and his machine gun Biquette in the other. Rising Ram rams a pack into the air and takes him up with them; up there his bat locks on and hits twice as hard, and Bashdown slams everyone back into the floor. Chain Gang chains everything in sight, hauls it up and drives it into the ground.",
+      "airDodges": 2,
+      "dodgeDistance": 8,
+      "dodgeTime": 0.3,
+      "dodgePct": 300
     }
   ]
 }

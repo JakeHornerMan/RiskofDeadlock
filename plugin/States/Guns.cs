@@ -15,12 +15,15 @@ namespace DeadlockOfRain.States
         float nextShot;
         int burstLeft;
         float nextBurstShot;
+        // Biquette (pattern octagon): the first shot after the trigger is pressed goes dead centre
+        bool centreNext;
 
         public override void OnEnter()
         {
             base.OnEnter();
             if (rt != null && rt.Ammo < 0) rt.Ammo = (int)row.ClipSize;
             nextShot = 0f;
+            centreNext = true;
         }
 
         public override void FixedUpdate()
@@ -42,6 +45,8 @@ namespace DeadlockOfRain.States
                 if (!(inputBank && inputBank.skill1.down) && !MeltyTest.WantsFire(characterBody)) { outer.SetNextStateToMain(); return; }
                 // Burrowed or spinning (a noGun buff): no shots, but a held button keeps the state for when it ends
                 if (HeroRuntime.NoGun(characterBody)) return;
+                // Billy's bat just swung: the gun waits a moment (the two never act at once)
+                if (rt != null && Time.time < rt.GunBlockedUntil) return;
                 // Krill is away (a melee buff): Mo punches with the gun row's melee numbers instead of firing
                 if (row.MeleePct > 0 && HeroRuntime.Melee(characterBody))
                 {
@@ -151,6 +156,14 @@ namespace DeadlockOfRain.States
         /// corners of a triangle, spreadDeg out, the same every shot).</summary>
         static readonly Vector2[] KrillPattern = { new Vector2(0f, 0f), new Vector2(0f, -0.66f), new Vector2(-0.5f, 0.5f), new Vector2(0.5f, 0.5f) };
 
+        /// <summary>Biquette's octagon (pattern octagon), in Deadlock's order: centre right, top left, top right, centre left, bottom
+        /// right, bottom left, bottom, top; each point spreadDeg from the crosshair.</summary>
+        static readonly Vector2[] Octagon =
+        {
+            new Vector2(1f, 0f), new Vector2(-0.707f, 0.707f), new Vector2(0.707f, 0.707f), new Vector2(-1f, 0f),
+            new Vector2(0.707f, -0.707f), new Vector2(-0.707f, -0.707f), new Vector2(0f, -1f), new Vector2(0f, 1f),
+        };
+
         void FireOne()
         {
             if (rt != null)
@@ -191,6 +204,32 @@ namespace DeadlockOfRain.States
                         damageType = new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Primary },
                     }.Fire();
                 }
+            }
+            else if (isAuthority && row.Pattern == "octagon")
+            {
+                // Biquette: dead centre on the first shot after the trigger is pressed, then round Deadlock's octagon of 8 fixed
+                // points spreadDeg out, carrying on where the last burst stopped; damage by distance (RatPelletHit)
+                var dir = aim.direction;
+                if (centreNext) centreNext = false;
+                else
+                {
+                    var o = Octagon[rt != null ? rt.Octagon++ % Octagon.Length : 0];
+                    var up = Vector3.Cross(aim.direction, Vector3.Cross(Vector3.up, aim.direction)).normalized;
+                    var side = Vector3.Cross(Vector3.up, aim.direction).normalized;
+                    dir = Quaternion.AngleAxis(o.x * row.SpreadDeg, up) * Quaternion.AngleAxis(-o.y * row.SpreadDeg, side) * aim.direction;
+                }
+                new BulletAttack
+                {
+                    owner = gameObject, weapon = gameObject,
+                    origin = aim.origin, aimVector = dir,
+                    minSpread = 0f, maxSpread = 0f, bulletCount = 1,
+                    damage = damageStat * Coef, procCoefficient = row.ProcCoefficient, force = 100f,
+                    tracerEffectPrefab = Fx.Prefab(row.Effect), muzzleName = "MuzzleRight", hitEffectPrefab = null,
+                    isCrit = RollCrit(), radius = 0.2f, smartCollision = true, maxDistance = row.Range,
+                    falloffModel = BulletAttack.FalloffModel.None,
+                    hitCallback = RatPelletHit,
+                    damageType = new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Primary },
+                }.Fire();
             }
             else if (isAuthority && row.Pattern == "ratking")
             {
@@ -246,7 +285,7 @@ namespace DeadlockOfRain.States
             MeltyTest.Report("gun-fires", true, characterBody.baseNameToken);
         }
 
-        /// <summary>A Sovereign's Decree pellet landed: full damage to falloffStart metres, falling in a line to falloffMinPct % at
+        /// <summary>A Sovereign's Decree pellet (or a Biquette bullet) landed: full damage to falloffStart metres, falling in a line to falloffMinPct % at
         /// falloffEnd and staying there; the row's hit spark; then RoR2's own hit handling with that damage.</summary>
         bool RatPelletHit(BulletAttack attack, ref BulletAttack.BulletHit hit)
         {

@@ -94,7 +94,7 @@ namespace DeadlockOfRain
 
         /// <summary>Movement skills run on the Body machine (they steer the character), everything else on Weapon.</summary>
         public static string MachineFor(string kind) =>
-            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "ult_devil" || kind == "goo_cube" || kind == "banner_leap" || kind == "storm_flight" ? "Body" : "Weapon";
+            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "ult_devil" || kind == "goo_cube" || kind == "banner_leap" || kind == "storm_flight" || kind == "bashdown" || kind == "rising_ram" || kind == "ult_chains" ? "Body" : "Weapon";
 
         /// <summary>The hero never takes fall damage (heroes.json noFallDamage: Viscous). Moves that switch fall damage off for a while
         /// (Seismic Impact, Goo Ball) leave it off for such a hero when they end.</summary>
@@ -488,6 +488,8 @@ namespace DeadlockOfRain
 
         void Update()
         {
+            // (a press is seen in Update; the dodge starts on the next physics step)
+            if (hero != null && hero.AirDodges > 0 && body && body.inputBank && body.inputBank.jump.justPressed) jumpPressed = true;
             if (Reloading && Time.time >= reloadEnd)
             {
                 Reloading = false;
@@ -496,10 +498,71 @@ namespace DeadlockOfRain
             }
         }
 
+        // ---------------- Billy (v0.11.0): G.O.A.T. dodges, hang time, the bat's combo, Biquette's spray (owner)
+        /// <summary>Air dodges per trip in the air (heroes.airDodges; 0 = the hero has none).</summary>
+        public int Dodges => hero != null ? (int)hero.AirDodges : 0;
+        int dodgesUsed;
+        public int DodgesLeft => Dodges - dodgesUsed;
+        public void UseDodge() => dodgesUsed++;
+        /// <summary>All dodges back (landing, Rising Ram's launch).</summary>
+        public void RefreshDodges() { dodgesUsed = 0; hangUsed = 0f; }
+        /// <summary>Until when a float of his is running (the bench leaves him in the air till then).</summary>
+        public float ComboUntil;
+        /// <summary>The bat's next swing (0, 1, 2...) and when the last one ended (the combo starts over after the row's interval).</summary>
+        public int Combo;
+        public float LastSwingEnd = -99f;
+        /// <summary>The gun waits until then after a swing (the bat and the gun never act at once).</summary>
+        public float GunBlockedUntil;
+        /// <summary>Biquette's place in its octagon (pattern octagon), carried on between bursts.</summary>
+        public int Octagon;
+        float hangUntil, hangUsed;
+        bool hanging, jumpPressed;
+        float airSince;
+
+        /// <summary>Owner: an air hit holds him up for seconds more (no falling), out of a budget per trip in the air.</summary>
+        public void HangFor(float seconds, float budget)
+        {
+            if (!body || !body.characterMotor || body.characterMotor.isGrounded || hangUsed >= budget) return;
+            float t = Mathf.Min(seconds, budget - hangUsed);
+            hangUsed += t;
+            hangUntil = Mathf.Max(hangUntil, Time.fixedTime) + t;
+        }
+
+        /// <summary>Owner: a melee hit puts pct % of the gun's magazine back (Billy's Blasted), cutting a reload short.</summary>
+        public void Refill(SkillRow gun, float pct)
+        {
+            if (gun == null || pct <= 0f || gun.ClipSize <= 0) return;
+            int add = Mathf.Max(1, Mathf.RoundToInt(gun.ClipSize * pct / 100f));
+            if (Reloading) { Reloading = false; Ammo = 0; }
+            if (Ammo < 0) Ammo = (int)gun.ClipSize;
+            Ammo = Mathf.Min((int)gun.ClipSize, Ammo + add);
+        }
+
+        void BillyFixedUpdate()
+        {
+            var m = body.characterMotor;
+            if (m.isGrounded) { dodgesUsed = 0; hangUsed = 0f; airSince = Time.fixedTime; }
+            // G.O.A.T.: jump pressed in the air with every jump used is a dodge
+            if (jumpPressed)
+            {
+                jumpPressed = false;
+                if (!m.isGrounded && Time.fixedTime - airSince > 0.1f && m.jumpCount >= body.maxJumpCount) BillyAir.TryDodge(body);
+            }
+            // hang time: no falling while it lasts
+            bool hang = Time.fixedTime < hangUntil && !m.isGrounded;
+            if (hang != hanging)
+            {
+                hanging = hang;
+                var gp = m.gravityParameters; gp.channeledAntiGravityGranterCount += hang ? 1 : -1; m.gravityParameters = gp;
+            }
+            if (hang && m.velocity.y < 0f) { var v = m.velocity; v.y = 0f; m.velocity = v; }
+        }
+
         float nextUntarget;
         int lastJumps;
         void FixedUpdate()
         {
+            if (hero != null && hero.AirDodges > 0 && body && body.hasEffectiveAuthority && body.characterMotor) BillyFixedUpdate();
             // King's Leap (heroes airJumpMult): a jump in the air climbs that much faster than the first, on the owner (who moves the body)
             if (hero != null && hero.AirJumpMult != 1f && body && body.hasEffectiveAuthority && body.characterMotor)
             {

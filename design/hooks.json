@@ -385,6 +385,22 @@
       "purpose": "the magazine as rounds/clip just above the M1 icon of the skill bar (Runtime/AmmoCounter.cs), for the hero this machine moves; grey while reloading, hidden for vanilla survivors and guns without a clip",
       "reads": "skills.clipSize",
       "side": "client"
+    },
+    {
+      "id": "billy_air",
+      "method": "component",
+      "target": "HeroRuntime.FixedUpdate (owner) + BillyAir (Runtime/BillyAir.cs)",
+      "purpose": "G.O.A.T.: a jump pressed in the air with every jump used starts the dodge on the Body machine (no RoR2 jump is touched); the hang time that holds Billy up after each air bat hit (4 s budget per trip); the 5 m lock-on",
+      "reads": "heroes.airDodges/dodgeDistance/dodgeTime/dodgePct, skills.hangTime/floatTime/lockRange",
+      "side": "owner"
+    },
+    {
+      "id": "billy_lift",
+      "method": "component",
+      "target": "DlrLift on an enemy's body (Runtime/BillyAir.cs), server",
+      "purpose": "Rising Ram's float and Chain Gang's haul: gravity off on the enemy's motor (or a flyer's rigidbody held), its velocity driven up then down, stunned the whole time; air Bashdown and the chains' slam drive it into the floor",
+      "reads": "skills.launchHeight/floatTime/hangTime/minDuration/duration/stunDuration",
+      "side": "server"
     }
   ]
 }

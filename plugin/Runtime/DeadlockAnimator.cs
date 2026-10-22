@@ -93,6 +93,7 @@ namespace DeadlockOfRain
             logical["special_start"] = rows.SpecialStart; logical["special"] = rows.Special;
             logical["ult_start"] = rows.UltStart; logical["ult_loop"] = rows.UltLoop; logical["ult_end"] = rows.UltEnd; logical["death"] = rows.Death;
             logical["special_loop"] = rows.SpecialLoop; logical["melee"] = rows.Melee; logical["melee_alt"] = rows.MeleeAlt;
+            logical["melee_heavy"] = rows.MeleeHeavy; logical["melee_air"] = rows.MeleeAir; logical["dash_air"] = rows.DashAir; logical["slam"] = rows.Slam;
             rig = rows.RigPrefix == "none" ? "" : rows.RigPrefix;
             var all = GetComponentsInChildren<Transform>(true);
             Transform Bone(string n) { foreach (var t in all) if (t.name == n) return t; return null; }

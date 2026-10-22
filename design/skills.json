@@ -1,6 +1,6 @@
 {
   "sheet": "skills",
-  "about": "One row per skill (5 per hero). slot: primary=M1 gun, secondary=M2 (Deadlock ability 1), utility=Shift (ability 2), special=R (a new move from a Deadlock item, melee or ability, on a normal cooldown), equipment=Q (the hero's Deadlock ultimate as a RoR2 equipment: every hero starts holding their own, anyone can find it wherever the Preon Accumulator can drop; design/equipment.json). Numbers are RoR2-scale: damagePct is % of the body's damage stat (RoR2 convention), cooldowns are RoR2 seconds. deadlock* columns hold the source values read from the player's Deadlock scripts/abilities.vdata (ClientVersion 6774) so every conversion is traceable. kind picks the generic EntityState that implements the row. Unused numeric params are 0, unused refs are \"none\" (filled on purpose, not missing). Balance targets: sustained primary DPS 240-600 %/s (Commando Double Tap ~ 400 %/s incl. downtime); secondaries 2-15 s; utilities 4-12 s; specials 4-30 s; equipment ults 120 s cooldown (60-120 allowed: Goo Ball 100 s since 0.9.0f) and at least 6000 % per enemy (Preon Accumulator scaled from 140 s to 120 s; no upper limit: the ults are pickups any survivor can carry and are left out of balance). buffStacks: stacks of buff a hit adds (Phantom Strike's Fixation, Torment Pulse's Afterburn build-up; Flame Dash: the gun's buff each fire pocket adds every interval), 0 = the usual one. knockback: dashes and punches knock enemies away at this many m/s (0 = none). minDuration: hold skills (the Seismic Impact hover) last at least this long on a tap and at most duration while held; 0 otherwise. vfx: our own Unity-built visual for the skill (an effects row of kind custom), or none. extra: a second RoR2 object the kind spawns (an effects row: the Warbanner ward of Thunderhead), a behaviour flag (pierce: the projectile flies through every enemy in its line; shockwave: the punch also hits every enemy in a cone of length 2x radius and half-angle spreadDeg), or none. expect: what the skill must measurably do, checked in test mode (enemy_damage, enemy_stun, enemy_burn, enemy_debuff:<buff>, self_buff:<buff>, self_heal, self_move, self_cloak). pattern: a fixed pellet pattern instead of random spread (krill: Deadlock's centre pellet and a triangle of three, corners spreadDeg out), or none. cooldownOnEnd: the cooldown starts when the move ends (Dust Devil), not when it starts. debuff: a second buff the move gives (Burrow's pop-out slow on enemies; Tag Team's max-health trophies on the thrower, per kill), or none. bossMult: how much of the move's control a boss (champion) gets: a pull's strength, a disarm's length, 0 = no knock-up on bosses; for Tag Team the max-health stacks a boss kill gives. reach: a second distance (Tag Team's hop range, the punch's reach). splashPct: damage around the main target (Tag Team's landing splash, within radius). meleePct / meleeRate: on a gun row, the punch M1 throws instead of firing while a buff with melee=true is on (Mo while Krill is away: damage per punch, punches per second). meleeKnock: the punch throws each enemy it hits away from the hero at this many m/s (mass-scaled, bosses at a quarter), 0 = none. On cone_wave, minDuration is the wind-up before the wave leaves (the cone is shown on the ground meanwhile). gravity: extra downward pull on a gun projectile (m/s2; gun_goo blobs drop about 1 m at 30 m). falloffStart/falloffEnd/falloffMinPct: a projectile's damage falls linearly from 100% at falloffStart metres travelled to falloffMinPct % at falloffEnd and stays there. ammoCost: the move costs that many rounds of the gun's magazine instead of a cooldown (lob_ammo: Splatter); with fewer left it still fires, its radius scaled by rounds/ammoCost. puddleMult: the radius is multiplied by this when the move lands on a goo puddle (Puddle Punch). launchHeight: allies and the hero standing in the move are thrown this many metres up (a bounce pad), no fall damage on that landing. damageMinPct: the smallest damage of a move that scales with speed (Goo Ball: damageMinPct at a crawl, damagePct at top speed). For lob_ammo, reach / chainCount / interval are the puddle's radius, seconds and tick, and debuff the buff it gives allies inside (Slick). puddleAmmo: rounds a goo puddle of this row holds for its owner: while the owner stands in it, it tops the gun's magazine up from that supply (never above the magazine; a reload under way is called off) until the supply is used up, 0 = none. puddleShrink: seconds the puddle takes to draw in to nothing after its chainCount seconds whole (its reach shrinks with it), 0 = it just ends. Rat King (v0.9.0): pattern ratking = one pellet dead on the aim and one strayed up to spreadDeg (Deadlock's Sovereign's Decree), falloffStart/End/MinPct on its bullets. lob_scrap (Scrap Grenade): radius is the first two blasts' size, splashPct and reach the final blast's damage and size, chainCount the number of blasts, interval the final fuse (s), range its flight, seekRange how far it looks for an enemy to hop toward, buff the slow of the small blasts and debuff of the last, knockback a small shove (bosses x bossMult), extra the grenade's model. rat_ring (Royal Pestments): radius the ring, reach its height above the ground, range how far below him it looks for ground, chainCount the rats drawn, extra the rat model. banner_leap (Rule, Ratannia!): minDuration the wind-up, duration the longest leap, range the farthest landing, speed the leap's forward speed, radius / damagePct the inner blast, reach / splashPct the outer one with stunDuration (bosses x bossMult), only enemies the banner can see; chainCount the seconds the banner stays, extra its model. ult_swarm (Rat Swarm, no time limit: duration 0): buffStacks rats (using it again tops them back up to that), chainCount at most per enemy (x bossMult on bosses), each rat bites until its enemy dies and is then gone, spare rats follow the carrier to the end of the stage, range and seekRange how far from the carrier they hunt, reach how high a rat can leap onto a flyer, interval between one rat's bites, speed the rats' run, extra the rat model. seekRange: how far a move looks for enemies to go after on its own (Scrap Grenade's hops, Rat Swarm's rats), 0 = it doesn't. storm_flight (Seven's Storm Cloud, R): he rises launchHeight metres, then flies for duration with gravity off: Jump climbs and Sprint (or Utility) sinks at speed m/s, moveSpeedMult of his move speed sideways, at most reach metres above where he started; every interval everything within radius takes damagePct and one stack of buff; no gun or skills while it runs (cooldownOnEnd). projectile_orb (Lightning Ball): moveSpeedMult is the ball's speed while an enemy is inside its radius (0.5 = half speed).",
+  "about": "One row per skill (5 per hero). slot: primary=M1 gun, secondary=M2 (Deadlock ability 1), utility=Shift (ability 2), special=R (a new move from a Deadlock item, melee or ability, on a normal cooldown), equipment=Q (the hero's Deadlock ultimate as a RoR2 equipment: every hero starts holding their own, anyone can find it wherever the Preon Accumulator can drop; design/equipment.json). Numbers are RoR2-scale: damagePct is % of the body's damage stat (RoR2 convention), cooldowns are RoR2 seconds. deadlock* columns hold the source values read from the player's Deadlock scripts/abilities.vdata (ClientVersion 6774) so every conversion is traceable. kind picks the generic EntityState that implements the row. Unused numeric params are 0, unused refs are \"none\" (filled on purpose, not missing). Balance targets: sustained primary DPS 240-600 %/s (Commando Double Tap ~ 400 %/s incl. downtime); secondaries 2-15 s; utilities 4-12 s; specials 4-30 s; equipment ults 120 s cooldown (60-120 allowed: Goo Ball 100 s since 0.9.0f) and at least 6000 % per enemy (Preon Accumulator scaled from 140 s to 120 s; no upper limit: the ults are pickups any survivor can carry and are left out of balance). buffStacks: stacks of buff a hit adds (Phantom Strike's Fixation, Torment Pulse's Afterburn build-up; Flame Dash: the gun's buff each fire pocket adds every interval), 0 = the usual one. knockback: dashes and punches knock enemies away at this many m/s (0 = none). minDuration: hold skills (the Seismic Impact hover) last at least this long on a tap and at most duration while held; 0 otherwise. vfx: our own Unity-built visual for the skill (an effects row of kind custom), or none. extra: a second RoR2 object the kind spawns (an effects row: the Warbanner ward of Thunderhead), a behaviour flag (pierce: the projectile flies through every enemy in its line; shockwave: the punch also hits every enemy in a cone of length 2x radius and half-angle spreadDeg), or none. expect: what the skill must measurably do, checked in test mode (enemy_damage, enemy_stun, enemy_burn, enemy_debuff:<buff>, self_buff:<buff>, self_heal, self_move, self_cloak). pattern: a fixed pellet pattern instead of random spread (krill: Deadlock's centre pellet and a triangle of three, corners spreadDeg out), or none. cooldownOnEnd: the cooldown starts when the move ends (Dust Devil), not when it starts. debuff: a second buff the move gives (Burrow's pop-out slow on enemies; Tag Team's max-health trophies on the thrower, per kill), or none. bossMult: how much of the move's control a boss (champion) gets: a pull's strength, a disarm's length, 0 = no knock-up on bosses; for Tag Team the max-health stacks a boss kill gives. reach: a second distance (Tag Team's hop range, the punch's reach). splashPct: damage around the main target (Tag Team's landing splash, within radius). meleePct / meleeRate: on a gun row, the punch M1 throws instead of firing while a buff with melee=true is on (Mo while Krill is away: damage per punch, punches per second). meleeKnock: the punch throws each enemy it hits away from the hero at this many m/s (mass-scaled, bosses at a quarter), 0 = none. On cone_wave, minDuration is the wind-up before the wave leaves (the cone is shown on the ground meanwhile). gravity: extra downward pull on a gun projectile (m/s2; gun_goo blobs drop about 1 m at 30 m). falloffStart/falloffEnd/falloffMinPct: a projectile's damage falls linearly from 100% at falloffStart metres travelled to falloffMinPct % at falloffEnd and stays there. ammoCost: the move costs that many rounds of the gun's magazine instead of a cooldown (lob_ammo: Splatter); with fewer left it still fires, its radius scaled by rounds/ammoCost. puddleMult: the radius is multiplied by this when the move lands on a goo puddle (Puddle Punch). launchHeight: allies and the hero standing in the move are thrown this many metres up (a bounce pad), no fall damage on that landing. damageMinPct: the smallest damage of a move that scales with speed (Goo Ball: damageMinPct at a crawl, damagePct at top speed). For lob_ammo, reach / chainCount / interval are the puddle's radius, seconds and tick, and debuff the buff it gives allies inside (Slick). puddleAmmo: rounds a goo puddle of this row holds for its owner: while the owner stands in it, it tops the gun's magazine up from that supply (never above the magazine; a reload under way is called off) until the supply is used up, 0 = none. puddleShrink: seconds the puddle takes to draw in to nothing after its chainCount seconds whole (its reach shrinks with it), 0 = it just ends. Rat King (v0.9.0): pattern ratking = one pellet dead on the aim and one strayed up to spreadDeg (Deadlock's Sovereign's Decree), falloffStart/End/MinPct on its bullets. lob_scrap (Scrap Grenade): radius is the first two blasts' size, splashPct and reach the final blast's damage and size, chainCount the number of blasts, interval the final fuse (s), range its flight, seekRange how far it looks for an enemy to hop toward, buff the slow of the small blasts and debuff of the last, knockback a small shove (bosses x bossMult), extra the grenade's model. rat_ring (Royal Pestments): radius the ring, reach its height above the ground, range how far below him it looks for ground, chainCount the rats drawn, extra the rat model. banner_leap (Rule, Ratannia!): minDuration the wind-up, duration the longest leap, range the farthest landing, speed the leap's forward speed, radius / damagePct the inner blast, reach / splashPct the outer one with stunDuration (bosses x bossMult), only enemies the banner can see; chainCount the seconds the banner stays, extra its model. ult_swarm (Rat Swarm, no time limit: duration 0): buffStacks rats (using it again tops them back up to that), chainCount at most per enemy (x bossMult on bosses), each rat bites until its enemy dies and is then gone, spare rats follow the carrier to the end of the stage, range and seekRange how far from the carrier they hunt, reach how high a rat can leap onto a flyer, interval between one rat's bites, speed the rats' run, extra the rat model. seekRange: how far a move looks for enemies to go after on its own (Scrap Grenade's hops, Rat Swarm's rats), 0 = it doesn't. storm_flight (Seven's Storm Cloud, R): he rises launchHeight metres, then flies for duration with gravity off: Jump climbs and Sprint (or Utility) sinks at speed m/s, moveSpeedMult of his move speed sideways, at most reach metres above where he started; every interval everything within radius takes damagePct and one stack of buff; no gun or skills while it runs (cooldownOnEnd). projectile_orb (Lightning Ball): moveSpeedMult is the ball's speed while an enemy is inside its radius (0.5 = half speed). Billy (v0.11.0): airMult multiplies a move's damage while the hero is in the air (the bat 2x, Bashdown's air target 2x). hangTime: each air hit holds the hero, and the enemy it hits if that enemy is in the air (floating or not; bosses excepted), that many seconds more (creator 2026-10-22: 1 s, to juggle); floatTime: a float's length (Rising Ram) or the most a float can be kept up to and the hero's hang budget per trip in the air (the bat). refillPct: each hit of the move puts that % of the gun's magazine back (Deadlock's Blasted). lockRange: lock-on to the nearest enemy in line of sight within that many metres (the bat only in the air), turning to it; the air bat then dodges onto it (up to reach metres, at the hero's G.O.A.T. dodge speed, moved exactly, in the dodge's clip, sound and trails; the hit lands as he arrives) and hangs there for the hit. 'In the air' is any moment off the floor, the first frames of a jump included. hitRefund: the fraction of the cooldown given back when the move connects (Rising Ram 0.5). pattern octagon: Biquette's spray, the first shot after the trigger is pressed dead centre, then 8 fixed points spreadDeg out in Deadlock's order (carrying on between bursts). bat_combo: burst swings of duration seconds each (damagePct, the last splashPct), radius reach and spreadDeg half-angle in front, the combo starts over after interval seconds without a swing; one press is one swing (duration = Deadlock's full melee clip, and the cooldown the same, creator 2026-10-22), holding the key does not repeat it; the gun waits minDuration after the last swing. bashdown: minDuration the ground hop, damagePct / stunDuration / knockback to the locked target on the ground (bosses bossMult of the stun) plus splashPct to every other enemy within reach; in the air it dives at speed m/s, damagePct x airMult to the target and damagePct to every enemy within radius, all slammed into the floor and stunned duration seconds. rising_ram: duration a steerable wind-up, then a range-metre charge at speed m/s that stops at the first enemy or wall: damagePct to it, every non-boss enemy standing on the ground within radius (flyers and enemies already in the air only take the hit) rises launchHeight metres in minDuration seconds into a floatTime float (stunned), and the hero rises with them; ground only. ult_chains: chains to up to chainCount enemies within radius in sight; interval the throw, then they rise launchHeight metres by minDuration, hang until duration, and are slammed down for damagePct and stunDuration (bosses are slammed where they stand); the carrier is rooted until then. chainPct: Billy's Rising Ram throws chains (Chain Gang's) onto every enemy it launches, breaking at the top; air Bashdown runs chains from the slammed enemy to every other enemy in the air it drags down, breaking as they land (none on the ground version); each chain deals chainPct % of the move's damagePct (creator, 2026-10-22; Rising Ram 6 s, Bashdown 4 s).",
   "columns": [
     "id",
     "hero",
@@ -59,7 +59,14 @@
     "deadlockCooldown",
     "deadlockDamage",
     "targetDps",
-    "expect"
+    "expect",
+    "airMult",
+    "hangTime",
+    "refillPct",
+    "lockRange",
+    "floatTime",
+    "hitRefund",
+    "chainPct"
   ],
   "rows": [
     {
@@ -124,7 +131,14 @@
         "enemy_damage",
         "enemy_debuff:fixation",
         "enemy_debuff:fixation_slow"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "haze_sleep_dagger",
@@ -187,7 +201,14 @@
       "expect": [
         "enemy_damage",
         "enemy_stun"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "haze_smoke_bomb",
@@ -250,7 +271,14 @@
       "expect": [
         "self_cloak",
         "self_buff:smoke"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "haze_phantom_strike",
@@ -314,7 +342,14 @@
         "self_move",
         "enemy_damage",
         "enemy_debuff:fixation"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "haze_bullet_dance",
@@ -377,7 +412,14 @@
       "expect": [
         "enemy_damage",
         "self_buff:bullet_dance"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "abrams_gun",
@@ -439,7 +481,14 @@
       "targetDps": 587,
       "expect": [
         "enemy_damage"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "abrams_siphon",
@@ -502,7 +551,14 @@
       "expect": [
         "enemy_damage",
         "self_heal"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "abrams_charge",
@@ -566,7 +622,14 @@
         "self_move",
         "enemy_damage",
         "enemy_stun"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "abrams_haymaker",
@@ -628,7 +691,14 @@
       "targetDps": 0,
       "expect": [
         "enemy_damage"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "abrams_seismic",
@@ -692,7 +762,14 @@
         "self_move",
         "enemy_damage",
         "enemy_stun"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "seven_gun",
@@ -756,7 +833,14 @@
         "enemy_damage",
         "enemy_debuff:static",
         "enemy_stun"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "seven_lightning_ball",
@@ -819,7 +903,14 @@
       "expect": [
         "enemy_damage",
         "enemy_debuff:static"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "seven_static_charge",
@@ -882,7 +973,14 @@
       "expect": [
         "enemy_damage",
         "enemy_stun"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "seven_storm_cloud",
@@ -945,7 +1043,14 @@
       "expect": [
         "enemy_damage",
         "enemy_debuff:static"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "seven_thunderhead",
@@ -1008,7 +1113,14 @@
       "expect": [
         "enemy_damage",
         "self_buff:thunderhead"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "infernus_gun",
@@ -1072,7 +1184,14 @@
         "enemy_damage",
         "enemy_debuff:afterburn_buildup",
         "enemy_burn"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "infernus_napalm",
@@ -1135,7 +1254,14 @@
       "expect": [
         "enemy_damage",
         "enemy_debuff:napalm"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "infernus_flame_dash",
@@ -1199,7 +1325,14 @@
         "self_move",
         "self_buff:flame_dash",
         "enemy_debuff:afterburn_buildup"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "infernus_torment_pulse",
@@ -1263,7 +1396,14 @@
         "enemy_damage",
         "enemy_debuff:afterburn_buildup",
         "enemy_burn"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "infernus_combustion",
@@ -1326,7 +1466,14 @@
       "expect": [
         "enemy_damage",
         "enemy_stun"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "mokrill_gun",
@@ -1388,7 +1535,14 @@
       "targetDps": 457,
       "expect": [
         "enemy_damage"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "mokrill_sand_blast",
@@ -1452,7 +1606,14 @@
         "enemy_damage",
         "enemy_debuff:sanded",
         "enemy_disarm"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "mokrill_burrow",
@@ -1518,7 +1679,14 @@
         "self_buff:burrowed",
         "enemy_damage",
         "enemy_debuff:burrow_slow"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "mokrill_tag_team",
@@ -1581,7 +1749,14 @@
       "expect": [
         "enemy_damage",
         "enemy_stun"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "mokrill_dust_devil",
@@ -1645,7 +1820,14 @@
         "enemy_damage",
         "enemy_pulled",
         "self_buff:dust_devil"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "viscous_gun",
@@ -1708,7 +1890,14 @@
       "expect": [
         "enemy_damage",
         "enemy_debuff:gooed"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "viscous_splatter",
@@ -1771,7 +1960,14 @@
       "expect": [
         "enemy_damage",
         "enemy_debuff:gooed"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "viscous_cube",
@@ -1837,7 +2033,14 @@
         "enemy_damage",
         "enemy_debuff:gooed",
         "self_buff:cube_exit"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "viscous_punch",
@@ -1901,7 +2104,14 @@
         "enemy_damage",
         "enemy_debuff:gooed",
         "enemy_knockup"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "viscous_gooball",
@@ -1966,7 +2176,14 @@
         "enemy_stun",
         "enemy_debuff:gooed",
         "self_buff:goo_ball"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "ratking_gun",
@@ -2028,7 +2245,14 @@
       "targetDps": 565,
       "expect": [
         "enemy_damage"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "ratking_scrap",
@@ -2091,7 +2315,14 @@
       "expect": [
         "enemy_damage",
         "enemy_debuff:scrap_slow"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "ratking_ring",
@@ -2153,7 +2384,14 @@
       "targetDps": 0,
       "expect": [
         "enemy_damage"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "ratking_banner",
@@ -2217,7 +2455,14 @@
         "enemy_damage",
         "enemy_stun",
         "self_move"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     },
     {
       "id": "ratking_swarm",
@@ -2279,7 +2524,365 @@
       "targetDps": 0,
       "expect": [
         "enemy_damage"
-      ]
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
+    },
+    {
+      "id": "billy_gun",
+      "hero": "billy",
+      "slot": "primary",
+      "deadlockAbility": "citadel_weapon_punkgoat_set",
+      "name": "Biquette",
+      "description": "Full-auto machine gun: <style=cIsDamage>50% damage</style> a bullet, 10 a second, 30-round magazine. Deadlock's octagon spray: the first bullet goes dead centre, the rest cycle through 8 points around the crosshair. Full damage to 14m, down to 40% at 32m.",
+      "kind": "gun_auto",
+      "icon": "panorama/images/heroes/guns/punkgoat_gun_psd.vtex",
+      "damagePct": 50,
+      "procCoefficient": 0.7,
+      "cooldown": 0,
+      "stocks": 0,
+      "duration": 0,
+      "minDuration": 0,
+      "interval": 0.1,
+      "radius": 0,
+      "range": 120,
+      "speed": 0,
+      "clipSize": 30,
+      "reloadTime": 2.0,
+      "pellets": 1,
+      "spreadDeg": 1.5,
+      "burst": 1,
+      "stunDuration": 0,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 1.0,
+      "chainCount": 0,
+      "buffStacks": 0,
+      "buff": "none",
+      "dot": "none",
+      "effect": "tracer_billy",
+      "vfx": "billy_gun",
+      "extra": "none",
+      "pattern": "octagon",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 1.0,
+      "reach": 0,
+      "seekRange": 0,
+      "gravity": 0,
+      "falloffStart": 14,
+      "falloffEnd": 32,
+      "falloffMinPct": 40,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 0,
+      "damageMinPct": 0,
+      "splashPct": 0,
+      "meleePct": 0,
+      "meleeRate": 0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 0,
+      "deadlockDamage": 6.3,
+      "targetDps": 300,
+      "expect": [
+        "enemy_damage"
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
+    },
+    {
+      "id": "billy_bat",
+      "hero": "billy",
+      "slot": "secondary",
+      "deadlockAbility": "ability_melee_punkgoat",
+      "name": "Bat",
+      "description": "Swing the spiked bat in a 3-hit combo: <style=cIsDamage>180%</style>, <style=cIsDamage>180%</style>, then a <style=cIsDamage>360%</style> overhead, hitting everything in a 4m arc in front. Each press is one full swing (0.67s), and the bat is ready again as the swing ends. <style=cIsUtility>In the air</style> every swing deals <style=cIsDamage>double</style>, <style=cIsUtility>dodges onto the nearest enemy within 10m</style> (any direction), and each hit <style=cIsUtility>stalls your fall and the enemy’s for 1s</style> (up to 4s in the air), so you can juggle. Every hit <style=cIsUtility>reloads 35% of Biquette</style>.",
+      "kind": "bat_combo",
+      "icon": "panorama/images/hud/abilities/punkgoat/goat_blasted_psd.vtex",
+      "damagePct": 180,
+      "procCoefficient": 1.0,
+      "cooldown": 0.67,
+      "stocks": 1,
+      "duration": 0.67,
+      "minDuration": 0.15,
+      "interval": 0.8,
+      "radius": 4,
+      "range": 0,
+      "speed": 0,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 0,
+      "spreadDeg": 60,
+      "burst": 3,
+      "stunDuration": 0,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 1.0,
+      "chainCount": 0,
+      "buffStacks": 0,
+      "buff": "none",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "billy_bat",
+      "extra": "none",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 1.0,
+      "reach": 10,
+      "seekRange": 0,
+      "gravity": 0,
+      "falloffStart": 0,
+      "falloffEnd": 0,
+      "falloffMinPct": 0,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 0,
+      "damageMinPct": 0,
+      "splashPct": 360,
+      "meleePct": 0,
+      "meleeRate": 0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 0,
+      "deadlockDamage": 50,
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage"
+      ],
+      "airMult": 2,
+      "hangTime": 1.0,
+      "refillPct": 35,
+      "lockRange": 10,
+      "floatTime": 4,
+      "hitRefund": 0,
+      "chainPct": 0
+    },
+    {
+      "id": "billy_bashdown",
+      "hero": "billy",
+      "slot": "utility",
+      "deadlockAbility": "ability_punkgoat_ult",
+      "name": "Bashdown",
+      "description": "Lock onto the nearest enemy within 5m and bring the bat down. <style=cIsUtility>On the ground</style>: <style=cIsDamage>1000%</style>, knocked back and <style=cIsUtility>stunned for 2s</style>, and a <style=cIsDamage>300%</style> shockwave to everything within 4m. <style=cIsUtility>In the air</style>: slam it into the floor for <style=cIsDamage>2000%</style>, and everyone within 10m is bashed down with it for <style=cIsDamage>1000%</style> and stunned. In the air, chains run <style=cIsUtility>from the slammed enemy</style> to everyone else in the air it drags down, <style=cIsDamage>330%</style> more each, breaking as they land.",
+      "kind": "bashdown",
+      "icon": "panorama/images/hud/abilities/punkgoat/goat_sigilslam_psd.vtex",
+      "damagePct": 1000,
+      "procCoefficient": 1.0,
+      "cooldown": 4,
+      "stocks": 1,
+      "duration": 1,
+      "minDuration": 0.3,
+      "interval": 0,
+      "radius": 10,
+      "range": 0,
+      "speed": 40,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 0,
+      "spreadDeg": 0,
+      "burst": 0,
+      "stunDuration": 2,
+      "knockback": 14,
+      "healFraction": 0,
+      "moveSpeedMult": 1.0,
+      "chainCount": 0,
+      "buffStacks": 0,
+      "buff": "none",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "billy_bashdown",
+      "extra": "billy_nail_prop",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 0.5,
+      "reach": 4,
+      "seekRange": 0,
+      "gravity": 0,
+      "falloffStart": 0,
+      "falloffEnd": 0,
+      "falloffMinPct": 0,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 0,
+      "damageMinPct": 0,
+      "splashPct": 300,
+      "meleePct": 0,
+      "meleeRate": 0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 35,
+      "deadlockDamage": 35,
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "enemy_stun"
+      ],
+      "airMult": 2,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 5,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 33
+    },
+    {
+      "id": "billy_ram",
+      "hero": "billy",
+      "slot": "special",
+      "deadlockAbility": "ability_punkgoat_goatflip",
+      "name": "Rising Ram",
+      "description": "Lower your horns and charge 15m. Ram an enemy and it takes <style=cIsDamage>1200%</style>; chains snap onto every enemy standing on the ground within 10m for <style=cIsDamage>396%</style> each and haul them, you included, <style=cIsUtility>into a 2s float</style> (stunned, drifting slowly down); the chains break at the top. Ground only. The cooldown is <style=cIsUtility>halved</style> when the ram connects.",
+      "kind": "rising_ram",
+      "icon": "panorama/images/hud/abilities/punkgoat/goat_risingram_psd.vtex",
+      "damagePct": 1200,
+      "procCoefficient": 1.0,
+      "cooldown": 6,
+      "stocks": 1,
+      "duration": 0.4,
+      "minDuration": 0.3,
+      "interval": 0,
+      "radius": 10,
+      "range": 15,
+      "speed": 30,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 0,
+      "spreadDeg": 0,
+      "burst": 0,
+      "stunDuration": 0,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 1.0,
+      "chainCount": 0,
+      "buffStacks": 0,
+      "buff": "none",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "billy_ram",
+      "extra": "none",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 0,
+      "reach": 0,
+      "seekRange": 0,
+      "gravity": 0,
+      "falloffStart": 0,
+      "falloffEnd": 0,
+      "falloffMinPct": 0,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 6,
+      "damageMinPct": 0,
+      "splashPct": 0,
+      "meleePct": 0,
+      "meleeRate": 0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 32,
+      "deadlockDamage": 40,
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "enemy_knockup",
+        "enemy_stun",
+        "self_move"
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 2,
+      "hitRefund": 0.5,
+      "chainPct": 33
+    },
+    {
+      "id": "billy_chains",
+      "hero": "billy",
+      "slot": "equipment",
+      "deadlockAbility": "ability_punkgoat_tether",
+      "name": "Chain Gang",
+      "description": "Chains shoot from you to every enemy you can see within 20m (up to 20), haul them 6m into the air and slam them into the floor for <style=cIsDamage>6000%</style> each; anyone left is <style=cIsUtility>stunned for 3s</style>. Bosses are slammed where they stand.",
+      "kind": "ult_chains",
+      "icon": "panorama/images/hud/abilities/punkgoat/goat_chaingang_psd.vtex",
+      "damagePct": 6000,
+      "procCoefficient": 1.0,
+      "cooldown": 120,
+      "stocks": 1,
+      "duration": 1.2,
+      "minDuration": 0.9,
+      "interval": 0.3,
+      "radius": 20,
+      "range": 0,
+      "speed": 45,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 0,
+      "spreadDeg": 0,
+      "burst": 0,
+      "stunDuration": 3,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 1.0,
+      "chainCount": 20,
+      "buffStacks": 0,
+      "buff": "none",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "billy_chains",
+      "extra": "billy_chain_prop",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 1.0,
+      "reach": 0,
+      "seekRange": 0,
+      "gravity": 0,
+      "falloffStart": 0,
+      "falloffEnd": 0,
+      "falloffMinPct": 0,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 6,
+      "damageMinPct": 0,
+      "splashPct": 0,
+      "meleePct": 0,
+      "meleeRate": 0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 175,
+      "deadlockDamage": 120,
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "enemy_stun",
+        "enemy_knockup"
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0
     }
   ]
 }

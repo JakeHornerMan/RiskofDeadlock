@@ -236,6 +236,39 @@
         "ammo_02",
         "ammo_01"
       ]
+    },
+    {
+      "id": "billy",
+      "key": "hero_punkgoat",
+      "vmdl": "models/heroes_wip/punkgoat/punkgoat.vmdl",
+      "meshes": [
+        "punkgoat_model",
+        "weapon"
+      ],
+      "clips": [
+        "ability_goat_ram_end",
+        "ability_goat_ram_intro",
+        "ability_goat_ram_loop",
+        "ability_ult_tether_loop",
+        "ability_ult_tether_pull",
+        "dash_air_forward",
+        "in_air_loop_down",
+        "jump_ground",
+        "melee_in_air_dash_down",
+        "melee_in_air_hit",
+        "melee_quick_1",
+        "melee_quick_2",
+        "melee_quick_overhand_1",
+        "reload_idle",
+        "throw",
+        "ult_intro_throw_bat_in_air",
+        "weapon_run_e",
+        "weapon_run_n",
+        "weapon_run_s",
+        "weapon_run_w",
+        "weapon_stand_idle"
+      ],
+      "split": []
     }
   ],
   "images": [
@@ -250,12 +283,15 @@
     "panorama/images/heroes/guns/gigawatt_gun_psd.vtex",
     "panorama/images/heroes/guns/haze_gun_psd.vtex",
     "panorama/images/heroes/guns/inferno_gun_psd.vtex",
+    "panorama/images/heroes/guns/punkgoat_gun_psd.vtex",
     "panorama/images/heroes/guns/ratking_gun_psd.vtex",
     "panorama/images/heroes/guns/viscous_gun_psd.vtex",
     "panorama/images/heroes/haze_card_psd.vtex",
     "panorama/images/heroes/haze_sm_psd.vtex",
     "panorama/images/heroes/inferno_card_psd.vtex",
     "panorama/images/heroes/inferno_sm_psd.vtex",
+    "panorama/images/heroes/punkgoat_card_psd.vtex",
+    "panorama/images/heroes/punkgoat_sm_psd.vtex",
     "panorama/images/heroes/ratking_card_psd.vtex",
     "panorama/images/heroes/ratking_sm_psd.vtex",
     "panorama/images/heroes/viscous_card_psd.vtex",
@@ -280,6 +316,11 @@
     "panorama/images/hud/abilities/inferno_dash_psd.vtex",
     "panorama/images/hud/abilities/inferno_deflect_psd.vtex",
     "panorama/images/hud/abilities/inferno_molotov_psd.vtex",
+    "panorama/images/hud/abilities/punkgoat/goat_blasted_psd.vtex",
+    "panorama/images/hud/abilities/punkgoat/goat_chaingang_psd.vtex",
+    "panorama/images/hud/abilities/punkgoat/goat_risingram_psd.vtex",
+    "panorama/images/hud/abilities/punkgoat/goat_sigilslam_psd.vtex",
+    "panorama/images/hud/abilities/punkgoat/punkgoat_capricious_psd.vtex",
     "panorama/images/hud/abilities/ratking/ratking_flag_psd.vtex",
     "panorama/images/hud/abilities/ratking/ratking_grenade_psd.vtex",
     "panorama/images/hud/abilities/ratking/ratking_shield_psd.vtex",
@@ -298,6 +339,7 @@
   ],
   "soundEvents": [
     "Ability.Melee.Impact.Heavy.NPC",
+    "Ability.Melee.Impact.NPC",
     "Abrams.A1.SiphonLife.Cast",
     "Abrams.A1.SiphonLife.End",
     "Abrams.A1.SiphonLife.Loop",
@@ -308,6 +350,7 @@
     "Abrams.Charge.Cast",
     "Abrams.Charge.HitEnemy",
     "Abrams.Charge.Wall.Impact",
+    "Abrams.Melee.Swing",
     "Abrams.Melee.Swing.Charged",
     "Abrams.Wpn.Fire.Main",
     "Abrams.Wpn.Impact",
@@ -361,6 +404,26 @@
     "Mods.Armor.Phantom.Strike.Cast",
     "Mods.Armor.Phantom.Strike.Hit",
     "Mods.Tech.TormentPulse.Proc",
+    "PunkGoat.Wpn.Fire.Main",
+    "PunkGoat.Wpn.Impact",
+    "PunkGoat.Wpn.Reload.Start",
+    "Punkgoat.Blasted.Refill.Light",
+    "Punkgoat.Dash",
+    "Punkgoat.Footstep",
+    "Punkgoat.JumpLand",
+    "Punkgoat.Melee.Swing",
+    "Punkgoat.Melee.Swing.Charged",
+    "Punkgoat.Rising.Ram.Cast",
+    "Punkgoat.Rising.Ram.Cast.Delay",
+    "Punkgoat.Rising.Ram.Impact",
+    "Punkgoat.Sigil.Slam.Cast.Delay",
+    "Punkgoat.Sigil.Slam.Dive",
+    "Punkgoat.Sigil.Slam.Explosion",
+    "Punkgoat.Sigil.Slam.Hit",
+    "Punkgoat.Tether.Cast.Delay",
+    "Punkgoat.Tether.Mod.Expire",
+    "Punkgoat.Tether.Proj.Lp",
+    "Punkgoat.Tether.Pull",
     "Ratking.Charge.AOE.Expire",
     "Ratking.Charge.Cast",
     "Ratking.Charge.Cast.Delay",
@@ -423,6 +486,7 @@
     "soundevents/hero/haze.vsndevts",
     "soundevents/hero/inferno.vsndevts",
     "soundevents/hero/krill.vsndevts",
+    "soundevents/hero/punkgoat.vsndevts",
     "soundevents/hero/ratking.vsndevts",
     "soundevents/hero/viscous.vsndevts"
   ],
@@ -481,6 +545,17 @@
     "krill/krill_use_power2",
     "krill/krill_use_power3",
     "krill/krill_use_power4",
+    "punkgoat/punkgoat_bespoke_ability_line",
+    "punkgoat/punkgoat_happy",
+    "punkgoat/punkgoat_hunt",
+    "punkgoat/punkgoat_killstreak_high",
+    "punkgoat/punkgoat_killstreak_mid",
+    "punkgoat/punkgoat_killstreak_start",
+    "punkgoat/punkgoat_select",
+    "punkgoat/punkgoat_unselect",
+    "punkgoat/punkgoat_use_power1",
+    "punkgoat/punkgoat_use_power3",
+    "punkgoat/punkgoat_use_power4",
     "ratking/ratking_hunt",
     "ratking/ratking_killstreak_high",
     "ratking/ratking_killstreak_mid",
@@ -554,6 +629,20 @@
         "ratking_ult_diorama_emerge",
         "ratking_ult_diorama_idle"
       ]
+    },
+    {
+      "id": "billy_nail_prop",
+      "vmdl": "models/heroes_wip/punkgoat/punkgoat_nail.vmdl",
+      "meshes": [],
+      "clips": []
+    },
+    {
+      "id": "billy_chain_prop",
+      "vmdl": "models/heroes_wip/punkgoat/punkgoat_chain.vmdl",
+      "meshes": [
+        "chainbase"
+      ],
+      "clips": []
     }
   ]
 }

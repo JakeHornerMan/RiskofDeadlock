@@ -89,6 +89,17 @@
       "enigmaCompatible": true,
       "randomTrigger": true,
       "figure": "all"
+    },
+    {
+      "id": "eq_billy_chains",
+      "hero": "billy",
+      "skill": "billy_chains",
+      "pickupText": "Chain every enemy within 20m, haul them into the air and slam them into the floor.",
+      "lore": "The punk goat doesn't fight fair. He fights everyone at once.",
+      "canDrop": true,
+      "enigmaCompatible": true,
+      "randomTrigger": true,
+      "figure": "all"
     }
   ]
 }

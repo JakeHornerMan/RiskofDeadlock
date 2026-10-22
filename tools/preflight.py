@@ -61,7 +61,7 @@ for r in sheets['skills']['rows']:
     ref('skills', r['id'], 'hero', r['hero'], heroes, False)
     ref('skills', r['id'], 'buff', r['buff'], buffs)
     ref('skills', r['id'], 'debuff', r['debuff'], buffs)
-    ref('skills', r['id'], 'pattern', r['pattern'], {'krill', 'ratking'})
+    ref('skills', r['id'], 'pattern', r['pattern'], {'krill', 'ratking', 'octagon'})
     if r['meleePct'] > 0 and r['slot'] != 'primary': bad(f'skills[{r["id"]}].meleePct: only a gun row punches')
     ref('skills', r['id'], 'effect', r['effect'], effects, False)
     ref('skills', r['id'], 'vfx', r['vfx'], effects)

@@ -15,7 +15,7 @@ OUT = os.path.join(ROOT, 'build', 'pages')
 IMG = os.path.join(OUT, 'img')
 os.makedirs(OUT, exist_ok=True)
 E = html.escape
-VERSION = 'v0.9.0b'
+VERSION = 'v0.10.0a'
 BAND = 500  # balanced = within ±500 %/s of the RoR2 match (creator, 2026-10-16)
 
 def sheet(name):
@@ -26,7 +26,7 @@ SKILLS = sheet('skills'); BUFFS = {r['id']: r for r in sheet('buffs')}
 EQUIP = {r['hero']: r for r in sheet('equipment')}
 LINKS = {'haze': 'https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p', 'abrams': 'https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG',
          'seven': 'https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m', 'infernus': 'https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF',
-         'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'viscous': 'https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC', 'ratking': 'https://claude.ai/artifact/Kw4rTyRrvXTb2eEyT9oTYa', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
+         'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'viscous': 'https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC', 'ratking': 'https://claude.ai/artifact/Kw4rTyRrvXTb2eEyT9oTYa', 'billy': 'https://claude.ai/artifact/7m271DJLqzAvMZDrqU6QjL', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
 SLOTS = ['primary', 'secondary', 'utility', 'special']
 KEY = {'primary': 'M1', 'secondary': 'M2', 'utility': 'Shift', 'special': 'R', 'equipment': 'Q'}
 KIND_LABEL = {'primary': 'Weapon', 'secondary': 'Ability', 'utility': 'Ability', 'special': 'Ability · new in 0.4'}
@@ -63,6 +63,11 @@ VANILLA = {
         'secondary': ('Power Tazer', 'Fire a tazer for 100% that shocks and bounces.'),
         'utility': ('Orbital Probe', 'Call down orbital probes for 700% each.'),
         'special': ('Orbital Supply Beacon', 'Call down supply beacons that heal, shock or resupply.')}),
+ 'MercBody': dict(name='Mercenary', who='Merc',
+   kit={'primary': ('Laser Sword', 'Slice in front of you for 130%; every third swing hits harder.'),
+        'secondary': ('Whirlwind', 'Spin twice for 200% each, moving with you.'),
+        'utility': ('Blinding Assault', 'Dash for 300%, stunning; dash up to 3 times on hits.'),
+        'special': ('Eviscerate', 'Become invulnerable and slash the nearest enemy over and over for 110%.')}),
  'ToolbotBody': dict(name='MUL-T', who='Toolbot',
    kit={'primary': ('Auto-Nailgun', 'Fire nails for 70% each, faster the longer you hold.'),
         'secondary': ('Blast Canister', 'Launch a canister for 220% that bursts into bomblets, stunning.'),
@@ -72,6 +77,11 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
+ 'billy': [('v0.10.0a', ['New hero: Billy, matched to Mercenary (Mercenary’s stats, +30 health, one jump plus the G.O.A.T. air dodge)',
+                         'Bat: one press per swing, each the length of Deadlock’s melee swing (0.67 s, cooldown the same); in the air it dodges onto the nearest enemy within 10 m, deals double, and every hit stalls his fall and the enemy’s for 1 s, so he can juggle',
+                         'Rising Ram launches only enemies standing on the ground, with chains that haul them up (33 % of the ram’s hit); 6 s cooldown, halved on a hit',
+                         'Bashdown: 4 s cooldown; in the air the slammed enemy’s chains drag every other enemy in the air down with it (33 % of the hit); he always stays in the slam until he hits the floor',
+                         'Rock-and-punk-pink effects built in Unity: boulders, rock spikes, cracks and dust, with Deadlock’s own chain links in big pink-lit chains'])],
  'ratking': [('v0.9.0c', ['Royal Pestments: Rat King calls his rats out by name, one after another, for the whole 6 s (Deadlock’s own lines, no repeats until all have played)',
                           'Scrap Grenade now speaks its own Deadlock lines (they were swapped with Rat Swarm’s)']),
              ('v0.9.0b', ['Footsteps 90 % quieter (the landing thud stays as loud)',
@@ -171,6 +181,10 @@ PAPER = {
 }
 
 ANALYSIS = {
+ 'billy': ['One run after the creator’s changes (air dodge-in, chains on Rising Ram and air Bashdown, Rising Ram 6 s, Bashdown 4 s): 4,941 %/s against Mercenary’s 5,112. That is −171: inside the ±500 band. (The first build measured 3,763.)',
+           'The bat carries him (2,370 %/s alone): its 4 m arc catches most of the pack once he is in among it. Rising Ram 1,390 alone (its chains hit every enemy it launches), Bashdown 653, Biquette 297.',
+           'Mercenary’s moves alone add up to far more than his 5,112 together (Laser Sword 2,850, Whirlwind 1,351, Blinding Assault 1,120), so compare the totals, not single moves.',
+           'Chain Gang (Q, the ult) did 1,200 %/s over its 30 s pass with one use. It isn’t in the all-together number.'],
  'ratking': ['Three runs after the 0.9.0b changes (Royal Pestments doubled, Rat Swarm without a time limit): 3,567, 3,189 and 3,869 %/s, mean 3,542 against Captain’s 3,490. That is +52: inside the ±500 band. (0.9.0: 2,999.)',
              'The Scrap Grenade carries him (1,373 %/s alone, 1,260–1,530): its hops keep it in the pack, so most of its three blasts land on most of the 12. Rule, Ratannia! 1,123 (the 1,500 % centre blast plus the stun ring every 12 s), Royal Pestments 889 (was 509 at 25 %; the ring follows him, so the pack stays inside), the gun 547 (565 on paper).',
              'Captain’s own number is odd: his moves alone add up to about 800 (the shotgun; the probes and beacons barely touch a still pack) but together he measures 3,490, so compare the totals, not single moves.',

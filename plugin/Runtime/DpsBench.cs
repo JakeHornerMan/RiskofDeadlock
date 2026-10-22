@@ -475,7 +475,8 @@ namespace DeadlockOfRain
                 }
                 // dashes and leaps carry the survivor off the spot: once they are back in their main state, put them back
                 var esm = EntityStateMachine.FindByCustomName(body.gameObject, "Body");
-                if (esm && esm.state is EntityStates.GenericCharacterMain && (body.footPosition - arena).sqrMagnitude > 16f)
+                // (not while Billy's air combo runs: up in the air with a floating pack is where his moves land)
+                if (esm && esm.state is EntityStates.GenericCharacterMain && (body.footPosition - arena).sqrMagnitude > 16f && !BillyAir.InCombo(body))
                 {
                     TeleportHelper.TeleportBody(body, arena + Vector3.up * 0.5f, false);
                     if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;

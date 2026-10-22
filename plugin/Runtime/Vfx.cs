@@ -52,6 +52,8 @@ namespace DeadlockOfRain
                     case "viscous_gooed": return ViscousGooed(moment, follow);
                     case "ratking_gun": case "ratking_scrap": case "ratking_ring": case "ratking_banner": case "ratking_swarm":
                         return RatKing(id, moment, at, radius, follow);
+                    case "billy_gun": case "billy_bat": case "billy_bashdown": case "billy_ram": case "billy_float": case "billy_dodge": case "billy_chains":
+                        return Billy(id, moment, at, radius, follow, to, angle);
                 }
             }
             catch (System.Exception e) { Log.Warn($"vfx {id}/{moment}: {e.Message}"); }

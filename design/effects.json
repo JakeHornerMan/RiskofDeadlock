@@ -1222,6 +1222,146 @@
       ],
       "tint": "none",
       "notes": "Deadlock's planted banner and the sewer diorama that rises around it (its own emerge and idle clips) for Rule, Ratannia!"
+    },
+    {
+      "id": "tracer_billy",
+      "kind": "tracer",
+      "addressable": "RoR2/Base/Commando/TracerCommandoDefault.prefab",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "#E04FB0",
+      "notes": "Commando's tracer recoloured Billy's punk pink for Biquette's bullets"
+    },
+    {
+      "id": "billy_gun",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Biquette: a pink muzzle spark and a puff of grey smoke (muzzle), a chip of stone and dust where a bullet lands (hit)"
+    },
+    {
+      "id": "billy_bat",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "The bat: a pink slash arc along the swing (cast; the heavy last swing wider), on each hit stone shards and grit bursting off the enemy with a pink flash, a camera kick and Deadlock-style hit-stop (hit), the overhead's small crack in the ground (end)"
+    },
+    {
+      "id": "billy_bashdown",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Bashdown: dust lifting off the bat in the hop (cast), a pink streak and falling grit behind the dive (loop), the smash: a crater, a ring of rock spikes punching up out of the ground, boulder chunks that fly and bounce, cracks, a pink shock ring, a dust ring and a heavy shake (hit), the ground shockwave racing out as a ring of dust and stones (wave)"
+    },
+    {
+      "id": "billy_ram",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Rising Ram: dirt kicked up by his hooves and a pink glow on the horns in the wind-up (cast), thin pink horn trails and a spray of grit along the charge (loop), the impact: a white-pink flash, a burst of boulder chunks, cracks racing 10m out, a ring of dust marking the launch and a heavy thud (hit)"
+    },
+    {
+      "id": "billy_float",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "A floating enemy (Rising Ram's juggle): a trickle of falling grit and pebbles under it and a faint pink rim glow for as long as it floats (loop; radius = seconds)"
+    },
+    {
+      "id": "billy_dodge",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "G.O.A.T. dodge: a burst of dust where he kicks off, thin pink horn trails along the dash (cast), stone chips off each enemy he gores (hit)"
+    },
+    {
+      "id": "billy_chains",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Chain Gang: Deadlock's chain links strung from his hand to every chained enemy (Billy's chain prop tiled along the line, a dark grey line if it can't be read), a pink glint where each chain bites (cast), the slam: a dust column, a crater ring and boulder chunks under every victim (hit)"
+    },
+    {
+      "id": "billy_nail_prop",
+      "kind": "prop",
+      "addressable": "models/heroes_wip/punkgoat/punkgoat_nail.vmdl",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Deadlock's nail from Bashdown's sigil, planted in the crater for a moment"
+    },
+    {
+      "id": "billy_chain_prop",
+      "kind": "prop",
+      "addressable": "models/heroes_wip/punkgoat/punkgoat_chain.vmdl",
+      "scaleWithRadius": false,
+      "meshes": [
+        "chainbase"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Deadlock's Chain Gang chain links, tiled along each chain"
     }
   ]
 }

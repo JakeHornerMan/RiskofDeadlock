@@ -1,6 +1,10 @@
 {
   "Ability.Melee.Impact.Heavy.NPC": [
-    "abrams"
+    "abrams",
+    "billy"
+  ],
+  "Ability.Melee.Impact.NPC": [
+    "billy"
   ],
   "Abrams.A1.SiphonLife.Cast": [
     "abrams"
@@ -31,6 +35,9 @@
   ],
   "Abrams.Charge.Wall.Impact": [
     "abrams"
+  ],
+  "Abrams.Melee.Swing": [
+    "billy"
   ],
   "Abrams.Melee.Swing.Charged": [
     "abrams"
@@ -191,6 +198,66 @@
   ],
   "Mods.Tech.TormentPulse.Proc": [
     "infernus"
+  ],
+  "PunkGoat.Wpn.Fire.Main": [
+    "billy"
+  ],
+  "PunkGoat.Wpn.Impact": [
+    "billy"
+  ],
+  "PunkGoat.Wpn.Reload.Start": [
+    "billy"
+  ],
+  "Punkgoat.Blasted.Refill.Light": [
+    "billy"
+  ],
+  "Punkgoat.Dash": [
+    "billy"
+  ],
+  "Punkgoat.Footstep": [
+    "billy"
+  ],
+  "Punkgoat.JumpLand": [
+    "billy"
+  ],
+  "Punkgoat.Melee.Swing": [
+    "billy"
+  ],
+  "Punkgoat.Melee.Swing.Charged": [
+    "billy"
+  ],
+  "Punkgoat.Rising.Ram.Cast": [
+    "billy"
+  ],
+  "Punkgoat.Rising.Ram.Cast.Delay": [
+    "billy"
+  ],
+  "Punkgoat.Rising.Ram.Impact": [
+    "billy"
+  ],
+  "Punkgoat.Sigil.Slam.Cast.Delay": [
+    "billy"
+  ],
+  "Punkgoat.Sigil.Slam.Dive": [
+    "billy"
+  ],
+  "Punkgoat.Sigil.Slam.Explosion": [
+    "billy"
+  ],
+  "Punkgoat.Sigil.Slam.Hit": [
+    "billy"
+  ],
+  "Punkgoat.Tether.Cast.Delay": [
+    "billy"
+  ],
+  "Punkgoat.Tether.Mod.Expire": [
+    "billy"
+  ],
+  "Punkgoat.Tether.Proj.Lp": [
+    "billy"
+  ],
+  "Punkgoat.Tether.Pull": [
+    "billy"
   ],
   "Ratking.Charge.AOE.Expire": [
     "ratking"
@@ -392,6 +459,12 @@
   "atlas/emote/atlas_effort_melee_big": [
     "abrams"
   ],
+  "billy_chain_prop": [
+    "billy"
+  ],
+  "billy_nail_prop": [
+    "billy"
+  ],
   "gigawatt/gigawatt_happy": [
     "seven"
   ],
@@ -554,6 +627,9 @@
   "panorama/images/heroes/guns/inferno_gun_psd.vtex": [
     "infernus"
   ],
+  "panorama/images/heroes/guns/punkgoat_gun_psd.vtex": [
+    "billy"
+  ],
   "panorama/images/heroes/guns/ratking_gun_psd.vtex": [
     "ratking"
   ],
@@ -571,6 +647,12 @@
   ],
   "panorama/images/heroes/inferno_sm_psd.vtex": [
     "infernus"
+  ],
+  "panorama/images/heroes/punkgoat_card_psd.vtex": [
+    "billy"
+  ],
+  "panorama/images/heroes/punkgoat_sm_psd.vtex": [
+    "billy"
   ],
   "panorama/images/heroes/ratking_card_psd.vtex": [
     "ratking"
@@ -641,6 +723,21 @@
   "panorama/images/hud/abilities/inferno_molotov_psd.vtex": [
     "infernus"
   ],
+  "panorama/images/hud/abilities/punkgoat/goat_blasted_psd.vtex": [
+    "billy"
+  ],
+  "panorama/images/hud/abilities/punkgoat/goat_chaingang_psd.vtex": [
+    "billy"
+  ],
+  "panorama/images/hud/abilities/punkgoat/goat_risingram_psd.vtex": [
+    "billy"
+  ],
+  "panorama/images/hud/abilities/punkgoat/goat_sigilslam_psd.vtex": [
+    "billy"
+  ],
+  "panorama/images/hud/abilities/punkgoat/punkgoat_capricious_psd.vtex": [
+    "billy"
+  ],
   "panorama/images/hud/abilities/ratking/ratking_flag_psd.vtex": [
     "ratking"
   ],
@@ -685,6 +782,39 @@
   ],
   "panorama/images/items/weapon/tesla_bullets_psd.vtex": [
     "seven"
+  ],
+  "punkgoat/punkgoat_bespoke_ability_line": [
+    "billy"
+  ],
+  "punkgoat/punkgoat_happy": [
+    "billy"
+  ],
+  "punkgoat/punkgoat_hunt": [
+    "billy"
+  ],
+  "punkgoat/punkgoat_killstreak_high": [
+    "billy"
+  ],
+  "punkgoat/punkgoat_killstreak_mid": [
+    "billy"
+  ],
+  "punkgoat/punkgoat_killstreak_start": [
+    "billy"
+  ],
+  "punkgoat/punkgoat_select": [
+    "billy"
+  ],
+  "punkgoat/punkgoat_unselect": [
+    "billy"
+  ],
+  "punkgoat/punkgoat_use_power1": [
+    "billy"
+  ],
+  "punkgoat/punkgoat_use_power3": [
+    "billy"
+  ],
+  "punkgoat/punkgoat_use_power4": [
+    "billy"
   ],
   "ratking/ratking_hunt": [
     "ratking"
@@ -736,6 +866,9 @@
   ],
   "soundevents/hero/krill.vsndevts": [
     "mokrill"
+  ],
+  "soundevents/hero/punkgoat.vsndevts": [
+    "billy"
   ],
   "soundevents/hero/ratking.vsndevts": [
     "ratking"
