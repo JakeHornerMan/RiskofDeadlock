@@ -449,7 +449,7 @@ All of these read the VPK. None write to Deadlock. `D` = `.../Deadlock/game/cita
 **Build 6795 and the VRF 20.0 CLI (2026-10-20):** the CLI in `C:\Users\jakeh\tools\vrf-cli` can't read 6795's
 `scripts/heroes.vdata` or new models (`Unknown KVType for variable 'datatype': 26`). The extractor's VRF 20.1.7467 reads them. For the
 Viscous lookup `tools/vrfdump` (a small console tool on that NuGet package; its header has the commands: `list`, `glb`, `text`, `wav`,
-`events`) did the same jobs; the dev listings `vpk_files.txt`, `sound_events.txt` and `anim_names.json`
+`events`, and since 0.9.1b `png`: one texture as a png, to look at a candidate icon before picking it; keep the png out of the repo) did the same jobs; the dev listings `vpk_files.txt`, `sound_events.txt` and `anim_names.json`
 (all six heroes) were regenerated with it at 6795. A newer CLI release (20.1+) would do the same with the commands above.
 
 **Dev listings in `tools/dev/` (gitignored, made on this PC from its install, used by `preflight.py`):**
@@ -654,5 +654,6 @@ the source values. The RoR2-scale numbers next to them are our own balance (doc 
    - `skills.json`, `stats.json`, `buffs.json` if needed
 5. Run `python tools/gen.py` (runs preflight first), then the extractor with `--force` **and `--manifest extractor/manifest.json`**.
    Without `--manifest` the exe reads `build/extract/manifest.json`, the copy next to it, which is only refreshed when you `dotnet publish` again.
-6. Preflight also requires `heightScale = sourceHeight / anchor sourceHeight` (within 0.002), `gunArms ∈ {R, LR}` and `aimPose ≠ none`.
+6. Preflight also requires `heightScale = sourceHeight / anchor sourceHeight` (within 0.002), `gunArms ∈ {R, LR}` and `aimPose ≠ none`,
+   a different `icon` for each of a hero's skills (the ult item too; 0.9.1b) and `steadyClips` that are among the row's own clips.
    `ANIM_RIG_COLUMNS` is duplicated in `gen.py` and `preflight.py`, so a new non-clip column in `animations.json` must be added to both.

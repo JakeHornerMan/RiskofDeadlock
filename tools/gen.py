@@ -18,6 +18,9 @@ if '--no-preflight' not in sys.argv:
     others = [l for l in r.stdout.splitlines() if l.startswith('  -') and 'no implementing state' not in l]
     if others:
         sys.exit('gen: fix the preflight problems first')
+    # a preflight that crashed prints neither problems nor the clean line: never generate from it
+    if 'PREFLIGHT' not in r.stdout:
+        sys.exit('gen: preflight did not finish: ' + r.stderr.strip())
 
 def load(n):
     return json.load(open(os.path.join(D, n + '.json'), encoding='utf-8'))
@@ -78,7 +81,7 @@ os.makedirs(os.path.join(ROOT, 'plugin', 'Generated'), exist_ok=True)
 open(os.path.join(ROOT, 'plugin', 'Generated', 'Sheets.g.cs'), 'w', encoding='utf-8').write('\n'.join(parts) + '\n')
 
 # extractor manifest
-ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'muzzleForward', 'clothParents', 'ragdollBones', 'ragdollThickness', 'rigPrefix', 'loopSecondary', 'springRoots', 'springStiffness', 'springDamping', 'springGravity', 'propBones'}  # animations columns that are not clip names
+ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'muzzleForward', 'clothParents', 'ragdollBones', 'ragdollThickness', 'rigPrefix', 'loopSecondary', 'springRoots', 'springStiffness', 'springDamping', 'springGravity', 'propBones', 'steadyClips'}  # animations columns that are not clip names
 anims = {r['hero']: r for r in load('animations')['rows']}
 skills = load('skills')['rows']
 buffs = load('buffs')['rows']

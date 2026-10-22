@@ -7,7 +7,8 @@
 //   text   <x.vdata|x.vsndevts> <out>   decompiled to text (heroes.vdata, a hero's sound events)
 //   wav    <x.vsnd> <out>  one sound decoded to wav (then: python tools/sound_env.py out.wav)
 //   events x <out>         every sound event name (tools/dev/sound_events.txt)
-// Run it with stdin from /dev/null in a bash loop (it otherwise reads the loop's input), and strip CR () from list files.
+//   png    <x.vtex> <out>  one texture as a png (to look at an icon before picking it; never copied into the repo)
+// Run it with stdin from /dev/null in a bash loop (it otherwise reads the loop's input), and strip carriage returns from list files.
 using SteamDatabase.ValvePak;
 using ValveResourceFormat;
 using ValveResourceFormat.IO;
@@ -47,6 +48,13 @@ switch (mode)
             BinaryKV3 kv => kv.ToString(),
             _ => res.DataBlock.ToString() };
         File.WriteAllText(outp, txt);
+        break;
+    }
+    case "png":
+    {
+        var res = loader.LoadFileCompiled(path);
+        using var bmp = ((Texture)res.DataBlock).GenerateBitmap();
+        File.WriteAllBytes(outp, TextureExtract.ToPngImage(bmp));
         break;
     }
     case "wav":

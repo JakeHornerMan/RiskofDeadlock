@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using DeadlockOfRain.Sheets;
 using RoR2;
 using UnityEngine;
@@ -28,6 +29,12 @@ namespace DeadlockOfRain
         bool dead, frozen;
         static readonly Dictionary<string, Dictionary<string, AnimationClip>> clipCache = new Dictionary<string, Dictionary<string, AnimationClip>>();
         Dictionary<string, AnimationClip> clips;
+        // each clip's hip rotation (the upper body's parent, pelvis) per frame, so gestures lay the upper body on in model
+        // space the way Deadlock layers them (see ModelSpaceGesture)
+        static readonly Dictionary<string, Dictionary<string, HipCurve>> hipCache = new Dictionary<string, Dictionary<string, HipCurve>>();
+        Dictionary<string, HipCurve> hips;
+        string gestureClip;
+        sealed class HipCurve { public Quaternion[] Rot; public float Fps; }
         readonly Dictionary<string, string> logical = new Dictionary<string, string>();
 
         // gun rig: arms held rigid in the sheet's aimPose, gun welded to its hand, chest turned so the gun points at the aim
@@ -77,6 +84,7 @@ namespace DeadlockOfRain
             if (anim != null) return;
             anim = GetComponent<Animation>();
             if (!anim || string.IsNullOrEmpty(HeroId) || !clipCache.TryGetValue(HeroId, out clips)) { anim = null; return; }
+            hipCache.TryGetValue(HeroId, out hips);
             rows = Sheet.Anims(HeroId);
             logical["idle"] = rows.Idle; logical["run_n"] = rows.RunN; logical["run_s"] = rows.RunS; logical["run_e"] = rows.RunE; logical["run_w"] = rows.RunW;
             logical["sprint"] = rows.Sprint; logical["jump_start"] = rows.JumpStart; logical["jump_air"] = rows.JumpAir; logical["land"] = rows.Land;
@@ -182,10 +190,33 @@ namespace DeadlockOfRain
             var paths = new string[bones.Length];
             for (int i = 0; i < bones.Length; i++) paths[i] = PathTo(bones[i], root);
             int rm = System.Array.FindIndex(asset.Bones, b => b.Name == "root_motion");
+            // (props build their clips here too: Rat King's rats have no animations row)
+            var rows = AnimRow.All.FirstOrDefault(a => a.Hero == hero);
+            int ub = rows != null ? System.Array.FindIndex(asset.Bones, b => b.Name == rows.UpperBodyBone) : -1;
+            int hip = ub >= 0 ? asset.Bones[ub].Parent : -1;
+            var hipCurves = new Dictionary<string, HipCurve>();
+            // steadyClips: the hips keep the idle's facing (the clip's own spin taken out), measured along the hip axis
+            // that points forward in the idle's first frame
+            var steady = new HashSet<string>(rows != null ? rows.SteadyClips : new string[0]);
+            Vector3 hipFwd = Vector3.forward;
+            if (hip >= 0 && rows != null && asset.Clips.TryGetValue(rows.Idle, out var idleDef))
+            {
+                var idleHip = RootFolded(asset, idleDef, rm).Find(t => t.Bone == hip);
+                hipFwd = Quaternion.Inverse(idleHip != null && idleHip.Rot.Length > 0 ? idleHip.Rot[0] : asset.Bones[hip].Rot) * Vector3.forward;
+            }
             foreach (var c in asset.Clips.Values)
             {
                 var clip = new AnimationClip { legacy = true, name = c.Name, frameRate = c.Fps };
-                foreach (var t in RootFolded(asset, c, rm))
+                // (a copy: RootFolded hands back the asset's own list when the clip has no root track)
+                var tracks = new List<TrackDef>(RootFolded(asset, c, rm));
+                if (hip >= 0)
+                {
+                    int k = tracks.FindIndex(t => t.Bone == hip);
+                    if (k >= 0 && steady.Contains(c.Name)) tracks[k] = Steady(tracks[k], hipFwd);
+                    var rot = k >= 0 && tracks[k].Rot.Length > 0 ? tracks[k].Rot : new[] { asset.Bones[hip].Rot };
+                    hipCurves[c.Name] = new HipCurve { Rot = rot, Fps = c.Fps };
+                }
+                foreach (var t in tracks)
                 {
                     if (t.Bone < 0 || t.Bone >= bones.Length) continue;
                     // a parentless bone the model builder attached to the body (Abrams' coat cloth) keeps its rest pose:
@@ -226,7 +257,23 @@ namespace DeadlockOfRain
                 result[c.Name] = clip;
             }
             clipCache[hero] = result;
+            hipCache[hero] = hipCurves;
             return result;
+        }
+
+        /// <summary>The hip track with its turn about the model's up axis taken out: every frame faces where the idle's hips
+        /// face (hipFwd, in hip space), so a clip that spins the whole body round (Seven's Storm Cloud hover) keeps its
+        /// tilt, sway and limbs but faces where RoR2 turns the body.</summary>
+        static TrackDef Steady(TrackDef t, Vector3 hipFwd)
+        {
+            var rot = new Quaternion[t.Rot.Length];
+            for (int f = 0; f < rot.Length; f++)
+            {
+                var d = t.Rot[f] * hipFwd;
+                float yaw = Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg;
+                rot[f] = Quaternion.AngleAxis(-yaw, Vector3.up) * t.Rot[f];
+            }
+            return new TrackDef { Bone = t.Bone, Pos = t.Pos, Rot = rot };
         }
 
         /// <summary>The clip's tracks with root_motion's rotation folded into its direct children (pelvis, a gun pivot, a
@@ -335,6 +382,7 @@ namespace DeadlockOfRain
             st.speed = speed;
             st.time = 0;
             anim.CrossFade(c, 0.05f, PlayMode.StopSameLayer);
+            gestureClip = c;
             // reload and ability clips move the arms; landing/jump layers leave the gun arms in their holding pose
             if (logicalName != "land" && logicalName != "jump_start") armFreeUntil = Mathf.Max(armFreeUntil, Time.time + st.length / Mathf.Max(0.1f, speed));
         }
@@ -484,6 +532,7 @@ namespace DeadlockOfRain
 
         void LateUpdate()
         {
+            ModelSpaceGesture();
             Rig();
             FlipPose();
             if (springs) springs.Step(Time.deltaTime);
@@ -501,6 +550,24 @@ namespace DeadlockOfRain
             var r = Quaternion.AngleAxis(360f * k, Vector3.right);
             armature.localRotation = r;
             armature.localPosition = flipMid - r * flipMid;
+        }
+
+        /// <summary>Deadlock lays an upper-body clip on in model space: the chest keeps the clip's own facing whatever the legs
+        /// do. Unity's mixing transform keeps the clip's spine relative to the legs' hips instead, which adds the clip's twist to
+        /// the hips' own (Seven's static_charge_upper_body turned his head ~100 deg sideways). So the upper body is turned by
+        /// the difference between the clip's hips and the hips actually playing, in proportion to the gesture's weight.</summary>
+        void ModelSpaceGesture()
+        {
+            if (gestureClip == null || hips == null || !upperBody || !upperBody.parent || frozen || dead) return;
+            var st = anim[gestureClip];
+            if (st == null || !st.enabled || st.weight <= 0f) { gestureClip = null; return; }
+            if (overrideClip != null || !hips.TryGetValue(gestureClip, out var h)) return;
+            int last = h.Rot.Length - 1;
+            float f = Mathf.Clamp(st.time * h.Fps, 0f, last);
+            int i = Mathf.Min((int)f, last);
+            var clipHip = Quaternion.Slerp(h.Rot[i], h.Rot[Mathf.Min(i + 1, last)], f - i);
+            var delta = Quaternion.Inverse(upperBody.parent.localRotation) * clipHip;
+            upperBody.localRotation = Quaternion.Slerp(Quaternion.identity, delta, Mathf.Clamp01(st.weight)) * upperBody.localRotation;
         }
 
         void Rig()

@@ -298,7 +298,7 @@ namespace DeadlockOfRain
 #pragma warning restore CS0618
                     var mf = fig ? fig.GetComponent<MeshFilter>() : null;
                     if (!mf || !mf.sharedMesh || mf.sharedMesh.vertexCount < 100) equipWhy += hero.Id + ": no hero figure for the pickup; ";
-                    if (Mathf.Abs(eqDef.cooldown - Sheet.SkillOf(hero.Id, "equipment").Cooldown) > 0.01f || eqDef.cooldown != 120f) equipWhy += $"{hero.Id}: cooldown {eqDef.cooldown}; ";
+                    if (Mathf.Abs(eqDef.cooldown - Sheet.SkillOf(hero.Id, "equipment").Cooldown) > 0.01f || eqDef.cooldown < 60f || eqDef.cooldown > 120f) equipWhy += $"{hero.Id}: cooldown {eqDef.cooldown}; ";
                     if (DevShots) yield return ShowPickup(body, eqDef, hero.Id);
                 }
 
@@ -324,7 +324,7 @@ namespace DeadlockOfRain
                     if (slot == "primary") { gun = ok; if (!ok) gunsWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
                     else if (slot == "equipment") { ultFired = ok; if (!ok) ultsWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
                     else { if (ok) abilities++; else abilitiesWhy += $"{row.Id}: no {string.Join(", ", missing)}; "; }
-                    if (slot == "equipment" && !result.Charged) equipWhy += $"{hero.Id}: Q did not start a 120 s cooldown; ";
+                    if (slot == "equipment" && !result.Charged) equipWhy += $"{hero.Id}: Q did not start its 60-120 s cooldown; ";
                     // a melee M1 while the move's buff is on (Mo's Frenzy while Krill is away): hold M1 now; it must hit, throw
                     // the target, and the hero must run at the buff's speed
                     if (row.Extra == "punch")
@@ -1020,7 +1020,7 @@ namespace DeadlockOfRain
                     yield return new WaitForFixedUpdate(); yield return new WaitForFixedUpdate();
                     if (body.equipmentSlot) body.equipmentSlot.ExecuteIfReady();
                     yield return new WaitForFixedUpdate();
-                    fx.Charged = inv && inv.currentEquipmentState.charges == 0 && body.equipmentSlot && body.equipmentSlot.cooldownTimer > 100f;
+                    fx.Charged = inv && inv.currentEquipmentState.charges == 0 && body.equipmentSlot && body.equipmentSlot.cooldownTimer > 50f;
                 }
                 else
                 {

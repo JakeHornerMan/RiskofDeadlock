@@ -14,6 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
+| Seven | 0.9.1b: R Storm Cloud hits at most the 3 nearest enemies per shock (`chainCount` 3; was every enemy within 15 m) | the creator: "it should hit up to 3 people every time" | this one | **benched** (one run, 2026-10-22): all **1759** vs Artificer 4013 (−2254, **below**), R 710 → 190, §3.13; `run_test.sh` all seven heroes pass | **done** |
 | Seven | 0.9.1a redesign part 1: Lightning Ball half speed over enemies (`moveSpeedMult` 0.5), Static Charge 450 → 225 %, R Power Surge → Storm Cloud (100 % every 0.5 s within 15 m for 10 s, 24 s after landing); yellow visuals, upper-body cast clips | the creator's Seven redesign | this one | **benched** (one run, 2026-10-21): all **2827** vs Artificer 4013 (−1186, **below**), §3.12; `run_test.sh seven` every check pass | **done** |
 | Viscous | 0.9.0f: Goo Ball (Q) cooldown 120 → 100 s | the creator, with the 0.9.0 Melty release | this one | the bench leaves the ults out of the main-move DPS; the Q column needs a re-bench | **open** |
 | Viscous | 0.9.0e: a puddle's 20 rounds no longer top the magazine up; they come before it while he stands in the puddle and are gone when he steps out (stepping in with 5/20 now gives 20+5, not 20/20) | the creator's counter request | this one | **open**: not tested or benched (the creator asked not to launch the game) | **open** |
@@ -283,6 +284,23 @@ New hero, matched to REX (`TreebotBody`, library 1738 %/s). Three runs after the
 - **%/s hides base damage**: it is a share of the survivor's own damage stat. Viscous's 15 against REX's 12 means 25 % more
   real damage than the %/s says (≈336 dmg/s at level 1 against ≈209). Mo & Krill (11) are the only other hero off 12.
 - Levers if he needs pulling back: Splatter 200 → 150 % first (it is two thirds of the total), then the punch.
+
+### 3.13 v0.9.1b Storm Cloud at most 3 targets (Seven-only run, 2026-10-22)
+`VERSION` v0.9.1b. Same 12-enemy pack as every bench, so Storm Cloud now reaches 3 of them where it reached about 10.
+
+| Pass | v0.9.1b (%/s) | v0.9.1a | Artificer (library) |
+|---|---|---|---|
+| All main moves | **1759** | 2827 | 4013 |
+| M1 Shock Rifle | 570 | 660 | 3052 |
+| M2 Lightning Ball | 868 | 812 | 1741 |
+| Shift Static Charge | 420 | 383 | 78 |
+| R Storm Cloud | 190 | 710 | 1058 |
+| Q Thunderhead (not balanced) | 907 | 907 | – |
+
+- −2254 against Artificer, far **below** the ±500 band. The cap costs R about 520 %/s alone, and more in the all pass: the
+  10 s flight still locks his gun while it now hits only 3. M1/M2/Shift moved within one run's spread.
+- Levers, the creator's call (not applied): Storm Cloud per-shock damage (100 → 300 % keeps about the old R on a big pack), a
+  shorter flight or cooldown, Static Charge back toward 450 %, or the ball's slow toward Deadlock's 90 %.
 
 ### 3.12 v0.9.1a Seven redesign, part 1 (Seven-only run, 2026-10-21)
 One run after the creator's picks (doc 04 §8); `VERSION` v0.9.1a in `dps_library.py`, so the v0.5.1 Seven run dropped.

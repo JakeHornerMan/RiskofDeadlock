@@ -1,11 +1,11 @@
 """Dev check of a hero's holding pose: for each clip (frame 0 by default) report where the gun points relative to the
 model's forward (+Z in Unity space) and how far the gun bone sits from the gun hand.
-usage: python tools/dlm_pose.py <hero> [frame] [clip-substring]
+usage: python tools/dlm_pose.py <hero> [frame] [clip-substring]   (DLR_CACHE=<out>/heroes reads a scratch extract instead of the live cache)
 """
 import os, struct, sys
 import numpy as np
 
-CACHE = os.path.join(os.environ['LOCALAPPDATA'], 'DeadlockOfRain', 'cache', 'heroes')
+CACHE = os.environ.get('DLR_CACHE') or os.path.join(os.environ['LOCALAPPDATA'], 'DeadlockOfRain', 'cache', 'heroes')
 
 def rs(f):
     n = 0; shift = 0

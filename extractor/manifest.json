@@ -69,9 +69,7 @@
         "headgear"
       ],
       "clips": [
-        "ability_storm_cloud_end",
-        "ability_storm_cloud_loop",
-        "ability_storm_cloud_start",
+        "ability_power_surge",
         "death_static_1",
         "jump_in_air_loop",
         "jump_start",
@@ -79,6 +77,8 @@
         "primary_sprint_n",
         "reload_idle",
         "static_charge_upper_body",
+        "storm_cloud_intro",
+        "storm_cloud_scalar",
         "weapon_run_e",
         "weapon_run_n",
         "weapon_run_s",
@@ -289,6 +289,7 @@
     "panorama/images/hud/abilities/viscous/viscous_goo_punch_psd.vtex",
     "panorama/images/hud/abilities/viscous/viscous_goo_sphere_psd.vtex",
     "panorama/images/hud/abilities/viscous/viscous_restorative_goo_psd.vtex",
+    "panorama/images/items/spirit/surge_of_power_psd.vtex",
     "panorama/images/items/spirit/torment_pulse_psd.vtex",
     "panorama/images/items/vitality/phantom_strike_psd.vtex",
     "panorama/images/items/vitality/unstoppable_psd.vtex",

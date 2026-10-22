@@ -1141,47 +1141,47 @@
     "special": "Storm Cloud"
    },
    "hero": true,
-   "measuredOn": "v0.9.1a",
+   "measuredOn": "v0.9.1b",
    "dps": {
     "all": {
      "runs": [
-      2827
+      1759
      ],
-     "mean": 2827,
-     "min": 2827,
-     "max": 2827
+     "mean": 1759,
+     "min": 1759,
+     "max": 1759
     },
     "primary": {
      "runs": [
-      660
+      570
      ],
-     "mean": 660,
-     "min": 660,
-     "max": 660
+     "mean": 570,
+     "min": 570,
+     "max": 570
     },
     "secondary": {
      "runs": [
-      812
+      868
      ],
-     "mean": 812,
-     "min": 812,
-     "max": 812
+     "mean": 868,
+     "min": 868,
+     "max": 868
     },
     "utility": {
      "runs": [
-      383
+      420
      ],
-     "mean": 383,
-     "min": 383,
-     "max": 383
+     "mean": 420,
+     "min": 420,
+     "max": 420
     },
     "special": {
      "runs": [
-      710
+      190
      ],
-     "mean": 710,
-     "min": 710,
-     "max": 710
+     "mean": 190,
+     "min": 190,
+     "max": 190
     },
     "equipment": {
      "runs": [
@@ -1511,6 +1511,6 @@
   }
  },
  "about": "Stored DPS library (Deadlock of Rain). Main moves and each move alone, % of damage stat per second, measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, 30 s per pass, perfect aim, every move used when ready, no equipment except the \"equipment\" pass). \"all\" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are tagged with the build they were measured on. Built by tools/dps_library.py.",
- "updated": "2026-10-21",
+ "updated": "2026-10-22",
  "runsPerSurvivor": 3
 }

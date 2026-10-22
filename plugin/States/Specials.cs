@@ -246,6 +246,8 @@ namespace DeadlockOfRain.States
     public sealed class StormFlight : DlrState
     {
         const float RiseTime = 0.6f;
+        // Deadlock's Storm Cloud take-off (special_start, 1.4 s) plays a little quicker than its own pace, then the hover loops
+        const float IntroTime = 1.1f;
         GameObject sphere, hint; int loop; float nextTick, startY, sinkFrom; bool floating, locked, ended;
         readonly List<HurtBox> inside = new List<HurtBox>();
 
@@ -254,7 +256,7 @@ namespace DeadlockOfRain.States
             base.OnEnter();
             Sound("cast");
             loop = Fx.Loop(row.Id, transform.position);
-            if (anim) anim.Override("ult_start", RiseTime);
+            if (anim) anim.Override("special_start", IntroTime);
             characterBody.bodyFlags |= CharacterBody.BodyFlags.IgnoreFallDamage;
             startY = transform.position.y;
             Vfx.Play(row.Vfx, "cast", characterBody.footPosition, row.Radius);
@@ -302,14 +304,14 @@ namespace DeadlockOfRain.States
                 var aim = GetAimRay().direction; aim.y = 0f;
                 if (characterDirection) characterDirection.moveVector = aim.sqrMagnitude > 0.09f ? aim.normalized : characterDirection.forward;
             }
-            if (fixedAge >= RiseTime && anim && fixedAge - Time.fixedDeltaTime < RiseTime) anim.Override("ult_loop", row.Duration, true);
+            if (fixedAge >= IntroTime && anim && fixedAge - Time.fixedDeltaTime < IntroTime) anim.Override("special_loop", row.Duration, true);
 
             if (fixedAge >= nextTick && fixedAge < row.Duration)
             {
                 nextTick += row.Interval;
-                // on every machine: a bolt to each enemy inside (drawn) and the zap; on the server the damage and Static
+                // on every machine: a bolt to each of the nearest chainCount enemies inside (drawn) and the zap; on the server the damage and Static
                 inside.Clear();
-                inside.AddRange(Fx.Enemies(characterBody, characterBody.corePosition, row.Radius));
+                inside.AddRange(Fx.Enemies(characterBody, characterBody.corePosition, row.Radius, row.ChainCount > 0 ? (int)row.ChainCount : 64));
                 foreach (var hb in inside)
                 {
                     var v = hb.healthComponent.body;
@@ -350,11 +352,10 @@ namespace DeadlockOfRain.States
 
         public override void OnExit()
         {
-            bool natural = fixedAge >= row.Duration;
             End();
-            // a soft fall: the landing never hurts; the end clip plays out on its own after a full flight
+            // a soft fall: the landing never hurts; the hover pose blends back into his falling and running clips
             if (!Survivors.NoFallDamage(characterBody) && characterBody.GetComponent<SoftLanding>() == null) characterBody.gameObject.AddComponent<SoftLanding>();
-            if (anim) { if (natural) anim.Override("ult_end", 0.8f); else anim.StopOverride(); }
+            if (anim) anim.StopOverride();
             base.OnExit();
         }
 

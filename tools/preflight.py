@@ -193,6 +193,13 @@ def dev(name):
     p = os.path.join(DEV, name)
     return p if os.path.exists(p) else None
 vpk = dev('vpk_files.txt')
+# each of a hero's skills (the ult item too) needs its own icon (creator, 2026-10-22: "the both cant have the same")
+seen_icons = {}
+for r in skills.values():
+    k = (r['hero'], r['icon'])
+    if k in seen_icons: bad(f'skills[{r["id"]}].icon: same icon as {seen_icons[k]}')
+    else: seen_icons[k] = r['id']
+
 if vpk:
     files = set(l.strip() for l in open(vpk, encoding='utf-8'))
     def has(path, col):
@@ -219,10 +226,13 @@ if ev:
             if r[c] != 'none' and r[c] not in events: bad(f'sounds[{r["skill"]}].{c}: event "{r[c]}" not in Deadlock soundevents')
 else:
     bad('dev listing tools/dev/sound_events.txt missing: sound events unverified')
-ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'muzzleForward', 'clothParents', 'ragdollBones', 'ragdollThickness', 'rigPrefix', 'loopSecondary', 'springRoots', 'springStiffness', 'springDamping', 'springGravity', 'propBones'}  # animations columns that are not clip names
+ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'muzzleForward', 'clothParents', 'ragdollBones', 'ragdollThickness', 'rigPrefix', 'loopSecondary', 'springRoots', 'springStiffness', 'springDamping', 'springGravity', 'propBones', 'steadyClips'}  # animations columns that are not clip names
 for r in sheets['animations']['rows']:
     if r['gunArms'] not in ('R', 'LR'): bad(f'animations[{r["hero"]}].gunArms: "{r["gunArms"]}" must be R or LR')
     if r['aimPose'] == 'none': bad(f'animations[{r["hero"]}].aimPose: the gun rig needs a holding pose clip')
+    played = {r[c] for c in sheets['animations']['columns'] if c not in ANIM_RIG_COLUMNS}
+    for c in r['steadyClips']:
+        if c != 'none' and c not in played: bad(f'animations[{r["hero"]}].steadyClips: "{c}" is not one of the row clips')
 an = dev('anim_names.json')
 if an:
     a = json.load(open(an, encoding='utf-8'))

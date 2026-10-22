@@ -110,7 +110,10 @@ CHANGES = {
             ('v0.4.1', ['Haymaker: a shockwave cone (6 m, 30° each side) hits everything in front', 'Shoulder Charge 350 → 500 % per enemy',
                         'Seismic Impact radius 12 → 18 m']),
             ('v0.4.0', ['Seismic Impact moves to Q as an equipment and slams on Left Click; new R: Haymaker'])],
- 'seven': [('v0.9.1a', ['Redesign, part 1: Seven turns Deadlock yellow (Lightning Ball, Static Charge, Storm Cloud and the Shock Rifle’s electric tracer)',
+ 'seven': [('v0.9.1b', ['Storm Cloud shocks the 3 nearest enemies every 0.5 s (it hit every enemy in reach)',
+                       'He hovers in Deadlock’s own Storm Cloud pose instead of spinning round, and his Lightning Ball and Static Charge throws keep his chest and head facing forward as in Deadlock',
+                       'Thunderhead has its own icon']),
+           ('v0.9.1a', ['Redesign, part 1: Seven turns Deadlock yellow (Lightning Ball, Static Charge, Storm Cloud and the Shock Rifle’s electric tracer)',
                        'Lightning Ball: a clear yellow sphere shows its 10 m reach; it slows to half speed while enemies are inside, so it lingers on a pack (it still flies through them and bounces off walls and floors)',
                        'Static Charge: 450 → 225 %',
                        'New R, Storm Cloud (replaces Power Surge): he flies up inside a 15 m sphere for 10 s, shocking everything in it for 100 % every 0.5 s; Space (Jump) higher, Shift (Sprint) lower; no gun or skills meanwhile; 24 s cooldown after he lands']),
@@ -182,9 +185,9 @@ ANALYSIS = {
  'haze': ['0.5.1 made Phantom Strike cut every enemy within 5 m of the target. Every cut also gives each of them 5 Fixation, so the whole pack reaches the 10-stack burst together and the bursts splash one another: Phantom Strike alone went from 375 to 4,139 %/s, and she is far above Commando. Not retuned yet: the fix is the creator’s call (Fixation on the target only, or fewer stacks to the others).'],
  'abrams': ['0.5.1: Haymaker locks onto the enemy you aim at and rushes to it, even in the air. It does about what the old lunge did (1,760 %/s alone), and he stays just inside Loader’s band.',
             'Loader is the least steady survivor in the test (2,059 to 3,837 across the library’s runs), so the verdict uses the averages.'],
- 'seven': ['0.9.1a, redesign part 1: about 2,827 %/s with every main move (one run), against Artificer’s 4,013: below the ±500 band (it was 3,164).',
-           'Halving Static Charge cost about 380 %/s; Storm Cloud adds 710 alone but locks his gun for 10 s, and Power Surge’s arcs no longer ride on the gun. The Lightning Ball doubled (390 → 812): at half speed it stays on the pack longer.',
-           'Levers, the creator’s call: Storm Cloud 100 → 200 % per shock, Static Charge back toward 300-450 %, or a stronger ball slow.'],
+ 'seven': ['0.9.1b: about 1,759 %/s with every main move (one run), against Artificer’s 4,013: far below the ±500 band (2,827 in 0.9.1a, 3,164 before the redesign).',
+           'Storm Cloud now shocks only the 3 nearest enemies (710 → 190 %/s on the 12-enemy pack), and its 10 s flight still keeps his gun quiet. Halving Static Charge in 0.9.1a cost about 380 %/s; the Lightning Ball doubled (390 → 868) at half speed over the pack.',
+           'Levers, the creator’s call: Storm Cloud 100 → 300 % per shock, a shorter flight or cooldown, Static Charge back toward 450 %, or a stronger ball slow.'],
  'infernus': ['Unchanged in 0.4.2: inside the ±500 band. Engineer’s grenades carry him; his turrets land few hits in 30 s against a still pack.',
               'Engineer’s damage stat is 14 against Infernus’ 12, so in raw damage per second Engineer is about 17 % further ahead; %/s removes that difference.'],
 }
@@ -312,7 +315,7 @@ def maths(r):
         return [f"{n(d)} % every {n(r['interval'])} s × {n(r['duration'])} s = {n(tot)} % to each enemy within {n(r['radius'])} m", f"every {n(cd)} s"], tot / cd
     if k == 'storm_flight':
         tot = d / r['interval'] * r['duration']
-        return [f"{n(d)} % every {n(r['interval'])} s × {n(r['duration'])} s = {n(tot)} % to each enemy within {n(r['radius'])} m", f"every {n(cd + r['duration'])} s ({n(r['duration'])} s flight + {n(cd)} s cooldown)"], tot / (cd + r['duration'])
+        return [f"{n(d)} % every {n(r['interval'])} s × {n(r['duration'])} s = {n(tot)} % to each of the {n(r['chainCount'])} nearest enemies within {n(r['radius'])} m", f"every {n(cd + r['duration'])} s ({n(r['duration'])} s flight + {n(cd)} s cooldown)"], tot / (cd + r['duration'])
     if k == 'cone_wave':
         return [f"{n(d)} % to every enemy in a {n(r['range'])} m cone ({n(r['radius'])} m wide at the start), Sanded", f"every {n(cd)} s"], d / cd
     if k == 'burrow':
