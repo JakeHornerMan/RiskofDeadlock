@@ -136,3 +136,5 @@ lab restored Tue Oct 13 01:42:10 GMTST 2026
 - `tools/watch/daily.ps1` (Task Scheduler, 04:00): local Steam build numbers (appmanifest buildid + StateFlags, steam.inf) vs
   `build/watch/state.json`; Melty triage on the live release (Haiku, `--json-schema`); if anything changed, a `claude -p` fix run
   on branch `watch/<date>` that may publish after every check passes. Stops if any Steam game is running. Doc 03 §5b.
+- 2026-10-22: first night caught Deadlock 6812 (nothing broke) and a Shoulder Charge stun exception (fixed, merged). Triage now Sonnet with
+  signatures + `build/watch/known-breaks.txt`; `Bash(python tools/*)` rule fixed (a `:*` rule needs a space after the prefix).
