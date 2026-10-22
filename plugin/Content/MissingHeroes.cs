@@ -16,7 +16,7 @@ namespace DeadlockOfRain
     /// select: a red "!" where the portrait would be, and the reason and both version pairs on hover. The tile has an
     /// unlockable nobody ever gets, so it can never be picked, started or joined with; the bodies and defs live apart from
     /// Survivors.Bodies/Defs, so the bench, test mode, co-op and the mod list never see them. A hero held back from this release
-    /// (Survivors.ComingSoon, why = null) gets the same locked tile with its own portrait greyed out and "coming soon".</summary>
+    /// (Survivors.ComingSoon, why = null) gets the same locked tile with its portrait blacked out to a silhouette and "coming soon".</summary>
     public static class MissingHeroes
     {
         public static readonly Dictionary<string, GameObject> Bodies = new Dictionary<string, GameObject>();
@@ -42,7 +42,7 @@ namespace DeadlockOfRain
             var cb = body.GetComponent<CharacterBody>();
             cb.baseNameToken = "DLR_MISSING_NAME_" + hero.Id.ToUpperInvariant();
             cb.subtitleNameToken = cb.baseNameToken;
-            cb.portraitIcon = why == null ? Grey(DeadlockCache.Image(hero.ImageSmall)) ?? Icon() : Icon();
+            cb.portraitIcon = why == null ? Silhouette(DeadlockCache.Image(hero.ImageSmall)) ?? Icon() : Icon();
             Survivors.Tokens[cb.baseNameToken] = hero.DisplayName;
 
             var text = why == null ? $"{hero.DisplayName} is coming in a later update."
@@ -63,7 +63,7 @@ namespace DeadlockOfRain
             sd.displayPrefab = display;
             sd.displayNameToken = cb.baseNameToken;
             sd.descriptionToken = cb.baseNameToken;
-            sd.primaryColor = why == null ? Color.grey : Color.red;
+            sd.primaryColor = why == null ? Color.black : Color.red;
             sd.desiredSortPosition = hero.SortPosition;
             sd.unlockableDef = unlock;
 
@@ -71,21 +71,19 @@ namespace DeadlockOfRain
             Defs[hero.Id] = sd;
             Unlockables[hero.Id] = unlock;
             placeholders.Add(sd);
-            if (why == null) { soon.Add(sd); Log.Info($"{hero.DisplayName}: shown as a greyed \"coming soon\" tile in character select"); }
+            if (why == null) { soon.Add(sd); Log.Info($"{hero.DisplayName}: shown as a blacked-out \"coming soon\" tile in character select"); }
             else Log.Warn($"{hero.DisplayName}: shown as a locked red ! tile in character select ({why})");
         }
 
-        /// <summary>A grey, darkened copy of a portrait (the coming-soon tile); null without one.</summary>
-        static Texture2D Grey(Texture2D src)
+        /// <summary>A black silhouette of a portrait, its shape kept by the alpha (the coming-soon tile); null without one.</summary>
+        static Texture2D Silhouette(Texture2D src)
         {
             if (!src) return null;
             var t = new Texture2D(src.width, src.height, TextureFormat.RGBA32, false) { name = src.name + "_soon", wrapMode = TextureWrapMode.Clamp };
             var px = src.GetPixels32();
             for (int i = 0; i < px.Length; i++)
             {
-                var c = px[i];
-                byte g = (byte)((c.r * 0.3f + c.g * 0.59f + c.b * 0.11f) * 0.6f);
-                px[i] = new Color32(g, g, g, c.a);
+                px[i] = new Color32(0, 0, 0, px[i].a);
             }
             t.SetPixels32(px);
             t.Apply();

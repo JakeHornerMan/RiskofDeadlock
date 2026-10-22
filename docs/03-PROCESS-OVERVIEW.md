@@ -270,8 +270,8 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
    - `extract/{DeadlockExtract.exe, manifest.json, THIRD-PARTY-NOTICES.txt, LICENSE.txt}`
 
    `extract/manifest.json` comes from `extractor/manifest.json`, so it is current. **`--melty` (0.9.0)** cuts the Melty zip to
-   `thunderstore/release.json` `melty` (0.9.0: the six without Rat King) and writes `coming-soon.txt` from `comingSoon` (greyed locked
-   tiles; only their portrait stays in the manifest); every Melty zip writes that file, so a later full zip clears it. `--release` cuts the zip to `thunderstore/release.json`'s heroes (v0.7.1: the four originals); then `setup.done.contains` uses the hash of the **cut** manifest in the zip. If `extractor/*.cs` changed, publish the exe first.
+   `thunderstore/release.json` `melty` (0.9.0: the six without Rat King) and writes `coming-soon.txt` from `comingSoon` (locked
+   tiles, black silhouettes since 0.9.1; only their portrait stays in the manifest); every Melty zip writes that file, so a later full zip clears it. `--release` cuts the zip to `thunderstore/release.json`'s heroes (v0.7.1: the four originals); then `setup.done.contains` uses the hash of the **cut** manifest in the zip. If `extractor/*.cs` changed, publish the exe first.
    **Since v0.7.2 `package.py` also:** refuses to run if `Plugin.Version` isn't `<ver>` or `thunderstore/CHANGELOG.md` has no
    `## <ver>` section; reads the creator's RoR2 Steam build (`appmanifest_632360.acf`) and Deadlock ClientVersion
    (`steam.inf`; env `RoR2Dir` / `DEADLOCKOFRAIN_DEADLOCK` for other folders) and refuses if either is missing; writes them to
@@ -349,6 +349,15 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
   as 0.7.2 with `viscous-plays` instead of `trophies`, `setup.done.contains` `|1.6.2|56FD4A3C17A14E4F` (the cut manifest). **No test,
   no BREAK run** (the creator: "no test just let upload to melty"); published on that request, in Melty's safety review at the
   time of writing. Listing description and tagline rewritten for six heroes, Hero pages kept, Built-with line v0.9.0 / Deadlock 6807.
+- **0.9.1 (2026-10-22)**: six heroes with the new Seven (0.9.1a/b), Rat King a **black silhouette** "coming soon" tile, the Fx.Stun
+  fix (Abrams), always-joinable co-op from Melty (doc 02 §7.7), the joined-player Combustion fix (doc 02 gotcha 29). Built with
+  Deadlock **6813** (it updated twice that day). Release `09294a1d-ae04-436d-9cac-a193bdf140a1` (upload `59df58ea-…`), recipe as
+  0.9.0 but checks `deadlock-content, survivors-listed, coming-soon-tile, haze/abrams/seven/infernus/mokrill-plays, trophies,
+  viscous-plays, ult-any-survivor, ragdoll` (the first 12 lines the test writes; `coming-soon-tile` is third), minutes 12,
+  `setup.done.contains` `|1.6.2|4373A158E9E99476`. Listing text kept in `thunderstore/melty-description.md` (Hero pages,
+  Built-with line); pass it to `update_mod` and edit that file, not the listing, next time. **`RELEASE_ZIP=build/<zip>`** on
+  `run_test.sh` / `run_coop_test.sh` / `dev_run.sh` tests with the release's own `heroes.txt` and `coming-soon.txt`. Test `65dcf162-…` passed 2/2 with footage reviews; **published,
+  in Melty's safety review** at the time of writing; `report_bug_fix` for `load:errors` and join-waiting.
 - Listing pictures: the creator's own character select shots of the four heroes (Haze cover, then Abrams, Seven, Infernus);
   the four 0.1.0 shots were removed. Driving the select screen with `um win drive` is fiddly (client coords are half the
   shot's full size on this monitor; clicks lag a frame); asking the creator for shots was quicker.

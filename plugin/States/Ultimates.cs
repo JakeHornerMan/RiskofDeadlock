@@ -269,32 +269,37 @@ namespace DeadlockOfRain.States
                 tickSound = Sound(last ? "tickFinal" : "tick");
                 ticks++;
             }
-            if (!exploded && fixedAge >= row.Duration)
-            {
-                exploded = true;
-                DeadlockAudio.Stop(tickSound);
-                if (anim) anim.Override("ult_end", 0.8f);
-                Vfx.Stop(fuse, 0.2f);
-                Vfx.Stop(ring, 0.1f);
-                Fx.Impact(row.Effect, transform.position, row.Radius);
-                Vfx.Play(row.Vfx, "hit", characterBody.footPosition, row.Radius);
-                Sound("end");
-                if (Server)
-                {
-                    // each kill by the blast heals healFraction of max health (deaths are reported while the blast lands)
-                    int kills = 0;
-                    System.Action<DamageReport> onDeath = r => { if (r != null && r.attackerBody == characterBody) kills++; };
-                    GlobalEventManager.onCharacterDeathGlobal += onDeath;
-                    try { Fx.Blast(characterBody, transform.position, row.Radius, Coef, row.ProcCoefficient); }
-                    finally { GlobalEventManager.onCharacterDeathGlobal -= onDeath; }
-                    foreach (var hb in Fx.Enemies(characterBody, transform.position, row.Radius)) Fx.Stun(hb.healthComponent, row.StunDuration);
-                    if (kills > 0 && row.HealFraction > 0) healthComponent.HealFraction(row.HealFraction * kills, default);
-                }
-            }
+            if (!exploded && fixedAge >= row.Duration) Explode();
             if (fixedAge >= row.Duration + 0.6f && isAuthority) outer.SetNextStateToMain();
+        }
+        void Explode()
+        {
+            exploded = true;
+            DeadlockAudio.Stop(tickSound);
+            if (anim) anim.Override("ult_end", 0.8f);
+            Vfx.Stop(fuse, 0.2f);
+            Vfx.Stop(ring, 0.1f);
+            Fx.Impact(row.Effect, transform.position, row.Radius);
+            Vfx.Play(row.Vfx, "hit", characterBody.footPosition, row.Radius);
+            Sound("end");
+            if (Server)
+            {
+                // each kill by the blast heals healFraction of max health (deaths are reported while the blast lands)
+                int kills = 0;
+                System.Action<DamageReport> onDeath = r => { if (r != null && r.attackerBody == characterBody) kills++; };
+                GlobalEventManager.onCharacterDeathGlobal += onDeath;
+                try { Fx.Blast(characterBody, transform.position, row.Radius, Coef, row.ProcCoefficient); }
+                finally { GlobalEventManager.onCharacterDeathGlobal -= onDeath; }
+                foreach (var hb in Fx.Enemies(characterBody, transform.position, row.Radius)) Fx.Stun(hb.healthComponent, row.StunDuration);
+                if (kills > 0 && row.HealFraction > 0) healthComponent.HealFraction(row.HealFraction * kills, default);
+            }
         }
         public override void OnExit()
         {
+            // co-op: the owner's state ends 0.6 s after the blast, and that end can reach the server (or another player)
+            // before its copy has counted to the blast when the start came in late. A copy ended that close still goes off;
+            // one ended early (the bearer died in the fuse) doesn't. (A joined player's Combustion fizzled on the host, 2026-10-22.)
+            if (!exploded && fixedAge >= row.Duration - 1.5f && characterBody) Explode();
             DeadlockAudio.Stop(loop);
             DeadlockAudio.Stop(tickSound);
             Vfx.Stop(fuse, 0.2f);

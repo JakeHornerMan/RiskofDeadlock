@@ -138,3 +138,8 @@ lab restored Tue Oct 13 01:42:10 GMTST 2026
   on branch `watch/<date>` that may publish after every check passes. Stops if any Steam game is running. Doc 03 §5b.
 - 2026-10-22: first night caught Deadlock 6812 (nothing broke) and a Shoulder Charge stun exception (fixed, merged). Triage now Sonnet with
   signatures + `build/watch/known-breaks.txt`; `Bash(python tools/*)` rule fixed (a `:*` rule needs a space after the prefix).
+
+## 0.9.1 (2026-10-22)
+- Melty: six heroes (new Seven), Rat King a black-silhouette coming-soon tile, co-op joinable from Melty's Play (title-screen
+  Steam lobby, log emptied when it closes), Fx.Stun fix, joined-player Combustion fix (blast in OnExit near the fuse end).
+  Built with Deadlock 6813 (two updates that day). Test 65dcf162 2/2, published (safety review).

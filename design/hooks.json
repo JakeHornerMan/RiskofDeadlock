@@ -245,8 +245,8 @@
     {
       "id": "melty_join",
       "method": "component",
-      "target": "RoR2.PlatformSystems.lobbyManager (polled) + console connect / steam_lobby_join",
-      "purpose": "Melty's play-together contract: the host's own Steam lobby goes in %LOCALAPPDATA%/DeadlockOfRain/melty.log as its join address; a join= line in melty.properties joins that game from the title screen",
+      "target": "RoR2.PlatformSystems.lobbyManager (polled) + console connect / steam_lobby_join / steam_lobby_create_if_none / steam_lobby_leave",
+      "purpose": "Melty's play-together contract: started by Melty, the title screen opens a Steam lobby (a Singleplayer run closes it); the lobby this player owns now goes in %LOCALAPPDATA%/DeadlockOfRain/melty.log as its join address and the log is emptied when it closes; a join= line in melty.properties joins that game from the title screen and waits in the host's lobby until the host starts",
       "reads": "none",
       "side": "client"
     },

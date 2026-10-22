@@ -64,7 +64,7 @@ namespace DeadlockOfRain
 
         static HeroRow[] comingSoon;
         /// <summary>Heroes this build shows as "coming soon": the ids in coming-soon.txt beside the DLL (tools/package.py --melty,
-        /// from thunderstore/release.json comingSoon). Each gets a greyed, locked tile with its portrait; nothing else of it loads.</summary>
+        /// from thunderstore/release.json comingSoon). Each gets a locked tile with its portrait blacked out to a silhouette; nothing else of it loads.</summary>
         public static HeroRow[] ComingSoon
         {
             get

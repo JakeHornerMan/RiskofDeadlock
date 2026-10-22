@@ -190,7 +190,7 @@ namespace DeadlockOfRain
                             if (!b) break;
                             fx.Poll(b, start, targets);
                             if (row.Slot == "equipment" && !fx.Charged && b.inventory)
-                                fx.Charged = b.inventory.currentEquipmentState.charges == 0 && b.equipmentSlot && b.equipmentSlot.cooldownTimer > 100f;
+                                fx.Charged = b.inventory.currentEquipmentState.charges == 0 && b.equipmentSlot && b.equipmentSlot.cooldownTimer > row.Cooldown * 0.8f;   // 60-120 s ults (Goo Ball 100 s)
                             if (shots < 2 && Time.time - tf > new[] { 0.7f, 1.6f }[shots]) { Shot(row.Id + "_host" + (shots + 1)); shots++; }
                             yield return null;
                         }
@@ -201,7 +201,7 @@ namespace DeadlockOfRain
                         HealthComponent.onCharacterHealServer -= onHeal;
                     }
                     var missing = fx.Missing(row);
-                    if (row.Slot == "equipment" && !fx.Charged) missing.Add("120 s cooldown");
+                    if (row.Slot == "equipment" && !fx.Charged) missing.Add($"{row.Cooldown:0} s cooldown");
                     Log.Info($"Melty test: co-op {row.Id} (joined player): {fx} -> {(missing.Count == 0 ? "ok" : "MISSING " + string.Join(", ", missing))}");
                     if (missing.Count == 0) ok++; else heroWhy += $"{row.Id}: no {string.Join(", ", missing)}; ";
                     yield return new WaitForSeconds(0.5f);

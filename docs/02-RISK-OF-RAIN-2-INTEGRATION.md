@@ -85,8 +85,10 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
      names only the heroes built (§7.7), so a friend missing one is refused at the lobby.
    - **Coming soon (0.9.0):** a hero listed in `coming-soon.txt` beside the DLL (`package.py --melty`, from `thunderstore/release.json`
      `comingSoon`) gets the same locked placeholder (`MissingHeroes.Add(..., why: null)`), with its own portrait (`imageSmall`, the only
-     thing of it the cut manifest keeps) greyed and darkened, a grey colour, and the hover "<name>: coming soon". Nothing else of it
-     loads (no body, ult or sounds). The 0.9.0 Melty release shows Rat King this way.
+     thing of it the cut manifest keeps) blacked out to a silhouette (0.9.1: RGB 0, its alpha kept; 0.9.0 greyed it), a black colour,
+     and the hover "<name>: coming soon". Nothing else of it loads (no body, ult or sounds). The 0.9.0 and 0.9.1 Melty releases show
+     Rat King this way. Test check `coming-soon-tile` (written whenever `coming-soon.txt` lists a hero): the tile exists, can't be
+     picked, and its portrait has a shape (10 %–99 % of pixels opaque) with no lit pixel.
    - **Since v0.7.2 a skipped hero keeps a locked red "!" tile** (`Content/MissingHeroes.cs`, creator 2026-10-19). It is a
      Commando-clone body (`Deadlock<Name>MissingBody`, its own asset id) whose `portraitIcon` is a red "!" drawn in code (no
      Deadlock art), plus a `SurvivorDef` with an `UnlockableDef` (`DeadlockOfRain.Missing.<id>`) that is never granted. Two
@@ -561,11 +563,20 @@ refuses a player with another version, without the mashup, **or with other heroe
 or none because Deadlock is missing: bodies and equipment are numbered by catalog position, so such a player would
 otherwise join a game that disagrees on what each body and item is). The BepInEx log prints the entry. `MeltyJoin` is Melty's contract
 (`%LOCALAPPDATA%\DeadlockOfRain\melty.log` and `melty.properties`):
-- the log is emptied at start; whenever this player owns a Steam lobby (Multiplayer, Host), it writes
-  `Melty join address: <lobby id>.steamlobby` (one line per lobby);
+- the log is emptied at start; whenever this player owns a Steam lobby, it writes `Melty join address: <lobby id>.steamlobby`
+  (one line per lobby), and **empties the log again when that lobby closes** (0.9.1), so Melty never hands friends a dead
+  address. Before 0.9.1 a host who opened Multiplayer and backed out left the old id there, and the one friend who tried
+  (2026-10-22) waited 90 s and failed;
+- **started by Melty (0.9.1)**: RoR2 only has a lobby while the Multiplayer menu or a multiplayer run is open
+  (`LobbyManager.OnMultiplayerMenuEnabled`, `MultiplayerMenuController.OnDisable` leaves it), but Melty treats every Play as
+  joinable (`setup_multiplayer` `hostChecks.no-marker` was 3 on 0.9.0: players pressed Play and stayed on the title screen or
+  went solo). So when `melty.properties` exists, the title screen is up, nothing is networked, no lobby is being made or
+  joined, and test mode is off, it runs `steam_lobby_create_if_none` (at most every 15 s). A Singleplayer run (`host 0`,
+  `NetworkServer.dontListen`) sends `steam_lobby_leave`, so solo stays solo; back at the title it opens a new lobby;
 - with `join=<address>` in melty.properties, once the title screen is up it runs `steam_lobby_join <id>` (or `connect ip:port`
-  for an address with a port), then writes `Melty joined: <address>` once connected to the host's game with 2+ players, or
-  `Melty join failed: <why>` after 90 s.
+  for an address with a port), then writes `Melty joined: <address>` once connected to the host's game with 2+ players. In the
+  host's lobby before the host starts it writes `Melty in the host's lobby: <address> (waiting for the host to start)` and
+  keeps waiting (0.9.1); only if it never got into the lobby does it write `Melty join failed: <why>` after 90 s.
 Steam invites and RoR2's lobby work as in vanilla; the Melty line is an extra way in.
 
 ---
@@ -966,6 +977,12 @@ the other is the **host** (only the host writes checks). How to run it: doc 03 �
 28. **`SetStateOnHurt.SetStun` throws on an enemy spawned this frame** (daily watch 2026-10-22, a player's 0.9.0 log: Abrams'
     Shoulder Charge): `buffDurationControllers` is only filled in its `Start`, so `GetModifiedDuration` hits null.
     `Fx.Stun` skips the stun until that array exists (read through `AccessTools.FieldRefAccess`); the next frame it works.
+29. **A timed state's effect can be skipped on the other machines** (0.9.1, a joined player's Concussive Combustion did no damage
+    on the host in two co-op tests): the owner ends `UltSelfBomb` 0.6 s after the 3 s fuse, and that end can reach the server
+    before the server's copy, which started late, has counted to 3 s. The server's copy is replaced and the blast, which only the
+    server deals, never happens. Now a copy that ends within 1.5 s of the fuse goes off in `OnExit` (`Explode()`); one ended
+    earlier (the bearer died) doesn't. Any state whose server-side effect waits on `fixedAge` near the owner's exit has the same
+    risk: let it fire on exit, or give the owner enough slack.
 
 - **Flat max health from buffs (trophies) and vanilla's heal/clamp (v0.7.1f).** `RecalculateStats` compares the new max health
   with the old one and heals the gain or cuts health above the new max. Our `StatsPatch` adds `maxHealthAdd` in a postfix,

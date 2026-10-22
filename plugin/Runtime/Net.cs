@@ -173,7 +173,7 @@ namespace DeadlockOfRain
         /// <summary>The address this copy was started to join (melty.properties join=), "" when it hosts.</summary>
         public static string JoinAddress = "";
         string join, announced;
-        bool tried, done;
+        bool tried, done, inLobby;
         float giveUpAt;
 
         public static void Init()
@@ -221,7 +221,11 @@ namespace DeadlockOfRain
             else Join();
         }
 
-        float nextHostCheck;
+        float nextHostCheck, nextOpen;
+        /// <summary>Melty treats every Play as a game friends can join, but RoR2 only has a Steam lobby while the Multiplayer
+        /// menu or a multiplayer run is open. Started by Melty (melty.properties exists), the title screen opens one the way
+        /// the Multiplayer menu does; a Singleplayer run (host 0, no listening) leaves it again, so solo stays solo. The log only
+        /// ever holds the lobby this player owns now: it is emptied when the lobby goes, so Melty never hands out a dead address.</summary>
         void Host()
         {
             if (Time.unscaledTime < nextHostCheck) return;
@@ -229,14 +233,40 @@ namespace DeadlockOfRain
             try
             {
                 var lm = PlatformSystems.lobbyManager;
-                if (lm == null || !lm.isInLobby || !lm.ownsLobby) return;
-                var id = lm.GetLobbyID();
-                if (string.IsNullOrEmpty(id) || id == "0" || id == announced) return;
-                announced = id;
-                Say("Melty join address: " + id + ".steamlobby");
+                if (lm == null) return;
+                bool owns = lm.isInLobby && lm.ownsLobby;
+                if (owns && NetworkServer.active && NetworkServer.dontListen)
+                {
+                    Log.Info("Melty: a Singleplayer run started; closing the Steam lobby");
+                    RoR2.Console.instance.SubmitCmd(null, "steam_lobby_leave");
+                    owns = false;
+                }
+                var id = owns ? lm.GetLobbyID() : null;
+                if (string.IsNullOrEmpty(id) || id == "0") id = null;
+                if (id == null && announced != null)
+                {
+                    announced = null;
+                    File.WriteAllText(log, "");
+                    Log.Info("Melty: Steam lobby closed; join address cleared");
+                }
+                if (id != null && id != announced)
+                {
+                    announced = id;
+                    Say("Melty join address: " + id + ".steamlobby");
+                }
+                if (!lm.isInLobby && !lm.awaitingCreate && !lm.awaitingJoin && Time.unscaledTime >= nextOpen && AtTitle()
+                    && !NetworkClient.active && !NetworkServer.active && File.Exists(settings) && !MeltyTest.Active)
+                {
+                    nextOpen = Time.unscaledTime + 15f;
+                    Log.Info("Melty: opening a Steam lobby so friends can join");
+                    RoR2.Console.instance.SubmitCmd(null, "steam_lobby_create_if_none");
+                }
             }
-            catch { }
+            catch (Exception e) { Log.Warn("Melty host: " + e.Message); nextHostCheck = Time.unscaledTime + 30f; }
         }
+
+        static bool AtTitle() => RoR2Application.loadFinished && LocalUserManager.isAnyUserSignedIn && RoR2.Console.instance
+            && UnityEngine.Object.FindObjectOfType<RoR2.UI.MainMenu.MainMenuController>();
 
         void Join()
         {
@@ -244,8 +274,7 @@ namespace DeadlockOfRain
             if (!tried)
             {
                 // wait for the title screen with a signed-in profile, as a player clicking Join in the menu would
-                if (!RoR2Application.loadFinished || !LocalUserManager.isAnyUserSignedIn || !RoR2.Console.instance) return;
-                if (!(UnityEngine.Object.FindObjectOfType<RoR2.UI.MainMenu.MainMenuController>())) return;
+                if (!AtTitle()) return;
                 tried = true;
                 giveUpAt = Time.unscaledTime + 90f;
                 var addr = join.EndsWith(".steamlobby", StringComparison.OrdinalIgnoreCase) ? join.Substring(0, join.Length - ".steamlobby".Length) : join;
@@ -260,7 +289,14 @@ namespace DeadlockOfRain
                 Say("Melty joined: " + join);
                 return;
             }
-            if (Time.unscaledTime > giveUpAt)
+            // in the host's lobby but the host hasn't started a game yet: that is waiting, not a failure
+            var lm = PlatformSystems.lobbyManager;
+            if (!inLobby && lm != null && lm.isInLobby && !lm.ownsLobby)
+            {
+                inLobby = true;
+                Say("Melty in the host's lobby: " + join + " (waiting for the host to start)");
+            }
+            if (Time.unscaledTime > giveUpAt && !inLobby)
             {
                 done = true;
                 Say("Melty join failed: no connection to " + join + " after 90 s");

@@ -178,6 +178,23 @@ namespace DeadlockOfRain
                 }
                 Write("missing-hero-tile", bad.Count == 0, string.Join("; ", bad));
             }
+            if (Survivors.ComingSoon.Length > 0)
+            {
+                // each held-back hero: a locked tile whose portrait is a black silhouette (shape kept, no colour)
+                var bad = new List<string>();
+                var u = LocalUserManager.GetFirstLocalUser();
+                foreach (var hero in Survivors.ComingSoon)
+                {
+                    if (!MissingHeroes.Defs.TryGetValue(hero.Id, out var d) || d.survivorIndex == SurvivorIndex.None) { bad.Add(hero.Id + ": no tile"); continue; }
+                    if (u != null && u.userProfile.HasSurvivorUnlocked(d.survivorIndex)) bad.Add(hero.Id + ": pickable");
+                    var tex = MissingHeroes.Bodies[hero.Id].GetComponent<CharacterBody>().portraitIcon as Texture2D;
+                    if (!tex) { bad.Add(hero.Id + ": no portrait"); continue; }
+                    var px = tex.GetPixels32();
+                    int shape = px.Count(p => p.a > 20), lit = px.Count(p => p.a > 20 && (p.r | p.g | p.b) != 0);
+                    if (shape < px.Length / 10 || shape == px.Length || lit > 0) bad.Add($"{hero.Id}: portrait not a silhouette ({shape}/{px.Length} shape, {lit} lit)");
+                }
+                Write("coming-soon-tile", bad.Count == 0, string.Join("; ", bad));
+            }
             if (Survivors.Bodies.Count == 0) yield break;
 
             // 2. start a single-player run as Haze

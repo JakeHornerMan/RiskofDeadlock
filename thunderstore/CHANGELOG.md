@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.1
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6813 (v0.9.1, 2026-10-22).
+- Seven is redesigned: a yellow Lightning Ball that slows to half speed over enemies, a retuned Static Charge, and Storm Cloud on R in place of Power Surge (fly for 10 s inside a storm that shocks the 3 nearest enemies). Thunderhead has its own icon.
+- Abrams' Shoulder Charge no longer throws an error when it hits an enemy the moment it spawns.
+- Co-op: a friend's Concussive Combustion (Infernus' Q) always explodes on the host; on a laggy connection it could fizzle.
+- Playing together through Melty: your game is open to friends from the title screen, so Melty's Join always has an address; a Singleplayer run stays solo. A friend who joins before you start waits in your lobby instead of being told it failed, and Melty never hands out a lobby you've left.
+- Rat King's "coming soon" tile is a black silhouette.
+
 ## 0.9.0
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6807 (v0.9.0, 2026-10-21).
 - A seventh hero for the Melty build, Rat King (not part of this store release yet; the four heroes here are unchanged).

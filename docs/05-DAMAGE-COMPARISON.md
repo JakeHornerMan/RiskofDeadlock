@@ -14,6 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
+| Infernus | 0.9.1: Concussive Combustion also blasts when its state ends within 1.5 s of the 3 s fuse (`UltSelfBomb.OnExit`), so a joined player's bomb lands on the host; numbers unchanged | co-op test: a joined player's Combustion did no damage on the host | this one | no DPS effect: solo the blast already lands at 3 s, and the bench leaves the ults out; checked by `run_test.sh infernus` and `run_coop_test.sh infernus` | **done** |
 | Seven | 0.9.1b: R Storm Cloud hits at most the 3 nearest enemies per shock (`chainCount` 3; was every enemy within 15 m) | the creator: "it should hit up to 3 people every time" | this one | **benched** (one run, 2026-10-22): all **1759** vs Artificer 4013 (−2254, **below**), R 710 → 190, §3.13; `run_test.sh` all seven heroes pass | **done** |
 | Seven | 0.9.1a redesign part 1: Lightning Ball half speed over enemies (`moveSpeedMult` 0.5), Static Charge 450 → 225 %, R Power Surge → Storm Cloud (100 % every 0.5 s within 15 m for 10 s, 24 s after landing); yellow visuals, upper-body cast clips | the creator's Seven redesign | this one | **benched** (one run, 2026-10-21): all **2827** vs Artificer 4013 (−1186, **below**), §3.12; `run_test.sh seven` every check pass | **done** |
 | Viscous | 0.9.0f: Goo Ball (Q) cooldown 120 → 100 s | the creator, with the 0.9.0 Melty release | this one | the bench leaves the ults out of the main-move DPS; the Q column needs a re-bench | **open** |
