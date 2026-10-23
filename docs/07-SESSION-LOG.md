@@ -1048,3 +1048,19 @@ release → "With 0.11.0".
 - The co-op test was not run for 0.11.0 (loading-screen change is client-only; Wraith's relay change is inert without Wraith).
 **Lessons:** a Melty test re-runs setup when the release manifest differs from the dev cache (several minutes of "starting" with
   nothing visible); tell the creator that up front, or they think nothing is happening. A quick-close before the title screen is visible in the log by the missing Melty lobby line.
+
+### 2026-10-23 · The Steam copy has every hero again · no version · this commit
+**Request (verbatim):** "why is my new hero not attached to steam!"
+**Questions asked → answers:** put the full build on for Steam? → "steam my client shoudl alway have all characters added even if
+they areb in development and not release on melty" (a standing rule; Billy playable too). Then: "ok dont open when you are done!"
+**Done:**
+- Cause: after the 0.11.0 Melty test the PC held Melty's seven-hero cut (`heroes.txt` without Wraith, `coming-soon.txt` billy),
+  the cache had been re-read for seven heroes only, and Melty had parked `winhttp.dll` as `.melty-off`, so Steam's Play loaded no mods.
+- Installed the dev DLL from `main` (c298b3a), `heroes.txt` with all nine, removed `coming-soon.txt`, put `winhttp.dll` back.
+- Rebuilt the cache with the full manifest (extractor 1.7.0, Deadlock 6819).
+- `tools/lab_restore.sh` now puts the dev cut back after every run and prints `CACHE MISSES <heroes>` when the cache lacks one.
+- Docs 00 (§1 installed build, §7 lesson, §9), 03 §4; memory `steam-client-has-all-heroes`.
+**Results:** cache `Ready: haze, abrams, seven, infernus, mokrill, viscous, ratking, billy, wraith`, nothing failed. The game was not started.
+**Not done / open:** no in-game check this time (the creator plays it). The rebuild took far longer than the ~8 min quoted
+  (about 9 min on Abrams alone); `lab_restore.sh`'s new lines are untested by a real run.
+**Lessons:** a Melty test leaves the release cut installed; restore the dev cut right after. Don't quote "8 minutes" for a full rebuild.

@@ -41,7 +41,7 @@ Before touching anything:
 | Melty 0.9.1 | **2026-10-22: published (safety review)**: six heroes, new Seven, Rat King a black "coming soon" silhouette, always-joinable co-op, Fx.Stun and joined-player Combustion fixes; test `65dcf162` passed 2/2 (§9) |
 | Daily watch | **Since 2026-10-21:** `tools/watch/daily.ps1`, run daily at 04:00 by Task Scheduler (doc 03 §5b). It checks for Deadlock/RoR2 updates on this PC and for Melty breaks on the live release; if it finds one, an unattended Claude fix run on branch `watch/<date>` tests, fixes and **publishes** once every check passes (the creator's permission). Reports go to `build/watch/<date>-report.md` and a notification. First real fix run 2026-10-22 (Deadlock 6812): checked, tested and recorded end to end; it published nothing (nothing broke) and fixed a stun exception from players' logs (merged, unreleased). Same day: the `python tools/*` rule fixed, triage on Sonnet with signatures + `build/watch/known-breaks.txt` |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
-| Installed build | **v0.7.1c dev build, five heroes, the Mo & Krill balance pass** (2026-10-19; the game was started for the creator at their request). Before: **v0.7.1 dev build with all five heroes incl. Mo & Krill** (2026-10-19, no heroes.txt, cache read from Deadlock 6795; BepInEx switched back on for Steam Play after `lab_restore`). Before: **v0.7.0b dev build with Mo & Krill** (2026-10-19, after the play-check feedback, for the next play-check; Melty's live release is still 0.6.3); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
+| Installed build | **2026-10-23: dev build from `main` with all nine heroes (Billy playable though unfinished, Wraith), cache rebuilt for all nine from Deadlock 6819, BepInEx on.** Standing rule (creator): the Steam copy always has every hero, released or not; `lab_restore.sh` now puts it back after every test. Before: **v0.7.1c dev build, five heroes, the Mo & Krill balance pass** (2026-10-19; the game was started for the creator at their request). Before: **v0.7.1 dev build with all five heroes incl. Mo & Krill** (2026-10-19, no heroes.txt, cache read from Deadlock 6795; BepInEx switched back on for Steam Play after `lab_restore`). Before: **v0.7.0b dev build with Mo & Krill** (2026-10-19, after the play-check feedback, for the next play-check; Melty's live release is still 0.6.3); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
 | Heroes | Haze, Abrams, Seven, Infernus, **Mo & Krill** (v0.7.0); 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
 | Test | **`run_test.sh <hero>` tests only the given heroes (creator's rule, CLAUDE.md).** v0.6.3: Infernus pass (in a 4-hero run before the filter existed), Abrams 1/1 pass (2026-10-18); the co-op test was skipped for the pockets (creator impatient with game runs); `run_coop_test.sh infernus` passes (one earlier run missed the joined Combustion, unexplained) |
 | Balance rule | Main moves (no equipment) vs the hero's **own RoR2 match**, within **±500 %/s**, comparing **means over every bench run** of the current build (`RUNS` in `tools/kit_pages.py`; doc 05 §3.0) |
@@ -160,6 +160,7 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
 ---
 
 ## 7. Lessons from past sessions (things that cost time)
+- **After a release test or Melty `test_release`, the PC holds the release cut, not the dev build** (2026-10-23): `heroes.txt`/`coming-soon.txt` from the zip, Melty's setup re-reads the cache with the release manifest (unreleased heroes gone) and Melty parks `winhttp.dll` as `.melty-off`. The creator then can't find a new hero from Steam. `lab_restore.sh` puts the dev cut back; a `CACHE MISSES` line means rebuild the cache.
 - For an unattended check, let the model describe (a fixed signature, ours or not) and let the script decide; a model judging "already known" was wrong both ways. A `Bash(x:*)` permission rule is a word prefix, so `Bash(python tools/:*)` never matched `python tools/gen.py`; use `Bash(python tools/*)`.
 - **A twisting hero is often a full-body clip on the upper-body layer** (2026-10-21, Seven): look for Deadlock's `*_upper_body` clips first; and read the test's `spun N deg` (a flight that whips round shows as 1000+). Doc 02 gotchas 24-26.
 - Headless `claude -p` with the Melty MCP answers in prose (Melty's instructions); use `--json-schema` and read `structured_output`. PowerShell 5.1 needs `\"` inside native arguments (doc 03 §5b).
@@ -262,7 +263,13 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: a clear loading screen, extractor 1.7.0 (2026-10-23, not released)
+## 9. Last work: the Steam copy has every hero again (2026-10-23)
+
+- Why: "why is my new hero not attached to steam!": after the 0.11.0 Melty test the PC had Melty's seven-hero cut (`heroes.txt`, Billy coming soon, no Wraith), a seven-hero cache and `winhttp.dll` switched off, so Steam's Play loaded nothing.
+- Done: dev DLL, all-heroes `heroes.txt`, no `coming-soon.txt`, `winhttp.dll` back, cache rebuilt with all nine; `lab_restore.sh` does the first three every time and reports a cache missing a hero (doc 03 §4).
+- Rule (creator): "steam my client shoudl alway have all characters added even if they areb in development and not release on melty".
+
+## 9-prev14. A clear loading screen, extractor 1.7.0 (2026-10-23, 0.11.0 on Melty)
 
 - Why: a player closed 0.10.0 after 41 s on the loading screen; the creator wants it "really clear" that files are being read and the game built.
 - Done: banner + hero list on every start (doc 02 §3), test check `loading-screen`, extractor 1.7.0 wording (doc 01 §6).
