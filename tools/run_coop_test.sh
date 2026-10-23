@@ -24,6 +24,9 @@ mkdir -p "$LOCALAPPDATA/Melty/test" "$D/devshots"
 printf 'join=\n' >"$MP"
 HEROES="${1:+, \"heroes\": \"$1\"}"
 printf '{ "checks": "%s", "coop": true%s }\n' "${CHECKS//\\/\\\\}" "$HEROES" >"$LOCALAPPDATA/Melty/test/deadlock-of-rain.json"
+# test mode ends with this script, however it ends: a game the creator starts afterwards is never a test run (the plugin
+# reads the file once at start) (creator, 2026-10-23: "alway turn off fucking test mode unless you open it")
+trap 'rm -f "$LOCALAPPDATA/Melty/test/deadlock-of-rain.json"' EXIT
 
 # 1. the host
 bash "$(dirname "$0")/dev_run.sh" /nonexistent 3 || exit 1

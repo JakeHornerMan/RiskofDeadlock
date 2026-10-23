@@ -1064,3 +1064,19 @@ they areb in development and not release on melty" (a standing rule; Billy playa
 **Not done / open:** no in-game check this time (the creator plays it). The rebuild took far longer than the ~8 min quoted
   (about 9 min on Abrams alone); `lab_restore.sh`'s new lines are untested by a real run.
 **Lessons:** a Melty test leaves the release cut installed; restore the dev cut right after. Don't quote "8 minutes" for a full rebuild.
+
+### 2026-10-23 · Billy looks turned left; test mode never left on · no version · this commit
+**Request (verbatim):** "so billy does seem to be walking staright like is model is cocked 45 degrees to the left? to he walk that
+direction ratbher that the way the camera is facing!", "does not", "he shoudl walk straight like all other characters!", "run a test
+yourself aswelll", "and then leave the game open so i can test", "works now", then "alway turn off fucking test mode unless you open it ffs".
+**Questions asked → answers:** "works now" = Billy walks straight now? → not answered yet (the test-mode complaint came next).
+**Done:**
+- Measured: Billy's gun points straight, but his `weapon_stand_idle` (the aimPose the gun rig freezes the arms in) has his
+  shoulders ~59° left of the gun; the rig turns the chest until the gun aims, so while running his chest stays ~59° left of
+  his legs (Haze +63, Wraith -20, Abrams -29). Deadlock has `shoot_idle`, `primary_idle`, `aim_weapon_idle` etc.; Billy
+  re-extracted with them into the scratchpad to compare (no sheet change yet).
+- `run_test.sh billy`: 1/1, every check pass (screenshots: from behind he looks straight standing; side view chest bladed).
+- `run_test.sh` / `run_coop_test.sh` delete the test-mode file on exit (`trap`), doc 03 §4; memory `test-mode-off-after-runs`.
+**Results:** run_test billy all pass. The test file had been left behind after that run (no lab_restore, game left open); removed.
+**Not done / open:** Billy's stance: waiting for the creator to say whether he still looks turned; the fix would be a squarer aimPose.
+**Lessons:** leaving the game open for the creator skipped lab_restore and left test mode on; the scripts now clean it themselves.

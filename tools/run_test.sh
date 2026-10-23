@@ -4,7 +4,7 @@
 #
 # usage: tools/run_test.sh [heroes] [checks-file]     e.g. tools/run_test.sh infernus   (default: all four)
 #   Test only the hero(es) being changed; run all four only when shared code changed (creator, 2026-10-18).
-#   Needs Steam signed in. Writes the test-mode file %LOCALAPPDATA%\Melty\test\deadlock-of-rain.json and creates the
+#   Needs Steam signed in. Writes the test-mode file %LOCALAPPDATA%\Melty\test\deadlock-of-rain.json (removed when the script ends) and creates the
 #   devshots folder (screenshots in %LOCALAPPDATA%\DeadlockOfRain\devshots). Run tools/lab_restore.sh afterwards.
 #   Waits at most 20 minutes; a healthy run takes about 6-7.
 #   BREAK=infernus tools/run_test.sh haze   marks a hero unreadable on purpose: the others must still build and it must get
@@ -37,6 +37,9 @@ for i in $(seq 1 20); do tasklist | grep -qi "Risk of Rain" || break; sleep 1; d
 rm -f "$L" "$P" "$(cygpath -u "$CHECKS")"
 mkdir -p "$LOCALAPPDATA/Melty/test" "$LOCALAPPDATA/DeadlockOfRain/devshots"
 printf '{ "checks": "%s"%s }\n' "${CHECKS//\\/\\\\}" "$HEROES" >"$LOCALAPPDATA/Melty/test/deadlock-of-rain.json"
+# test mode ends with this script, however it ends: a game the creator starts afterwards is never a test run (the plugin
+# reads the file once at start) (creator, 2026-10-23: "alway turn off fucking test mode unless you open it")
+trap 'rm -f "$LOCALAPPDATA/Melty/test/deadlock-of-rain.json"' EXIT
 bash "$(dirname "$0")/dev_run.sh" /nonexistent 3 || exit 1
 for i in $(seq 1 40); do tasklist | grep -qi "Risk of Rain" && break; sleep 3; done
 tasklist | grep -qi "Risk of Rain" || { echo "NOT_STARTED (is Steam signed in?)"; exit 1; }
