@@ -26,6 +26,8 @@ namespace DeadlockOfRain
         static readonly Color Full = Color.white, Reload = new Color(0.6f, 0.6f, 0.6f);
         /// <summary>The last text shown and whose it was (test mode checks it).</summary>
         public static string Shown; public static CharacterBody ShownFor;
+        /// <summary>When the counter last ran for a hero's M1 icon (test mode: is the HUD drawing it at all).</summary>
+        public static float LastShow = -1f;
         TextMeshProUGUI text;
         int shownAmmo = int.MinValue, shownClip = -1, shownExtra = -1; bool shownReload;
 
@@ -37,6 +39,7 @@ namespace DeadlockOfRain
             var rt = body ? body.GetComponent<HeroRuntime>() : null;
             bool on = gun != null && gun.ClipSize > 0 && rt && body.hasEffectiveAuthority;
             if (!on) { if (text) text.gameObject.SetActive(false); return; }
+            LastShow = Time.unscaledTime;
             if (!text) Build(icon);
             if (!text) return;
             int clip = (int)gun.ClipSize, ammo = rt.Ammo < 0 ? clip : rt.Ammo, extra = rt.Extra;

@@ -479,8 +479,6 @@ namespace DeadlockOfRain
                 if (hero.AirDodges > 0)
                 {
                     var why = new string[1];
-                    yield return TestBillyBat(master, hero, why);
-                    kitWhy += why[0];
                     yield return TestBillyAir(master, hero, why);
                     kitWhy += why[0];
                 }
@@ -557,10 +555,18 @@ namespace DeadlockOfRain
                         hr.Reloading = false; hr.Ammo = Mathf.Max(1, (int)gunRow.ClipSize - 3);
                         yield return new WaitForSeconds(0.3f);
                         string wantText = $"{hr.Ammo}/{(int)gunRow.ClipSize}";
-                        Log.Info($"Melty test: {hero.Id} ammo counter shows {AmmoLabel.Shown ?? "nothing"} (want {wantText})");
+                        Log.Info($"Melty test: {hero.Id} ammo counter shows {AmmoLabel.Shown ?? "nothing"} (want {wantText}); magazine now {hr.Ammo}, reloading {hr.Reloading}, counter last drawn {Time.unscaledTime - AmmoLabel.LastShow:F2} s ago for {(AmmoLabel.ShownFor ? AmmoLabel.ShownFor.name : "nobody")}");
                         if (AmmoLabel.ShownFor != body || AmmoLabel.Shown != wantText) ammoWhy += $"{hero.Id}: shows {AmmoLabel.Shown ?? "nothing"}, want {wantText}; ";
                         hr.Ammo = (int)gunRow.ClipSize;
                     }
+                }
+                // Billy's M2 key test switches the player's own input off for a while, after which RoR2's HUD stops drawing the skill
+                // bar (it never happens in play): so it runs after the ammo counter has been checked
+                if (hero.AirDodges > 0)
+                {
+                    var why = new string[1];
+                    yield return TestBillyBat(master, hero, why);
+                    kitWhy += why[0];
                 }
                 if (anim)
                 {
