@@ -1038,7 +1038,13 @@ release → "With 0.11.0".
   `missing-hero-tile` and `loading-screen`; screenshots checked (banner, "8 of 9 Deadlock heroes ready", Infernus NOT AVAILABLE).
   Building 9 heroes takes 15.1 s on this PC.
 **Not done / open:**
-- Release 0.11.0 **without Billy and Wraith** (release.json `melty` stays the seven heroes, Billy coming soon): main has shared code
-  since 0.10.0 (Wraith's kick columns, Fx.Hit, Buffs.Dot), so test all seven released heroes from the release zip; GitHub tag
-  `extractor-1.7.0` + `fetch_extractor.py`; recipe checks from the new run (`loading-screen` is fourth); CHANGELOG 0.11.0; ask before publish.
-**Lessons:** a quick-close before the title screen is visible in the log by the missing Melty lobby line.
+- Released 0.11.0 to Melty as a draft **without Billy and Wraith** (seven heroes, Billy's coming-soon tile kept: creator's
+  answer "Keep the tile"): `RELEASE_ZIP` run_test 7/7 29/29 (shared code changed since 0.10.0, so all seven), BREAK 21/21,
+  release `ee1fac3c`, Melty test `fa69bd4a` started (creator: "Melty test, then publish"),
+  then **published without waiting** when the creator asked "is this upload or wtf is going on i want this release on melty"
+  (in safety review at the time of writing; listing text updated). Listing text updated in
+  `thunderstore/melty-description.md` (built with 6819, loading screen line); goes to `update_mod` at publish.
+- Thunderstore: needs the GitHub-built 1.7.0 (`git push origin extractor-1.7.0`, `fetch_extractor.py 1.7.0`); not done.
+- The co-op test was not run for 0.11.0 (loading-screen change is client-only; Wraith's relay change is inert without Wraith).
+**Lessons:** a Melty test re-runs setup when the release manifest differs from the dev cache (several minutes of "starting" with
+  nothing visible); tell the creator that up front, or they think nothing is happening. A quick-close before the title screen is visible in the log by the missing Melty lobby line.
