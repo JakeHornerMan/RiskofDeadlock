@@ -5,6 +5,10 @@
 - Deadlock ClientVersion 6817 (build 26143760, 2026-10-22 evening; no clip, mesh or sound change for our heroes); 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
+## Loading screen (2026-10-23)
+- Every start shows a banner and the hero list while the heroes are built (FirstRunOverlay); extractor 1.7.0 says in plain words
+  what it reads. Reason: a 0.10.0 player quit at 41 s before the title screen. Test check loading-screen.
+
 ## Route
 - RoR2 is the primary game: a BepInEx plugin built on RoR2's own ContentManager API (no R2API).
 - Deadlock is the companion game. DeadlockExtract (a VRF-based exe Melty runs as recipe.setup) converts the 4 heroes'

@@ -31,6 +31,8 @@ namespace DeadlockOfRain
             // test-mode "off": "mod": nothing but the quit fixes and the test itself, to see whether a problem needs the mod
             if (MeltyTest.Off("mod")) { MeltyTest.Init(); return; }
             BuiltWith.Read();
+            // every start: the loading screen says the Deadlock heroes are being read and built, and names each one (FirstRunOverlay)
+            FirstRunOverlay.Show();
             // Thunderstore install: read the heroes from Deadlock now; the loading screen waits for it (Survivors.cs)
             if (!FirstRun.Start(DeadlockCache.DefaultDir(), DeadlockFolder.Value)) OpenCache();
 
@@ -53,7 +55,6 @@ namespace DeadlockOfRain
         {
             DeadlockCache.Open(DeadlockCache.DefaultDir());
             Log.Info($"Deadlock of Rain {Version}: Deadlock content from build {DeadlockCache.DeadlockBuild} at {DeadlockCache.Dir}");
-            FirstRun.ShowSummary();
             if (!DeadlockCache.Ready && FirstRun.Problem == null)
                 FirstRun.Problem = "The Deadlock heroes are missing. Install Deadlock (free on Steam) and restart Risk of Rain 2.\n\n" + BuiltWith.Versions();
         }

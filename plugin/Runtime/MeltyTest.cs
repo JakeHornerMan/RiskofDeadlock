@@ -204,6 +204,12 @@ namespace DeadlockOfRain
                 }
                 Write("coming-soon-tile", bad.Count == 0, string.Join("; ", bad));
             }
+            {
+                // the loading screen named every hero on screen while it was built (FirstRunOverlay's banner, v0.11.0)
+                var unnamed = Survivors.Released.Where(h => !FirstRunOverlay.Named.Contains(h.DisplayName)).Select(h => h.DisplayName).ToList();
+                Write("loading-screen", unnamed.Count == 0 && FirstRun.BuildDone == Survivors.Released.Length,
+                    $"{FirstRun.BuildDone}/{Survivors.Released.Length} built" + (unnamed.Count > 0 ? "; never on screen: " + string.Join(", ", unnamed) : "; every hero named on screen"));
+            }
             if (Survivors.Bodies.Count == 0) yield break;
 
             // 2. start a single-player run as Haze
@@ -715,7 +721,7 @@ namespace DeadlockOfRain
         }
 
         /// <summary>Dev only: when %LOCALAPPDATA%/DeadlockOfRain/devshots exists, save a screenshot there.</summary>
-        static void Shot(string name)
+        internal static void Shot(string name)
         {
             var dir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DeadlockOfRain", "devshots");
             if (Directory.Exists(dir)) ScreenCapture.CaptureScreenshot(System.IO.Path.Combine(dir, name + ".png"));

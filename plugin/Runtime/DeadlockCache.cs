@@ -61,13 +61,12 @@ namespace DeadlockOfRain
         }
 
         /// <summary>Test mode ("break": "infernus"): treat a hero as unreadable although its cache is fine, so the skip path
-        /// (red ! tile, title-screen message, loading summary) is tested on every release.</summary>
+        /// (red ! tile, title-screen message, the loading screen's hero list) is tested on every release.</summary>
         public static void MarkFailed(string id, string why)
         {
             Failed[id] = why;
             FirstRun.Problem = null;
             AnnounceFailed();
-            FirstRun.ShowSummary();
         }
 
         static void AnnounceFailed()

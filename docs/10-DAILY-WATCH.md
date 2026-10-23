@@ -141,7 +141,7 @@ What the prompt tells Claude to do:
      --melty` (same cut as the live release, `coming-soon.txt` included).
    - Test the zip as players get it: `RELEASE_ZIP=build/DeadlockOfRain-<ver>.zip` on `run_test.sh` and the BREAK run.
    - Recipe `test.checks` = the **first 12 lines** of that run's `build/checks.txt`, in order (Melty reads only 12; since 0.9.1
-     `coming-soon-tile` is the third). `setup.done.contains` from the zip's own manifest hash.
+     `coming-soon-tile` is the third, and since 0.11.0 `loading-screen` the fourth: take them from the run, never from an older recipe). `setup.done.contains` from the zip's own manifest hash.
    - `inspect_package` -> `validate_recipe` -> upload -> `submit_release` -> `test_release` (2 runs) -> `test_result`, plus
      `test_footage` and a `test_review` for **each** run (a run only counts with a passing review).
    - Listing from `thunderstore/melty-description.md` (Hero pages kept, Built-with line updated) -> `update_mod` ->

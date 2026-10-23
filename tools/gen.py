@@ -90,8 +90,8 @@ manifest = {'heroes': [], 'images': [], 'soundEvents': []}
 for hero in h['rows']:
     a = anims[hero['id']]
     clips = sorted({a[c] for c in load('animations')['columns'] if c not in ANIM_RIG_COLUMNS and a[c] != 'none'})
-    # split: meshes kept as their own part (Rat King's ammo belt; extractor 1.6.0+)
-    manifest['heroes'].append({'id': hero['id'], 'key': hero['deadlockKey'], 'vmdl': hero['vmdl'], 'meshes': hero['meshInclude'], 'clips': clips,
+    # split: meshes kept as their own part (Rat King's ammo belt; extractor 1.6.0+); name: shown in the setup's progress lines (1.7.0+)
+    manifest['heroes'].append({'id': hero['id'], 'name': hero['displayName'], 'key': hero['deadlockKey'], 'vmdl': hero['vmdl'], 'meshes': hero['meshInclude'], 'clips': clips,
                                'split': [m for m in hero['splitMeshes'] if m != 'none']})
     manifest['images'] += [hero['imageSmall'], hero['imageCard']]
     if hero['passiveIcon'] != 'none': manifest['images'].append(hero['passiveIcon'])

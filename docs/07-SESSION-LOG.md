@@ -1016,3 +1016,26 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 - Coloured smoke needs a light tint and a glow inside (gotcha 32).
 - Re-stun a lifted enemy once it is up (gotcha 31).
 - Republishing a page made in another conversation takes three steps: publish (refused), read part of the saved copy, publish again.
+
+### 2026-10-23 · Overnight check, then a clear loading screen · v0.11.0 (not released) · this commit
+**Request (verbatim):** "did our overnight checker push any change slast nignh there seem to be issue with v0.10.0", then (with
+Melty's "Closes right after starting" logs) "can we add an update that amkes it really clear taht we are extracting file and
+building their game?", and mid-work "when you upload do not ship billy or Wraith".
+**Questions asked → answers:** what shows → "Box + bigger banner"; Melty setup wording too → "Both" (extractor 1.7.0);
+release → "With 0.11.0".
+**Done:**
+- Checked: the 04:00 watch pushed nothing. It saw Deadlock 6812 → 6819 but skipped the fix run (21 uncommitted files).
+  Melty's flag is one player who closed 0.10.0 after 41 s **before the title screen** (no "Melty: opening a Steam lobby" line),
+  with a clean log on Deadlock 6819; 0.10.0: 6 started, 5 worked, 0 crashed, no reports. Not a bug.
+- Plugin: the loading screen on every start shows a banner ("DEADLOCK OF RAIN", "Building your Deadlock heroes: <Name>
+  (n of N)", clock, "The game is not stuck") and the box with each hero as it gets ready (doc 02 §3). `ShowSummary` folded in.
+  Test check `loading-screen`, devshots `loading-building.png` / `loading-done.png`.
+- Extractor 1.7.0: plain-words lines for Melty's setup screen; manifest `heroes[].name` from `gen.py` (doc 01 §6).
+- Docs 01, 02, 10, 00, MODLOG.
+**Results:** plugin builds; extractor 1.7.0 published locally and re-reading the cache (new lines confirmed in its output).
+**Not done / open (paused here: the creator restarted the PC):**
+- `run_test.sh haze` and `BREAK=infernus bash tools/run_test.sh haze`: check `loading-screen` passes and look at the two devshots.
+- Release 0.11.0 **without Billy and Wraith** (release.json `melty` stays the seven heroes, Billy coming soon): main has shared code
+  since 0.10.0 (Wraith's kick columns, Fx.Hit, Buffs.Dot), so test all seven released heroes from the release zip; GitHub tag
+  `extractor-1.7.0` + `fetch_extractor.py`; recipe checks from the new run (`loading-screen` is fourth); CHANGELOG 0.11.0; ask before publish.
+**Lessons:** a quick-close before the title screen is visible in the log by the missing Melty lobby line.

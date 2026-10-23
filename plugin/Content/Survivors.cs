@@ -129,16 +129,20 @@ namespace DeadlockOfRain
             yield return null;
 
             foreach (var hero in ComingSoon) MissingHeroes.Add(commando, holder.transform, hero, null);
+            FirstRun.BuildBegin(Released.Length);
             foreach (var hero in Released)
             {
+                // name the hero on the loading screen first (a frame to draw it), then read and build it
+                FirstRun.BuildHero(hero.DisplayName);
+                yield return null;
                 if (DeadlockCache.Failed.ContainsKey(hero.Id) || DeadlockCache.LoadHero(hero.Id) == null)
                 {
                     var why = DeadlockCache.Failed.TryGetValue(hero.Id, out var err) ? err : "no Deadlock content for it";
                     Log.Error("hero " + hero.Id + " skipped: Deadlock could not be read for it (" + why + ")");
                     MissingHeroes.Add(commando, holder.transform, hero, why);
+                    FirstRun.BuildHeroDone(hero.DisplayName, why);
                     continue;
                 }
-                yield return null;
                 var body = BuildBody(commando, hero, kinds);
                 Bodies[hero.Id] = body;
                 var display = ModelBuilder.Build(hero, true);
@@ -158,7 +162,8 @@ namespace DeadlockOfRain
                 sd.desiredSortPosition = hero.SortPosition;
                 Defs[hero.Id] = sd;
                 AddTokens(hero);
-                Log.Info($"Built survivor {hero.DisplayName}");
+                Log.Info($"Built survivor {hero.DisplayName} ({FirstRun.HeroSeconds:F1} s)");
+                FirstRun.BuildHeroDone(hero.DisplayName, null);
             }
             // the ults, as Q equipment anyone can find; each hero starts holding their own
             Equipment.Build(holder.transform);
@@ -607,6 +612,7 @@ namespace DeadlockOfRain
                 var e = Survivors.Build();
                 while (e.MoveNext()) { args.ReportProgress(0.5f); yield return e.Current; }
             }
+            FirstRun.BuildEnd();
             pack.bodyPrefabs.Add(Survivors.Bodies.Values.ToArray());
             pack.survivorDefs.Add(Survivors.Defs.Values.ToArray());
             pack.bodyPrefabs.Add(MissingHeroes.Bodies.Values.ToArray());

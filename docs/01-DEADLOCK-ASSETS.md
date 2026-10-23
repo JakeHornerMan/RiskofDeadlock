@@ -36,7 +36,7 @@ Related documents:
 | NLayer (MP3 decoder) | 1.16.0 | `extractor/DeadlockExtract.csproj` |
 | .NET SDK for the extractor | **net10.0**. VRF 20 needs it; net8 does not compile against it. | csproj `TargetFramework` |
 | SharpGLTF, SkiaSharp, ValvePak, ValveKeyValue | transitive deps of VRF | `THIRD-PARTY-NOTICES.txt` |
-| Extractor version | `1.6.2` (1.6.2: voice takes named by Deadlock's take number, every take for `voiceAllTakes` groups; 1.6.1: DLM2, each material's Deadlock tint, cut-out, glow and vertex colours; `Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1, 1.4.0 the heroes.vdata model lookup, 1.5.0 effect models (props), 1.6.0 props with meshes, skeleton and clips, and split hero meshes) | `extractor/Program.cs`; also part of the cache stamp |
+| Extractor version | `1.7.0` (1.7.0: plain-words progress lines for Melty's setup screen, the hero's display name from the manifest; 1.6.2: voice takes named by Deadlock's take number, every take for `voiceAllTakes` groups; 1.6.1: DLM2, each material's Deadlock tint, cut-out, glow and vertex colours; `Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1, 1.4.0 the heroes.vdata model lookup, 1.5.0 effect models (props), 1.6.0 props with meshes, skeleton and clips, and split hero meshes) | `extractor/Program.cs`; also part of the cache stamp |
 
 A Deadlock update can change asset paths, clip names, mesh names or sound event names. **Section 9** explains how to
 re-validate everything after an update.
@@ -128,6 +128,7 @@ Where every entry comes from:
 | Manifest field | Source sheet / column | Notes |
 |---|---|---|
 | `heroes[].id`, `vmdl` | `heroes.json` → `id`, `vmdl` | |
+| `heroes[].name` | `heroes.json` → `displayName` (1.7.0) | Only for the progress lines ("Reading Mo & Krill from Deadlock..."); an older manifest without it shows the id. |
 | `heroes[].meshes` | `heroes.json` → `meshInclude` | VRF **MeshFilter**: only these mesh names are exported. This drops LODs, alternate costumes, ability props and effect meshes. Mesh names are glTF mesh names (the part after the last `.`). |
 | `heroes[].clips` | `animations.json`: every column **except** `ANIM_RIG_COLUMNS` = {`hero`, `upperBodyBone`, `gunArms`, `gunBone`, `gunHand`, `muzzle`, `muzzleLeft`, `clothParents`, `ragdollBones`, `ragdollThickness`, `rigPrefix`, `loopSecondary`, `springRoots`, `springStiffness`, `springDamping`, `springGravity`, `propBones`}, de-duplicated, `none` dropped | VRF **AnimationFilter**. `aimPose` *is* a clip column (it names a clip). |
 | `heroes[].split` | `heroes.json` → `splitMeshes` (none dropped; 1.6.0) | These meshes stay parts of their own: `DlmWriter` gives each of their materials its own submesh and material record named `<material>@<mesh>` (textures saved once per real material). Rat King's ammo belt: `ammo_full`, `ammo_18` … `ammo_01`, one mesh per round count. |
@@ -320,6 +321,14 @@ this cache is "stale" but still a superset of what 0.2.0 needs:
   - 1.4.0 also wraps the icon step like the sound step (`IMAGES FAILED` is logged, the heroes stay) and prints progress
     lines to stdout for Melty's setup screen: `[n/total] Reading <hero>...`, `<hero> ready (N s)` or `<hero> SKIPPED`,
     and a last line `Ready: haze, abrams | Skipped: infernus`.
+  - **1.7.0 (creator, 2026-10-23: "make it really clear that we are extracting files and building their game")**: the lines say it in
+    plain words, since a player closed the game 41 s in on 0.10.0 and Melty's setup screen shows exactly these lines. After the
+    `DeadlockExtract <ver>: Deadlock build ...` line come two lines ("Deadlock of Rain is reading the heroes' models, animations, icons
+    and sounds from your own Deadlock install ...", "This happens once, and again after each Deadlock update: ... It is not stuck.");
+    each hero is `[n/total] Reading <Display Name> from Deadlock (model and animations)...` and `<id> ready (N s): <Name> converted`;
+    the other steps say what they read ("icons (portraits and ability icons)", "sounds and voice lines"); after `Ready: ...` comes
+    "All read. Risk of Rain 2 starts next and builds the heroes on its loading screen." The `[n/total]`, `<id> ready`, `HERO FAILED`,
+    `SKIPPED` and `Ready:` shapes are unchanged. Nothing parses the wording (checked: tools, watch, plugin relay just copies lines).
   - A failed hero is retried by itself after the next Deadlock update or extractor version, because the stamp changes.
   - A missing clip, image or sound event is only **logged**, and the run still exits 0 (a sound event that throws is caught per event; a crash of the whole sound step leaves the heroes in place).
   - Always read `extract.log`.

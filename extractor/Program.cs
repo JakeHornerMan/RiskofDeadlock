@@ -22,7 +22,7 @@ namespace DeadlockExtract;
 
 public static class Program
 {
-    public const string Version = "1.6.2";
+    public const string Version = "1.7.0";
     static StreamWriter? log;
 
     public static int Main(string[] args)
@@ -64,6 +64,8 @@ public static class Program
         try { File.WriteAllText(Path.Combine(outDir, "progress.txt"), $"{done} {total} {step}"); } catch { }
     }
 
+    static string Name(HeroEntry hero) => hero.Name.Length > 0 ? hero.Name : hero.Id;
+
     static void Log(string s)
     {
         Console.WriteLine(s);
@@ -95,7 +97,7 @@ public static class Program
                 var ready = JsonDocument.Parse(File.ReadAllText(readyPath));
                 if (ready.RootElement.GetProperty("stamp").GetString() == stamp)
                 {
-                    Log($"Cache is current for Deadlock build {build}; nothing to do.");
+                    Log($"Cache is current for Deadlock build {build}; nothing to do (the Deadlock heroes were already read from this Deadlock).");
                     return 0;
                 }
             }
@@ -103,6 +105,9 @@ public static class Program
             File.Delete(readyPath);
         }
         Log($"DeadlockExtract {Version}: Deadlock build {build} at {deadlock}");
+        // 1.7.0: say plainly what is happening; Melty's setup shows these lines while the player waits (creator, 2026-10-23)
+        Log($"Deadlock of Rain is reading the heroes' models, animations, icons and sounds from your own Deadlock install and converting them for Risk of Rain 2.");
+        Log($"This happens once, and again after each Deadlock update: it takes a few minutes (Abrams alone can take two). It is not stuck.");
 
         using var package = new Package();
         package.OptimizeEntriesForBinarySearch(StringComparison.OrdinalIgnoreCase);
@@ -122,7 +127,7 @@ public static class Program
         foreach (var hero in manifest.Heroes)
         {
             Progress(outDir, step, total, hero.Id);
-            Log($"[{++step}/{total}] Reading {hero.Id}...");
+            Log($"[{++step}/{total}] Reading {Name(hero)} from Deadlock (model and animations)...");
             var heroDir = Path.Combine(heroesDir, hero.Id);
             var work = heroDir + ".tmp";
             var t0 = DateTime.UtcNow;
@@ -133,7 +138,7 @@ public static class Program
                 if (Directory.Exists(heroDir)) Directory.Delete(heroDir, true);
                 Directory.Move(work, heroDir);
                 read.Add(hero.Id);
-                Log($"{hero.Id} ready ({(DateTime.UtcNow - t0).TotalSeconds:F0} s)");
+                Log($"{hero.Id} ready ({(DateTime.UtcNow - t0).TotalSeconds:F0} s): {Name(hero)} converted");
             }
             catch (Exception e)
             {
@@ -150,7 +155,7 @@ public static class Program
         // the Deadlock models our effects draw as plain meshes (1.5.0: Viscous' cube, ball and fist). Each is read on its own and
         // never costs the player a hero: a failed one is listed under "failedProps" and the plugin draws a simple shape instead
         Progress(outDir, step, total, "props");
-        Log($"[{++step}/{total}] Reading effect models...");
+        Log($"[{++step}/{total}] Reading effect models (the shapes some abilities draw)...");
         var props = new List<string>();
         var failedProps = new List<object>();
         var propsDir = Path.Combine(outDir, "props");
@@ -173,7 +178,7 @@ public static class Program
         Log($"Effect models: {props.Count}/{manifest.Props.Count}");
 
         Progress(outDir, step, total, "images");
-        Log($"[{++step}/{total}] Reading icons...");
+        Log($"[{++step}/{total}] Reading icons (portraits and ability icons)...");
 
         var imagesDir = Path.Combine(outDir, "images");
         int images = 0;
@@ -188,7 +193,7 @@ public static class Program
         Log($"Images: {images}/{manifest.Images.Count}");
 
         Progress(outDir, step, total, "sounds");
-        Log($"[{++step}/{total}] Reading sounds...");
+        Log($"[{++step}/{total}] Reading sounds and voice lines...");
         int sounds = 0, voiceGroups = 0;
         try { sounds = ExportSounds(package, loader, manifest.SoundEvents, manifest.VoiceGroups, manifest.VoiceAllTakes, Path.Combine(outDir, "sounds"), out voiceGroups); }
         catch (Exception e) { Log("SOUNDS FAILED: " + e); }
@@ -213,6 +218,7 @@ public static class Program
         Progress(outDir, total, total, "done");
         Log($"Done: {read.Count}/{manifest.Heroes.Count} heroes" + (failed.Count > 0 ? " (failed: " + string.Join(", ", manifest.Heroes.Select(h => h.Id).Except(read)) + ")" : "") + ": " + readyPath);
         Log("Ready: " + string.Join(", ", read) + (failed.Count > 0 ? " | Skipped: " + string.Join(", ", manifest.Heroes.Select(h => h.Id).Except(read)) : ""));
+        Log("All read. Risk of Rain 2 starts next and builds the heroes on its loading screen.");
         return 0;
     }
 
@@ -622,6 +628,7 @@ public sealed class PropEntry
 public sealed class HeroEntry
 {
     public string Id { get; set; } = "";
+    public string Name { get; set; } = "";  // 1.7.0: the display name for the progress lines (Mo & Krill); empty in older manifests
     public string Key { get; set; } = "";   // Deadlock's hero key (hero_inferno), for the heroes.vdata model lookup
     public string Vmdl { get; set; } = "";
     public List<string> Meshes { get; set; } = new();

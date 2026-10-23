@@ -2,6 +2,7 @@
   "heroes": [
     {
       "id": "haze",
+      "name": "Haze",
       "key": "hero_haze",
       "vmdl": "models/heroes_staging/haze/haze.vmdl",
       "meshes": [
@@ -31,6 +32,7 @@
     },
     {
       "id": "abrams",
+      "name": "Abrams",
       "key": "hero_atlas",
       "vmdl": "models/heroes_wip/abrams/abrams.vmdl",
       "meshes": [
@@ -60,6 +62,7 @@
     },
     {
       "id": "seven",
+      "name": "Seven",
       "key": "hero_gigawatt",
       "vmdl": "models/heroes_staging/gigawatt_prisoner/gigawatt_prisoner.vmdl",
       "meshes": [
@@ -89,6 +92,7 @@
     },
     {
       "id": "infernus",
+      "name": "Infernus",
       "key": "hero_inferno",
       "vmdl": "models/heroes_wip/inferno/inferno.vmdl",
       "meshes": [
@@ -118,6 +122,7 @@
     },
     {
       "id": "mokrill",
+      "name": "Mo & Krill",
       "key": "hero_krill",
       "vmdl": "models/heroes_staging/digger/digger.vmdl",
       "meshes": [
@@ -148,6 +153,7 @@
     },
     {
       "id": "viscous",
+      "name": "Viscous",
       "key": "hero_viscous",
       "vmdl": "models/heroes_staging/viscous/viscous.vmdl",
       "meshes": [
@@ -173,6 +179,7 @@
     },
     {
       "id": "ratking",
+      "name": "Rat King",
       "key": "hero_ratking",
       "vmdl": "models/heroes_wip/ratking/ratking.vmdl",
       "meshes": [
@@ -239,6 +246,7 @@
     },
     {
       "id": "billy",
+      "name": "Billy",
       "key": "hero_punkgoat",
       "vmdl": "models/heroes_wip/punkgoat/punkgoat.vmdl",
       "meshes": [
@@ -272,6 +280,7 @@
     },
     {
       "id": "wraith",
+      "name": "Wraith",
       "key": "hero_wraith",
       "vmdl": "models/heroes_wip/wraith/wraith.vmdl",
       "meshes": [

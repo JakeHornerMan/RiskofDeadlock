@@ -70,7 +70,6 @@ namespace DeadlockOfRain
                     : "Deadlock was not found. Install Deadlock (free on Steam), then restart Risk of Rain 2.\n\nIf it is installed somewhere unusual, set \"Deadlock folder\" in the mod's config.";
                 Say("Deadlock install not found; no extraction");
                 Status = "Deadlock not found: the game starts without the Deadlock heroes";
-                DoneAt = Time.realtimeSinceStartup;
                 return false;
             }
             Directory.CreateDirectory(cacheDir);
@@ -90,7 +89,6 @@ namespace DeadlockOfRain
             {
                 Problem = "The Deadlock reader could not start (" + e.Message + "). See BepInEx/LogOutput.log.";
                 Status = "The Deadlock reader could not start";
-                DoneAt = Time.realtimeSinceStartup;
                 Log.Error("DeadlockExtract did not start: " + e);
                 return false;
             }
@@ -150,18 +148,51 @@ namespace DeadlockOfRain
             catch { }
         }
 
-        /// <summary>Melty build (Melty's setup read Deadlock before the game started): when a hero was skipped, the loading-
-        /// screen box still shows which heroes are ready and which are not, then fades like the Thunderstore one.</summary>
-        public static void ShowSummary()
+        // ---------------------------------------------------------------- building the heroes (every start, Melty too)
+
+        /// <summary>The hero Survivors.Build is on (null outside it) and how many are done: the loading screen names each one, so
+        /// a slow PC never looks frozen (creator, 2026-10-23, after a player closed the game 41 s in, before the title screen).</summary>
+        internal static string Building;
+        internal static int BuildDone, BuildTotal;
+        internal static float BuildStarted = -1f;
+        static float heroStarted;
+        internal static bool Missing;   // a hero couldn't be read: the box stays longer and says where to look
+
+        public static float HeroSeconds => Time.realtimeSinceStartup - heroStarted;
+
+        public static void BuildBegin(int total)
         {
-            if (Started || DeadlockCache.Failed.Count == 0) return;
-            foreach (var hero in Survivors.Released)
-                Say(DeadlockCache.Failed.TryGetValue(hero.Id, out var why) ? $"{hero.DisplayName}: NOT AVAILABLE ({why})" : $"{hero.DisplayName}: ready");
-            Say(BuiltWith.Versions().Replace("\n", "  "));
-            Status = $"{Survivors.Released.Length - DeadlockCache.Failed.Count} of {Survivors.Released.Length} heroes ready";
-            progress = 1f;
-            DoneAt = Time.realtimeSinceStartup + 4f;   // 12 s on screen in all
-            FirstRunOverlay.Show(true);
+            BuildTotal = total;
+            BuildDone = 0;
+            BuildStarted = Time.realtimeSinceStartup;
+        }
+
+        public static void BuildHero(string name)
+        {
+            Building = name;
+            heroStarted = Time.realtimeSinceStartup;
+            Status = $"building {name} ({BuildDone + 1} of {BuildTotal})";
+            if (MeltyTest.Active && BuildDone == 2) MeltyTest.Shot("loading-building");   // drawn on the frame Survivors.Build yields next
+        }
+
+        /// <summary>One line per hero in the box (why = null: built); the BepInEx log already has its own line for each.</summary>
+        public static void BuildHeroDone(string name, string why)
+        {
+            BuildDone++;
+            if (why != null) Missing = true;
+            lock (Lines) Lines.Add(why == null ? $"{name}: ready" : $"{name}: NOT AVAILABLE ({why})");
+        }
+
+        /// <summary>End of our content loading: the box says how it went and fades (12 s on screen with a hero missing, 4 s otherwise).</summary>
+        public static void BuildEnd()
+        {
+            Building = null;
+            int ready = Survivors.Bodies.Count, all = Survivors.Released.Length;
+            if (BuildStarted >= 0f) Log.Info($"Deadlock heroes built: {ready} of {all} in {Time.realtimeSinceStartup - BuildStarted:F1} s");
+            if (ready < all) { Missing = true; Say(BuiltWith.Versions().Replace("\n", "  ")); }
+            Status = ready == 0 ? "no Deadlock heroes this time" : ready == all ? $"all {all} Deadlock heroes ready" : $"{ready} of {all} Deadlock heroes ready";
+            DoneAt = Time.realtimeSinceStartup + (Missing ? 4f : -4f);
+            if (MeltyTest.Active) MeltyTest.Shot("loading-done");
         }
 
         /// <summary>Called once the process has exited: records why, when it failed.</summary>
@@ -172,8 +203,7 @@ namespace DeadlockOfRain
             var _ = Progress;   // relay the last log lines
             int code = proc.ExitCode;
             Say($"DeadlockExtract finished with exit code {code} after {Time.realtimeSinceStartup - started:F0} s");
-            Status = code == 0 ? $"Deadlock heroes ready ({Time.realtimeSinceStartup - started:F0} s)" : "Reading Deadlock failed: see BepInEx/LogOutput.log";
-            DoneAt = Time.realtimeSinceStartup;
+            Status = code == 0 ? $"Deadlock read ({Time.realtimeSinceStartup - started:F0} s)" : "Reading Deadlock failed: see BepInEx/LogOutput.log";
             if (code != 0)
                 Problem = File.Exists(Path.Combine(cacheDir, "ready.json"))
                     ? null
@@ -294,25 +324,28 @@ namespace DeadlockOfRain
         }
     }
 
-    /// <summary>The first-run box on the loading screen: what the mod is doing to find and read Deadlock, the elapsed time
-    /// and the extractor's latest lines (the same lines as BepInEx/LogOutput.log). IMGUI, because it has to draw while
-    /// RoR2's own UI is still loading. Fades out 8 s after the work ends.</summary>
+    /// <summary>The loading screen on every start: a banner across the screen ("Deadlock of Rain: building your Deadlock heroes",
+    /// the hero being built, the time, "the game is not stuck") and a box at the bottom left with each hero as it gets ready and,
+    /// on a Thunderstore first start, the extractor's latest lines (the same as BepInEx/LogOutput.log). IMGUI, because it has to
+    /// draw while RoR2's own UI is still loading. Fades out after our content is built (12 s on screen when a hero is missing).</summary>
     public sealed class FirstRunOverlay : MonoBehaviour
     {
         static FirstRunOverlay instance;
-        GUIStyle box, title, text;
+        GUIStyle box, band, title, text, bigTitle, bigLine, smallLine;
         float shownAt;
-        bool summary;   // the Melty summary of a start with a skipped hero (FirstRun.ShowSummary), not the extractor at work
+        /// <summary>The heroes the banner has named while building them (test check loading-screen).</summary>
+        internal static readonly HashSet<string> Named = new HashSet<string>();
 
-        public static void Show(bool summary = false)
+        public static void Show()
         {
             if (instance) return;
             var go = new GameObject("DeadlockOfRainFirstRun");
             DontDestroyOnLoad(go);
             instance = go.AddComponent<FirstRunOverlay>();
             instance.shownAt = Time.realtimeSinceStartup;
-            instance.summary = summary;
         }
+
+        static Texture2D Fill(Color c) { var t = new Texture2D(1, 1); t.SetPixel(0, 0, c); t.Apply(); return t; }
 
         void Update()
         {
@@ -322,28 +355,64 @@ namespace DeadlockOfRain
 
         void OnGUI()
         {
-            // normal starts (the cache is current) finish in about a second: show nothing unless it takes longer or failed
-            if (!summary && (FirstRun.Quick || FirstRun.DoneAt < 0f && Time.realtimeSinceStartup - shownAt < 3f)) return;
+            bool reading = FirstRun.Started && FirstRun.BuildStarted < 0f && FirstRun.DoneAt < 0f;
+            // a Thunderstore start whose cache is current ends the extractor in about a second: no reading phase on screen
+            if (reading && (FirstRun.Quick || Time.realtimeSinceStartup - shownAt < 3f)) return;
             if (box == null)
             {
-                var bg = new Texture2D(1, 1); bg.SetPixel(0, 0, new Color(0.06f, 0.05f, 0.04f, 0.88f)); bg.Apply();
-                box = new GUIStyle(GUI.skin.box) { normal = { background = bg }, padding = new RectOffset(14, 14, 10, 10) };
+                box = new GUIStyle(GUI.skin.box) { normal = { background = Fill(new Color(0.06f, 0.05f, 0.04f, 0.88f)) }, padding = new RectOffset(14, 14, 10, 10) };
+                band = new GUIStyle(GUI.skin.box) { normal = { background = Fill(new Color(0.03f, 0.025f, 0.02f, 0.82f)) } };
                 title = new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold, normal = { textColor = new Color(0.96f, 0.78f, 0.42f) }, wordWrap = true };
                 text = new GUIStyle(GUI.skin.label) { fontSize = 14, normal = { textColor = new Color(0.9f, 0.88f, 0.84f) }, wordWrap = false, clipping = TextClipping.Clip };
+                bigTitle = new GUIStyle(title) { alignment = TextAnchor.MiddleCenter, wordWrap = false };
+                bigLine = new GUIStyle(text) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+                smallLine = new GUIStyle(text) { alignment = TextAnchor.MiddleCenter, normal = { textColor = new Color(0.78f, 0.76f, 0.72f) } };
             }
-            float a = FirstRun.DoneAt >= 0f ? Mathf.Clamp01(1f - (Time.realtimeSinceStartup - FirstRun.DoneAt - 6f) / 2f) : 1f;
+            bool done = FirstRun.DoneAt >= 0f;
+            float a = done ? Mathf.Clamp01(1f - (Time.realtimeSinceStartup - FirstRun.DoneAt - 6f) / 2f) : 1f;
             GUI.color = new Color(1, 1, 1, a);
+            float t = (done ? FirstRun.DoneAt : Time.realtimeSinceStartup) - shownAt;
+            string clock = $"{Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00}";
+
+            // the banner: what is happening, in words nobody can miss
+            string headline, detail;
+            if (done)
+            {
+                headline = char.ToUpper(FirstRun.Status[0]) + FirstRun.Status.Substring(1);
+                detail = FirstRun.Missing ? "A hero that couldn't be read keeps a red ! tile in character select; hover it for why." : "Pick one in character select.";
+            }
+            else if (reading)
+            {
+                headline = "Reading the heroes from your own Deadlock install";
+                detail = $"{FirstRun.Progress * 100f:F0} %   ·   {clock}   ·   first start or after a Deadlock update: a few minutes. The game is not stuck.";
+            }
+            else
+            {
+                headline = FirstRun.Building != null ? $"Building your Deadlock heroes: {FirstRun.Building}  ({FirstRun.BuildDone + 1} of {FirstRun.BuildTotal})" : "Getting your Deadlock heroes ready";
+                detail = $"{clock}   ·   models, animations and sounds from your own Deadlock install. The game is not stuck.";
+            }
+            float k = Mathf.Clamp(Screen.height / 1080f, 0.6f, 2f);
+            bigTitle.fontSize = Mathf.RoundToInt(46 * k);
+            bigLine.fontSize = Mathf.RoundToInt(26 * k);
+            smallLine.fontSize = Mathf.RoundToInt(18 * k);
+            var b = new Rect(0f, Screen.height * 0.12f, Screen.width, 170f * k);
+            GUI.Box(b, GUIContent.none, band);
+            GUI.Label(new Rect(0f, b.y + 14f * k, Screen.width, 60f * k), "DEADLOCK OF RAIN", bigTitle);
+            GUI.Label(new Rect(0f, b.y + 76f * k, Screen.width, 40f * k), headline, bigLine);
+            GUI.Label(new Rect(0f, b.y + 118f * k, Screen.width, 32f * k), detail, smallLine);
+            if (!done && !reading && FirstRun.Building != null && Event.current.type == EventType.Repaint) Named.Add(FirstRun.Building);
+
+            // the box: each hero as it gets ready (or why not), and the extractor's own lines on a Thunderstore first start
             float w = Mathf.Min(900f, Screen.width - 40f), h = 250f;
             var r = new Rect(20f, Screen.height - h - 20f, w, h);
             GUI.Box(r, GUIContent.none, box);
             GUILayout.BeginArea(new Rect(r.x + 14, r.y + 10, r.width - 28, r.height - 20));
             GUILayout.Label("Deadlock of Rain: " + FirstRun.Status, title);
-            float t = (FirstRun.DoneAt >= 0f ? FirstRun.DoneAt : Time.realtimeSinceStartup) - shownAt;
-            if (summary) GUILayout.Label("A hero that couldn't be read keeps a red ! tile in character select; hover it for why.", text);
-            else GUILayout.Label($"{FirstRun.Progress * 100f:F0} %   ·   {Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00}   ·   first start only: it is not stuck (Abrams alone takes a few minutes)", text);
+            if (reading) GUILayout.Label($"{FirstRun.Progress * 100f:F0} %   ·   {clock}   ·   first start only: it is not stuck (Abrams alone takes a few minutes)", text);
+            else GUILayout.Label(FirstRun.BuildTotal > 0 ? $"{FirstRun.BuildDone} of {FirstRun.BuildTotal} heroes built   ·   {clock}" : clock, text);
             GUILayout.Space(6);
             lock (FirstRun.Lines)
-                for (int i = Mathf.Max(0, FirstRun.Lines.Count - (summary ? 8 : 6)); i < FirstRun.Lines.Count; i++)
+                for (int i = Mathf.Max(0, FirstRun.Lines.Count - 8); i < FirstRun.Lines.Count; i++)
                     GUILayout.Label(FirstRun.Lines[i], text);
             GUILayout.EndArea();
             GUI.color = Color.white;

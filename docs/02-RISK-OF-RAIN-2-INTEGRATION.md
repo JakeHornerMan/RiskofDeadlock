@@ -71,10 +71,24 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
      Every place it looks is logged (`found Deadlock` / `not here`, Steam's registry path, the libraries in each
      `libraryfolders.vdf`); while the exe runs, its `extract.log` lines are copied into the BepInEx log as
      `[DeadlockExtract] ...` with a `Reading Deadlock: step n/total` line per step and the total time at the end.
-   - **On screen:** `FirstRunOverlay` (IMGUI, so it draws while RoR2's UI is still loading; needs
-     `UnityEngine.IMGUIModule` in the csproj) shows a box at the bottom left of the loading screen: the step, the
-     percentage (it creeps within a step, so Abrams' ~4 min never looks frozen), the elapsed time and the last six
-     lines. Hidden on normal starts (the exe ends within 3 s); fades 8 s after the work ends or Deadlock isn't found.
+   - **On screen, every start (v0.11.0, creator 2026-10-23 after a player closed 0.10.0 at 41 s before the title screen):**
+     `FirstRunOverlay` (IMGUI, so it draws while RoR2's UI is still loading; needs `UnityEngine.IMGUIModule` in the csproj),
+     shown from `Plugin.Awake` on Melty and Thunderstore starts alike, draws two things:
+     - a **banner** across the upper screen (dark band, sizes scale with screen height): "DEADLOCK OF RAIN", a headline and a
+       detail line. Headline: "Reading the heroes from your own Deadlock install" (Thunderstore extraction, with % and clock),
+       "Getting your Deadlock heroes ready" (before content loading), "Building your Deadlock heroes: <Name> (n of N)"
+       (`Survivors.Build`), then the result ("All 7 Deadlock heroes ready" / "6 of 7 ..."). The detail always says the game is not stuck.
+     - the **box** at the bottom left: `Deadlock of Rain: <Status>`, a progress line (extraction %/clock, or "n of N heroes built"),
+       and the last eight lines: one per hero as it is built (`<Name>: ready` / `<Name>: NOT AVAILABLE (why)`), and on a
+       Thunderstore first start the extractor's own lines.
+     `Survivors.Build` calls `FirstRun.BuildBegin/BuildHero/BuildHeroDone` and yields a frame right after naming each hero, so the
+     name is on screen while that hero is read and built; the log line is `Built survivor <Name> (N.N s)`. `FirstRun.BuildEnd` (end
+     of `LoadStaticContentAsync`, also when no hero could be built) logs `Deadlock heroes built: n of N in N.N s`, sets the result
+     and `DoneAt`: the overlay fades out 2 s after (8 s with a hero missing, plus the versions line). The extraction phase is
+     still hidden when the exe ends within 3 s (cache current). Replaces 0.7.2's `FirstRun.ShowSummary` (Melty skipped-hero summary).
+     Test check `loading-screen` (written right after `coming-soon-tile`, so it is among the 12 a Melty recipe reads): every
+     released hero was built and the banner drew its name on a repaint frame (`FirstRunOverlay.Named`); test mode also saves
+     `devshots/loading-building.png` (third hero) and `loading-done.png`.
    - Otherwise (Melty build) `Plugin.OpenCache()` → `DeadlockCache.Open(dir)`: no `ready.json` means an error is logged and no heroes are built (the game still runs).
    - When the heroes can't be loaded, `FirstRun.Problem` holds why; `FirstRun.Init` shows it once in a `SimpleDialogBox` on
      the title screen (tokens `DLR_FIRSTRUN_*`, header `FirstRun.ProblemHeader`).
@@ -102,9 +116,9 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
      `steamapps/appmanifest_632360.acf` next to the game; its Deadlock build from `ready.json`. Logged as "Built with ... ;
      this PC: ...". `BuiltWith.Versions()` (built with / this PC, plus "your Deadlock is older/newer" when the ClientVersions
      differ) is appended to every problem message: the skipped-hero box, "heroes missing", the Thunderstore extractor failure and the red "!" hover.
-   - **Melty loading summary (v0.7.2):** on a Melty start with a skipped hero, `FirstRun.ShowSummary` (from `Plugin.OpenCache`)
-     opens the same `FirstRunOverlay` box with "N of M heroes ready", one line per released hero (`ready` / `NOT AVAILABLE (why)`)
-     and the versions, for about 12 s. Nothing is shown when every hero loaded.
+   - **Melty loading summary (v0.7.2, folded into the every-start overlay in v0.11.0):** a skipped hero shows as
+     `<Name>: NOT AVAILABLE (why)` in the box's hero list, the result says "N of M Deadlock heroes ready", the versions line is
+     added, and the overlay stays about 12 s.
    - `new Harmony("melty.deadlockofrain").PatchAll(assembly)` applies every `[HarmonyPatch]` class: `LanguagePatch`, `StatsPatch`, `DamagePatch`, `DebuffResistPatch`, `LoadoutSkinRowPatch`, `MissingHeroes.LockPatch`, `MissingHeroes.IconPatch`, `Equipment.FirePatch`, `Equipment.ClientFirePatch`.
    - `ContentManager.collectContentPackProviders += add => add(new DeadlockContentProvider())`.
    - `Equipment.Init()` subscribes `CharacterBody.onBodyStartGlobal` (starting equipment) and `Run.onRunStartGlobal`.
