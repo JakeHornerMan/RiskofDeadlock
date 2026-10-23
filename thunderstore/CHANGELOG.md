@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.0
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v0.11.0, 2026-10-23).
+- The loading screen now says clearly what is happening: a big "Deadlock of Rain" banner names each hero while it is built from your own Deadlock install ("Building your Deadlock heroes: Abrams (2 of 7)"), with a timer and "The game is not stuck", and a list shows each hero as it gets ready.
+- Melty's setup screen says it too (Deadlock reader 1.7.0): it explains that it is reading the heroes' models, animations, icons and sounds from your Deadlock install, that this happens once and again after each Deadlock update, and names each hero as it goes.
+- Because the reader is new, the heroes are read from Deadlock once more on the first start of this version (a few minutes).
+- Checked against Deadlock's update of 23 October (build 6819): every hero reads and plays.
+
 ## 0.10.0
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6817 (v0.10.0, 2026-10-22).
 - Rat King joins the Melty build as its seventh playable hero: Sovereign's Decree, the hopping Scrap Grenade, Royal Pestments, the banner leap Rule, Ratannia! and the Rat Swarm ult (not part of this store release yet; the four heroes here are unchanged).
