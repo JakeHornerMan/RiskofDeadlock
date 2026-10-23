@@ -132,9 +132,10 @@ namespace DeadlockOfRain
             FirstRun.BuildBegin(Released.Length);
             foreach (var hero in Released)
             {
-                // name the hero on the loading screen first (a frame to draw it), then read and build it
+                // name the hero on the loading screen first, then read and build it. RoR2's loader can step us several times in
+                // one frame, so wait until a frame has really been drawn with the name (Haze was never on screen otherwise)
                 FirstRun.BuildHero(hero.DisplayName);
-                yield return null;
+                for (int frame = Time.frameCount; Time.frameCount == frame;) yield return null;
                 if (DeadlockCache.Failed.ContainsKey(hero.Id) || DeadlockCache.LoadHero(hero.Id) == null)
                 {
                     var why = DeadlockCache.Failed.TryGetValue(hero.Id, out var err) ? err : "no Deadlock content for it";

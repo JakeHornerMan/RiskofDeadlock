@@ -78,17 +78,18 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
        detail line. Headline: "Reading the heroes from your own Deadlock install" (Thunderstore extraction, with % and clock),
        "Getting your Deadlock heroes ready" (before content loading), "Building your Deadlock heroes: <Name> (n of N)"
        (`Survivors.Build`), then the result ("All 7 Deadlock heroes ready" / "6 of 7 ..."). The detail always says the game is not stuck.
-     - the **box** at the bottom left: `Deadlock of Rain: <Status>`, a progress line (extraction %/clock, or "n of N heroes built"),
-       and the last eight lines: one per hero as it is built (`<Name>: ready` / `<Name>: NOT AVAILABLE (why)`), and on a
+     - the **box** at the bottom left: `Deadlock of Rain: <Status>`, a progress line (extraction %/clock, or "n of N heroes done"),
+       and the last ten lines (the box and its fonts grow with screen height so nine heroes plus the versions line fit): one per hero as it is built (`<Name>: ready` / `<Name>: NOT AVAILABLE (why)`), and on a
        Thunderstore first start the extractor's own lines.
-     `Survivors.Build` calls `FirstRun.BuildBegin/BuildHero/BuildHeroDone` and yields a frame right after naming each hero, so the
-     name is on screen while that hero is read and built; the log line is `Built survivor <Name> (N.N s)`. `FirstRun.BuildEnd` (end
+     `Survivors.Build` calls `FirstRun.BuildBegin/BuildHero/BuildHeroDone` and then waits until `Time.frameCount` moves on (RoR2's loader can
+     step a provider several times in one frame, so a bare `yield return null` left Haze never drawn), so the name is on screen while that hero is read and built; the log line is `Built survivor <Name> (N.N s)`. `FirstRun.BuildEnd` (end
      of `LoadStaticContentAsync`, also when no hero could be built) logs `Deadlock heroes built: n of N in N.N s`, sets the result
      and `DoneAt`: the overlay fades out 2 s after (8 s with a hero missing, plus the versions line). The extraction phase is
      still hidden when the exe ends within 3 s (cache current). Replaces 0.7.2's `FirstRun.ShowSummary` (Melty skipped-hero summary).
      Test check `loading-screen` (written right after `coming-soon-tile`, so it is among the 12 a Melty recipe reads): every
      released hero was built and the banner drew its name on a repaint frame (`FirstRunOverlay.Named`); test mode also saves
-     `devshots/loading-building.png` (third hero) and `loading-done.png`.
+     `devshots/loading-building.png` (third hero) and `loading-done.png` (taken by the overlay on its first finished repaint).
+     Building takes about 15 s for nine heroes on the creator's PC (Rat King 3.5 s, Abrams 2.5 s, Viscous 0.3 s).
    - Otherwise (Melty build) `Plugin.OpenCache()` → `DeadlockCache.Open(dir)`: no `ready.json` means an error is logged and no heroes are built (the game still runs).
    - When the heroes can't be loaded, `FirstRun.Problem` holds why; `FirstRun.Init` shows it once in a `SimpleDialogBox` on
      the title screen (tokens `DLR_FIRSTRUN_*`, header `FirstRun.ProblemHeader`).

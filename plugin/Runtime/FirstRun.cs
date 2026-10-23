@@ -192,7 +192,6 @@ namespace DeadlockOfRain
             if (ready < all) { Missing = true; Say(BuiltWith.Versions().Replace("\n", "  ")); }
             Status = ready == 0 ? "no Deadlock heroes this time" : ready == all ? $"all {all} Deadlock heroes ready" : $"{ready} of {all} Deadlock heroes ready";
             DoneAt = Time.realtimeSinceStartup + (Missing ? 4f : -4f);
-            if (MeltyTest.Active) MeltyTest.Shot("loading-done");
         }
 
         /// <summary>Called once the process has exited: records why, when it failed.</summary>
@@ -333,6 +332,7 @@ namespace DeadlockOfRain
         static FirstRunOverlay instance;
         GUIStyle box, band, title, text, bigTitle, bigLine, smallLine;
         float shownAt;
+        bool shotDone;
         /// <summary>The heroes the banner has named while building them (test check loading-screen).</summary>
         internal static readonly HashSet<string> Named = new HashSet<string>();
 
@@ -400,19 +400,27 @@ namespace DeadlockOfRain
             GUI.Label(new Rect(0f, b.y + 14f * k, Screen.width, 60f * k), "DEADLOCK OF RAIN", bigTitle);
             GUI.Label(new Rect(0f, b.y + 76f * k, Screen.width, 40f * k), headline, bigLine);
             GUI.Label(new Rect(0f, b.y + 118f * k, Screen.width, 32f * k), detail, smallLine);
-            if (!done && !reading && FirstRun.Building != null && Event.current.type == EventType.Repaint) Named.Add(FirstRun.Building);
+            if (Event.current.type == EventType.Repaint)
+            {
+                if (!done && !reading && FirstRun.Building != null) Named.Add(FirstRun.Building);
+                // test mode: the result as drawn (captured at the end of this frame, after this repaint)
+                if (done && !shotDone && MeltyTest.Active) { shotDone = true; MeltyTest.Shot("loading-done"); }
+            }
 
-            // the box: each hero as it gets ready (or why not), and the extractor's own lines on a Thunderstore first start
-            float w = Mathf.Min(900f, Screen.width - 40f), h = 250f;
+            // the box: each hero as it gets ready (or why not), and the extractor's own lines on a Thunderstore first start;
+            // it grows with the screen so nine hero lines and the versions line always fit
+            title.fontSize = Mathf.RoundToInt(20 * k);
+            text.fontSize = Mathf.RoundToInt(14 * k);
+            float w = Mathf.Min(1100f * k, Screen.width - 40f), h = (64f + 21f * 10) * k + 20f;
             var r = new Rect(20f, Screen.height - h - 20f, w, h);
             GUI.Box(r, GUIContent.none, box);
             GUILayout.BeginArea(new Rect(r.x + 14, r.y + 10, r.width - 28, r.height - 20));
             GUILayout.Label("Deadlock of Rain: " + FirstRun.Status, title);
             if (reading) GUILayout.Label($"{FirstRun.Progress * 100f:F0} %   ·   {clock}   ·   first start only: it is not stuck (Abrams alone takes a few minutes)", text);
-            else GUILayout.Label(FirstRun.BuildTotal > 0 ? $"{FirstRun.BuildDone} of {FirstRun.BuildTotal} heroes built   ·   {clock}" : clock, text);
+            else GUILayout.Label(FirstRun.BuildTotal > 0 ? $"{FirstRun.BuildDone} of {FirstRun.BuildTotal} heroes done   ·   {clock}" : clock, text);
             GUILayout.Space(6);
             lock (FirstRun.Lines)
-                for (int i = Mathf.Max(0, FirstRun.Lines.Count - 8); i < FirstRun.Lines.Count; i++)
+                for (int i = Mathf.Max(0, FirstRun.Lines.Count - 10); i < FirstRun.Lines.Count; i++)
                     GUILayout.Label(FirstRun.Lines[i], text);
             GUILayout.EndArea();
             GUI.color = Color.white;

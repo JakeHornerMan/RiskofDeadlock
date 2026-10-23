@@ -1032,9 +1032,12 @@ release → "With 0.11.0".
   Test check `loading-screen`, devshots `loading-building.png` / `loading-done.png`.
 - Extractor 1.7.0: plain-words lines for Melty's setup screen; manifest `heroes[].name` from `gen.py` (doc 01 §6).
 - Docs 01, 02, 10, 00, MODLOG.
-**Results:** plugin builds; extractor 1.7.0 published locally and re-reading the cache (new lines confirmed in its output).
-**Not done / open (paused here: the creator restarted the PC):**
-- `run_test.sh haze` and `BREAK=infernus bash tools/run_test.sh haze`: check `loading-screen` passes and look at the two devshots.
+**Results:** extractor 1.7.0: 9/9 heroes, 160/160 sounds, 95/95 voice groups, new lines as intended. `run_test.sh haze`: every
+  gameplay check passed but `loading-screen` failed (Haze never drawn: the loader steps several times per frame) → wait for a new
+  frame; box too short at 1440p → grows with the screen. After the fix `BREAK=infernus run_test.sh haze`: 20/20 incl.
+  `missing-hero-tile` and `loading-screen`; screenshots checked (banner, "8 of 9 Deadlock heroes ready", Infernus NOT AVAILABLE).
+  Building 9 heroes takes 15.1 s on this PC.
+**Not done / open:**
 - Release 0.11.0 **without Billy and Wraith** (release.json `melty` stays the seven heroes, Billy coming soon): main has shared code
   since 0.10.0 (Wraith's kick columns, Fx.Hit, Buffs.Dot), so test all seven released heroes from the release zip; GitHub tag
   `extractor-1.7.0` + `fetch_extractor.py`; recipe checks from the new run (`loading-screen` is fourth); CHANGELOG 0.11.0; ask before publish.
