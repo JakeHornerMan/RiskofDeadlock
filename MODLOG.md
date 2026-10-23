@@ -139,6 +139,14 @@ lab restored Tue Oct 13 01:42:10 GMTST 2026
 - 2026-10-22: first night caught Deadlock 6812 (nothing broke) and a Shoulder Charge stun exception (fixed, merged). Triage now Sonnet with
   signatures + `build/watch/known-breaks.txt`; `Bash(python tools/*)` rule fixed (a `:*` rule needs a space after the prefix).
 
+## 0.11.0a (2026-10-23): Wraith (not released)
+- The ninth hero from the creator's outline, matched to Bandit: The Rake (tommy gun, 60 %, 52 rounds, heavy kick: sheet columns `recoil` / `aimKick`),
+  Card Trick (a homing Deadlock card, one of four tricks: 5 bleed / certain crit / 2 s stun / 5 burn; `Buffs.Dot`, `Fx.Hit(forceCrit)`),
+  Project Mind (60 m marker, any key teleports), Full Auto (full magazine, +50 % fire rate until it is empty, 20 % more kick),
+  Telekinesis (Q: everything in 30 m thrown 50 m along the aim, ×1.5 into a wall, bosses lifted a little and stunned). Purple smoke on every move.
+- `run_test.sh wraith` 1/1, every check (incl. a kit check of all four tricks and Full Auto's refill, speed and end). Bench 517 vs Bandit 1919
+  (below; the creator keeps it). Gotchas 31 (a stun at the lift) and 32 (dark smoke on dark stages) in doc 02.
+
 ## 0.10.0 (2026-10-22)
 - Melty: seven heroes (Rat King playable), Billy the black-silhouette coming-soon tile (his work in progress ships inert).
   Built with Deadlock 6817 (updated that evening; listings: +2 files, no clip/mesh/sound change; cache 8/8). Joined-player

@@ -958,3 +958,61 @@ Dust Devil ability for alllcharactere i would like to be able to jump"
 **Results:** run_test (release zip) 7/7 heroes 28/28 incl. `coming-soon-tile` for Billy; BREAK=infernus haze 20/20; run_test ratking 20/20 after the fix. Co-op ratking: run 1 swarm 0 damage (test window); run 2 desynced (the joiner never moved on the host; no conclusion); run 3 stopped for low memory (two copies ~5.5 GB, 1.5 GB free); run 4 swarm 444 / 37 bites, scrap 0 (start-point bug); run 5 after the fix scrap 288 + both slows, swarm 924 / 77 bites, banner hit and stunned but showed 1.3 m of movement (8-17 m in runs 1, 2-desync aside, 4). Melty release `ab990a7a-…` published without a Melty test, in safety review.
 **Not done / open:** the co-op banner leap's movement on the host (one run in four); Rat King's kit page still to be shared by the creator; Billy for 0.11.0.
 **Lessons:** a throw needs its start point sent as well as its direction; a move with no duration needs a longer co-op window; check free memory before a co-op run (a run gets killed below ~2 GB).
+
+### 2026-10-23 · Wraith, the ninth hero · v0.11.0a (not released) · the commit that adds this entry (and 25178bf, leftover Billy test-order edits)
+**Request (verbatim):** "ok lete work on https://deadlock.wiki/Wraith. m1 is the The Rake, m2 is Card Trick choose 4 randome status effect from ror2 bleed (eemy get bleed), crit (more damage on the card), stun, burn, shift is Project Mind a purple place it shown and any button clicked will teleport you there i want it to go pretty far! R is Full auto, reset magazine to full with double the ammo for your gun and fire rate is increased until you run out of a clip. now the purple magic vfx are really important for this character. the equipabe item is telekenisis now this will pick up all enemy withing a 30 metre radius raise them into the air and chuck them like 50 meter in the direction the player is  land the get massive damage and if they hit into a wall even more damage, and i guess you can chuck enemy off clliff etc etc for bosses this willdo massive damage and also stun the if that possible on bossed. the purple smoke magic is really imprtant for this character and so it the cards that she throw. now take the animation rebuild the vfx (purple smokey!) take the correct sfx for the character and abilities. i want you to make a suggest a related character and ask questions. when you are developing please run a dps test the build the artifact and test fo the character works on coop online!"
+**Questions asked → answers:**
+- RoR2 match → "Bandit (Recommended)".
+- Card Trick → "1 card per press random effect (if it stacks make it full stack eg burn) cool down every 5 sceonds". Full stack → "5 stacks at once (Recommended)".
+- Project Mind → "60 m, instant on confirm (Recommended)".
+- Telekinesis → "Crosshair; bosses lift a little (Recommended)".
+- Full Auto → "+50% fire rate, 25 cooldown, make this gun have alot of kick back its a tommy gun! but when we enable full auto make the kick worse by like 20%. also it stays full auto until the clip is gone. let not double the ammo in the clip, also play the relaot animation when the ability is tiggered also a purple smoke aura on start!"
+- After a test run was stopped for low memory → "Close Discord/Chrome first". The creator closed Chrome; Discord stayed running in the tray.
+- Balance (517 vs Bandit 1919) → "Keep her as she is".
+
+**Done:**
+- Deadlock lookup with `build/vrfdump`:
+  - heroes and abilities vdata, `wraith.vsndevts`
+  - the glb: 374 clips, 422 bones, coat cloth bones
+  - doc 01 Wraith section
+- Sheets:
+  - heroes, stats (Bandit), 5 skills, equipment, animations (coat springs, cloth parents), sounds, voice
+  - buff `fullauto`
+  - effects: `tracer_wraith`, the card prop, 5 custom rows
+  - new skills columns `recoil`, `aimKick`, `dotTime`; every old gun keeps its old kick
+- Code:
+  - `States/Wraith.cs`: `card_trick`, `mind_port`, `full_auto`, `ult_telekinesis`
+  - `Runtime/WraithParts.cs`: `DlrCard`, `WraithThrown`, `WraithAura`
+  - `Runtime/VfxWraith.cs`: the purple smoke kit
+  - `Fx.Hit(forceCrit)`, `Buffs.Dot`
+  - `GunState`: kick from the sheet; Full Auto's faster fire, auto-reload and normal-speed reload
+  - the reload relay ends Full Auto on the server
+  - test mode: `TestWraith` (all four tricks, Full Auto) and a 5 s co-op window for Telekinesis
+  - the card's start point travels with the state (gotcha 30)
+- Cache rebuilt: 9/9 heroes, Wraith 15/15 clips, the card prop.
+- Pages: Wraith's kit page published (new), and all nine other pages republished with Wraith in the nav. Links added to README and doc 06.
+- Docs: 01, 02 (kinds, vfx, kick columns, gotchas 31–32, co-op window), 03 §9, 05 §0/§3.14, 06, 08 §7d, MODLOG, CLAUDE.md, doc 00.
+
+**Results:**
+- `run_test.sh wraith`: **1/1, 18/18 pass** on run 3.
+  - Run 1 failed only Telekinesis' stun (fixed). Run 2 was stopped by Claude Code for low memory and passed when rerun.
+  - Every trick was seen: bleed, crit (96 = 2 × 48), stun, burn.
+  - Full Auto: magazine 52/52, emptied in 3.4 s against 4.9 s plain, ended on the reload.
+  - Telekinesis: 1440 damage, enemies thrown 50.3 m.
+- Bench (one run): all **517** vs Bandit 1919 (below). M1 440, M2 187, Q 1400.
+- `run_coop_test.sh wraith`: **7/7 pass** on the second run. On the first, the joined player's Telekinesis landed after the 3.7 s window.
+
+**Not done / open:**
+- Wraith's balance is the creator's call; the levers are in doc 05 §3.14.
+- A second bench run.
+- The creator has to share her page.
+- Not released; she ships in 0.11.0 with Billy.
+- The creator hasn't seen the smoke in play yet.
+- A real friend over the internet is still untried; the co-op test is two copies on this PC through a Steam lobby.
+
+**Lessons:**
+- A game copy takes about 4 GB. Run single-hero tests in the foreground and the co-op test detached (`Start-Process`), and ask the creator to close big programs.
+- `lab_restore.sh` empties the devshots; copy them first.
+- Coloured smoke needs a light tint and a glow inside (gotcha 32).
+- Re-stun a lifted enemy once it is up (gotcha 31).
+- Republishing a page made in another conversation takes three steps: publish (refused), read part of the saved copy, publish again.

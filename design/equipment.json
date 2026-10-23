@@ -100,6 +100,17 @@
       "enigmaCompatible": true,
       "randomTrigger": true,
       "figure": "all"
+    },
+    {
+      "id": "eq_wraith_telekinesis",
+      "hero": "wraith",
+      "skill": "wraith_telekinesis",
+      "pickupText": "Lift every enemy within 30m and throw them 50m where you aim.",
+      "lore": "The house always wins. Especially when the house can move the table.",
+      "canDrop": true,
+      "enigmaCompatible": true,
+      "randomTrigger": true,
+      "figure": "all"
     }
   ]
 }

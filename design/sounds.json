@@ -690,6 +690,71 @@
       "tick": "none",
       "tickFinal": "none",
       "gain": 1.0
+    },
+    {
+      "skill": "wraith_gun",
+      "cast": "Wraith.Wpn.Fire.Main",
+      "loop": "none",
+      "hit": "none",
+      "end": "none",
+      "reload": "Wraith.Wpn.Reload.Start",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "wraith_card",
+      "cast": "Wraith.CardTrick.Cast",
+      "loop": "Wraith.CardTrick.Proj.Lp",
+      "hit": "Wraith.CardTrick.Hit",
+      "end": "Wraith.CardTrick.Proj.Impact",
+      "reload": "none",
+      "castLayer": "Wraith.CardTrick.Proc",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "wraith_mind",
+      "cast": "Wraith.ProjectMind.Select",
+      "loop": "none",
+      "hit": "Wraith.ProjectMind.Arrive",
+      "end": "Wraith.ProjectMind.Cast",
+      "reload": "Wraith.ProjectMind.Deselect",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "wraith_fullauto",
+      "cast": "Wraith.RapidFire.Cast",
+      "loop": "none",
+      "hit": "none",
+      "end": "none",
+      "reload": "Wraith.Wpn.Reload.End",
+      "castLayer": "Wraith.Wpn.Reload.Start",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "wraith_telekinesis",
+      "cast": "Wraith.Telekenisis.Cast.Delay",
+      "loop": "Wraith.Telekenisis.Proj.Lp",
+      "hit": "Wraith.Telekinesis.Hit",
+      "end": "Wraith.Telekenisis.Cast",
+      "reload": "none",
+      "castLayer": "Wraith.Telekenisis.Select",
+      "hitLayer": "Wraith.Telekenisis.Slam",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
     }
   ]
 }

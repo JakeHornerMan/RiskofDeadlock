@@ -171,8 +171,9 @@ namespace DeadlockOfRain
 
                     var fx = new Effects();
                     var victims = new HashSet<CharacterBody>(targets);
-                    // Rat Swarm has no duration: its rats pour out, run and leap before the first bite (~2 s, plus the joiner's lag)
-                    float window = row.Slot == "primary" ? 6f : Mathf.Clamp(row.Duration + 1.5f, row.Kind == "ult_swarm" ? 5f : 2.5f, 7f);
+                    // Rat Swarm has no duration: its rats pour out, run and leap before the first bite (~2 s, plus the joiner's lag);
+                    // Telekinesis lands its hit after the state ends (lift, hold, a 50 m flight: ~2.4 s on the server, plus the lag)
+                    float window = row.Slot == "primary" ? 6f : Mathf.Clamp(row.Duration + 1.5f, row.Kind == "ult_swarm" || row.Kind == "ult_telekinesis" ? 5f : 2.5f, 7f);
                     System.Action<DamageReport> onDamage = rep => { if (rep != null && rep.attackerBody == body && rep.victimBody && victims.Contains(rep.victimBody)) fx.Damage += rep.damageDealt; };
                     System.Action<HealthComponent, float, ProcChainMask> onHeal = (hc, amount, mask) => { if (hc == body.healthComponent && amount > 0f) fx.Healed += amount; };
                     GlobalEventManager.onServerDamageDealt += onDamage;

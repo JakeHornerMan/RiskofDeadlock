@@ -166,6 +166,25 @@ namespace DeadlockOfRain
             Relay.Sound("infernus_gun", "hit", victim.corePosition);
         }
 
+        /// <summary>stacks stacks of one of RoR2's own DoTs (Bleed, Burn) for seconds each, at the vanilla strength of one stack
+        /// (Wraith's Bleed and Burn cards: a full stack at once). Server only.</summary>
+        public static void Dot(CharacterBody owner, CharacterBody victim, DotController.DotIndex index, float seconds, int stacks)
+        {
+            if (!owner || !victim || !NetworkServer.active) return;
+            for (int i = 0; i < stacks; i++)
+            {
+                var dot = new InflictDotInfo
+                {
+                    attackerObject = owner.gameObject,
+                    victimObject = victim.gameObject,
+                    dotIndex = index,
+                    duration = seconds,
+                    damageMultiplier = 1f,
+                };
+                DotController.InflictDot(ref dot);
+            }
+        }
+
         public static void Clear(CharacterBody b, string id)
         {
             var d = Get(id);

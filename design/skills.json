@@ -1,6 +1,6 @@
 {
   "sheet": "skills",
-  "about": "One row per skill (5 per hero). slot: primary=M1 gun, secondary=M2 (Deadlock ability 1), utility=Shift (ability 2), special=R (a new move from a Deadlock item, melee or ability, on a normal cooldown), equipment=Q (the hero's Deadlock ultimate as a RoR2 equipment: every hero starts holding their own, anyone can find it wherever the Preon Accumulator can drop; design/equipment.json). Numbers are RoR2-scale: damagePct is % of the body's damage stat (RoR2 convention), cooldowns are RoR2 seconds. deadlock* columns hold the source values read from the player's Deadlock scripts/abilities.vdata (ClientVersion 6774) so every conversion is traceable. kind picks the generic EntityState that implements the row. Unused numeric params are 0, unused refs are \"none\" (filled on purpose, not missing). Balance targets: sustained primary DPS 240-600 %/s (Commando Double Tap ~ 400 %/s incl. downtime); secondaries 2-15 s; utilities 4-12 s; specials 4-30 s; equipment ults 120 s cooldown (60-120 allowed: Goo Ball 100 s since 0.9.0f) and at least 6000 % per enemy (Preon Accumulator scaled from 140 s to 120 s; no upper limit: the ults are pickups any survivor can carry and are left out of balance). buffStacks: stacks of buff a hit adds (Phantom Strike's Fixation, Torment Pulse's Afterburn build-up; Flame Dash: the gun's buff each fire pocket adds every interval), 0 = the usual one. knockback: dashes and punches knock enemies away at this many m/s (0 = none). minDuration: hold skills (the Seismic Impact hover) last at least this long on a tap and at most duration while held; 0 otherwise. vfx: our own Unity-built visual for the skill (an effects row of kind custom), or none. extra: a second RoR2 object the kind spawns (an effects row: the Warbanner ward of Thunderhead), a behaviour flag (pierce: the projectile flies through every enemy in its line; shockwave: the punch also hits every enemy in a cone of length 2x radius and half-angle spreadDeg), or none. expect: what the skill must measurably do, checked in test mode (enemy_damage, enemy_stun, enemy_burn, enemy_debuff:<buff>, self_buff:<buff>, self_heal, self_move, self_cloak). pattern: a fixed pellet pattern instead of random spread (krill: Deadlock's centre pellet and a triangle of three, corners spreadDeg out), or none. cooldownOnEnd: the cooldown starts when the move ends (Dust Devil), not when it starts. debuff: a second buff the move gives (Burrow's pop-out slow on enemies; Tag Team's max-health trophies on the thrower, per kill), or none. bossMult: how much of the move's control a boss (champion) gets: a pull's strength, a disarm's length, 0 = no knock-up on bosses; for Tag Team the max-health stacks a boss kill gives. reach: a second distance (Tag Team's hop range, the punch's reach). splashPct: damage around the main target (Tag Team's landing splash, within radius). meleePct / meleeRate: on a gun row, the punch M1 throws instead of firing while a buff with melee=true is on (Mo while Krill is away: damage per punch, punches per second). meleeKnock: the punch throws each enemy it hits away from the hero at this many m/s (mass-scaled, bosses at a quarter), 0 = none. On cone_wave, minDuration is the wind-up before the wave leaves (the cone is shown on the ground meanwhile). gravity: extra downward pull on a gun projectile (m/s2; gun_goo blobs drop about 1 m at 30 m). falloffStart/falloffEnd/falloffMinPct: a projectile's damage falls linearly from 100% at falloffStart metres travelled to falloffMinPct % at falloffEnd and stays there. ammoCost: the move costs that many rounds of the gun's magazine instead of a cooldown (lob_ammo: Splatter); with fewer left it still fires, its radius scaled by rounds/ammoCost. puddleMult: the radius is multiplied by this when the move lands on a goo puddle (Puddle Punch). launchHeight: allies and the hero standing in the move are thrown this many metres up (a bounce pad), no fall damage on that landing. damageMinPct: the smallest damage of a move that scales with speed (Goo Ball: damageMinPct at a crawl, damagePct at top speed). For lob_ammo, reach / chainCount / interval are the puddle's radius, seconds and tick, and debuff the buff it gives allies inside (Slick). puddleAmmo: rounds a goo puddle of this row holds for its owner: while the owner stands in it, it tops the gun's magazine up from that supply (never above the magazine; a reload under way is called off) until the supply is used up, 0 = none. puddleShrink: seconds the puddle takes to draw in to nothing after its chainCount seconds whole (its reach shrinks with it), 0 = it just ends. Rat King (v0.9.0): pattern ratking = one pellet dead on the aim and one strayed up to spreadDeg (Deadlock's Sovereign's Decree), falloffStart/End/MinPct on its bullets. lob_scrap (Scrap Grenade): radius is the first two blasts' size, splashPct and reach the final blast's damage and size, chainCount the number of blasts, interval the final fuse (s), range its flight, seekRange how far it looks for an enemy to hop toward, buff the slow of the small blasts and debuff of the last, knockback a small shove (bosses x bossMult), extra the grenade's model. rat_ring (Royal Pestments): radius the ring, reach its height above the ground, range how far below him it looks for ground, chainCount the rats drawn, extra the rat model. banner_leap (Rule, Ratannia!): minDuration the wind-up, duration the longest leap, range the farthest landing, speed the leap's forward speed, radius / damagePct the inner blast, reach / splashPct the outer one with stunDuration (bosses x bossMult), only enemies the banner can see; chainCount the seconds the banner stays, extra its model. ult_swarm (Rat Swarm, no time limit: duration 0): buffStacks rats (using it again tops them back up to that), chainCount at most per enemy (x bossMult on bosses), each rat bites until its enemy dies and is then gone, spare rats follow the carrier to the end of the stage, range and seekRange how far from the carrier they hunt, reach how high a rat can leap onto a flyer, interval between one rat's bites, speed the rats' run, extra the rat model. seekRange: how far a move looks for enemies to go after on its own (Scrap Grenade's hops, Rat Swarm's rats), 0 = it doesn't. storm_flight (Seven's Storm Cloud, R): he rises launchHeight metres, then flies for duration with gravity off: Jump climbs and Sprint (or Utility) sinks at speed m/s, moveSpeedMult of his move speed sideways, at most reach metres above where he started; every interval everything within radius takes damagePct and one stack of buff; no gun or skills while it runs (cooldownOnEnd). projectile_orb (Lightning Ball): moveSpeedMult is the ball's speed while an enemy is inside its radius (0.5 = half speed). Billy (v0.11.0): airMult multiplies a move's damage while the hero is in the air (the bat 2x, Bashdown's air target 2x). hangTime: each air hit holds the hero, and the enemy it hits if that enemy is in the air (floating or not; bosses excepted), that many seconds more (creator 2026-10-22: 1 s, to juggle); floatTime: a float's length (Rising Ram) or the most a float can be kept up to and the hero's hang budget per trip in the air (the bat). refillPct: each hit of the move puts that % of the gun's magazine back (Deadlock's Blasted). lockRange: lock-on to the nearest enemy in line of sight within that many metres (the bat only in the air), turning to it; the air bat then dodges onto it (up to reach metres, at the hero's G.O.A.T. dodge speed, moved exactly, in the dodge's clip, sound and trails; the hit lands as he arrives) and hangs there for the hit. 'In the air' is any moment off the floor, the first frames of a jump included. hitRefund: the fraction of the cooldown given back when the move connects (Rising Ram 0.5). pattern octagon: Biquette's spray, the first shot after the trigger is pressed dead centre, then 8 fixed points spreadDeg out in Deadlock's order (carrying on between bursts). bat_combo: burst swings of duration seconds each (damagePct, the last splashPct), radius reach and spreadDeg half-angle in front, the combo starts over after interval seconds without a swing; one press is one swing (duration = Deadlock's full melee clip, and the cooldown the same, creator 2026-10-22), holding the key does not repeat it; the gun waits minDuration after the last swing. bashdown: minDuration the ground hop, damagePct / stunDuration / knockback to the locked target on the ground (bosses bossMult of the stun) plus splashPct to every other enemy within reach; in the air it dives at speed m/s, damagePct x airMult to the target and damagePct to every enemy within radius, all slammed into the floor and stunned duration seconds. rising_ram: duration a steerable wind-up, then a range-metre charge at speed m/s that stops at the first enemy or wall: damagePct to it, every non-boss enemy standing on the ground within radius (flyers and enemies already in the air only take the hit) rises launchHeight metres in minDuration seconds into a floatTime float (stunned), and the hero rises with them; ground only. ult_chains: chains to up to chainCount enemies within radius in sight; interval the throw, then they rise launchHeight metres by minDuration, hang until duration, and are slammed down for damagePct and stunDuration (bosses are slammed where they stand); the carrier is rooted until then. chainPct: Billy's Rising Ram throws chains (Chain Gang's) onto every enemy it launches, breaking at the top; air Bashdown runs chains from the slammed enemy to every other enemy in the air it drags down, breaking as they land (none on the ground version); each chain deals chainPct % of the move's damagePct (creator, 2026-10-22; Rising Ram 6 s, Bashdown 4 s).",
+  "about": "One row per skill (5 per hero). slot: primary=M1 gun, secondary=M2 (Deadlock ability 1), utility=Shift (ability 2), special=R (a new move from a Deadlock item, melee or ability, on a normal cooldown), equipment=Q (the hero's Deadlock ultimate as a RoR2 equipment: every hero starts holding their own, anyone can find it wherever the Preon Accumulator can drop; design/equipment.json). Numbers are RoR2-scale: damagePct is % of the body's damage stat (RoR2 convention), cooldowns are RoR2 seconds. deadlock* columns hold the source values read from the player's Deadlock scripts/abilities.vdata (ClientVersion 6774) so every conversion is traceable. kind picks the generic EntityState that implements the row. Unused numeric params are 0, unused refs are \"none\" (filled on purpose, not missing). Balance targets: sustained primary DPS 240-600 %/s (Commando Double Tap ~ 400 %/s incl. downtime); secondaries 2-15 s; utilities 4-12 s; specials 4-30 s; equipment ults 120 s cooldown (60-120 allowed: Goo Ball 100 s since 0.9.0f) and at least 6000 % per enemy (Preon Accumulator scaled from 140 s to 120 s; no upper limit: the ults are pickups any survivor can carry and are left out of balance). buffStacks: stacks of buff a hit adds (Phantom Strike's Fixation, Torment Pulse's Afterburn build-up; Flame Dash: the gun's buff each fire pocket adds every interval), 0 = the usual one. knockback: dashes and punches knock enemies away at this many m/s (0 = none). minDuration: hold skills (the Seismic Impact hover) last at least this long on a tap and at most duration while held; 0 otherwise. vfx: our own Unity-built visual for the skill (an effects row of kind custom), or none. extra: a second RoR2 object the kind spawns (an effects row: the Warbanner ward of Thunderhead), a behaviour flag (pierce: the projectile flies through every enemy in its line; shockwave: the punch also hits every enemy in a cone of length 2x radius and half-angle spreadDeg), or none. expect: what the skill must measurably do, checked in test mode (enemy_damage, enemy_stun, enemy_burn, enemy_debuff:<buff>, self_buff:<buff>, self_heal, self_move, self_cloak). pattern: a fixed pellet pattern instead of random spread (krill: Deadlock's centre pellet and a triangle of three, corners spreadDeg out), or none. cooldownOnEnd: the cooldown starts when the move ends (Dust Devil), not when it starts. debuff: a second buff the move gives (Burrow's pop-out slow on enemies; Tag Team's max-health trophies on the thrower, per kill), or none. bossMult: how much of the move's control a boss (champion) gets: a pull's strength, a disarm's length, 0 = no knock-up on bosses; for Tag Team the max-health stacks a boss kill gives. reach: a second distance (Tag Team's hop range, the punch's reach). splashPct: damage around the main target (Tag Team's landing splash, within radius). meleePct / meleeRate: on a gun row, the punch M1 throws instead of firing while a buff with melee=true is on (Mo while Krill is away: damage per punch, punches per second). meleeKnock: the punch throws each enemy it hits away from the hero at this many m/s (mass-scaled, bosses at a quarter), 0 = none. On cone_wave, minDuration is the wind-up before the wave leaves (the cone is shown on the ground meanwhile). gravity: extra downward pull on a gun projectile (m/s2; gun_goo blobs drop about 1 m at 30 m). falloffStart/falloffEnd/falloffMinPct: a projectile's damage falls linearly from 100% at falloffStart metres travelled to falloffMinPct % at falloffEnd and stays there. ammoCost: the move costs that many rounds of the gun's magazine instead of a cooldown (lob_ammo: Splatter); with fewer left it still fires, its radius scaled by rounds/ammoCost. puddleMult: the radius is multiplied by this when the move lands on a goo puddle (Puddle Punch). launchHeight: allies and the hero standing in the move are thrown this many metres up (a bounce pad), no fall damage on that landing. damageMinPct: the smallest damage of a move that scales with speed (Goo Ball: damageMinPct at a crawl, damagePct at top speed). For lob_ammo, reach / chainCount / interval are the puddle's radius, seconds and tick, and debuff the buff it gives allies inside (Slick). puddleAmmo: rounds a goo puddle of this row holds for its owner: while the owner stands in it, it tops the gun's magazine up from that supply (never above the magazine; a reload under way is called off) until the supply is used up, 0 = none. puddleShrink: seconds the puddle takes to draw in to nothing after its chainCount seconds whole (its reach shrinks with it), 0 = it just ends. Rat King (v0.9.0): pattern ratking = one pellet dead on the aim and one strayed up to spreadDeg (Deadlock's Sovereign's Decree), falloffStart/End/MinPct on its bullets. lob_scrap (Scrap Grenade): radius is the first two blasts' size, splashPct and reach the final blast's damage and size, chainCount the number of blasts, interval the final fuse (s), range its flight, seekRange how far it looks for an enemy to hop toward, buff the slow of the small blasts and debuff of the last, knockback a small shove (bosses x bossMult), extra the grenade's model. rat_ring (Royal Pestments): radius the ring, reach its height above the ground, range how far below him it looks for ground, chainCount the rats drawn, extra the rat model. banner_leap (Rule, Ratannia!): minDuration the wind-up, duration the longest leap, range the farthest landing, speed the leap's forward speed, radius / damagePct the inner blast, reach / splashPct the outer one with stunDuration (bosses x bossMult), only enemies the banner can see; chainCount the seconds the banner stays, extra its model. ult_swarm (Rat Swarm, no time limit: duration 0): buffStacks rats (using it again tops them back up to that), chainCount at most per enemy (x bossMult on bosses), each rat bites until its enemy dies and is then gone, spare rats follow the carrier to the end of the stage, range and seekRange how far from the carrier they hunt, reach how high a rat can leap onto a flyer, interval between one rat's bites, speed the rats' run, extra the rat model. seekRange: how far a move looks for enemies to go after on its own (Scrap Grenade's hops, Rat Swarm's rats), 0 = it doesn't. storm_flight (Seven's Storm Cloud, R): he rises launchHeight metres, then flies for duration with gravity off: Jump climbs and Sprint (or Utility) sinks at speed m/s, moveSpeedMult of his move speed sideways, at most reach metres above where he started; every interval everything within radius takes damagePct and one stack of buff; no gun or skills while it runs (cooldownOnEnd). projectile_orb (Lightning Ball): moveSpeedMult is the ball's speed while an enemy is inside its radius (0.5 = half speed). Billy (v0.11.0): airMult multiplies a move's damage while the hero is in the air (the bat 2x, Bashdown's air target 2x). hangTime: each air hit holds the hero, and the enemy it hits if that enemy is in the air (floating or not; bosses excepted), that many seconds more (creator 2026-10-22: 1 s, to juggle); floatTime: a float's length (Rising Ram) or the most a float can be kept up to and the hero's hang budget per trip in the air (the bat). refillPct: each hit of the move puts that % of the gun's magazine back (Deadlock's Blasted). lockRange: lock-on to the nearest enemy in line of sight within that many metres (the bat only in the air), turning to it; the air bat then dodges onto it (up to reach metres, at the hero's G.O.A.T. dodge speed, moved exactly, in the dodge's clip, sound and trails; the hit lands as he arrives) and hangs there for the hit. 'In the air' is any moment off the floor, the first frames of a jump included. hitRefund: the fraction of the cooldown given back when the move connects (Rising Ram 0.5). pattern octagon: Biquette's spray, the first shot after the trigger is pressed dead centre, then 8 fixed points spreadDeg out in Deadlock's order (carrying on between bursts). bat_combo: burst swings of duration seconds each (damagePct, the last splashPct), radius reach and spreadDeg half-angle in front, the combo starts over after interval seconds without a swing; one press is one swing (duration = Deadlock's full melee clip, and the cooldown the same, creator 2026-10-22), holding the key does not repeat it; the gun waits minDuration after the last swing. bashdown: minDuration the ground hop, damagePct / stunDuration / knockback to the locked target on the ground (bosses bossMult of the stun) plus splashPct to every other enemy within reach; in the air it dives at speed m/s, damagePct x airMult to the target and damagePct to every enemy within radius, all slammed into the floor and stunned duration seconds. rising_ram: duration a steerable wind-up, then a range-metre charge at speed m/s that stops at the first enemy or wall: damagePct to it, every non-boss enemy standing on the ground within radius (flyers and enemies already in the air only take the hit) rises launchHeight metres in minDuration seconds into a floatTime float (stunned), and the hero rises with them; ground only. ult_chains: chains to up to chainCount enemies within radius in sight; interval the throw, then they rise launchHeight metres by minDuration, hang until duration, and are slammed down for damagePct and stunDuration (bosses are slammed where they stand); the carrier is rooted until then. chainPct: Billy's Rising Ram throws chains (Chain Gang's) onto every enemy it launches, breaking at the top; air Bashdown runs chains from the slammed enemy to every other enemy in the air it drags down, breaking as they land (none on the ground version); each chain deals chainPct % of the move's damagePct (creator, 2026-10-22; Rising Ram 6 s, Bashdown 4 s). Wraith (v0.11.0): recoil: on a gun row, how many degrees the hero's chest kicks up with each shot (every machine sees it; the shotguns 9, the other guns 3); aimKick: on a gun row, how hard each shot kicks the owner's own camera up (RoR2's recoil, Commando's Double Tap = 1; 0 = none). On a full_auto row (Wraith's Full Auto) recoil is instead how much stronger both kicks are while it runs (1.2 = 20%). dotTime: seconds a bleed or burn the move puts on lasts. card_trick (Card Trick): one card that homes on the enemy nearest the crosshair within lockRange (or, thrown at nothing, on any enemy within seekRange of its path) at speed m/s for range m; on the throw it draws one of four suits, each its own effect on the hit: bleed (buffStacks stacks of RoR2's Bleed for dotTime s), crit (a certain critical hit, double damage), stun (stunDuration s) or burn (buffStacks stacks of RoR2's Burn for dotTime s); damagePct either way. mind_port (Project Mind): a marker follows the crosshair on the ground up to range metres away (in line of sight); any key (M1, M2, Shift, R, Q, jump) pressed after minDuration teleports her there at once, and after duration s she goes on her own. full_auto (Full Auto): the reload clip plays and the magazine is filled; buff then raises the fire rate (its attackSpeedAdd) and the kick until that magazine is empty (it then reloads at the normal speed and the buff ends). ult_telekinesis (Telekinesis): every enemy within radius rises launchHeight m by minDuration s (stunned), hangs until interval s, then is thrown reach m along the carrier's aim at speed m/s; where it lands it takes damagePct (x airMult if it hit a wall on the way); thrown off a cliff it simply falls. Bosses rise launchHeight x bossMult, are not thrown, and at the throw take damagePct and a stunDuration stun.",
   "columns": [
     "id",
     "hero",
@@ -66,7 +66,10 @@
     "lockRange",
     "floatTime",
     "hitRefund",
-    "chainPct"
+    "chainPct",
+    "recoil",
+    "aimKick",
+    "dotTime"
   ],
   "rows": [
     {
@@ -138,7 +141,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 3,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "haze_sleep_dagger",
@@ -208,7 +214,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "haze_smoke_bomb",
@@ -278,7 +287,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "haze_phantom_strike",
@@ -349,7 +361,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "haze_bullet_dance",
@@ -419,7 +434,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "abrams_gun",
@@ -488,7 +506,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 9,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "abrams_siphon",
@@ -558,7 +579,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "abrams_charge",
@@ -629,7 +653,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "abrams_haymaker",
@@ -698,7 +725,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "abrams_seismic",
@@ -769,7 +799,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "seven_gun",
@@ -840,7 +873,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 3,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "seven_lightning_ball",
@@ -910,7 +946,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "seven_static_charge",
@@ -980,7 +1019,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "seven_storm_cloud",
@@ -1050,7 +1092,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "seven_thunderhead",
@@ -1120,7 +1165,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "infernus_gun",
@@ -1191,7 +1239,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 3,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "infernus_napalm",
@@ -1261,7 +1312,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "infernus_flame_dash",
@@ -1332,7 +1386,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "infernus_torment_pulse",
@@ -1403,7 +1460,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "infernus_combustion",
@@ -1473,7 +1533,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "mokrill_gun",
@@ -1542,7 +1605,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 9,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "mokrill_sand_blast",
@@ -1613,7 +1679,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "mokrill_burrow",
@@ -1686,7 +1755,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "mokrill_tag_team",
@@ -1756,7 +1828,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "mokrill_dust_devil",
@@ -1827,7 +1902,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "viscous_gun",
@@ -1897,7 +1975,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 3,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "viscous_splatter",
@@ -1967,7 +2048,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "viscous_cube",
@@ -2040,7 +2124,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "viscous_punch",
@@ -2111,7 +2198,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "viscous_gooball",
@@ -2183,7 +2273,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "ratking_gun",
@@ -2252,7 +2345,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 9,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "ratking_scrap",
@@ -2322,7 +2418,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "ratking_ring",
@@ -2391,7 +2490,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "ratking_banner",
@@ -2462,7 +2564,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "ratking_swarm",
@@ -2531,7 +2636,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "billy_gun",
@@ -2600,7 +2708,10 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 3,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "billy_bat",
@@ -2669,7 +2780,10 @@
       "lockRange": 10,
       "floatTime": 4,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "billy_bashdown",
@@ -2739,7 +2853,10 @@
       "lockRange": 5,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 33
+      "chainPct": 33,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "billy_ram",
@@ -2811,7 +2928,10 @@
       "lockRange": 0,
       "floatTime": 2,
       "hitRefund": 0.5,
-      "chainPct": 33
+      "chainPct": 33,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     },
     {
       "id": "billy_chains",
@@ -2882,7 +3002,372 @@
       "lockRange": 0,
       "floatTime": 0,
       "hitRefund": 0,
-      "chainPct": 0
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
+    },
+    {
+      "id": "wraith_gun",
+      "hero": "wraith",
+      "slot": "primary",
+      "deadlockAbility": "citadel_weapon_wraith_set",
+      "name": "The Rake",
+      "description": "Fire The Rake, Wraith's tommy gun, for <style=cIsDamage>60% damage</style> per bullet, about 10 a second. It kicks hard. 52-round magazine.",
+      "kind": "gun_auto",
+      "icon": "panorama/images/heroes/guns/wraith_gun_psd.vtex",
+      "damagePct": 60,
+      "procCoefficient": 0.5,
+      "cooldown": 0,
+      "stocks": 1,
+      "duration": 0,
+      "minDuration": 0,
+      "interval": 0.0945,
+      "radius": 0,
+      "range": 200,
+      "speed": 0,
+      "clipSize": 52,
+      "reloadTime": 2.0,
+      "pellets": 1,
+      "spreadDeg": 1.5,
+      "burst": 1,
+      "stunDuration": 0,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 0.8,
+      "chainCount": 0,
+      "buffStacks": 0,
+      "buff": "none",
+      "dot": "none",
+      "effect": "tracer_wraith",
+      "vfx": "wraith_gun",
+      "extra": "none",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 1.0,
+      "reach": 0.0,
+      "seekRange": 0,
+      "gravity": 0,
+      "falloffStart": 0,
+      "falloffEnd": 0,
+      "falloffMinPct": 0,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 0,
+      "damageMinPct": 0,
+      "splashPct": 0.0,
+      "meleePct": 0.0,
+      "meleeRate": 0.0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 0,
+      "deadlockDamage": 5.64,
+      "targetDps": 451,
+      "expect": [
+        "enemy_damage"
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0,
+      "recoil": 6,
+      "aimKick": 1.2,
+      "dotTime": 0
+    },
+    {
+      "id": "wraith_card",
+      "hero": "wraith",
+      "slot": "secondary",
+      "deadlockAbility": "citadel_ability_card_toss",
+      "name": "Card Trick",
+      "description": "Throw a magic card that <style=cIsUtility>homes in</style> on the enemy under your crosshair for <style=cIsDamage>400% damage</style>. Each card draws one of four tricks: <style=cIsHealth>Bleed</style> (5 stacks), a certain <style=cIsDamage>Critical</style> hit, a 2s <style=cIsUtility>Stun</style> or <style=cIsDamage>Burn</style> (5 stacks).",
+      "kind": "card_trick",
+      "icon": "panorama/images/hud/abilities/wraith_card_trick_psd.vtex",
+      "damagePct": 400,
+      "procCoefficient": 1.0,
+      "cooldown": 5,
+      "stocks": 1,
+      "duration": 0.35,
+      "minDuration": 0,
+      "interval": 0,
+      "radius": 0.6,
+      "range": 120,
+      "speed": 70,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 1,
+      "spreadDeg": 0,
+      "burst": 1,
+      "stunDuration": 2,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 1.0,
+      "chainCount": 0,
+      "buffStacks": 5,
+      "buff": "none",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "wraith_card",
+      "extra": "wraith_card_prop",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 1.0,
+      "reach": 0.0,
+      "seekRange": 8,
+      "gravity": 0,
+      "falloffStart": 0,
+      "falloffEnd": 0,
+      "falloffMinPct": 0,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 0,
+      "damageMinPct": 0,
+      "splashPct": 0.0,
+      "meleePct": 0.0,
+      "meleeRate": 0.0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 0.6,
+      "deadlockDamage": 45,
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage"
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 60,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 4
+    },
+    {
+      "id": "wraith_mind",
+      "hero": "wraith",
+      "slot": "utility",
+      "deadlockAbility": "citadel_ability_projectmind",
+      "name": "Project Mind",
+      "description": "Mark a spot up to <style=cIsUtility>60m</style> away with purple smoke; press <style=cIsUtility>any key</style> to <style=cIsUtility>teleport</style> there at once.",
+      "kind": "mind_port",
+      "icon": "panorama/images/hud/abilities/wraith_teleport_psd.vtex",
+      "damagePct": 0,
+      "procCoefficient": 0,
+      "cooldown": 12,
+      "stocks": 1,
+      "duration": 4,
+      "minDuration": 0.15,
+      "interval": 0,
+      "radius": 1.5,
+      "range": 60,
+      "speed": 0,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 0,
+      "spreadDeg": 0,
+      "burst": 0,
+      "stunDuration": 0,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 1.0,
+      "chainCount": 0,
+      "buffStacks": 0,
+      "buff": "none",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "wraith_mind",
+      "extra": "none",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 1.0,
+      "reach": 0.0,
+      "seekRange": 0,
+      "gravity": 0,
+      "falloffStart": 0,
+      "falloffEnd": 0,
+      "falloffMinPct": 0,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 0,
+      "damageMinPct": 0,
+      "splashPct": 0.0,
+      "meleePct": 0.0,
+      "meleeRate": 0.0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 46,
+      "deadlockDamage": 0,
+      "targetDps": 0,
+      "expect": [
+        "self_move"
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
+    },
+    {
+      "id": "wraith_fullauto",
+      "hero": "wraith",
+      "slot": "special",
+      "deadlockAbility": "citadel_ability_wraith_rapidfire",
+      "name": "Full Auto",
+      "description": "Reload in a swirl of purple smoke: the magazine is <style=cIsUtility>full</style> and The Rake fires <style=cIsDamage>50% faster</style> (and kicks harder) until that magazine is empty.",
+      "kind": "full_auto",
+      "icon": "panorama/images/hud/abilities/wraith_aura_psd.vtex",
+      "damagePct": 0,
+      "procCoefficient": 0,
+      "cooldown": 25,
+      "stocks": 1,
+      "duration": 0.6,
+      "minDuration": 0,
+      "interval": 0,
+      "radius": 0,
+      "range": 0,
+      "speed": 0,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 0,
+      "spreadDeg": 0,
+      "burst": 0,
+      "stunDuration": 0,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 1.0,
+      "chainCount": 0,
+      "buffStacks": 0,
+      "buff": "fullauto",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "wraith_fullauto",
+      "extra": "none",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 1.0,
+      "reach": 0.0,
+      "seekRange": 0,
+      "gravity": 0,
+      "falloffStart": 0,
+      "falloffEnd": 0,
+      "falloffMinPct": 0,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 0,
+      "damageMinPct": 0,
+      "splashPct": 0.0,
+      "meleePct": 0.0,
+      "meleeRate": 0.0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 45,
+      "deadlockDamage": 0,
+      "targetDps": 0,
+      "expect": [
+        "self_buff:fullauto"
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0,
+      "recoil": 1.2,
+      "aimKick": 0,
+      "dotTime": 0
+    },
+    {
+      "id": "wraith_telekinesis",
+      "hero": "wraith",
+      "slot": "equipment",
+      "deadlockAbility": "citadel_ability_psychic_lift",
+      "name": "Telekinesis",
+      "description": "Lift <style=cIsUtility>every enemy within 30m</style> into the air, then <style=cIsUtility>throw them 50m</style> where you aim: each takes <style=cIsDamage>6000% damage</style> where it lands, <style=cIsDamage>50% more</style> if it hits a wall. Throw them off a cliff. Bosses are lifted a little, take the hit and are <style=cIsUtility>stunned</style> for 3s.",
+      "kind": "ult_telekinesis",
+      "icon": "panorama/images/hud/abilities/wraith_lift_psd.vtex",
+      "damagePct": 6000,
+      "procCoefficient": 1.0,
+      "cooldown": 120,
+      "stocks": 1,
+      "duration": 2.2,
+      "minDuration": 0.6,
+      "interval": 1.25,
+      "radius": 30,
+      "range": 30,
+      "speed": 45,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 0,
+      "spreadDeg": 0,
+      "burst": 0,
+      "stunDuration": 3,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 0.5,
+      "chainCount": 0,
+      "buffStacks": 0,
+      "buff": "none",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "wraith_tk",
+      "extra": "none",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 0.25,
+      "reach": 50.0,
+      "seekRange": 0,
+      "gravity": 0,
+      "falloffStart": 0,
+      "falloffEnd": 0,
+      "falloffMinPct": 0,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 6,
+      "damageMinPct": 0,
+      "splashPct": 0.0,
+      "meleePct": 0.0,
+      "meleeRate": 0.0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 150,
+      "deadlockDamage": 100,
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "enemy_knockup",
+        "enemy_stun"
+      ],
+      "airMult": 1.5,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0
     }
   ]
 }

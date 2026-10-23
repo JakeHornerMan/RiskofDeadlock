@@ -140,6 +140,8 @@ namespace DeadlockOfRain
                     var body = root ? root.GetComponent<CharacterBody>() : null;
                     if (!body) break;
                     if (k == Kind.Shot) GunState.BreakSmoke(body);
+                    // Wraith's Full Auto ends when its magazine is spent and the gun reloads (the server takes the buff off)
+                    if (k == Kind.Reload && NetworkServer.active) Buffs.Clear(body, GunState.FullAutoBuff);
                     // the owner already played it when it fired
                     if (body.hasEffectiveAuthority) break;
                     if (k == Kind.Shot) GunState.ShotFx(body, d.genericBool, d.start);

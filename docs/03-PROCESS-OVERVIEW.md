@@ -471,6 +471,13 @@ doc 02 §11. In short:
 | No extras on top of the spec (no banner aura, no Shift barrier, no armor shred on the Q bites) | The creator's answer: "just damage and stun please!" |
 | Rats are a baked-mesh crowd, not characters; the cape and tail are our own spring bones (no Dynamic Bone, no Unity Cloth) | The spec asked for ~300 rats in co-op and a cape that reacts to movement; a mesh renderer per rat and a spring chain per cape strip are cheap and need nothing shipped. Every rat, the grenade and the banner are Deadlock's own models, read from the player's install (extractor 1.6.0), never exported to Blender/Unity as the spec suggested (that would ship Deadlock files) |
 | Rat King's balance left as the spec wrote it | Bench mean 2999 vs Captain 3490: inside the band, so the spec's lever (M1 80 → 100 %) was not needed |
+| Wraith (ninth hero) matched to Bandit, kit from the creator's outline | The creator (2026-10-23): "m1 is the The Rake, m2 is Card Trick ... shift is Project Mind ... R is Full auto ... the equipabe item is telekenisis"; asked for the match: "Bandit (Recommended)" |
+| Card Trick: one card per press, a random trick, 5 s; stacking tricks put on 5 stacks | "1 card per press random effect (if it stacks make it full stack eg burn) cool down every 5 sceonds"; "full stack" → "5 stacks at once (Recommended)" |
+| Project Mind 60 m, any key teleports at once | "i want it to go pretty far!"; "60 m, instant on confirm (Recommended)" |
+| Full Auto: a full magazine (not doubled), +50 % fire rate until it is empty, the reload clip, purple smoke; 25 s; the gun kicks hard, 20 % more during it | "+50% fire rate, 25 cooldown, make this gun have alot of kick back its a tommy gun! but when we enable full auto make the kick worse by like 20%. also it stays full auto until the clip is gone. let not double the ammo in the clip, also play the relaot animation when the ability is tiggered also a purple smoke aura on start!" |
+| Telekinesis: every enemy in 30 m thrown 50 m along the aim, more damage into a wall, bosses lifted a little, hit and stunned | The outline, then "Crosshair; bosses lift a little (Recommended)" |
+| Wraith's balance left below the band | Bench 517 vs Bandit 1919; offered bigger cards, gun 75 % and a teleport blast; the creator: "Keep her as she is" |
+| Gun kick is a sheet column (`recoil`, `aimKick`) | Wraith's tommy gun needed a bigger kick than the hard-coded 3/9; every other gun keeps its old number |
 
 
 ## 10. Known open items and ideas

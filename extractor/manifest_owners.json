@@ -426,6 +426,63 @@
   "Warden.Wpn.Fire": [
     "infernus"
   ],
+  "Wraith.CardTrick.Cast": [
+    "wraith"
+  ],
+  "Wraith.CardTrick.Hit": [
+    "wraith"
+  ],
+  "Wraith.CardTrick.Proc": [
+    "wraith"
+  ],
+  "Wraith.CardTrick.Proj.Impact": [
+    "wraith"
+  ],
+  "Wraith.CardTrick.Proj.Lp": [
+    "wraith"
+  ],
+  "Wraith.ProjectMind.Arrive": [
+    "wraith"
+  ],
+  "Wraith.ProjectMind.Cast": [
+    "wraith"
+  ],
+  "Wraith.ProjectMind.Deselect": [
+    "wraith"
+  ],
+  "Wraith.ProjectMind.Select": [
+    "wraith"
+  ],
+  "Wraith.RapidFire.Cast": [
+    "wraith"
+  ],
+  "Wraith.Telekenisis.Cast": [
+    "wraith"
+  ],
+  "Wraith.Telekenisis.Cast.Delay": [
+    "wraith"
+  ],
+  "Wraith.Telekenisis.Proj.Lp": [
+    "wraith"
+  ],
+  "Wraith.Telekenisis.Select": [
+    "wraith"
+  ],
+  "Wraith.Telekenisis.Slam": [
+    "wraith"
+  ],
+  "Wraith.Telekinesis.Hit": [
+    "wraith"
+  ],
+  "Wraith.Wpn.Fire.Main": [
+    "wraith"
+  ],
+  "Wraith.Wpn.Reload.End": [
+    "wraith"
+  ],
+  "Wraith.Wpn.Reload.Start": [
+    "wraith"
+  ],
   "atlas/atlas_happy": [
     "abrams"
   ],
@@ -636,6 +693,9 @@
   "panorama/images/heroes/guns/viscous_gun_psd.vtex": [
     "viscous"
   ],
+  "panorama/images/heroes/guns/wraith_gun_psd.vtex": [
+    "wraith"
+  ],
   "panorama/images/heroes/haze_card_psd.vtex": [
     "haze"
   ],
@@ -665,6 +725,12 @@
   ],
   "panorama/images/heroes/viscous_sm_psd.vtex": [
     "viscous"
+  ],
+  "panorama/images/heroes/wraith_card_psd.vtex": [
+    "wraith"
+  ],
+  "panorama/images/heroes/wraith_sm_psd.vtex": [
+    "wraith"
   ],
   "panorama/images/hud/abilities/bull_beef_psd.vtex": [
     "abrams"
@@ -764,6 +830,18 @@
   ],
   "panorama/images/hud/abilities/viscous/viscous_restorative_goo_psd.vtex": [
     "viscous"
+  ],
+  "panorama/images/hud/abilities/wraith_aura_psd.vtex": [
+    "wraith"
+  ],
+  "panorama/images/hud/abilities/wraith_card_trick_psd.vtex": [
+    "wraith"
+  ],
+  "panorama/images/hud/abilities/wraith_lift_psd.vtex": [
+    "wraith"
+  ],
+  "panorama/images/hud/abilities/wraith_teleport_psd.vtex": [
+    "wraith"
   ],
   "panorama/images/items/spirit/surge_of_power_psd.vtex": [
     "seven"
@@ -876,6 +954,9 @@
   "soundevents/hero/viscous.vsndevts": [
     "viscous"
   ],
+  "soundevents/hero/wraith.vsndevts": [
+    "wraith"
+  ],
   "viscous/viscous_happy": [
     "viscous"
   ],
@@ -917,5 +998,38 @@
   ],
   "viscous_sphere_prop": [
     "viscous"
+  ],
+  "wraith/wraith_happy": [
+    "wraith"
+  ],
+  "wraith/wraith_killstreak_high": [
+    "wraith"
+  ],
+  "wraith/wraith_killstreak_mid": [
+    "wraith"
+  ],
+  "wraith/wraith_killstreak_start": [
+    "wraith"
+  ],
+  "wraith/wraith_select": [
+    "wraith"
+  ],
+  "wraith/wraith_unselect": [
+    "wraith"
+  ],
+  "wraith/wraith_use_power1": [
+    "wraith"
+  ],
+  "wraith/wraith_use_power2": [
+    "wraith"
+  ],
+  "wraith/wraith_use_power3": [
+    "wraith"
+  ],
+  "wraith/wraith_use_power4": [
+    "wraith"
+  ],
+  "wraith_card_prop": [
+    "wraith"
   ]
 }

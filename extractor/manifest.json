@@ -269,6 +269,34 @@
         "weapon_stand_idle"
       ],
       "split": []
+    },
+    {
+      "id": "wraith",
+      "key": "hero_wraith",
+      "vmdl": "models/heroes_wip/wraith/wraith.vmdl",
+      "meshes": [
+        "wraith_model",
+        "arms",
+        "gun_model"
+      ],
+      "clips": [
+        "ability_card_trick_cast",
+        "ability_full_auto",
+        "ability_telekinesis",
+        "ability_telekinesis_cast",
+        "ability_teleport_cast",
+        "death_static_1",
+        "jump_in_air_loop",
+        "jump_start",
+        "primary_sprint_n",
+        "reload_idle",
+        "weapon_run_e",
+        "weapon_run_n",
+        "weapon_run_s",
+        "weapon_run_w",
+        "weapon_stand_idle"
+      ],
+      "split": []
     }
   ],
   "images": [
@@ -286,6 +314,7 @@
     "panorama/images/heroes/guns/punkgoat_gun_psd.vtex",
     "panorama/images/heroes/guns/ratking_gun_psd.vtex",
     "panorama/images/heroes/guns/viscous_gun_psd.vtex",
+    "panorama/images/heroes/guns/wraith_gun_psd.vtex",
     "panorama/images/heroes/haze_card_psd.vtex",
     "panorama/images/heroes/haze_sm_psd.vtex",
     "panorama/images/heroes/inferno_card_psd.vtex",
@@ -296,6 +325,8 @@
     "panorama/images/heroes/ratking_sm_psd.vtex",
     "panorama/images/heroes/viscous_card_psd.vtex",
     "panorama/images/heroes/viscous_sm_psd.vtex",
+    "panorama/images/heroes/wraith_card_psd.vtex",
+    "panorama/images/heroes/wraith_sm_psd.vtex",
     "panorama/images/hud/abilities/bull_beef_psd.vtex",
     "panorama/images/hud/abilities/bull_charge_psd.vtex",
     "panorama/images/hud/abilities/bull_drain_psd.vtex",
@@ -330,6 +361,10 @@
     "panorama/images/hud/abilities/viscous/viscous_goo_punch_psd.vtex",
     "panorama/images/hud/abilities/viscous/viscous_goo_sphere_psd.vtex",
     "panorama/images/hud/abilities/viscous/viscous_restorative_goo_psd.vtex",
+    "panorama/images/hud/abilities/wraith_aura_psd.vtex",
+    "panorama/images/hud/abilities/wraith_card_trick_psd.vtex",
+    "panorama/images/hud/abilities/wraith_lift_psd.vtex",
+    "panorama/images/hud/abilities/wraith_teleport_psd.vtex",
     "panorama/images/items/spirit/surge_of_power_psd.vtex",
     "panorama/images/items/spirit/torment_pulse_psd.vtex",
     "panorama/images/items/vitality/phantom_strike_psd.vtex",
@@ -478,7 +513,26 @@
     "Viscous.Telepunch.Select.Lp",
     "Viscous.Wpn.Impact",
     "Viscous.Wpn.Reload.Start",
-    "Warden.Wpn.Fire"
+    "Warden.Wpn.Fire",
+    "Wraith.CardTrick.Cast",
+    "Wraith.CardTrick.Hit",
+    "Wraith.CardTrick.Proc",
+    "Wraith.CardTrick.Proj.Impact",
+    "Wraith.CardTrick.Proj.Lp",
+    "Wraith.ProjectMind.Arrive",
+    "Wraith.ProjectMind.Cast",
+    "Wraith.ProjectMind.Deselect",
+    "Wraith.ProjectMind.Select",
+    "Wraith.RapidFire.Cast",
+    "Wraith.Telekenisis.Cast",
+    "Wraith.Telekenisis.Cast.Delay",
+    "Wraith.Telekenisis.Proj.Lp",
+    "Wraith.Telekenisis.Select",
+    "Wraith.Telekenisis.Slam",
+    "Wraith.Telekinesis.Hit",
+    "Wraith.Wpn.Fire.Main",
+    "Wraith.Wpn.Reload.End",
+    "Wraith.Wpn.Reload.Start"
   ],
   "soundEventFiles": [
     "soundevents/hero/abrams.vsndevts",
@@ -488,7 +542,8 @@
     "soundevents/hero/krill.vsndevts",
     "soundevents/hero/punkgoat.vsndevts",
     "soundevents/hero/ratking.vsndevts",
-    "soundevents/hero/viscous.vsndevts"
+    "soundevents/hero/viscous.vsndevts",
+    "soundevents/hero/wraith.vsndevts"
   ],
   "voiceGroups": [
     "atlas/atlas_happy",
@@ -575,7 +630,17 @@
     "viscous/viscous_use_power1",
     "viscous/viscous_use_power2",
     "viscous/viscous_use_power3",
-    "viscous/viscous_use_power4"
+    "viscous/viscous_use_power4",
+    "wraith/wraith_happy",
+    "wraith/wraith_killstreak_high",
+    "wraith/wraith_killstreak_mid",
+    "wraith/wraith_killstreak_start",
+    "wraith/wraith_select",
+    "wraith/wraith_unselect",
+    "wraith/wraith_use_power1",
+    "wraith/wraith_use_power2",
+    "wraith/wraith_use_power3",
+    "wraith/wraith_use_power4"
   ],
   "voiceAllTakes": [
     "ratking/ratking_use_power1"
@@ -642,6 +707,12 @@
       "meshes": [
         "chainbase"
       ],
+      "clips": []
+    },
+    {
+      "id": "wraith_card_prop",
+      "vmdl": "models/heroes_wip/wraith/wraith_card_fx_model.vmdl",
+      "meshes": [],
       "clips": []
     }
   ]

@@ -1581,9 +1581,82 @@
      "max": 1200
     }
    }
+  },
+  "DeadlockWraith": {
+   "name": "Wraith",
+   "stats": {
+    "health": 110.0,
+    "healthPerLevel": 33.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "The Rake",
+    "secondary": "Card Trick",
+    "utility": "Project Mind",
+    "special": "Full Auto"
+   },
+   "hero": true,
+   "measuredOn": "v0.11.0a",
+   "dps": {
+    "all": {
+     "runs": [
+      517
+     ],
+     "mean": 517,
+     "min": 517,
+     "max": 517
+    },
+    "primary": {
+     "runs": [
+      440
+     ],
+     "mean": 440,
+     "min": 440,
+     "max": 440
+    },
+    "secondary": {
+     "runs": [
+      187
+     ],
+     "mean": 187,
+     "min": 187,
+     "max": 187
+    },
+    "utility": {
+     "runs": [
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "special": {
+     "runs": [
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "equipment": {
+     "runs": [
+      1400
+     ],
+     "mean": 1400,
+     "min": 1400,
+     "max": 1400
+    }
+   }
   }
  },
  "about": "Stored DPS library (Deadlock of Rain). Main moves and each move alone, % of damage stat per second, measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, 30 s per pass, perfect aim, every move used when ready, no equipment except the \"equipment\" pass). \"all\" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are tagged with the build they were measured on. Built by tools/dps_library.py.",
- "updated": "2026-10-22",
+ "updated": "2026-10-23",
  "runsPerSurvivor": 3
 }

@@ -146,6 +146,14 @@ Tell the creator the count first: normally **3 launches** (test, bench, portrait
   session sat idle, and leading `sleep`s in a foreground watch are refused (loop on the log line instead).
 - Launches used: 6 test runs (5 Rat King-only, 1 all heroes after the shared clip fix), 2 bench launches (one stage had no flat spot).
 
+## 7d. Lessons from Wraith (the ninth hero, 2026-10-23)
+- Only one new hero in the dev listing? Add its glb to `tools/dev/anim_names.json` directly (read the glb's JSON chunk) instead of re-exporting every hero.
+- Coloured smoke: RoR2's `mat_smoke` darkens, so a deep tint disappears on a night stage. Use a light tint, bigger puffs and a `mat_glow` layer inside (doc 02 gotcha 32). Check the devshots on the first run.
+- `lab_restore.sh` empties the devshots folder: copy `wraith*` shots aside before it runs.
+- Memory: one game copy takes about 4 GB. A test run in the background was stopped by Claude Code's low-memory cleanup while the session sat idle; run single-hero tests in the foreground (`timeout 590 bash tools/run_test.sh <hero>`, about 7 min). Start the co-op test detached (`powershell Start-Process` on a small script) and poll it. Ask the creator to close big programs first; never close them yourself.
+- A stun put on in the same tick as a lift may not show (gotcha 31): stun again once the enemy is up.
+- Launches used: 3 test runs (one stopped for memory, then 2), 1 bench + portraits, 1 co-op run.
+
 ## 8. Definition of done
 - [ ] `PREFLIGHT CLEAN`, build clean, cache rebuilt with the new content.
 - [ ] `run_test.sh <hero>`: every check passes (including `ragdoll`, `sound-events`, `voice-lines`), `1/1 heroes`.

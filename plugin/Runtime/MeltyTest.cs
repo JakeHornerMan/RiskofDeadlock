@@ -568,6 +568,13 @@ namespace DeadlockOfRain
                     yield return TestBillyBat(master, hero, why);
                     kitWhy += why[0];
                 }
+                // Wraith: each of Card Trick's four tricks does its thing, and Full Auto fills the magazine, fires faster and ends
+                if (Sheet.SkillsOf(hero.Id).Any(r => r.Kind == "card_trick"))
+                {
+                    var why = new string[1];
+                    yield return TestWraith(master, hero, why);
+                    kitWhy += why[0];
+                }
                 if (anim)
                 {
                     Log.Info($"Melty test: {hero.Id} gun drift from the hand over all skills: {anim.GunDrift * 100f:F1} cm");
@@ -1274,6 +1281,110 @@ namespace DeadlockOfRain
         /// dodgeDistance and one more is refused; then a target is floated (Rising Ram's float) and he swings the bat at it from
         /// 4.5 m away in the air (inside lockRange, out of the bat's reach): he must snap onto it, the swing must land, hold him up,
         /// keep the target floating past its float time and reload part of the magazine. why[0] = "" on success.</summary>
+        /// <summary>Wraith (creator, 2026-10-23): a card of each trick at a fresh target (bleed and burn put RoR2's DoT on it, crit is a
+        /// critical hit, stun stuns), then Full Auto from 3 rounds left: a full magazine and the buff, the magazine emptied faster than
+        /// the plain gun would, and the buff gone once the gun reloads. why[0] = "" on success.</summary>
+        IEnumerator TestWraith(CharacterMaster master, HeroRow hero, string[] why)
+        {
+            why[0] = "";
+            var body = master.GetBody();
+            var rt = body ? body.GetComponent<HeroRuntime>() : null;
+            var gunRow = body ? Survivors.RowFor(body.skillLocator.primary) : null;
+            var fa = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "full_auto");
+            if (!rt || gunRow == null) { why[0] = "wraith: no runtime or gun; "; yield break; }
+            var fwd = arenaForward;
+            var spot = arena != Vector3.zero ? arena : body.footPosition;
+            string[] names = { "bleed", "crit", "stun", "burn" };
+            for (int suit = 0; suit < 4; suit++)
+            {
+                KillTargets();
+                var rest = EntityStateMachine.FindByCustomName(body.gameObject, "Weapon");
+                if (rest) rest.SetNextStateToMain();
+                TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+                if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+                var t = Summon(body, spot + fwd * 9f + Vector3.up * 0.5f);
+                if (!t) { why[0] += $"card {names[suit]}: no target; "; continue; }
+                if (t.master && t.master.inventory) t.master.inventory.GiveItem(RoR2Content.Items.BoostHp, 200);
+                targets.Add(t);
+                yield return new WaitForSeconds(0.8f);
+                var look = (t.corePosition - body.inputBank.aimOrigin).normalized;
+                AimCamera(body, look);
+                for (int f = 0; f < 10; f++) { body.inputBank.aimDirection = look; yield return null; }
+                bool crit = false, effect = false; float dmg = 0f;
+                System.Action<DamageReport> onDamage = r =>
+                {
+                    if (r == null || r.attackerBody != body || r.victimBody != t || r.damageInfo.damageType.damageSource == DamageSource.Primary) return;
+                    dmg += r.damageDealt;
+                    if (r.damageInfo.crit) crit = true;
+                };
+                GlobalEventManager.onServerDamageDealt += onDamage;
+                States.CardTrick.TestSuit = suit;
+                try
+                {
+                    var gs = body.skillLocator.secondary;
+                    gs.Reset();
+                    gs.ExecuteIfReady();
+                    for (float w = 0f; w < 1.5f; w += Time.deltaTime)
+                    {
+                        if (t && t.healthComponent && t.healthComponent.alive)
+                        {
+                            body.inputBank.aimDirection = (t.corePosition - body.inputBank.aimOrigin).normalized;
+                            var dc = DotController.FindDotController(t.gameObject);
+                            var esm = EntityStateMachine.FindByCustomName(t.gameObject, "Body");
+                            if (suit == 0 && dc && dc.HasDotActive(DotController.DotIndex.Bleed)) effect = true;
+                            if (suit == 3 && dc && dc.HasDotActive(DotController.DotIndex.Burn)) effect = true;
+                            if (suit == 2 && esm && esm.state is EntityStates.StunState) effect = true;
+                        }
+                        if (suit == 1 && crit) effect = true;
+                        yield return null;
+                    }
+                }
+                finally
+                {
+                    GlobalEventManager.onServerDamageDealt -= onDamage;
+                    States.CardTrick.TestSuit = -1;
+                }
+                Log.Info($"Melty test: {hero.Id} card {names[suit]}: damage {dmg:F0}, crit {crit}, trick seen {effect}");
+                if (DevShots && suit == 2) Shot(hero.Id + "_card_stun");
+                if (dmg <= 0f || !effect) why[0] += $"card {names[suit]}: damage {dmg:F0}, trick seen {effect}; ";
+            }
+            KillTargets();
+            if (fa != null)
+            {
+                var rest = EntityStateMachine.FindByCustomName(body.gameObject, "Weapon");
+                if (rest) rest.SetNextStateToMain();
+                yield return new WaitForSeconds(0.3f);
+                rt.Reloading = false; rt.Ammo = 3;
+                var rs = body.skillLocator.special;
+                rs.Reset();
+                rs.ExecuteIfReady();
+                yield return new WaitForSeconds(fa.Duration + 0.3f);
+                int filled = rt.Ammo; bool on = States.GunState.FullAutoOn(body);
+                if (DevShots) Shot(hero.Id + "_fullauto");
+                // hold the trigger at the sky until the magazine is spent and the gun reloads
+                var up = (fwd + Vector3.up * 0.6f).normalized;
+                AimCamera(body, up);
+                float t0 = Time.time, spent = -1f;
+                fireBody = body; fireUntil = Time.time + 12f;
+                body.skillLocator.primary.ExecuteIfReady();
+                while (Time.time - t0 < 12f)
+                {
+                    body.inputBank.aimDirection = up;
+                    if (rt.Reloading) { spent = Time.time - t0; break; }
+                    yield return null;
+                }
+                fireBody = null;
+                yield return new WaitForSeconds(0.5f);
+                bool off = !States.GunState.FullAutoOn(body);
+                float plain = gunRow.ClipSize * gunRow.Interval;
+                Log.Info($"Melty test: {hero.Id} full auto: magazine {filled}/{gunRow.ClipSize}, buff {on}, emptied in {spent:F2} s (plain gun {plain:F2} s), buff off after the reload {off}");
+                if (filled != (int)gunRow.ClipSize || !on) why[0] += $"{fa.Id}: magazine {filled}, buff {on}; ";
+                if (spent < 0f || spent > plain * 0.85f) why[0] += $"{fa.Id}: magazine emptied in {spent:F2} s, plain {plain:F2} s; ";
+                if (!off) why[0] += $"{fa.Id}: buff still on after the reload; ";
+                yield return new WaitForSeconds(gunRow.ReloadTime + 0.3f);
+            }
+        }
+
         IEnumerator TestBillyAir(CharacterMaster master, HeroRow hero, string[] why)
         {
             why[0] = "";
@@ -1394,7 +1505,7 @@ namespace DeadlockOfRain
         /// <summary>How far in front of the hero the test's targets stand: guns, the leap, the blink and Tag Team's throw
         /// from 10 m, Billy's bat and Bashdown 3.5 m, everything else 6 m.</summary>
         internal static float TargetDistance(SkillRow row) =>
-            row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "krill_hop" || row.Kind == "banner_leap" ? 10f :
+            row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "krill_hop" || row.Kind == "banner_leap" || row.Kind == "mind_port" ? 10f :
             // Billy's bat and Bashdown reach a few metres (Bashdown locks on within 5 m)
             row.Kind == "bat_combo" || row.Kind == "bashdown" ? 3.5f : 6f;
 

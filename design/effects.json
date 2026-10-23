@@ -1362,6 +1362,104 @@
       ],
       "tint": "none",
       "notes": "Deadlock's Chain Gang chain links, tiled along each chain"
+    },
+    {
+      "id": "tracer_wraith",
+      "kind": "tracer",
+      "addressable": "RoR2/Base/Commando/TracerCommandoDefault.prefab",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "#B784FF",
+      "notes": "The Rake's tracer, Commando's tracer in Wraith's violet"
+    },
+    {
+      "id": "wraith_card_prop",
+      "kind": "prop",
+      "addressable": "models/heroes_wip/wraith/wraith_card_fx_model.vmdl",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Deadlock's card model for the thrown card (8 x 13 cm, drawn about 6 times bigger)"
+    },
+    {
+      "id": "wraith_gun",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "The Rake: a violet flash and a curl of purple smoke off the barrel on each shot"
+    },
+    {
+      "id": "wraith_card",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Card Trick: purple smoke gathering in her hand, the spinning card trailing violet smoke and a glow in its trick's colour (bleed red, crit gold, stun pale blue, burn orange), a burst of smoke, sparks and that colour where it hits"
+    },
+    {
+      "id": "wraith_mind",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Project Mind: a swirling purple smoke circle on the ground where she will appear, a column of smoke and a violet flash where she leaves and where she arrives"
+    },
+    {
+      "id": "wraith_fullauto",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Full Auto: a purple smoke burst around her as she reloads, then smoke and sparks curling off The Rake until the magazine is empty"
+    },
+    {
+      "id": "wraith_tk",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Telekinesis: a purple shockwave and smoke dome sweeping out 30 m, purple smoke and a glow under each lifted enemy, a violet smoke trail as it is thrown, a smoke blast where it lands (a bigger one on a wall)"
     }
   ]
 }

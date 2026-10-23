@@ -508,6 +508,59 @@
       "dodgeDistance": 8,
       "dodgeTime": 0.3,
       "dodgePct": 300
+    },
+    {
+      "id": "wraith",
+      "displayName": "Wraith",
+      "deadlockKey": "hero_wraith",
+      "vmdl": "models/heroes_wip/wraith/wraith.vmdl",
+      "meshInclude": [
+        "wraith_model",
+        "arms",
+        "gun_model"
+      ],
+      "splitMeshes": [
+        "none"
+      ],
+      "imageSmall": "panorama/images/heroes/wraith_sm_psd.vtex",
+      "imageCard": "panorama/images/heroes/wraith_card_psd.vtex",
+      "soundevents": "soundevents/hero/wraith.vsndevts",
+      "sourceHeight": 2.373,
+      "heightScale": 0.983,
+      "modelScale": 1.0,
+      "widthScale": 1.0,
+      "capsuleFrom": "none",
+      "cameraFrom": "none",
+      "cameraScale": 1.0,
+      "cameraRight": 0.0,
+      "interactRange": 1.0,
+      "immuneToForce": false,
+      "noFallDamage": false,
+      "airJumpMult": 1.0,
+      "landShake": 1.0,
+      "voiceGain": 1.0,
+      "gooMaterials": [
+        "none"
+      ],
+      "glassMaterials": [
+        "none"
+      ],
+      "riderBone": "none",
+      "primaryColor": "#8E4FD8",
+      "sortPosition": 100.9,
+      "roR2Analog": "Bandit2Body",
+      "subtitle": "The Card Shark",
+      "passiveName": "none",
+      "passiveDescription": "none",
+      "passiveIcon": "none",
+      "damageHealBack": 0,
+      "damageHealBackTime": 0,
+      "debuffResist": 0,
+      "lore": "Deadlock's fast-talking gambler, a telekinetic with a tommy gun. Card Trick throws a homing card that bleeds, crits, stuns or burns; Project Mind marks a spot in purple smoke and puts her there; Full Auto reloads and lets The Rake rip; Telekinesis lifts everything around her and throws it where she looks.",
+      "airDodges": 0,
+      "dodgeDistance": 0,
+      "dodgeTime": 0,
+      "dodgePct": 0
     }
   ]
 }

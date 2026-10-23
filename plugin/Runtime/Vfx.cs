@@ -54,6 +54,8 @@ namespace DeadlockOfRain
                         return RatKing(id, moment, at, radius, follow);
                     case "billy_gun": case "billy_bat": case "billy_bashdown": case "billy_ram": case "billy_float": case "billy_dodge": case "billy_chains":
                         return Billy(id, moment, at, radius, follow, to, angle);
+                    case "wraith_gun": case "wraith_card": case "wraith_mind": case "wraith_fullauto": case "wraith_tk":
+                        return Wraith(id, moment, at, radius, follow, to, angle);
                 }
             }
             catch (System.Exception e) { Log.Warn($"vfx {id}/{moment}: {e.Message}"); }

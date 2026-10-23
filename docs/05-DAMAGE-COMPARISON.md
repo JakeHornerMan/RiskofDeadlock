@@ -14,6 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
+| Wraith | all (new hero, 0.11.0a): The Rake 60 % at ~10.6/s (52 rounds), Card Trick 400 % homing card with a random trick (5 bleed / crit / 2 s stun / 5 burn), Project Mind 60 m teleport, Full Auto (full magazine, +50 % fire rate until it is empty), Telekinesis 6000 % (×1.5 into a wall) | new hero (creator, 2026-10-23) | this one | **benched** (one run): all **517** vs Bandit 1919 (−1402, **below**), §3.14; the creator keeps her as she is ("Keep her as she is"); a second run would firm up the mean | **open** (one run) |
 | Infernus | 0.9.1: Concussive Combustion also blasts when its state ends within 1.5 s of the 3 s fuse (`UltSelfBomb.OnExit`), so a joined player's bomb lands on the host; numbers unchanged | co-op test: a joined player's Combustion did no damage on the host | this one | no DPS effect: solo the blast already lands at 3 s, and the bench leaves the ults out; checked by `run_test.sh infernus` and `run_coop_test.sh infernus` | **done** |
 | Seven | 0.9.1b: R Storm Cloud hits at most the 3 nearest enemies per shock (`chainCount` 3; was every enemy within 15 m) | the creator: "it should hit up to 3 people every time" | this one | **benched** (one run, 2026-10-22): all **1759** vs Artificer 4013 (−2254, **below**), R 710 → 190, §3.13; `run_test.sh` all seven heroes pass | **done** |
 | Seven | 0.9.1a redesign part 1: Lightning Ball half speed over enemies (`moveSpeedMult` 0.5), Static Charge 450 → 225 %, R Power Surge → Storm Cloud (100 % every 0.5 s within 15 m for 10 s, 24 s after landing); yellow visuals, upper-body cast clips | the creator's Seven redesign | this one | **benched** (one run, 2026-10-21): all **2827** vs Artificer 4013 (−1186, **below**), §3.12; `run_test.sh seven` every check pass | **done** |
@@ -285,6 +286,23 @@ New hero, matched to REX (`TreebotBody`, library 1738 %/s). Three runs after the
 - **%/s hides base damage**: it is a share of the survivor's own damage stat. Viscous's 15 against REX's 12 means 25 % more
   real damage than the %/s says (≈336 dmg/s at level 1 against ≈209). Mo & Krill (11) are the only other hero off 12.
 - Levers if he needs pulling back: Splatter 200 → 150 % first (it is two thirds of the total), then the punch.
+
+### 3.14 v0.11.0a Wraith, the ninth hero (Wraith-only run, 2026-10-23)
+`VERSION` v0.11.0a, `PORTRAITS=1 run_bench.sh 30 wraith` (one run). Her match is Bandit (the creator's pick).
+
+| Pass | Wraith (%/s) | Bandit (library) |
+|---|---|---|
+| All main moves | **517** | 1919 |
+| M1 The Rake | 440 | 11 |
+| M2 Card Trick | 187 | 1478 |
+| Shift Project Mind | 0 | 709 |
+| R Full Auto | 0 (it lifts the gun) | 140 |
+| Q Telekinesis (not balanced) | 1400 (one throw of the 12-enemy pack) | – |
+
+- −1402 against Bandit, far **below** the band. Bandit's damage is his knife and his Smoke Bomb; Wraith's is her gun, and two of her
+  moves deal none. The all pass is under M1 + M2 alone because Project Mind carries her off the bench spot.
+- The creator chose to keep her as she is (2026-10-23). Levers offered, not applied: Card Trick 400 → 1500 %, The Rake 60 → 75 %,
+  a 600 % smoke blast where Project Mind lands (estimated 1500–1900 together).
 
 ### 3.13 v0.9.1b Storm Cloud at most 3 targets (Seven-only run, 2026-10-22)
 `VERSION` v0.9.1b. Same 12-enemy pack as every bench, so Storm Cloud now reaches 3 of them where it reached about 10.

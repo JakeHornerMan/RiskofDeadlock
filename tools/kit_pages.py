@@ -15,7 +15,7 @@ OUT = os.path.join(ROOT, 'build', 'pages')
 IMG = os.path.join(OUT, 'img')
 os.makedirs(OUT, exist_ok=True)
 E = html.escape
-VERSION = 'v0.10.0a'
+VERSION = 'v0.11.0a'
 BAND = 500  # balanced = within ±500 %/s of the RoR2 match (creator, 2026-10-16)
 
 def sheet(name):
@@ -26,7 +26,7 @@ SKILLS = sheet('skills'); BUFFS = {r['id']: r for r in sheet('buffs')}
 EQUIP = {r['hero']: r for r in sheet('equipment')}
 LINKS = {'haze': 'https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p', 'abrams': 'https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG',
          'seven': 'https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m', 'infernus': 'https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF',
-         'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'viscous': 'https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC', 'ratking': 'https://claude.ai/artifact/Kw4rTyRrvXTb2eEyT9oTYa', 'billy': 'https://claude.ai/artifact/7m271DJLqzAvMZDrqU6QjL', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
+         'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'viscous': 'https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC', 'ratking': 'https://claude.ai/artifact/Kw4rTyRrvXTb2eEyT9oTYa', 'billy': 'https://claude.ai/artifact/7m271DJLqzAvMZDrqU6QjL', 'wraith': 'https://claude.ai/artifact/2Bdxqd6iUwp89iEEPELgBb', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
 SLOTS = ['primary', 'secondary', 'utility', 'special']
 KEY = {'primary': 'M1', 'secondary': 'M2', 'utility': 'Shift', 'special': 'R', 'equipment': 'Q'}
 KIND_LABEL = {'primary': 'Weapon', 'secondary': 'Ability', 'utility': 'Ability', 'special': 'Ability · new in 0.4'}
@@ -68,6 +68,11 @@ VANILLA = {
         'secondary': ('Whirlwind', 'Spin twice for 200% each, moving with you.'),
         'utility': ('Blinding Assault', 'Dash for 300%, stunning; dash up to 3 times on hits.'),
         'special': ('Eviscerate', 'Become invulnerable and slash the nearest enemy over and over for 110%.')}),
+ 'Bandit2Body': dict(name='Bandit', who='Bandit2',
+   kit={'primary': ('Burst', 'Fire a shotgun burst for 5×100%; reload between shots.'),
+        'secondary': ('Serrated Dagger', 'Lunge and slash for 360%; critical strikes cause hemorrhage.'),
+        'utility': ('Smoke Bomb', 'Turn invisible and stun around you for 200%.'),
+        'special': ('Lights Out', 'Fire a revolver shot for 600%; kills reset all your cooldowns.')}),
  'ToolbotBody': dict(name='MUL-T', who='Toolbot',
    kit={'primary': ('Auto-Nailgun', 'Fire nails for 70% each, faster the longer you hold.'),
         'secondary': ('Blast Canister', 'Launch a canister for 220% that bursts into bomblets, stunning.'),
@@ -77,6 +82,12 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
+ 'wraith': [('v0.11.0a', ['New hero: Wraith, matched to Bandit (Bandit’s stats exactly)',
+                          'The Rake kicks hard like a tommy gun (20 % harder during Full Auto)',
+                          'Card Trick: one homing card at a time, each drawing one of four tricks: 5 stacks of Bleed, a certain Crit, a 2 s Stun or 5 stacks of Burn',
+                          'Project Mind: a purple smoke marker up to 60 m away, any key teleports you there; Full Auto: a full magazine fired 50 % faster',
+                          'Telekinesis (Q): every enemy within 30 m lifted and thrown 50 m where you aim, harder into a wall; bosses lifted a little, hit and stunned',
+                          'Purple smoke magic built in Unity on every move, and Deadlock’s own card for Card Trick'])],
  'billy': [('v0.10.0a', ['New hero: Billy, matched to Mercenary (Mercenary’s stats, +30 health, one jump plus the G.O.A.T. air dodge)',
                          'Bat: one press per swing, each the length of Deadlock’s melee swing (0.67 s, cooldown the same); in the air it dodges onto the nearest enemy within 10 m, deals double, and every hit stalls his fall and the enemy’s for 1 s, so he can juggle',
                          'Rising Ram launches only enemies standing on the ground, with chains that haul them up (33 % of the ram’s hit); 6 s cooldown, halved on a hit',
@@ -181,6 +192,10 @@ PAPER = {
 }
 
 ANALYSIS = {
+ 'wraith': ['One run: 517 %/s with every main move, against Bandit’s 1,919. That is −1,402: far below the ±500 band. The creator chose to keep her as she is for now.',
+            'The Rake carries her (440 %/s alone). Card Trick adds 187 (one 400 % card every 5 s, plus its bleed or burn); Project Mind and Full Auto deal no damage of their own (Full Auto only speeds up the gun), and the teleport carries her off the test spot, so the all-together number is under gun + cards.',
+            'Bandit’s damage is his knife (1,478 alone) and his Smoke Bomb (709). Levers if she should catch up: Card Trick 400 → 1,500 %, The Rake 60 → 75 %, or a smoke blast where Project Mind lands.',
+            'Telekinesis (Q, the ult) did 1,400 %/s over its 30 s pass with one throw of the 12-enemy pack. It isn’t in the all-together number.'],
  'billy': ['One run after the creator’s changes (air dodge-in, chains on Rising Ram and air Bashdown, Rising Ram 6 s, Bashdown 4 s): 4,941 %/s against Mercenary’s 5,112. That is −171: inside the ±500 band. (The first build measured 3,763.)',
            'The bat carries him (2,370 %/s alone): its 4 m arc catches most of the pack once he is in among it. Rising Ram 1,390 alone (its chains hit every enemy it launches), Bashdown 653, Biquette 297.',
            'Mercenary’s moves alone add up to far more than his 5,112 together (Laser Sword 2,850, Whirlwind 1,351, Blinding Assault 1,120), so compare the totals, not single moves.',
@@ -366,6 +381,14 @@ def maths(r):
     if k == 'ult_swarm':
         per = r['chainCount'] / r['interval'] * d
         return [f"{n(r['buffStacks'])} rats, up to {n(r['chainCount'])} per enemy ({n(r['chainCount'] * r['bossMult'])} on bosses), {n(d)} % a bite each second: {n(per)} % a second to one enemy until it dies (no time limit)"], None
+    if k == 'card_trick':
+        return [f"{n(d)} % to one enemy, plus its trick: {n(r['buffStacks'])} Bleed or Burn stacks for {n(r['dotTime'])} s, a certain crit, or a {n(r['stunDuration'])} s stun", f"every {n(cd)} s"], d / cd
+    if k == 'mind_port':
+        return [f"no damage: a teleport up to {n(r['range'])} m", f"every {n(cd)} s"], 0
+    if k == 'full_auto':
+        return [f"no damage of its own: a full magazine fired {n(BUFFS[r['buff']]['attackSpeedAdd'] * 100)} % faster", f"every {n(cd)} s"], 0
+    if k == 'ult_telekinesis':
+        return [f"{n(d)} % to every enemy within {n(r['radius'])} m where it lands, {n(d * r['airMult'])} % into a wall", f"thrown {n(r['reach'])} m; every {n(cd)} s"], None
     if k == 'self_buff':
         return ['no damage: invisibility and speed'], 0
     return [], None

@@ -209,7 +209,8 @@ namespace DeadlockOfRain
 
         /// <summary>Server-side direct damage to one hurtbox (used by ticks, chains and custom projectiles).</summary>
         /// <param name="inflictor">what dealt it (default the owner): Tag Team's hopping Krill, so his kills can be told apart.</param>
-        public static void Hit(CharacterBody owner, HurtBox target, float coefficient, float proc, Vector3 at, DamageTypeCombo type = default, DamageColorIndex color = DamageColorIndex.Default, GameObject inflictor = null)
+        /// <param name="forceCrit">a certain critical hit (Wraith's Crit card) instead of the owner's crit roll.</param>
+        public static void Hit(CharacterBody owner, HurtBox target, float coefficient, float proc, Vector3 at, DamageTypeCombo type = default, DamageColorIndex color = DamageColorIndex.Default, GameObject inflictor = null, bool forceCrit = false)
         {
             if (!owner || !target || !target.healthComponent || !UnityEngine.Networking.NetworkServer.active) return;
             var info = new DamageInfo
@@ -217,7 +218,7 @@ namespace DeadlockOfRain
                 attacker = owner.gameObject,
                 inflictor = inflictor ? inflictor : owner.gameObject,
                 damage = owner.damage * coefficient,
-                crit = owner.RollCrit(),
+                crit = forceCrit || owner.RollCrit(),
                 position = at,
                 procCoefficient = proc,
                 damageType = type,

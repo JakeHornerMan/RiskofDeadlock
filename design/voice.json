@@ -1045,6 +1045,126 @@
       "gap": 0,
       "chain": 0,
       "skipTakes": "none"
+    },
+    {
+      "id": "wraith_select",
+      "hero": "wraith",
+      "trigger": "select",
+      "skill": "none",
+      "kills": 0,
+      "group": "wraith/wraith_select",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "wraith_unselect",
+      "hero": "wraith",
+      "trigger": "unselect",
+      "skill": "none",
+      "kills": 0,
+      "group": "wraith/wraith_unselect",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "wraith_card_vo",
+      "hero": "wraith",
+      "trigger": "skill",
+      "skill": "wraith_card",
+      "kills": 0,
+      "group": "wraith/wraith_use_power1",
+      "chance": 0.3,
+      "gap": 10,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "wraith_mind_vo",
+      "hero": "wraith",
+      "trigger": "skill",
+      "skill": "wraith_mind",
+      "kills": 0,
+      "group": "wraith/wraith_use_power2",
+      "chance": 0.5,
+      "gap": 8,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "wraith_fullauto_vo",
+      "hero": "wraith",
+      "trigger": "skill",
+      "skill": "wraith_fullauto",
+      "kills": 0,
+      "group": "wraith/wraith_use_power3",
+      "chance": 0.7,
+      "gap": 6,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "wraith_telekinesis_vo",
+      "hero": "wraith",
+      "trigger": "skill",
+      "skill": "wraith_telekinesis",
+      "kills": 0,
+      "group": "wraith/wraith_use_power4",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "wraith_streak4",
+      "hero": "wraith",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 4,
+      "group": "wraith/wraith_killstreak_start",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "wraith_streak7",
+      "hero": "wraith",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 7,
+      "group": "wraith/wraith_killstreak_mid",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "wraith_streak10",
+      "hero": "wraith",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 10,
+      "group": "wraith/wraith_killstreak_high",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "wraith_happy",
+      "hero": "wraith",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "wraith/wraith_happy",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     }
   ]
 }

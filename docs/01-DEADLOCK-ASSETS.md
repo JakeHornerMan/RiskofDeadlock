@@ -599,22 +599,32 @@ the source values. The RoR2-scale numbers next to them are our own balance (doc 
 - **Voice:** `sounds/vo/ratking/ratking_<group>`: `select`, `unselect`, `use_power1..4`, `killstreak_start/_mid/_high`, `hunt`
   (no `happy`).
 
-**Next-hero cheat-sheet: Wraith** (found in the build 6774 listings; verify before use):
-- **Model:** `models/heroes_wip/wraith/wraith.vmdl`. Other variants exist (`wraith_gen_man`, `wraith_magician`).
-- **Images:** portraits `panorama/images/heroes/wraith_sm_psd.vtex`, `wraith_card_psd.vtex`; gun icon `panorama/images/heroes/guns/wraith_gun_psd.vtex`.
-- **Ability icons:** `panorama/images/hud/abilities/wraith_card_trick_psd`, `wraith_teleport_psd`, `wraith_lift_psd`, `wraith_aura_psd`, `wraith_daggers_psd`.
-- **Sound events:**
-  - Gun: `Wraith.Wpn.Fire.Main`, `Wraith.Wpn.Reload.Start`
-  - Card Trick: `Wraith.CardTrick.Cast`, `.Hit`, `.Proj.Impact`
-  - Project Mind: `Wraith.ProjectMind.Cast`, `.Arrive`
-  - Full Auto: `Wraith.RapidFire.Cast`
-  - Telekinesis: `Wraith.Telekenisis.Cast.Delay`, `Wraith.Telekenisis.Proj.Lp`, `Wraith.Telekenisis.Slam`, `Wraith.Telekinesis.Hit`
-- **Clip hints** (confirm in the glb): `weapon_stand_idle`, `weapon_run_n/s/e/w`, `jump_ground`, `jump_air`, `reload_idle`, `death_idle_1`, `ability_card_trick`, `ability_project_mind`, `ability_full_auto`, `ability_telekinesis`, `lift_loop`.
-- **Kinds:**
-  - Card Trick: `projectile`
-  - Full Auto: `self_buff` with a new attack-speed buff
-  - Project Mind: needs a new **teleport** kind
-  - Telekinesis: the ult, needs a new **lift-and-stun** `UltState` kind
+**Wraith (added 2026-10-23, v0.11.0a; Deadlock build 6817):**
+- **Codename** `wraith` (`hero_wraith`); model `models/heroes_wip/wraith/wraith.vmdl` (`m_strModelName`; `heroes_staging/wraith/wraith.vmdl`
+  is only her gun), images `panorama/images/heroes/wraith_sm_psd` / `wraith_card_psd`, gun icon `heroes/guns/wraith_gun_psd`, ability
+  icons flat in `hud/abilities/`: `wraith_card_trick_psd` = Card Trick (`citadel_ability_card_toss`), `wraith_teleport_psd` = Project Mind
+  (`citadel_ability_projectmind`), `wraith_aura_psd` = Full Auto (`citadel_ability_wraith_rapidfire`), `wraith_lift_psd` = Telekinesis
+  (`citadel_ability_psychic_lift`, the ult; also the Full Auto buff's icon is `wraith_aura_psd`), `wraith_daggers_psd` (unused).
+- **Meshes** (glb names): `wraith_model` (body, coat and fedora), `arms`, `gun_model` (kept), `wraith_handcards_model` (the fan of cards in
+  her hand, dropped). Head top 2.373 m (`sourceHeight`; the hat reaches 2.66 m), `heightScale` 0.983; the extractor logs 2.945 m with the gun.
+- **Skeleton** (422 bones): the standard chain (the 12 ragdoll bones exist; `pelvis` a root of its own). The gun is skinned to
+  `hand_R` → `weapon_hand_R` → `muzzle_fx` (`gunBone` none, `gunArms` LR). Coat: `coat_0..7` from `spine_3`, `coattail_0/1_L/R` (our
+  `springRoots`), and `$cloth_m0p*` bones exported as roots (`clothParents` pelvis, spine_0–3). Also `cards`, `gun_magazine_float_jnt`
+  (her floating magazine) under `root_motion`. `weapon_stand_idle` frame 0: hand pitch +14°.
+- **Clips** (glb names, 374): `weapon_stand_idle`, `weapon_run_n/s/e/w`, `primary_sprint_n`, `jump_start`, `jump_in_air_loop`, `reload_idle`,
+  `ability_card_trick_cast` (Card Trick), `ability_teleport_cast` (Project Mind), `ability_full_auto`, `ability_telekinesis_cast` /
+  `ability_telekinesis` (the ult), `death_static_1`; also `lift_loop`, `cast_channeling_*`, `ability_psychic_pulse_cast` (unused).
+- **Gun** (`citadel_weapon_wraith_set`): 5.64 a bullet, cycle 0.0945 s (10.6/s), clip 52, reload 2.82 s, falloff 18 → 52 m.
+- **Abilities** (vdata): Card Toss 0.6 s between charges, 2 charges, 45 dmg, 4 m, suits (spade, diamond, club, heart); Project Mind 46 s,
+  25 m, 0.75 s channel; Rapid Fire 45 s, 5 s, +20 % fire rate; Psychic Lift 150 s, 10 m cast, 13 m throw, 1.25 s channel, 100 dmg.
+- **Effect model (prop):** `models/heroes_wip/wraith/wraith_card_fx_model.vmdl` (one 8 × 13 cm card, one material; `wraith_card_prop`);
+  `wraith_fx.vmdl` unused.
+- **Sounds** (`soundevents/hero/wraith.vsndevts`): `Wraith.Wpn.Fire.Main/.First/.Release`, `.Wpn.Reload.Start/.End/.Clip.In/.Clip.Out`,
+  `Wraith.CardTrick.Proc/.Cast/.Proj.Lp/.Proj.Impact/.Hit`, `Wraith.ProjectMind.Select/.Deselect/.Cast/.Arrive`, `Wraith.RapidFire.Cast`,
+  **both spellings**: `Wraith.Telekenisis.Select/.Select.Lp/.Cast.Delay/.Cast/.Proj.Lp/.Slam` and `Wraith.Telekinesis.Hit/.Victim.Alert`
+  (`.Slam` is Lash's death-slam impact), `Wraith.Footstep`, `Wraith.JumpLand`.
+- **Voice:** `sounds/vo/wraith/wraith_<group>`: `select`, `unselect`, `use_power1..4`, `killstreak_start/_mid/_high`, `happy`, `hunt`.
+- **Particles** (looked at for names only, nothing exported): `particles/abilities/wraith/wraith_card_trick_<suit>*`, `wraith_ambient_*`.
 
 ---
 

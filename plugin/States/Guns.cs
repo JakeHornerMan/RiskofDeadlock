@@ -71,7 +71,10 @@ namespace DeadlockOfRain.States
         void StartReload()
         {
             if (rt == null || rt.Reloading) return;
-            rt.BeginReload(row, attackSpeedStat);
+            // Full Auto's fire rate ends with its magazine: this reload runs at the normal speed (the relay below takes the buff off)
+            float speed = attackSpeedStat;
+            if (FullAutoOn(characterBody)) speed /= 1f + (Sheet.Buff(FullAutoBuff)?.AttackSpeedAdd ?? 0f);
+            rt.BeginReload(row, speed);
             if (anim) anim.Gesture("reload", 1f);
             Relay.Reload(characterBody);
         }
@@ -86,7 +89,7 @@ namespace DeadlockOfRain.States
             if (row == null) return;
             if (row.MeleePct > 0 && HeroRuntime.Melee(body)) { PunchFx(body, row, left); return; }
             var anim = DeadlockAnimator.Of(body);
-            if (anim) anim.Recoil(row.Pellets > 1 ? 9f : 3f);
+            if (anim) anim.Recoil(row.Recoil * KickMult(body));
             Fx.Sound(row.Id, "cast", body.transform.position);
             Fx.MuzzleFlash(body, left);
             var muzzle = Fx.Muzzle(body, left);
@@ -94,6 +97,16 @@ namespace DeadlockOfRain.States
             if (row.Kind == "gun_goo" && !body.hasEffectiveAuthority && aim.sqrMagnitude > 0.01f && body.inputBank)
                 DlrGoo.Launch(body, row, body.inputBank.aimOrigin, aim, NetworkServer.active);
         }
+
+        /// <summary>Wraith's Full Auto row (kind full_auto): its buff, and in its recoil column how much harder the gun kicks while it runs.</summary>
+        static readonly SkillRow fullAuto = System.Array.Find(SkillRow.All, r => r.Kind == "full_auto");
+        public static string FullAutoBuff => fullAuto?.Buff ?? "none";
+
+        /// <summary>Wraith's Full Auto is on (its buff, synced to every player).</summary>
+        public static bool FullAutoOn(CharacterBody body) => body && fullAuto != null && Buffs.Count(body, fullAuto.Buff) > 0;
+
+        /// <summary>How much harder the gun kicks now: the Full Auto row's recoil while it runs (1.2: 20% more, creator, 2026-10-23).</summary>
+        static float KickMult(CharacterBody body) => FullAutoOn(body) ? Mathf.Max(1f, fullAuto.Recoil) : 1f;
 
         public static void BreakSmoke(CharacterBody body)
         {
@@ -181,6 +194,14 @@ namespace DeadlockOfRain.States
             var aim = GetAimRay();
             ShotFx(characterBody, left);
             Relay.Shot(characterBody, left, aim.direction);
+            // the owner's camera kicks up with each shot (aimKick: RoR2's recoil, Commando's Double Tap = 1)
+            if (isAuthority && row.AimKick > 0f)
+            {
+                float k = row.AimKick * KickMult(characterBody);
+                AddRecoil(-0.4f * k, -0.8f * k, -0.3f * k, 0.3f * k);
+            }
+            // Full Auto lasts one magazine: the last round of it starts the reload at once
+            if (isAuthority && rt != null && rt.Ammo == 0 && rt.Extra == 0 && FullAutoOn(characterBody)) StartReload();
             if (isAuthority && Shoot(aim, left)) { }
             else if (isAuthority && row.Pattern == "krill")
             {
