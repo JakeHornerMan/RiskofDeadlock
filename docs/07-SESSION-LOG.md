@@ -1042,7 +1042,7 @@ release → "With 0.11.0".
   answer "Keep the tile"): `RELEASE_ZIP` run_test 7/7 29/29 (shared code changed since 0.10.0, so all seven), BREAK 21/21,
   release `ee1fac3c`, Melty test `fa69bd4a` started (creator: "Melty test, then publish"),
   then **published without waiting** when the creator asked "is this upload or wtf is going on i want this release on melty"
-  (in safety review at the time of writing; listing text updated). Listing text updated in
+  (live 2026-10-23 13:26 UTC after ~20 min of safety review; listing text updated). Listing text updated in
   `thunderstore/melty-description.md` (built with 6819, loading screen line); goes to `update_mod` at publish.
 - Thunderstore: needs the GitHub-built 1.7.0 (`git push origin extractor-1.7.0`, `fetch_extractor.py 1.7.0`); not done.
 - The co-op test was not run for 0.11.0 (loading-screen change is client-only; Wraith's relay change is inert without Wraith).

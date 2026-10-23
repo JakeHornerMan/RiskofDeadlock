@@ -364,8 +364,7 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
   Upload `37d26f7e-…`, release `ee1fac3c-7df4-4a3a-b317-64a76e5e39f8`, checks `deadlock-content, survivors-listed, coming-soon-tile,
   loading-screen, haze/abrams/seven/infernus/mokrill-plays, trophies, viscous-plays, ratking-plays`, minutes 12,
   `setup.done.contains` `|1.7.0|F0F67439DE4894B9`. Melty test `fa69bd4a-6187-4967-8666-350ebb9ab8a3` (2 runs) started, but the creator wanted it live
-  before it finished ("i want this release on melty"): **published 2026-10-23 without waiting for the test**, in Melty's safety
-  review at the time of writing; listing text from `thunderstore/melty-description.md` (Hero pages kept, built with 6819).
+  before it finished ("i want this release on melty"): **published 2026-10-23 without waiting for the test**, **live 13:26 UTC** after a ~20 min safety review; listing text from `thunderstore/melty-description.md` (Hero pages kept, built with 6819).
 - Listing pictures: the creator's own character select shots of the four heroes (Haze cover, then Abrams, Seven, Infernus);
   the four 0.1.0 shots were removed. Driving the select screen with `um win drive` is fiddly (client coords are half the
   shot's full size on this monitor; clicks lag a frame); asking the creator for shots was quicker.
