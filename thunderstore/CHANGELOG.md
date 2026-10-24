@@ -4,6 +4,7 @@
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.0, 2026-10-24).
 - Billy joins the Melty build as its eighth playable hero, matched to Mercenary: Biquette the machine gun, a 3-hit Bat combo that dodges onto enemies in the air and juggles them, Bashdown, Rising Ram (chains haul everyone around into the air) and the Chain Gang ult. The G.O.A.T. passive turns his air jump into a goring dodge (not part of this store release yet; the four heroes here are unchanged).
 - Wraith takes Billy's place as the locked "coming soon" tile.
+- A big "Join the Risk of Deadlock Discord" button on the title screen opens the mod's Discord community (FAQ, hero requests, news).
 
 ## 0.11.0
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v0.11.0, 2026-10-23).

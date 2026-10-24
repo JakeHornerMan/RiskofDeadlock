@@ -40,6 +40,7 @@ Before touching anything:
 | Melty 0.10.0 | **2026-10-22 late: published (safety review)**: seven heroes with Rat King, Billy a black "coming soon" tile, built with Deadlock 6817, joined-player Scrap Grenade fix; no Melty test (creator's call) (§9) |
 | Melty 0.9.1 | **2026-10-22: published (safety review)**: six heroes, new Seven, Rat King a black "coming soon" silhouette, always-joinable co-op, Fx.Stun and joined-player Combustion fixes; test `65dcf162` passed 2/2 (§9) |
 | Daily watch | **Since 2026-10-21:** `tools/watch/daily.ps1`, run daily at 04:00 by Task Scheduler (doc 03 §5b). It checks for Deadlock/RoR2 updates on this PC and for Melty breaks on the live release; if it finds one, an unattended Claude fix run on branch `watch/<date>` tests, fixes and **publishes** once every check passes (the creator's permission). Reports go to `build/watch/<date>-report.md` and a notification. First real fix run 2026-10-22 (Deadlock 6812): checked, tested and recorded end to end; it published nothing (nothing broke) and fixed a stun exception from players' logs (merged, unreleased). Same day: the `python tools/*` rule fixed, triage on Sonnet with signatures + `build/watch/known-breaks.txt` |
+| Community | **2026-10-24:** Discord `discord.gg/sNByetmcqc` (never expires, gives the `Risk of Deadlock Player` role; doc 03 §9); title-screen button (`CommunityButton.cs`) and a "Community" section in every listing, out with 1.0.0 |
 | Co-op | Up to 4 players (RoR2 lobby/Steam invites + Melty Join), everyone needs Deadlock; doc 02 §7.7. `run_coop_test.sh`: 4/4 heroes, all 25 skills as a joined player (2026-10-17). **Never tried with a real friend** (Steam lobby join, lag) |
 | Installed build | **2026-10-23: dev build from `main` with all nine heroes (Billy playable though unfinished, Wraith), cache rebuilt for all nine from Deadlock 6819, BepInEx on.** Standing rule (creator): the Steam copy always has every hero, released or not; `lab_restore.sh` now puts it back after every test. Before: **v0.7.1c dev build, five heroes, the Mo & Krill balance pass** (2026-10-19; the game was started for the creator at their request). Before: **v0.7.1 dev build with all five heroes incl. Mo & Krill** (2026-10-19, no heroes.txt, cache read from Deadlock 6795; BepInEx switched back on for Steam Play after `lab_restore`). Before: **v0.7.0b dev build with Mo & Krill** (2026-10-19, after the play-check feedback, for the next play-check; Melty's live release is still 0.6.3); BepInEx on, so pressing Play on Steam loads it (Melty may switch `winhttp.dll` off when it launches the game itself) |
 | Heroes | Haze, Abrams, Seven, Infernus, **Mo & Krill** (v0.7.0); 4 skills each (M1 gun, M2, Shift, R) + their Deadlock ult as **Q equipment** |
@@ -263,7 +264,15 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: Billy's kit pass (2026-10-24, in development)
+## 9. Last work: Discord community and title-screen button (2026-10-24)
+
+- Discord set up in the creator's browser: role `Risk of Deadlock Player`, public `Risk of Deadlock` category (#faq, #hero-requests),
+  the role sees only that, #general and #promote-yourself; invite `discord.gg/sNByetmcqc` (never expires, gives the role); join rule added (doc 03 §9).
+- `Runtime/CommunityButton.cs`: the title-screen button (doc 02 §8); "Community" section in all three listing texts and the 1.0.0 CHANGELOG.
+- Built only: not installed (the creator's game was open), not run (the creator: "dont run the game to test it until i tell you").
+  `build/DeadlockOfRain-1.0.0.zip` predates it: rebuild with `package.py 1.0.0 --melty` before the 1.0.0 upload.
+
+## 9-prev16. Billy's kit pass (2026-10-24, in development)
 
 - Bat 6 m arc with a sweep showing it, 13 m air snap, near-hit float +0.5 s (cap 6 s); Ram float 3 s; air Bashdown chains from Billy and drags them down with him; 175 health.
 - `run_test.sh billy` 20/20; the game left open on the practice spot for the creator. Open: bench, kit pages, co-op check (doc 07 last entry).

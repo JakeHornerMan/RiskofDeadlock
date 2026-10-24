@@ -609,6 +609,11 @@ Steam invites and RoR2's lobby work as in vanilla; the Melty line is an extra wa
 
 ## 8. Text, UI and audio
 
+- **Discord button (`Runtime/CommunityButton.cs`, 1.0.0):** an IMGUI button at the top right of the title menu,
+  "JOIN THE RISK OF DEADLOCK DISCORD", drawn only while `MainMenuController.currentMenuScreen` (and `desiredMenuScreen`) is
+  `titleMenuScreen`, hidden in test mode; it opens `CommunityButton.Invite` (https://discord.gg/sNByetmcqc) in the browser.
+  That invite never expires and gives the `Risk of Deadlock Player` role (doc 03 §9). Changing the invite means changing
+  the constant and the three listing texts (`README.md`, `thunderstore/README.md`, `thunderstore/melty-description.md`).
 - **`LanguagePatch`** (prefix on `Language.GetLocalizedStringByToken(string)`) answers any `DLR_*` token from `Survivors.Tokens`, in every language: names, subtitles, descriptions, lore, outro/fail, skills, buffs, passive, `DLR_SKIN_DEFAULT`.
 - **Survivor description** (`DLR_DESC_<ID>`): lore + one line per skill (`M1/M2/Shift/R (Ultimate)`) + the "starts locked… press R" note.
 - **`LoadoutSkinRowPatch`** is a postfix on `LoadoutPanelController.Row.FromSkin` (a public static method of the private nested `Row` class). The loadout panel always builds a skins row and its gamepad navigation indexes it. Our heroes have no `SkinDef`s, so an empty row threw `ArgumentOutOfRange`. The patch adds one "Default" button with the hero portrait.

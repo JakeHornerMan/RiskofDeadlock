@@ -486,6 +486,7 @@ doc 02 §11. In short:
 | Wraith's balance left below the band | Bench 517 vs Bandit 1919; offered bigger cards, gun 75 % and a teleport blast; the creator: "Keep her as she is" |
 | Gun kick is a sheet column (`recoil`, `aimKick`) | Wraith's tommy gun needed a bigger kick than the hard-coded 3/9; every other gun keeps its old number |
 
+| A Discord community for players (2026-10-24) | The creator's server "Game Dev Community Hub": a public `Risk of Deadlock` category (#faq, #hero-requests). Invite `discord.gg/sNByetmcqc` never expires and gives the `Risk of Deadlock Player` role, which is denied View Channel everywhere except that category, #general and #promote-yourself (checked with View Server As Role). Join form has the rule "Don't be an idiot. If you are disrespectful to other members you will be removed." The server is Apply to Join, so these players still wait for approval. Linked in all three listing texts and from a title-screen button (doc 02 §8) |
 
 ## 10. Known open items and ideas
 

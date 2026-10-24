@@ -1129,3 +1129,24 @@ then "EACH BAT HIT SHOULD EXTENND HIS TIME BY 1 SECOND BUT HE SHULD NEVER HAVE O
 **Not done / open:** the creator said "hold off on the upload for 2 seconds": nothing uploaded. Still to do before upload:
   `RELEASE_ZIP=build/DeadlockOfRain-1.0.0.zip run_test.sh billy` (also runs Billy's new float check, never run) and the BREAK check,
   then the recipe (checks from that run), upload, submit, listing, publish.
+
+### 2026-10-24 · Discord community, title-screen button · v1.0.0 (unreleased) · this commit
+**Request (verbatim):** "https://discord.gg/gftQ3fQj8 i have this server i want to create a place in this server for people who join through this mod how can we do this i would attach this to the melty page and the thunderstore page",
+then "I would like if they had acces to general area and also thir own area, with 2 channel faq and hero requests", "mkae this role 'risk of deadlock player'",
+"everyone can view the risk of deadlock channels but the risk of deadlock players can only view this section and promote your self and general",
+"please also make a generic onboard tjust saying done be an idiot f you are disrespectful to other member you will be removed",
+"build on the risk of rain main menu page a big obvious button to join this community with the Risk of Deadlock player role on default thorugh this link",
+"just built it dont run the game to test it until i tell you".
+**Questions asked → answers:** who sets up Discord → "I do it in Chrome"; when the link goes live → "With the next release (Recommended)"; a line in game → "Yes, on the title screen".
+**Done:**
+- Discord (creator's browser, signed in): role `Risk of Deadlock Player` (orange); category `Risk of Deadlock` (public) with #faq and #hero-requests;
+  the role denied View Channel on rules, meat-rankings, Information (+ #announcements), Text Channels, Voice Channels, Private devs; allowed on #general and #promote-yourself.
+  "View Server As Role" shows exactly #general, #promote-yourself, #faq, #hero-requests. Invite `https://discord.gg/sNByetmcqc`: never expires, no use limit, gives the role, lands in #general.
+  Join form: "Server Rules" with "Don't be an idiot. If you are disrespectful to other members you will be removed."
+- `plugin/Runtime/CommunityButton.cs` + `Plugin.cs` init: the title-screen button opening the invite. "Community" section in `README.md`, `thunderstore/README.md`, `thunderstore/melty-description.md`; 1.0.0 CHANGELOG line. Docs 00, 02, 03.
+**Results:** `dotnet build plugin -c Release` 0 errors. Not installed (game open), not run in game (creator's instruction).
+**Not done / open:** the server is "Apply to Join", so mod players still wait for approval unless the invite bypasses applications (the creator decides);
+  Onboarding was not switched on (Discord asks for 7 default channels; the invite role does the job). See the button in game when the creator allows it;
+  rebuild the 1.0.0 zip before uploading. The old invite `gftQ3fQj8` was left as it was.
+**Lessons:** Discord invites can carry roles now (Invite → Edit invite link → Roles), so no bot or Onboarding question is needed to tag players from one link.
+  Channels with their own overwrites (#announcements, #general-private) don't follow the category: check with View Server As Role.

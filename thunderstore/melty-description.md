@@ -14,6 +14,9 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat
 - **Co-op for up to 4**: Melty's Join button, or Risk of Rain 2's own lobby and Steam invites. Every player needs this mashup and their own Deadlock.
 - If one hero can't be read from your Deadlock (after a Deadlock update), every other hero still works, and its tile says why.
 
+## Community
+Join the **[Risk of Deadlock Discord](https://discord.gg/sNByetmcqc)**: FAQ, hero requests and news. The same button is on the game's title screen.
+
 ## Hero pages
 Every hero's abilities, numbers and measured damage, with our own in-game pictures:
 - [Haze](https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p) (matched to Commando)

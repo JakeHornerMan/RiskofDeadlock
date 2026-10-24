@@ -46,6 +46,7 @@ namespace DeadlockOfRain
             Voice.Init();
             DlrHopper.InitTrophies();
             FirstRun.Init();
+            CommunityButton.Init();
             MeltyTest.Init();
             DpsBench.Init();
         }

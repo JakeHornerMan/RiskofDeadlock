@@ -2,6 +2,9 @@
 
 Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus or Mo & Krill** from Deadlock, using their real models, animations, guns, abilities, icons and sounds, read from your own Deadlock install.
 
+## Community
+Join the **[Risk of Deadlock Discord](https://discord.gg/sNByetmcqc)**: FAQ, hero requests and news. The same button is on the game's title screen.
+
 ## Hero pages
 Every hero's abilities, numbers and measured damage against their Risk of Rain 2 match, with our own in-game pictures:
 - [Haze](https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p) (matched to Commando)

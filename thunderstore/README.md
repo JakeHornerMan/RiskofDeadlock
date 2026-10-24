@@ -14,6 +14,9 @@ Every step is written to `BepInEx/LogOutput.log` (also in r2modman's log viewer)
 
 If Deadlock isn't found, the game starts without the heroes and tells you why. Deadlock in an unusual folder? Set *Deadlock folder* in the mod's config (the folder that holds `game/citadel/pak01_dir.vpk`).
 
+## Community
+Join the **[Risk of Deadlock Discord](https://discord.gg/sNByetmcqc)**: FAQ, hero requests and news. The same button is on the game's title screen.
+
 ## Hero pages
 Every hero's abilities, numbers and measured damage next to their Risk of Rain 2 match:
 - [Haze](https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p) (Commando) · [Abrams](https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG) (Loader) · [Seven](https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m) (Artificer) · [Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) (Engineer)
