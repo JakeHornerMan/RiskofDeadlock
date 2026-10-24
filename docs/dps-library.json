@@ -1512,8 +1512,8 @@
   "DeadlockBilly": {
    "name": "Billy",
    "stats": {
-    "health": 140.0,
-    "healthPerLevel": 42.0,
+    "health": 175.0,
+    "healthPerLevel": 52.5,
     "regen": 1.0,
     "regenPerLevel": 0.2,
     "armor": 20.0,
@@ -1530,15 +1530,15 @@
     "special": "Rising Ram"
    },
    "hero": true,
-   "measuredOn": "v0.10.0b",
+   "measuredOn": "v0.11.0b",
    "dps": {
     "all": {
      "runs": [
-      4941
+      7957
      ],
-     "mean": 4941,
-     "min": 4941,
-     "max": 4941
+     "mean": 7957,
+     "min": 7957,
+     "max": 7957
     },
     "primary": {
      "runs": [
@@ -1550,35 +1550,35 @@
     },
     "secondary": {
      "runs": [
-      2370
+      2664
      ],
-     "mean": 2370,
-     "min": 2370,
-     "max": 2370
+     "mean": 2664,
+     "min": 2664,
+     "max": 2664
     },
     "utility": {
      "runs": [
-      653
+      683
      ],
-     "mean": 653,
-     "min": 653,
-     "max": 653
+     "mean": 683,
+     "min": 683,
+     "max": 683
     },
     "special": {
      "runs": [
-      1390
+      902
      ],
-     "mean": 1390,
-     "min": 1390,
-     "max": 1390
+     "mean": 902,
+     "min": 902,
+     "max": 902
     },
     "equipment": {
      "runs": [
-      1200
+      1000
      ],
-     "mean": 1200,
-     "min": 1200,
-     "max": 1200
+     "mean": 1000,
+     "min": 1000,
+     "max": 1000
     }
    }
   },
@@ -1657,6 +1657,6 @@
   }
  },
  "about": "Stored DPS library (Deadlock of Rain). Main moves and each move alone, % of damage stat per second, measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, 30 s per pass, perfect aim, every move used when ready, no equipment except the \"equipment\" pass). \"all\" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are tagged with the build they were measured on. Built by tools/dps_library.py.",
- "updated": "2026-10-23",
+ "updated": "2026-10-24",
  "runsPerSurvivor": 3
 }

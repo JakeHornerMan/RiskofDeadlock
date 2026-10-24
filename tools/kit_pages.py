@@ -88,7 +88,12 @@ CHANGES = {
                           'Project Mind: a purple smoke marker up to 60 m away, any key teleports you there; Full Auto: a full magazine fired 50 % faster',
                           'Telekinesis (Q): every enemy within 30 m lifted and thrown 50 m where you aim, harder into a wall; bosses lifted a little, hit and stunned',
                           'Purple smoke magic built in Unity on every move, and Deadlock’s own card for Card Trick'])],
- 'billy': [('v0.10.0a', ['New hero: Billy, matched to Mercenary (Mercenary’s stats, +30 health, one jump plus the G.O.A.T. air dodge)',
+ 'billy': [('v1.0.0', ['Bat: a 6 m arc (was 4 m) with a pink sweep showing all of it; the air dodge-in reaches 13 m (was 10)',
+                       'Every air bat hit keeps the enemy hit up 1 s longer and every other floating enemy within 10 m 0.5 s longer (up to 6 s); Billy’s own float goes back to 1 s per hit, never more',
+                       'Rising Ram floats everyone 3 s (was 2)',
+                       'Air Bashdown: the chains run from Billy now, and the enemies fall down with him',
+                       'Health 175 +52.5 (was 140 +42)']),
+           ('v0.10.0a', ['New hero: Billy, matched to Mercenary (Mercenary’s stats, +30 health, one jump plus the G.O.A.T. air dodge)',
                          'Bat: one press per swing, each the length of Deadlock’s melee swing (0.67 s, cooldown the same); in the air it dodges onto the nearest enemy within 10 m, deals double, and every hit stalls his fall and the enemy’s for 1 s, so he can juggle',
                          'Rising Ram launches only enemies standing on the ground, with chains that haul them up (33 % of the ram’s hit); 6 s cooldown, halved on a hit',
                          'Bashdown: 4 s cooldown; in the air the slammed enemy’s chains drag every other enemy in the air down with it (33 % of the hit); he always stays in the slam until he hits the floor',
@@ -196,10 +201,10 @@ ANALYSIS = {
             'The Rake carries her (440 %/s alone). Card Trick adds 187 (one 400 % card every 5 s, plus its bleed or burn); Project Mind and Full Auto deal no damage of their own (Full Auto only speeds up the gun), and the teleport carries her off the test spot, so the all-together number is under gun + cards.',
             'Bandit’s damage is his knife (1,478 alone) and his Smoke Bomb (709). Levers if she should catch up: Card Trick 400 → 1,500 %, The Rake 60 → 75 %, or a smoke blast where Project Mind lands.',
             'Telekinesis (Q, the ult) did 1,400 %/s over its 30 s pass with one throw of the 12-enemy pack. It isn’t in the all-together number.'],
- 'billy': ['One run after the creator’s changes (air dodge-in, chains on Rising Ram and air Bashdown, Rising Ram 6 s, Bashdown 4 s): 4,941 %/s against Mercenary’s 5,112. That is −171: inside the ±500 band. (The first build measured 3,763.)',
-           'The bat carries him (2,370 %/s alone): its 4 m arc catches most of the pack once he is in among it. Rising Ram 1,390 alone (its chains hit every enemy it launches), Bashdown 653, Biquette 297.',
-           'Mercenary’s moves alone add up to far more than his 5,112 together (Laser Sword 2,850, Whirlwind 1,351, Blinding Assault 1,120), so compare the totals, not single moves.',
-           'Chain Gang (Q, the ult) did 1,200 %/s over its 30 s pass with one use. It isn’t in the all-together number.'],
+ 'billy': ['One run after the 2026-10-24 changes (6 m bat arc, 13 m air snap, floats kept going near every hit, Rising Ram 3 s float, air Bashdown dragging enemies down with him, 175 health): 7,957 %/s against Mercenary’s 5,112. That is +2,845: far above the ±500 band. (The build before measured 4,941, inside.)',
+           'Together he does far more than his moves alone (about 4,550 added up): Rising Ram floats the pack, the bat hits it in the air for double with its wider arc and keeps everyone up, and the air Bashdown lands on a floating pack. The bat alone 2,664 %/s, Rising Ram 902, Bashdown 683, Biquette 297.',
+           'Mercenary’s moves alone add up to far more than his 5,112 together (Laser Sword 2,850, Whirlwind 1,351, Blinding Assault 1,120), so compare the totals, not single moves. Levers if Billy should come down: the air bat ×2 → ×1.5, no extra float near a hit, or the arc 6 → 5 m.',
+           'Chain Gang (Q, the ult) did 1,000 %/s over its 30 s pass with one use. It isn’t in the all-together number.'],
  'ratking': ['Three runs after the 0.9.0b changes (Royal Pestments doubled, Rat Swarm without a time limit): 3,567, 3,189 and 3,869 %/s, mean 3,542 against Captain’s 3,490. That is +52: inside the ±500 band. (0.9.0: 2,999.)',
              'The Scrap Grenade carries him (1,373 %/s alone, 1,260–1,530): its hops keep it in the pack, so most of its three blasts land on most of the 12. Rule, Ratannia! 1,123 (the 1,500 % centre blast plus the stun ring every 12 s), Royal Pestments 889 (was 509 at 25 %; the ring follows him, so the pack stays inside), the gun 547 (565 on paper).',
              'Captain’s own number is odd: his moves alone add up to about 800 (the shotgun; the probes and beacons barely touch a still pack) but together he measures 3,490, so compare the totals, not single moves.',
@@ -268,6 +273,8 @@ def runs_of(who):
 LAST_USE = {
     'DeadlockMoKrill': dict(total=57150, enemies=11),  # 2026-10-19, v0.7.1e
     'DeadlockViscous': dict(total=60884, enemies=12),  # 2026-10-21, v0.8.0f
+    'DeadlockWraith': dict(total=42000, enemies=7),  # 2026-10-23, v0.11.0a
+    'DeadlockBilly': dict(total=30000, enemies=5),  # 2026-10-24, v0.11.0b
 }
 
 def per_use(who):

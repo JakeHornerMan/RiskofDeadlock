@@ -1112,3 +1112,12 @@ then "EACH BAT HIT SHOULD EXTENND HIS TIME BY 1 SECOND BUT HE SHULD NEVER HAVE O
   The DLL is installed for the creator's next start (the open game was left alone).
 **Results:** builds, preflight clean. **Not tested in game** (the creator: "DO NOT PLAY DO NOT TEST").
 **Not done / open:** run `run_test.sh billy` when the creator allows it (the new check is in); bench, kit pages, co-op check still open.
+
+### 2026-10-24 · Billy benched, co-op test, 1.0.0 on Melty with Wraith blacked out · v1.0.0 · this commit and the next
+**Request (verbatim):** "run dps test on illy and update the artifact then test coop, then upload v1.0.0 on melty with wraith blacked out and unselectable!"
+**Questions asked → answers:** none (the request names every step).
+**Done:**
+- Bench `run_bench.sh 30 billy` (one run, `VERSION` v0.11.0b): all **7957** vs Mercenary 5112 (+2845, above the band); bat 2664, Ram 902,
+  Bashdown 683, Biquette 297, Chain Gang 1000 (30000 % per use). Merged into `docs/dps-library.json`. Docs 05 §0/§3.15, 06.
+- `kit_pages.py`: Billy's analysis and a v1.0.0 "what changed" list; `LAST_USE` gains Wraith (the rebuild had lost her ult row) and Billy.
+  Billy's page and the balance overview republished to their links.
