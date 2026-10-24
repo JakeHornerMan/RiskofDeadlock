@@ -1121,3 +1121,11 @@ then "EACH BAT HIT SHOULD EXTENND HIS TIME BY 1 SECOND BUT HE SHULD NEVER HAVE O
   Bashdown 683, Biquette 297, Chain Gang 1000 (30000 % per use). Merged into `docs/dps-library.json`. Docs 05 §0/§3.15, 06.
 - `kit_pages.py`: Billy's analysis and a v1.0.0 "what changed" list; `LAST_USE` gains Wraith (the rebuild had lost her ult row) and Billy.
   Billy's page and the balance overview republished to their links.
+- `run_coop_test.sh billy`: pass (coop-run, coop-billy, coop-shots-seen, coop-effects-seen); all five Billy moves hit as a joined player,
+  47 relayed effects. The air Bashdown drag was not part of the co-op steps (ground Bashdown only).
+- 1.0.0 prepared: `Plugin.Version` 1.0.0, `release.json` `melty` + billy, `comingSoon` wraith, CHANGELOG 1.0.0, listing text
+  (`thunderstore/melty-description.md`: eight heroes, Wraith coming soon, Billy's page). `package.py 1.0.0 --melty` built
+  `build/DeadlockOfRain-1.0.0.zip` (heroes.txt 8, coming-soon.txt wraith; `setup.done.contains` would be `|1.7.0|524B1AE7A140494E`).
+**Not done / open:** the creator said "hold off on the upload for 2 seconds": nothing uploaded. Still to do before upload:
+  `RELEASE_ZIP=build/DeadlockOfRain-1.0.0.zip run_test.sh billy` (also runs Billy's new float check, never run) and the BREAK check,
+  then the recipe (checks from that run), upload, submit, listing, publish.
