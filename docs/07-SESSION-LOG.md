@@ -1166,3 +1166,16 @@ then "I would like if they had acces to general area and also thir own area, wit
 **Not done / open:** the 1.0.0 zip built earlier is stale: re-run `package.py 1.0.0 --melty` before the upload (the setup hash changes with
   the manifest only if Deadlock content changed; recompute it). Billy's kit page still shows 50 % (republish after a bench, or now if the creator wants).
   Upload still on hold (creator: "hold off on the upload").
+
+### 2026-10-24 · Discord roles outline, the button restyled · v1.0.0 (unreleased) · this commit
+**Request (verbatim):** "ok outline each role and what they can see and the  also show me the button in risk of rain", then
+"now also let make the fucking discord button look pretty use the discord log and put the writing in the same style as risk of rain 2",
+"but it [Image #1] in the bottom left and make sure the discord logo and the text are not overlapping", "dont close the game im testing something".
+**Questions asked → answers:** none.
+**Done:** every role checked with "View Server As Role" (outline in the reply). The button is now a copy of RoR2's own Singleplayer
+  button (font, frame, hover, click sound) in blurple with Discord's logo (`plugin/Assets/discord.png` from `tools/discord_logo.py`,
+  embedded resource), placed under Quit to Desktop, logo and text in separate areas. Doc 02 §8.
+**Results:** first restyled build seen in game (log "copied from GenericMenuButton (Singleplayer)"): it sat top right over the
+  profile box with the text over the logo, which led to the move. The bottom-left build compiles; not installed or seen yet (game open, creator testing).
+**Not done / open:** install the DLL when the game is closed and look at it; Apply-to-Join bypass and the old invite still the creator's call.
+**Lessons:** RoR2's title screen has the profile box and event banner at the top right; put mod UI in or under the menu column.

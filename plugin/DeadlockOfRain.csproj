@@ -42,4 +42,7 @@
     <Reference Include="$(Managed)\UnityEngine.ScreenCaptureModule.dll" Private="false" />
     <Reference Include="$(Managed)\UnityEngine.TextRenderingModule.dll" Private="false" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\discord.png" LogicalName="DeadlockOfRain.discord.png" />
+  </ItemGroup>
 </Project>

@@ -610,8 +610,8 @@ Steam invites and RoR2's lobby work as in vanilla; the Melty line is an extra wa
 ## 8. Text, UI and audio
 
 - **Discord button (`Runtime/CommunityButton.cs`, 1.0.0):** a copy of one of the title menu's own `HGButton`s (RoR2's
-  frame, font, hover text and click sound) put under `MainMenuController.titleMenuScreen`, pinned top right (520×104,
-  `LayoutElement.ignoreLayout`), label token `DLR_DISCORD_JOIN` "Join the Discord", hover `DLR_DISCORD_HOVER`, with
+  frame, font, hover text and click sound) in Discord blurple, in the menu column under its lowest button (as wide, 2.2× as tall,
+  `LayoutElement.ignoreLayout`, placed every frame; top right sat on RoR2's profile box and event banner), label token `DLR_DISCORD_JOIN` "Join the Discord", hover `DLR_DISCORD_HOVER`, with
   Discord's logo in blurple on the left: `plugin/Assets/discord.png`, an embedded resource (`DeadlockOfRain.discord.png`)
   drawn by `tools/discord_logo.py` from Discord's public vector outline. Hidden in test mode. It opens
   `CommunityButton.Invite` (https://discord.gg/sNByetmcqc) in the browser.
