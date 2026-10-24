@@ -1202,3 +1202,23 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** dry run for 1.0.0 prints the message; nothing posted yet (no release since).
 **Not done / open:** first real post comes with the 1.0.0 publish.
 
+
+### 2026-10-24 · Melty page issues: our tests, not players; scripts never close the creator's game · no version · this commit
+**Request (verbatim):** "ok so check the melty page we seem to have some issues can pull the information do deep research and resolve them?", then "just fix don open up the game to test", "contine witth plan"
+**Questions asked → answers:** none (plan approved).
+**Done:**
+- Melty read (`mod_status`, `install_outcomes`, `player_logs`, `player_reports`, `mashup_stats`). Current: `ended:quick-close` and
+  `load:not-loaded` on 0.11.0, 2026-10-24 16:22–16:29 UTC, both ending in RoR2's own `ViewableTag.OnDisable` NullReferenceException
+  (a window closed from outside). They match my `run_test.sh billy` exactly: it closed the game the creator had open, then its own copy.
+  `mashup_stats` (without the creator's plays): 4 players today, 4 worked, 0 crashed; `player_reports` empty. The older issues were
+  already fixed; the co-op "no-marker" count is by design (a Singleplayer run closes the lobby and clears the address).
+- `tools/game_guard.sh`: `guard_open_game` (stop with `GAME_OPEN`, exit 2, when a copy no lab script started is running),
+  `record_our_game` (PIDs to `%LOCALAPPDATA%\DeadlockOfRain\lab-game-pids.txt`), `close_our_games` (only those; `FORCE_CLOSE=1` closes all).
+  Used by run_test, run_bench, run_coop_test, dev_run (records the copy it starts), lab_restore. The watch's fix prompt: on `GAME_OPEN`
+  stop and report, never `FORCE_CLOSE` (the plan said the watch would force-close; changed for CLAUDE.md's "never close a game the
+  creator has open"). Docs 00, 03 §4, 10; memory `never-close-creators-game`.
+**Results:** game never started. `bash -n` on all six scripts. With a stand-in process named `Risk of Rain 2.exe` (a copy of ping.exe):
+  not ours → `GAME_OPEN`, exit 2, left running; `close_our_games` left it open; recorded → closed by the guard; `FORCE_CLOSE=1` → closed.
+  `lab_restore.sh` by hand: no test-mode file, `winhttp.dll` present.
+**Not done / open:** `report_bug_fix` for both issue keys once 1.0.0 is submitted (they clear when it goes live); 1.0.0 still on hold.
+**Lessons:** read the time of a Melty report against our own test runs before debugging the mod.

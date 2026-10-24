@@ -31,9 +31,10 @@ for V in BREAK STAGE OFF; do [ -z "${!V}" ] || [[ "${!V}" =~ ^[A-Za-z0-9_,]+$ ]]
 [ -n "$PLAY" ] && HEROES="$HEROES, \"play\": true"
 [ -n "$GOD" ] && HEROES="$HEROES, \"god\": true"
 CHECKS="${1:-$(cygpath -aw "$(dirname "$0")/../build")\\checks.txt}"
-# stop any running game first, so the old logs can be removed and never mistaken for this run
-G=$(powershell -NoProfile -Command "(Get-Process -Name \"Risk of Rain 2\" -ErrorAction SilentlyContinue).Id"); [ -n "$G" ] && $UM win kill $G >/dev/null
-for i in $(seq 1 20); do tasklist | grep -qi "Risk of Rain" || break; sleep 1; done
+# no game may be running, so the old logs can be removed and never mistaken for this run; a copy the creator started is never
+# closed: the run stops with GAME_OPEN instead (tools/game_guard.sh)
+. "$(dirname "$0")/game_guard.sh"
+guard_open_game
 rm -f "$L" "$P" "$(cygpath -u "$CHECKS")"
 mkdir -p "$LOCALAPPDATA/Melty/test" "$LOCALAPPDATA/DeadlockOfRain/devshots"
 printf '{ "checks": "%s"%s }\n' "${CHECKS//\\/\\\\}" "$HEROES" >"$LOCALAPPDATA/Melty/test/deadlock-of-rain.json"

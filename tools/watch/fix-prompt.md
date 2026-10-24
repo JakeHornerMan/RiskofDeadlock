@@ -18,6 +18,8 @@ Rules for this run:
 - Never open a game while another Steam game is running (`reg query HKCU\Software\Valve\Steam /v RunningAppID` must be 0).
   If the creator starts a game while you work, stop testing, write the report and finish.
 - After every game launch run `bash tools/lab_restore.sh`.
+- The lab scripts never close a copy of Risk of Rain 2 they didn't start (`tools/game_guard.sh`). If one stops with `GAME_OPEN`,
+  the creator is playing: never use `FORCE_CLOSE=1`; stop testing, write the report and finish.
 - Don't push to `main` and never force-push. The only push allowed is a tag `extractor-<Program.Version>` when
   `extractor/*.cs` changed (GitHub builds the exe that Melty needs; then `python tools/fetch_extractor.py <ver>`).
 - Don't change balance, abilities or anything a player would notice beyond the fix.

@@ -21,8 +21,8 @@ ONLY="${2:-}"
 PDIR=""; [ -n "$PORTRAITS" ] && PDIR="$(cygpath -aw "$(dirname "$0")/../build")\portraits"
 OUT="$(cygpath -aw "$(dirname "$0")/../build")\\bench_results.txt"
 B="$LOCALAPPDATA/DeadlockOfRain/bench.json"
-G=$(powershell -NoProfile -Command "(Get-Process -Name \"Risk of Rain 2\" -ErrorAction SilentlyContinue).Id"); [ -n "$G" ] && $UM win kill $G >/dev/null
-for i in $(seq 1 20); do tasklist | grep -qi "Risk of Rain" || break; sleep 1; done
+. "$(dirname "$0")/game_guard.sh"
+guard_open_game
 rm -f "$L" "$(cygpath -u "$OUT")"
 # a test-mode file left by run_test.sh would start the in-game test alongside the bench and wreck both
 rm -f "$LOCALAPPDATA/Melty/test/deadlock-of-rain.json" "$LOCALAPPDATA/Melty/test/risk-of-deadlock-2.json"

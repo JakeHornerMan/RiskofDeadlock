@@ -161,6 +161,7 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
 ---
 
 ## 7. Lessons from past sessions (things that cost time)
+- **A test that closes the creator's game becomes a Melty bug report** (2026-10-24): Melty records the creator's own Plays in `player_logs`. Billy's test closed an open game and showed up as "closed right after starting" and "its code didn't load" on 0.11.0. Before blaming the mod, compare a report's time with our test runs, and check `mashup_stats` (it leaves the creator's own plays out). The lab scripts now refuse to close a game they didn't start (`tools/game_guard.sh`).
 - **After a release test or Melty `test_release`, the PC holds the release cut, not the dev build** (2026-10-23): `heroes.txt`/`coming-soon.txt` from the zip, Melty's setup re-reads the cache with the release manifest (unreleased heroes gone) and Melty parks `winhttp.dll` as `.melty-off`. The creator then can't find a new hero from Steam. `lab_restore.sh` puts the dev cut back; a `CACHE MISSES` line means rebuild the cache.
 - For an unattended check, let the model describe (a fixed signature, ours or not) and let the script decide; a model judging "already known" was wrong both ways. A `Bash(x:*)` permission rule is a word prefix, so `Bash(python tools/:*)` never matched `python tools/gen.py`; use `Bash(python tools/*)`.
 - **A twisting hero is often a full-body clip on the upper-body layer** (2026-10-21, Seven): look for Deadlock's `*_upper_body` clips first; and read the test's `spun N deg` (a flight that whips round shows as 1000+). Doc 02 gotchas 24-26.
@@ -264,7 +265,14 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: Billy benched, co-op, 1.0.0 prepared; then no fall damage, on-screen air snap, gun 10 a bullet (2026-10-24)
+## 9. Last work: Melty page issues researched; lab scripts never close the creator's game (2026-10-24)
+
+- The two current Melty bugs on 0.11.0 (`ended:quick-close`, `load:not-loaded`, 16:22–16:29 UTC) came from this PC: a Billy test closed
+  the creator's open game. No player crashed that day (`mashup_stats`). The older issues were already fixed; the co-op "no-marker" is by design.
+- `tools/game_guard.sh` in run_test/run_bench/run_coop_test/dev_run/lab_restore: `GAME_OPEN` instead of closing a copy we didn't start.
+- Next: when 1.0.0 is submitted, `report_bug_fix` for both keys against it (note: from the creator's PC, scripts fixed).
+
+## 9-prev18. Billy benched, co-op, 1.0.0 prepared; then no fall damage, on-screen air snap, gun 10 a bullet (2026-10-24)
 
 - Bench 7957 vs Mercenary 5112 (above, doc 05 §3.15); Billy page + overview republished; `run_coop_test.sh billy` pass.
 - 1.0.0 prepared for Melty (Billy playable, Wraith the coming-soon tile; `release.json`, CHANGELOG, `melty-description.md`), **not uploaded**: the creator said hold off.

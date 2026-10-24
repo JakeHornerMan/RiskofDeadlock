@@ -171,7 +171,7 @@ Nothing uses `--dangerously-skip-permissions`.
 **Standing permissions (creator, 2026-10-21), for the watch only:**
 - It may **publish** a fix on Melty without asking, but only after every in-game check **and** Melty's `test_release`
   pass. Every other session still asks first (CLAUDE.md).
-- It may **start Risk of Rain 2** for its tests when no Steam game is running, and always runs `lab_restore` afterwards.
+- It may **start Risk of Rain 2** for its tests when no Steam game is running, and always runs `lab_restore` afterwards. It never closes a game it didn't start: on `GAME_OPEN` (`tools/game_guard.sh`) it stops testing and reports, and never uses `FORCE_CLOSE`.
 - The only push it may make is an `extractor-<ver>` tag, when the extractor changed and Melty needs the GitHub-built exe
   (doc 09). Fixes stay on the `watch/<date>` branch until the creator merges them.
 

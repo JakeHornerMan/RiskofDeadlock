@@ -16,9 +16,8 @@ P="$USERPROFILE/AppData/LocalLow/Hopoo Games, LLC/Risk of Rain 2/Player.log"
 D="$LOCALAPPDATA/DeadlockOfRain"; ML="$D/melty.log"; MP="$D/melty.properties"
 JP="$B/coop_player_join.log"
 CHECKS="$(cygpath -aw "$B")\\coop_checks.txt"
-kill_all() { for p in $(powershell -NoProfile -Command "(Get-Process -Name \"Risk of Rain 2\" -ErrorAction SilentlyContinue).Id"); do $UM win kill $p >/dev/null; done; }
-kill_all
-for i in $(seq 1 20); do tasklist | grep -qi "Risk of Rain" || break; sleep 1; done
+. "$(dirname "$0")/game_guard.sh"
+guard_open_game
 rm -f "$L" "$LJ" "$P" "$JP" "$(cygpath -u "$CHECKS")" "$B/coop_host.log" "$B/coop_join.log" "$ML" "$D/coop/"*.txt
 mkdir -p "$LOCALAPPDATA/Melty/test" "$D/devshots"
 printf 'join=\n' >"$MP"
@@ -47,6 +46,9 @@ echo "host open at $ADDR"
 printf 'join=%s\n' "$ADDR" >"$MP"
 WR=$(cygpath -w "$R"); WJ=$(cygpath -w "$JP")
 powershell -NoProfile -Command "\$env:SteamAppId='632360'; \$env:SteamGameId='632360'; Start-Process -FilePath '$WR\\Risk of Rain 2.exe' -ArgumentList '-logFile','$WJ','-screen-fullscreen','0','-screen-width','960','-screen-height','540' -WorkingDirectory '$WR'"
+# the second copy is ours too (the host was recorded by dev_run)
+for i in $(seq 1 20); do [ "$(tasklist | grep -ci "Risk of Rain")" -ge 2 ] && break; sleep 1; done
+record_our_game
 for i in $(seq 1 800); do
   grep -q "Melty test finished" "$L" 2>/dev/null && break
   grep -q "MeltyTest" "$P" 2>/dev/null && { echo "EXCEPTION (host)"; break; }
@@ -61,4 +63,4 @@ grep -E "Melty test|Melty check" "$L" | cut -c40-460
 echo "--- joiner"
 grep -E "Melty: |Melty join|Melty test" "$LJ" 2>/dev/null | cut -c40-300 | tail -8
 grep -nE -B2 "MeltyTest|DeadlockOfRain\." "$P" "$JP" 2>/dev/null | cut -c1-250 | head -20
-kill_all
+close_our_games
