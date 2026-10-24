@@ -37,6 +37,23 @@ namespace DeadlockOfRain
             lift.Slam(speed);
         }
 
+        /// <summary>Air Bashdown: an enemy chained to Billy falls with him at speed m/s, drawn in toward him sideways, until it
+        /// lands or he lets go (<see cref="LetGo"/>). Server only.</summary>
+        public static void DragDown(HealthComponent hc, CharacterBody by, float speed)
+        {
+            if (!hc || !hc.body || !by || !NetworkServer.active) return;
+            var lift = hc.body.GetComponent<DlrLift>();
+            if (!lift) lift = hc.body.gameObject.AddComponent<DlrLift>();
+            lift.Drag(by, speed);
+        }
+
+        /// <summary>Billy has landed: everyone he was dragging down is slammed the rest of the way. Server only.</summary>
+        public static void LetGo(CharacterBody by, float speed)
+        {
+            if (!by || !NetworkServer.active) return;
+            foreach (var l in Object.FindObjectsOfType<DlrLift>()) l.Release(by, speed);
+        }
+
         /// <summary>Off the floor, for Billy's air moves: not grounded, or rising from a jump this very moment (the motor still
         /// reads grounded for a frame or two after the jump, when M2 pressed at once would otherwise swing on the ground).</summary>
         public static bool InAir(CharacterBody body)
@@ -71,14 +88,16 @@ namespace DeadlockOfRain
     /// <summary>An enemy held by one of Billy's moves (server; its motion reaches everyone the usual way). Float: up
     /// height metres in riseTime, then drifting down at driftSpeed until the time is up (Rising Ram's juggle; an air bat hit adds
     /// time, up to a cap). Haul: up, then held still (Chain Gang) until its owner slams it. Slam: driven down hard until it lands.
+    /// Drag: chained to Billy (air Bashdown), falling with him and drawn in toward him until it lands or he lets go.
     /// Gravity is off on its motor the whole time (a flyer's rigidbody is driven the same way) and it is stunned while held.</summary>
     public sealed class DlrLift : MonoBehaviour
     {
-        enum Phase { Rise, Drift, Hold, Slam }
+        enum Phase { Rise, Drift, Hold, Slam, Drag }
         Phase phase;
         CharacterBody body;
         float riseSpeed, riseEnd, until, cap, driftSpeed, slamSpeed, start, slamUntil;
         bool antiGravity, flyer, hold, lifted;
+        CharacterBody dragBy;
 
         /// <summary>Rising Ram's float on one enemy (bosses are skipped by the caller).</summary>
         public static DlrLift Float(CharacterBody victim, float height, float riseTime, float floatTime)
@@ -98,7 +117,9 @@ namespace DeadlockOfRain
             return l;
         }
 
-        public static bool Floating(CharacterBody b) { var l = b ? b.GetComponent<DlrLift>() : null; return l && l.phase != Phase.Slam; }
+        public static bool Floating(CharacterBody b) { var l = b ? b.GetComponent<DlrLift>() : null; return l && l.phase != Phase.Slam && l.phase != Phase.Drag; }
+        /// <summary>Chained to by and falling with him (air Bashdown; the test asks).</summary>
+        public static bool Dragged(CharacterBody b, CharacterBody by) { var l = b ? b.GetComponent<DlrLift>() : null; return l && l.phase == Phase.Drag && l.dragBy == by; }
 
         void Begin(float height, float riseTime, float total, bool holdOnly)
         {
@@ -123,7 +144,7 @@ namespace DeadlockOfRain
         /// <summary>An air bat hit: the float lasts seconds more, at most up to capTotal seconds after it started.</summary>
         public void Extend(float seconds, float capTotal)
         {
-            if (phase == Phase.Slam || hold) return;
+            if (phase == Phase.Slam || phase == Phase.Drag || hold) return;
             float newUntil = Mathf.Min(Mathf.Max(until, Time.fixedTime) + seconds, start + capTotal);
             if (newUntil <= until) return;
             until = newUntil;
@@ -144,6 +165,31 @@ namespace DeadlockOfRain
             phase = Phase.Slam;
             slamSpeed = speed;
             slamUntil = Time.fixedTime + (flyer ? 0.3f : 1f);
+        }
+
+        /// <summary>Chained to by (air Bashdown): falls at speed m/s with him, drawn in sideways (up to 60 m/s, so even one 10 m out
+        /// reaches him on a short fall) to about 2.5 m from him.</summary>
+        public void Drag(CharacterBody by, float speed)
+        {
+            if (!body) body = GetComponent<CharacterBody>();
+            if (!body) { Destroy(this); return; }
+            flyer = !body.characterMotor && body.rigidbody;
+            lifted = true;
+            if (!antiGravity) GravityOff(true);
+            phase = Phase.Drag;
+            dragBy = by;
+            slamSpeed = speed;
+            start = Time.fixedTime;
+            // no fall goes on for ever: let go after 3 s whatever happens
+            slamUntil = Time.fixedTime + 3f;
+        }
+
+        /// <summary>by has landed: if this one is still chained to him it is slammed the rest of the way.</summary>
+        public void Release(CharacterBody by, float speed)
+        {
+            if (phase != Phase.Drag || dragBy != by) return;
+            dragBy = null;
+            Slam(speed);
         }
 
         void GravityOff(bool off)
@@ -175,6 +221,16 @@ namespace DeadlockOfRain
                     // the chains' owner slams it; if that never comes (the carrier died), let go after a while
                     if (now >= until + 1f) { Destroy(this); return; }
                     break;
+                case Phase.Drag:
+                {
+                    var side = dragBy ? dragBy.corePosition - body.corePosition : Vector3.zero;
+                    side.y = 0f;
+                    float gap = side.magnitude - 2.5f;
+                    v = Vector3.down * slamSpeed + (gap > 0f ? side.normalized * Mathf.Min(gap / Time.fixedDeltaTime, 60f) : Vector3.zero);
+                    bool landed = body.characterMotor && body.characterMotor.isGrounded && now > start + 0.05f;
+                    if (now >= slamUntil || !dragBy || landed) { Destroy(this); return; }
+                    break;
+                }
                 default:
                     v = Vector3.down * slamSpeed;
                     if (now >= slamUntil || body.characterMotor && body.characterMotor.isGrounded && now > slamUntil - 0.95f) { Destroy(this); return; }

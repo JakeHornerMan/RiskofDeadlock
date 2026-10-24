@@ -398,8 +398,8 @@
       "id": "billy_lift",
       "method": "component",
       "target": "DlrLift on an enemy's body (Runtime/BillyAir.cs), server",
-      "purpose": "Rising Ram's float and Chain Gang's haul: gravity off on the enemy's motor (or a flyer's rigidbody held), its velocity driven up then down, stunned the whole time; air Bashdown and the chains' slam drive it into the floor",
-      "reads": "skills.launchHeight/floatTime/hangTime/minDuration/duration/stunDuration",
+      "purpose": "Rising Ram's float and Chain Gang's haul: gravity off on the enemy's motor (or a flyer's rigidbody held), its velocity driven up then down, stunned the whole time; air Bashdown drags the enemies in the air down with Billy (phase Drag, chained to him, slammed when he lands) and the chains' slam drives it into the floor; the air bat extends floats (hangTime on the enemy hit, nearHang within nearRadius)",
+      "reads": "skills.launchHeight/floatTime/hangTime/nearHang/nearRadius/minDuration/duration/stunDuration/speed",
       "side": "server"
     }
   ]

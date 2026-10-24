@@ -263,7 +263,12 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: the Steam copy has every hero again (2026-10-23)
+## 9. Last work: Billy's kit pass (2026-10-24, in development)
+
+- Bat 6 m arc with a sweep showing it, 13 m air snap, near-hit float +0.5 s (cap 6 s); Ram float 3 s; air Bashdown chains from Billy and drags them down with him; 175 health.
+- `run_test.sh billy` 20/20; the game left open on the practice spot for the creator. Open: bench, kit pages, co-op check (doc 07 last entry).
+
+## 9-prev15. The Steam copy has every hero again (2026-10-23)
 
 - Why: "why is my new hero not attached to steam!": after the 0.11.0 Melty test the PC had Melty's seven-hero cut (`heroes.txt`, Billy coming soon, no Wraith), a seven-hero cache and `winhttp.dll` switched off, so Steam's Play loaded nothing.
 - Done: dev DLL, all-heroes `heroes.txt`, no `coming-soon.txt`, `winhttp.dll` back, cache rebuilt with all nine; `lab_restore.sh` does the first three every time and reports a cache missing a hero (doc 03 §4).

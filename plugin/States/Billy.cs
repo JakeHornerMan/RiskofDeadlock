@@ -84,7 +84,8 @@ namespace DeadlockOfRain.States
             if (snapTime <= 0f) SwingClip();
             Sound("cast");
             if (heavy) Sound("end");
-            Vfx.Play(row.Vfx, "cast", characterBody.corePosition + dir * 1.3f, heavy ? 1.5f : 1f, null, characterBody.corePosition + dir * 3f, swing * 70f + (air ? 30f : 0f));
+            // the sweep over the whole hit area (radius, spreadDeg), each swing tilted its own way, the overhead steeper
+            Vfx.Play(row.Vfx, "cast", characterBody.corePosition, row.Radius, null, characterBody.corePosition + dir, heavy ? 40f : swing == 0 ? -15f : 15f);
             characterBody.SetAimTimer(1f);
         }
 
@@ -190,6 +191,24 @@ namespace DeadlockOfRain.States
                 if (air && lift) lift.Extend(row.HangTime, row.FloatTime);
                 else if (air && b && !b.isChampion && (!b.characterMotor || !b.characterMotor.isGrounded)) DlrLift.Float(b, 0f, Time.fixedDeltaTime, row.HangTime);
             }
+            // and every other enemy floating within nearRadius of one it hits stays up nearHang more (once per swing)
+            if (air && Server && row.NearHang > 0f)
+            {
+                var near = new HashSet<CharacterBody>();
+                foreach (var hb in hits)
+                {
+                    var b = hb.healthComponent.body;
+                    if (!b) continue;
+                    foreach (var nb in Fx.Enemies(characterBody, b.corePosition, row.NearRadius))
+                    {
+                        var o = nb.healthComponent.body;
+                        if (!o || near.Contains(o) || hits.Exists(h => h.healthComponent.body == o)) continue;
+                        near.Add(o);
+                        var l = o.GetComponent<DlrLift>();
+                        if (l) l.Extend(row.NearHang, row.FloatTime);
+                    }
+                }
+            }
             Fx.Sound(row.Id, "hit", hits[0].transform.position);
             stopUntil = Time.time + (heavy ? 0.08f : 0.05f);
             if (isAuthority)
@@ -220,7 +239,8 @@ namespace DeadlockOfRain.States
     /// <summary>Locks onto the nearest enemy within lockRange. On the ground: a minDuration hop, then damagePct, a knockback and a
     /// stunDuration stun on it (bosses: bossMult of the stun, no knockback) and splashPct to every other enemy within reach (the
     /// shockwave). In the air: he dives at speed m/s; on contact damagePct x airMult to it and damagePct to every enemy within
-    /// radius of it, all driven into the floor (floats end) and stunned duration seconds; he drops with them. No target: on the
+    /// radius of it, all stunned duration seconds; the ones in the air are chained to him and pulled down with him (the chains
+    /// break as he lands, and anyone still up is slammed the rest of the way), the rest driven into the floor. No target: on the
     /// ground splashPct within reach in front, in the air straight down and damagePct within radius of where he lands.</summary>
     [Kind("bashdown")]
     public sealed class Bashdown : DlrState
@@ -363,31 +383,31 @@ namespace DeadlockOfRain.States
             if (Physics.Raycast(center + Vector3.up, Vector3.down, out var g, 60f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) ground = g.point;
             Fx.Sound(row.Id, "hit", ground);
             Vfx.Play(row.Vfx, "hit", ground, row.Radius);
-            // chains run from the slammed enemy to every other enemy in the air it drags down, breaking as they land
+            // chains run from Billy to every enemy in the air he drags down (the slammed one too); they are pulled down with him
+            // and the chains break as he lands (creator, 2026-10-24)
             var dragged = new List<CharacterBody>();
             foreach (var hb in Fx.Enemies(characterBody, center, row.Radius))
             {
                 var b = hb.healthComponent.body;
-                if (!b || b == t || dragged.Contains(b)) continue;
+                if (!b || dragged.Contains(b) || b.isChampion) continue;
                 if (b.characterMotor && b.characterMotor.isGrounded) continue;
                 dragged.Add(b);
             }
-            ChainUp(t, dragged, 0.5f);
+            ChainUp(null, dragged, 3f);
             if (!Server) return;
             float stun = row.Duration + 0.4f;
             if (t)
             {
                 Fx.Hit(characterBody, LockTarget, Coef * row.AirMult, row.ProcCoefficient, t.corePosition);
-                BillyAir.SlamDown(t.healthComponent, row.Speed);
                 Fx.Stun(t.healthComponent, stun);
             }
             foreach (var hb in Fx.Enemies(characterBody, center, row.Radius))
             {
                 var b = hb.healthComponent.body;
-                if (!b || b == t) continue;
-                Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, b.corePosition);
-                BillyAir.SlamDown(hb.healthComponent, row.Speed);
-                Fx.Stun(hb.healthComponent, stun);
+                if (!b) continue;
+                if (b != t) { Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, b.corePosition); Fx.Stun(hb.healthComponent, stun); }
+                if (dragged.Contains(b)) BillyAir.DragDown(hb.healthComponent, characterBody, row.Speed);
+                else BillyAir.SlamDown(hb.healthComponent, row.Speed);
             }
         }
 
@@ -396,16 +416,21 @@ namespace DeadlockOfRain.States
         void ChainUp(CharacterBody from, List<CharacterBody> bodies, float life)
         {
             if (row.ChainPct <= 0f || bodies.Count == 0) return;
-            Vfx.Chains(characterBody, bodies, 0.06f, life, from ? from.coreTransform : null);
+            chains = Vfx.Chains(characterBody, bodies, 0.06f, life, from ? from.coreTransform : null);
             if (!Server) return;
             foreach (var b in bodies)
                 if (b && b.mainHurtBox && b.healthComponent && b.healthComponent.alive)
                     Fx.Hit(characterBody, b.mainHurtBox, Coef * row.ChainPct / 100f, row.ProcCoefficient, b.corePosition);
         }
 
+        GameObject chains;
+
         public override void OnExit()
         {
             if (row != null && air && !smashed && Server) AirSmash();
+            // he is down: the chains break, and anyone still in the air is slammed the rest of the way (BillyAir.LetGo)
+            Vfx.Stop(chains, 0.1f);
+            if (Server && row != null) BillyAir.LetGo(characterBody, row.Speed);
             Vfx.Stop(trail, 0.3f);
             DeadlockAudio.Stop(loop);
             if (anim) { if (frozen) anim.Freeze(false); anim.StopOverride(); }

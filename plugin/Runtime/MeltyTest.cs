@@ -1437,12 +1437,17 @@ namespace DeadlockOfRain
             if (t.master && t.master.inventory) t.master.inventory.GiveItem(RoR2Content.Items.BoostHp, 200);
             targets.Add(t);
             yield return new WaitForSeconds(0.8f);
+            // a second one floating beside it, out of the swing's reach but within the bat's nearRadius of it: the hit keeps it up nearHang more
+            var side = Vector3.Cross(Vector3.up, fwd);
+            var n = bat.NearHang > 0f ? Summon(body, t.footPosition + side * Mathf.Min(7f, bat.NearRadius - 1f)) : null;
+            if (n) { if (n.master && n.master.inventory) n.master.inventory.GiveItem(RoR2Content.Items.BoostHp, 200); targets.Add(n); }
+            yield return new WaitForSeconds(0.3f);
             DlrLift.Float(t, ram.LaunchHeight, ram.MinDuration, ram.FloatTime);
+            if (n) DlrLift.Float(n, ram.LaunchHeight, ram.MinDuration, ram.FloatTime);
             float floatStart = Time.time;
             yield return new WaitForSeconds(ram.MinDuration + 0.1f);
-            // 8 m off to one side and a little below: only the dodge-in brings the bat to it
-            var side = Vector3.Cross(Vector3.up, fwd);
-            TeleportHelper.TeleportBody(body, t.footPosition - (fwd * 0.8f + side * 0.6f).normalized * 8f - Vector3.up * 1f, false);
+            // a metre inside the lock-on range, off to the other side and a little below: only the dodge-in brings the bat to it
+            TeleportHelper.TeleportBody(body, t.footPosition - (fwd * 0.8f - side * 0.6f).normalized * (bat.LockRange - 1f) - Vector3.up * 1f, false);
             if (body.characterMotor) { body.characterMotor.velocity = Vector3.zero; body.characterMotor.jumpCount = body.maxJumpCount; }
             rt.Reloading = false; rt.Ammo = 0;
             float dealt = 0f;
@@ -1463,6 +1468,8 @@ namespace DeadlockOfRain
             float y2 = body.footPosition.y;
             int ammo = rt.Ammo;
             Shot(hero.Id + "_air_bat");
+            while (Time.time - floatStart < ram.FloatTime + bat.NearHang * 0.5f) yield return null;
+            bool nearUp = !n || DlrLift.Floating(n);
             while (Time.time - floatStart < ram.FloatTime + bat.HangTime * 0.5f) yield return null;
             bool stillUp = DlrLift.Floating(t);
             GlobalEventManager.onServerDamageDealt -= onDamage;
@@ -1474,7 +1481,51 @@ namespace DeadlockOfRain
             if (y1 - y2 > 0.35f) why[0] += $"billy air bat: fell {y1 - y2:F2} m right after the hit; ";
             if (ammo < wantAmmo) why[0] += $"billy air bat: magazine {ammo}, want {wantAmmo}; ";
             if (!stillUp) why[0] += "billy air bat: the float was not kept up; ";
+            if (n) Log.Info($"Melty test: {hero.Id} air bat, the enemy floating {Mathf.Min(7f, bat.NearRadius - 1f):F0} m from the one hit: still floating at {ram.FloatTime + bat.NearHang * 0.5f:F2} s: {nearUp}");
+            if (!nearUp) why[0] += "billy air bat: the enemy near the hit was not kept up; ";
             KillTargets();
+
+            // air Bashdown at two floating enemies: both chained to him, pulled down with him, on the floor beside him when he lands
+            var bash = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "bashdown");
+            if (bash != null)
+            {
+                TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+                if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+                var a = Summon(body, spot + fwd * 4f + Vector3.up * 0.5f);
+                var c = Summon(body, spot + fwd * 4f + side * 6f + Vector3.up * 0.5f);
+                foreach (var v in new[] { a, c }) if (v) { if (v.master && v.master.inventory) v.master.inventory.GiveItem(RoR2Content.Items.BoostHp, 200); targets.Add(v); }
+                yield return new WaitForSeconds(0.8f);
+                if (a && c)
+                {
+                    DlrLift.Float(a, ram.LaunchHeight, ram.MinDuration, ram.FloatTime);
+                    DlrLift.Float(c, ram.LaunchHeight, ram.MinDuration, ram.FloatTime);
+                    yield return new WaitForSeconds(ram.MinDuration + 0.1f);
+                    TeleportHelper.TeleportBody(body, a.footPosition - fwd * 2.5f + Vector3.up * 1f, false);
+                    if (body.characterMotor) { body.characterMotor.velocity = Vector3.zero; body.characterMotor.jumpCount = body.maxJumpCount; }
+                    var look2 = (a.corePosition - body.inputBank.aimOrigin).normalized;
+                    AimCamera(body, look2); body.inputBank.aimDirection = look2;
+                    var us = body.skillLocator.utility;
+                    us.Reset();
+                    us.ExecuteIfReady();
+                    int dragged = 0;
+                    for (float w = 0f; w < 0.6f && dragged < 2; w += Time.fixedDeltaTime)
+                    {
+                        yield return new WaitForFixedUpdate();
+                        dragged = (DlrLift.Dragged(a, body) ? 1 : 0) + (DlrLift.Dragged(c, body) ? 1 : 0);
+                    }
+                    for (float w = 0f; w < 3f && !(body.characterMotor && body.characterMotor.isGrounded); w += 0.1f) yield return new WaitForSeconds(0.1f);
+                    Shot(hero.Id + "_air_bashdown");
+                    yield return new WaitForSeconds(0.4f);
+                    float Flat(CharacterBody v) { var d = v.corePosition - body.corePosition; d.y = 0f; return d.magnitude; }
+                    bool down = !DlrLift.Floating(a) && !DlrLift.Floating(c);
+                    Log.Info($"Melty test: {hero.Id} air Bashdown at 2 floating enemies: {dragged}/2 chained and dragged down with him; when he landed they were {Flat(a):F1} m and {Flat(c):F1} m from him, both down: {down}");
+                    if (dragged < 2) why[0] += $"billy air Bashdown: only {dragged}/2 chained and dragged down; ";
+                    if (!down) why[0] += "billy air Bashdown: an enemy was still up after he landed; ";
+                    if (Mathf.Max(Flat(a), Flat(c)) > 5f) why[0] += $"billy air Bashdown: they did not come down beside him ({Flat(a):F1} m, {Flat(c):F1} m); ";
+                }
+                else why[0] += "billy air Bashdown: no targets; ";
+                KillTargets();
+            }
 
             // M2 the instant after a jump from the ground, at an enemy standing 7 m away: he must dodge in and hit it
             TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);

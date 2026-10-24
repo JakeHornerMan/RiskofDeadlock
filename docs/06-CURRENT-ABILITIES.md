@@ -167,6 +167,21 @@ Stats: Captain's (130 +39 health, 10 armor, 1 +0.2 regen, 12 +2.4 damage, 7 m/s)
 | R | **Rule, Ratannia!** | Raises the banner (0.25 s), **leaps up to 20 m** toward the crosshair (a little steering), and slams it down: rats burst out of the ground, the ground cracks, and Deadlock's banner and sewer rise around it for 8 s. Only enemies the banner can see are hit. | **1500 %** within 4 m; **150 %** and a **3 s stun** (1.5 s on bosses) within 14 m | 12 s | **1123** · 135 |
 | Q | **Rat Swarm** (equipment) | **50 rats** pour out and stay at the carrier's feet, **with no time limit**, until they find an enemy within 40 m: each takes the enemy with the fewest rats on it, leaps the last 2 m, clings on and bites **until that enemy dies, then is gone** (**at most 5 per enemy, 10 on bosses**; fliers only up to 6 m). An enemy that runs off alive frees its rats again. Spare rats follow the carrier to the end of the stage (or the carrier's death); using it again tops them back up to 50. Any survivor can carry it. | **100 %** a bite each second per rat (proc 0.5): 500 % a second to one enemy (1000 % on a boss) until it dies | 120 s | **4618** · 554 (mean of 3; 2073 with the old 15 s limit) |
 
+## Billy: the punk goat (in development, not benched since the 2026-10-24 changes; match Mercenary, doc 05 §0)
+
+In development (not released; Melty shows a "coming soon" tile). Deadlock's model (spiked bat in one hand, Biquette in the other).
+Stats: **175 +52.5 health** (2026-10-24: +25 %, was 140 +42), 20 armor, 1 +0.2 regen, 12 +2.4 damage, 7 m/s, **1 jump**.
+Passive **G.O.A.T.**: a jump in the air is an 8 m dodge along the keys (or at the crosshair), goring everything passed for 300 %;
+two per trip in the air, given back on landing or by Rising Ram. Look: stone and punk pink.
+
+| Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s · dmg/s) |
+|---|---|---|---|---|---|
+| M1 | **Biquette** | Full-auto machine gun, Deadlock's octagon spray (first bullet dead centre, then 8 points round the crosshair). Full damage to 14 m, 40 % at 32 m. | **50 %** a bullet, 10/s, 30 rounds, 2 s reload | – | not benched |
+| M2 | **Bat** | A 3-hit combo, one full swing (0.67 s) per press, sweeping everything in a **6 m, 120° arc** in front (2026-10-24: was 4 m; a flat pink sweep now shows the whole arc). **In the air**: double damage, a dodge onto the nearest enemy within **13 m** (was 10), each hit keeps **the enemy hit up 1 s longer** and **every other floating enemy within 10 m of it 0.5 s** (new; up to 6 s, was 4) and stalls his own fall 1 s. Every hit reloads 35 % of Biquette. | **180 %**, 180 %, **360 %** overhead (×2 in the air) | 0.67 s | not benched |
+| Shift | **Bashdown** | Locks onto the nearest enemy within 5 m. **Ground**: 1000 %, knocked back, 2 s stun, a 300 % shockwave within 4 m. **Air**: dives at it for **2000 %**, everyone within 10 m takes 1000 % and is stunned; **chains run from Billy** to every enemy in the air he drags down (2026-10-24: was from the slammed enemy), 330 % each, and they **fall with him**, drawn in beside him, the chains breaking as he lands. | 1000 % (2000 % air), 300 % / 1000 % splash, chains 330 % | 4 s | not benched |
+| R | **Rising Ram** | Charge 15 m; ramming an enemy deals 1200 % and chains (396 % each) haul every grounded enemy within 10 m, and him, into a **3 s float** (2026-10-24: was 2 s; the bat keeps it going, see M2). Cooldown halved on a hit. Ground only. | 1200 %, chains 396 % | 6 s | not benched |
+| Q | **Chain Gang** (equipment) | Chains to every enemy in sight within 20 m (up to 20), hauled 6 m up and slammed for 6000 % each; the rest stunned 3 s. Bosses are slammed where they stand. | **6000 %** per enemy | 120 s | not benched |
+
 ## Wraith: the card shark (main moves at once: **517 %/s**, one v0.11.0a run; match Bandit 1919 (library): **below** ±500 (−1402), kept by the creator, doc 05 §3.14)
 
 New 2026-10-23 (not released). Deadlock's model (her fedora and long coat; 2.37 m to the top of the head, `heightScale` 0.983), her

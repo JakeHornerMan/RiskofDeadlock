@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using DeadlockOfRain.Sheets;
 using RoR2;
 using UnityEngine;
 
@@ -60,10 +62,20 @@ namespace DeadlockOfRain
             switch (moment)
             {
                 case "cast":
-                    // the swing's arc, rolled a different way each swing; the heavy overhead wider
-                    Slash(at, billyPink, 1.5f * radius, angle);
-                    Slash(at, billyHot, 1.1f * radius, angle + 8f);
+                {
+                    // the swing sweeps the whole area it hits: radius is its reach, the arc the row's spreadDeg either side of
+                    // where he swings (to), tilted angle degrees about that line (each swing its own way); plus the slash itself
+                    var fwd = to.HasValue ? to.Value - at : Vector3.forward;
+                    if (fwd.sqrMagnitude < 1e-4f) fwd = Vector3.forward;
+                    var bat = SkillRow.All.FirstOrDefault(r => r.Vfx == "billy_bat");
+                    float half = bat != null ? bat.SpreadDeg : 60f;
+                    Sweep(at, fwd.normalized, radius, half, angle, billyPink, 0.35f);
+                    Sweep(at, fwd.normalized, radius * 0.7f, half * 0.9f, angle, billyHot, 0.22f);
+                    var mid = at + fwd.normalized * radius * 0.35f;
+                    Slash(mid, billyPink, 0.45f * radius, angle * 3f);
+                    Slash(mid, billyHot, 0.33f * radius, angle * 3f + 8f);
                     return null;
+                }
                 case "hit":
                 {
                     var dir = to.HasValue ? (to.Value - at).normalized : Vector3.up;
@@ -87,6 +99,49 @@ namespace DeadlockOfRain
                     return null;
             }
             return null;
+        }
+
+        /// <summary>The bat's sweep: an arc of radius metres spanning half degrees either side of fwd, in the level plane through
+        /// fwd tilted tilt degrees about it, drawn from one end to the other over the first 0.1 s and fading by 0.3 s.</summary>
+        static void Sweep(Vector3 at, Vector3 fwd, float radius, float half, float tilt, Color c, float width)
+        {
+            var flat = new Vector3(fwd.x, 0f, fwd.z);
+            var rot = Quaternion.LookRotation(flat.sqrMagnitude > 1e-4f ? fwd : Vector3.forward, Vector3.up) * Quaternion.Euler(0f, 0f, tilt);
+            var root = Root(at, 0.35f, null);
+            root.transform.rotation = rot;
+            var lr = new GameObject("sweep").AddComponent<LineRenderer>();
+            lr.transform.SetParent(root.transform, false);
+            lr.useWorldSpace = false;
+            lr.sharedMaterial = Mat("mat_tracer", c);
+            lr.startColor = lr.endColor = c;
+            const int seg = 24;
+            var pts = new Vector3[seg];
+            for (int i = 0; i < seg; i++)
+            {
+                float a = Mathf.Lerp(-half, half, i / (seg - 1f)) * Mathf.Deg2Rad;
+                pts[i] = new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a)) * radius;
+            }
+            lr.widthCurve = new AnimationCurve(new Keyframe(0, 0.1f), new Keyframe(0.75f, 1f), new Keyframe(1, 0f));
+            lr.widthMultiplier = width * Mathf.Max(1f, radius / 3f);
+            var sw = root.AddComponent<SweepLine>();
+            sw.Points = pts; sw.Line = lr;
+        }
+
+        /// <summary>Draws the sweep's arc in over 0.1 s (from the far side to his swing hand's side) and thins it out by 0.3 s.</summary>
+        sealed class SweepLine : MonoBehaviour
+        {
+            public Vector3[] Points; public LineRenderer Line;
+            float age, w;
+            void Start() { if (Line) w = Line.widthMultiplier; Update(); }
+            void Update()
+            {
+                if (!Line || Points == null) return;
+                age += Time.deltaTime;
+                int n = Mathf.Clamp(Mathf.CeilToInt(Points.Length * Mathf.Clamp01(age / 0.1f)), 2, Points.Length);
+                Line.positionCount = n;
+                for (int i = 0; i < n; i++) Line.SetPosition(i, Points[Points.Length - n + i]);
+                Line.widthMultiplier = w * Mathf.Clamp01(1f - Mathf.Max(0f, age - 0.08f) / 0.22f);
+            }
         }
 
         // ------------------------------------------------------------------ Bashdown

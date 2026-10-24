@@ -1080,3 +1080,25 @@ yourself aswelll", "and then leave the game open so i can test", "works now", th
 **Results:** run_test billy all pass. The test file had been left behind after that run (no lab_restore, game left open); removed.
 **Not done / open:** Billy's stance: waiting for the creator to say whether he still looks turned; the fix would be a squarer aimPose.
 **Lessons:** leaving the game open for the creator skipped lab_restore and left test mode on; the scripts now clean it themselves.
+
+### 2026-10-24 · Billy: bigger bat, chained air Bashdown, longer Ram float, +25 % health · v0.11.0 (in development) · this commit
+**Request (verbatim):** "ok work on bbilly i want the aoe arc on m2 to be alot bigger you can express this through the vfx swipe, also
+lets work on Shift Bashdown Ability whiel in the air the enemy need to be chained form billy now and fall alongside with him. all enemys
+launced into the air form Rising Ram Ability need to start at 3 second in air if an enemy is hit with a 10m radius with m2 Bat they get an
+adition 0.5 seconds in air, if they are hit they get an extra second, let make the snapping to enemy with the bata ability a bit larager
+and let increase billy health by 25", then "when you run a test after the change leave it open for me to test!"
+**Questions asked → answers:** bat arc → "6m, 120° wide" (then told the arc was already 120°, I had said 60° by mistake: "6m, keep 120°");
+Ram float extras → "Hit +1s, nearby +0.5s" (cap 6 s); health → "+25% (140 → 175)"; bat snap → "13m"; stance fix → "No, it's fine now".
+**Done:**
+- Sheets: bat `radius` 6, `lockRange`/`reach` 13, `floatTime` 6, new columns `nearHang` 0.5 / `nearRadius` 10; Ram `floatTime` 3;
+  Billy 175 +52.5 health; descriptions rewritten.
+- Code: `BatCombo.Strike` extends floats near each hit; `Vfx.Sweep` (a flat arc over the whole hit area) for the bat's cast;
+  air Bashdown chains from Billy and drags enemies down with him (`DlrLift` phase Drag, `BillyAir.DragDown`/`LetGo`).
+- Test: `TestBillyAir` snaps from `lockRange − 1` m, checks the near enemy's float and the air Bashdown drag (2/2 chained, beside him, both down).
+- Docs 02 (Billy's kinds, `billy_bat`), 05 §0 flag, 06 (new Billy section), hooks.json.
+**Results:** `PRACTICE=1 run_test.sh billy`: 20/20 pass on the third run. Run 1 pass. Run 2: one enemy landed 7.4 m away (pull capped at
+  20 m/s, raised to 60), the ragdoll check also failed there and the run went back to the title (not seen again). The game was left open
+  on the practice spot for the creator.
+**Not done / open:** bench (it closes the game; after the creator's play), kit page refresh and republish (after the bench), co-op check of the drag.
+**Lessons:** never put a second command after a test in the same shell line: a stray `run_test.sh ... &` killed the practice game the
+  creator was waiting for and had to be killed and rerun.
