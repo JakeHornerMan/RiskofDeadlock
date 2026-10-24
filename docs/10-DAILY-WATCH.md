@@ -145,7 +145,7 @@ What the prompt tells Claude to do:
    - `inspect_package` -> `validate_recipe` -> upload -> `submit_release` -> `test_release` (2 runs) -> `test_result`, plus
      `test_footage` and a `test_review` for **each** run (a run only counts with a passing review).
    - Listing from `thunderstore/melty-description.md` (Hero pages kept, Built-with line updated) -> `update_mod` ->
-     `publish` -> `mod_status`. `report_bug_fix` for a Melty break.
+     `publish` -> `mod_status` -> `python tools/discord_update.py <version>` (Discord #update). `report_bug_fix` for a Melty break.
 9. Record it: a doc 07 entry ("daily watch <date>: ..."), doc 00 §1/§9, MODLOG and any doc the fix touched, all in the same commit.
 10. **Report:** always write `build/watch/<date>-report.md`, even after stopping early. Its first line is the notification
     text. If `gh` is installed and signed in, also open a GitHub issue with the same text.

@@ -60,6 +60,7 @@ Steps:
      passing review. If the test fails, fix and test again, or stop without publishing.
    - Listing: edit `thunderstore/melty-description.md` (keep "Hero pages", set the "Built with" line to the new version and
      builds) and pass it to `update_mod`. Then `publish` and `mod_status` ("in review" is not "live").
+   - Then `python tools/discord_update.py <version>` posts it to the Discord #update channel (CLAUDE.md). Never print the webhook link.
    - For a Melty break, `report_bug_fix` with its issue key after publishing.
 8. For every Melty break you handled (fixed, or found not to be ours), append its `signature` (from the triage JSON above) to
    `build/watch/known-breaks.txt` as `<signature> | <date> <what happened>: <fixed on main / released in X / not ours, why>`.

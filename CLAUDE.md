@@ -55,6 +55,10 @@ Deadlock's assets from the player's own install; nothing from either game ships.
   Code reads generated rows and never hard-codes a number, clip name, sound event, effect key or icon. Unused cells are `0` or `"none"`, never empty.
 - **Never ship or commit game files** (Deadlock or RoR2), and never modify the Deadlock install. Never work around anti-cheat.
 - **The Melty token is secret:** only in Melty's Authorization header, never in files, commits, logs or replies.
+- **Post every Melty update to Discord** (creator, 2026-10-24: "post here everytime there is a updtae pushed to melty"):
+  right after each Melty `publish` (the daily watch's too), run `python tools/discord_update.py <version>`. It posts the
+  version's CHANGELOG section and the Melty link to #update in the Risk of Deadlock Discord (invite `discord.gg/sNByetmcqc`,
+  doc 03 §9). The webhook link is secret like the Melty token: only in `%LOCALAPPDATA%\DeadlockOfRain\discord-update-webhook.txt`.
 - **Commit after each logical step; do not push unless asked.** Ask the creator before `publish` on Melty. The one
   exception is the **daily watch** (`tools/watch/`, doc 03 §5b): its unattended fix run may publish a fix on its own, but
   only after every check and Melty's `test_release` pass, and only when `main` holds no unreleased work besides the fix (doc 10 §3.4).

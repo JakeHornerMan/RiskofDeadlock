@@ -1190,3 +1190,15 @@ then "I would like if they had acces to general area and also thir own area, wit
   Game closed, test mode off. A copy of the game was already running when the test started; `run_test.sh` closes any running copy first.
 **Bullet damage:** the sheet is 83.33 % = 10 at level 1; a smaller number in game comes from armor (shown after armor) or range falloff past 14 m.
 **Not done / open:** upload still on hold; Billy's page not refreshed.
+
+### 2026-10-24 · Discord #update channel, posts on every Melty release · this commit
+**Request (verbatim):** "add new Risk of Deadlock ... Player channel called update and only i am allowed to post there", then
+"i want you to post here everytime there is a updtae pushed to melty, add that to the claude.md".
+**Questions asked → answers:** none.
+**Done:** #update made in the Risk of Deadlock section as an Announcement channel (everyone and the player role can read it; @everyone
+  denied Send Messages, Create Public Threads, Send Messages in Threads, so only the owner posts). Webhook "Risk of Deadlock" on it; its link
+  saved to `%LOCALAPPDATA%\DeadlockOfRain\discord-update-webhook.txt` straight from the clipboard (never shown). `tools/discord_update.py
+  <version> [--dry-run]` posts the CHANGELOG section + Melty link. CLAUDE.md standing rule; doc 03 §6 step 9 and §9; watch fix prompt and doc 10.
+  The creator renamed #faq to #faq-issues.
+**Results:** dry run for 1.0.0 prints the message; nothing posted yet (no release since).
+**Not done / open:** first real post comes with the 1.0.0 publish.
