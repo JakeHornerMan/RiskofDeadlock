@@ -1238,3 +1238,11 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** run_test billy pass; bench 6393; ult bench all ten numbers (doc 05 §3.17). Game closed and test mode off after each run.
 **Not done / open:** the queen stood ~27 m out, so short-reach ults never touched her (not re-run, creator's rule); the button is built but not
   seen in game (no screenshot run); the Wraith page is still private (the creator shares it); 1.0.0 upload still on hold (must be re-packaged).
+
+### 2026-10-24 · Balance overview: a hero-select grid instead of "The pairs" · no version · this commit
+**Request (verbatim):** "https://deadlock.wiki/Heroes can we take inspiration form this heroselect lay out and implement it here [the pairs table pasted] maybe do not say the apirs on that page! at the bottom of the image let put the above below or inside"
+**Questions asked → answers:** none.
+**Done:** `kit_pages.py` `overview_page`: the "The pairs" table is now a "Heroes" grid of tall cards (our own in-game portrait on the hero's
+  colour, the name under it, "6,393 vs Mercenary 5,112", and a band along the bottom: green "inside · +52", red "above · +1,281" / "below · −504");
+  each card opens the hero's kit sheet. Wiki used for the idea only, no art from it. Balance overview republished.
+**Not done / open:** seen only as built HTML (the browser tool can't open local files); a look at the live page is the check.

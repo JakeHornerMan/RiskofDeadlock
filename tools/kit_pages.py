@@ -821,17 +821,19 @@ def library_section():
             f'<p class="muted">{intro}</p><div class="lchart">{"".join(chart)}</div><div class="lgrid">{"".join(cards)}</div></section>')
 
 def overview_page():
-    def badge(name):
-        return f'<span class="badge" aria-hidden="true">{E(name[:2].upper())}</span>'
     pairs, cards, fun = [], [], []
     for h in HEROES:
         hid = h['id']; body, v = match_of(hid)
         me, base = avg_all(hero_who(hid)), avg_all(v['who'])
         side, gap = verdict(me, base)
-        pairs.append(f'<tr><td><div class="who-cell">{img_tag(hid, "", 60)}<a href="{LINKS.get(hid, "#")}">{E(h["displayName"])}</a></div></td>'
-                     f'<td><div class="who-cell">{img_tag(body, "", 60) or badge(v["name"])}{E(v["name"])}</div></td>'
-                     f'<td class="n">{fmt(me)}</td><td class="n">{fmt(base)}</td>'
-                     f'<td><span class="verdict {side}">{side} · {signed(gap)}</span></td></tr>')
+        # a hero-select card in the manner of deadlock.wiki/Heroes: a tall portrait (our own in-game render) with the name
+        # under it, and the verdict as a band along the bottom (creator, 2026-10-24)
+        pairs.append(f'''<a class="hcard {side}" href="{LINKS.get(hid, "#")}" style="--accent:{h["primaryColor"]}">
+  <span class="hpic">{img_tag(hid, h["displayName"])}</span>
+  <span class="hname">{E(h["displayName"])}</span>
+  <span class="hvs">{fmt(me)} vs {E(v["name"])} {fmt(base)}</span>
+  <span class="hband">{side} · {signed(gap)}</span>
+</a>''')
         paras = ''.join(f'<p>{t}</p>' for t in analysis(h))
         cards.append(f'''<section class="box" style="--accent:{h["primaryColor"]};border-top:3px solid {h["primaryColor"]}" aria-labelledby="an-{hid}">
   <div class="head">{img_tag(hid, "", 90)}<div><h3 id="an-{hid}">{E(h["displayName"])} <span class="muted">vs {E(v["name"])}</span></h3><div class="eyebrow">{E(h["subtitle"])}</div></div></div>
@@ -849,7 +851,21 @@ def overview_page():
     inside = sum(1 for h in HEROES if verdict(avg_all(hero_who(h['id'])), avg_all(match_of(h['id'])[1]['who']))[0] == 'inside')
     return f'''<title>Deadlock of Rain Balance</title>
 {FONTS}
-<style>{css("#c9a35b")}</style>
+<style>{css("#c9a35b")}
+.hgrid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }}
+.hcard {{ position: relative; display: grid; grid-template-rows: auto auto auto auto; text-decoration: none; color: var(--cream);
+    background: var(--panel); border: 1px solid var(--rule); overflow: hidden; transition: transform .15s ease, border-color .15s ease; }}
+.hcard:hover, .hcard:focus-visible {{ transform: translateY(-3px); border-color: var(--accent); }}
+.hpic {{ display: grid; place-items: end center; aspect-ratio: 3 / 4.2; overflow: hidden;
+    background: radial-gradient(70% 55% at 50% 45%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 75%), linear-gradient(180deg, var(--panel2), var(--ink)); }}
+.hpic img {{ height: 94%; width: auto; max-width: none; filter: drop-shadow(0 8px 10px rgba(0,0,0,.6)); }}
+.hname {{ font: 400 20px/1.1 var(--display); letter-spacing: .04em; text-align: center; padding: 8px 6px 2px; border-top: 2px solid var(--accent); }}
+.hvs {{ font: 500 11px/1.3 var(--mono); color: var(--muted); text-align: center; padding: 0 6px 8px; font-variant-numeric: tabular-nums; }}
+.hband {{ font: 700 12px/1 var(--cond); letter-spacing: .16em; text-transform: uppercase; text-align: center; padding: 8px 4px; color: var(--ink); }}
+.hcard.inside .hband {{ background: var(--good); }} .hcard.above .hband, .hcard.below .hband {{ background: var(--bad); }}
+.hcard.unknown .hband {{ background: var(--muted); }}
+@media (max-width: 420px) {{ .hgrid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }} }}
+</style>
 <main class="wrap">
   {nav("overview")}
   <header class="id" style="gap:14px">
@@ -859,11 +875,9 @@ def overview_page():
   </header>
 
   <section class="section" aria-labelledby="pr">
-    <h2 id="pr">The pairs</h2>
-    <div class="tablewrap"><table>
-      <thead><tr><th>Hero</th><th>Risk of Rain match</th><th class="n">Hero %/s (mean)</th><th class="n">Match %/s (mean)</th><th>Verdict (±500)</th></tr></thead>
-      <tbody>{"".join(pairs)}</tbody>
-    </table></div>
+    <h2 id="pr">Heroes</h2>
+    <p class="muted">Main moves together, %/s (mean over every run), against their Risk of Rain match. The band says where each hero sits against the ±500 band. Pick a hero for their kit sheet.</p>
+    <div class="hgrid">{"".join(pairs)}</div>
   </section>
 
   <section class="section" aria-labelledby="an">
