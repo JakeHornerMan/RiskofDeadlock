@@ -1202,3 +1202,10 @@ then "I would like if they had acces to general area and also thir own area, wit
   The creator renamed #faq to #faq-issues.
 **Results:** dry run for 1.0.0 prints the message; nothing posted yet (no release since).
 **Not done / open:** first real post comes with the 1.0.0 publish.
+
+### 2026-10-24 · Discord member list grouped by role · this commit
+**Request (verbatim):** "can we section off the memeber by 3 roles 'London Calling', 'Dia dhuit Éire', and 'Risk of Deadlock Player'"
+**Questions asked → answers:** none.
+**Done:** "Display role members separately from online members" switched on for London Calling, Dia dhuit Éire and Risk of Deadlock Player
+  (each checked after saving). A member with several of these is listed under the highest one in the role order (London Calling, then Dia dhuit Éire, then Risk of Deadlock Player).
+**Results:** settings saved; the member list itself not looked at (the open channel had no member panel).
