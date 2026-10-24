@@ -1535,16 +1535,28 @@ namespace DeadlockOfRain
                     if (body.characterMotor) { body.characterMotor.velocity = Vector3.zero; body.characterMotor.jumpCount = body.maxJumpCount; }
                     var look2 = (a.corePosition - body.inputBank.aimOrigin).normalized;
                     AimCamera(body, look2); body.inputBank.aimDirection = look2;
+                    // a float from an earlier hit: the air Bashdown must end it and take him straight down (2026-10-24)
+                    rt.HangFor(bat.HangTime, bat.FloatTime);
+                    var start = body.footPosition;
                     var us = body.skillLocator.utility;
                     us.Reset();
                     us.ExecuteIfReady();
+                    yield return new WaitForFixedUpdate();
+                    float hangAfter = rt.HangLeft;
                     int dragged = 0;
                     for (float w = 0f; w < 0.6f && dragged < 2; w += Time.fixedDeltaTime)
                     {
                         yield return new WaitForFixedUpdate();
                         dragged = (DlrLift.Dragged(a, body) ? 1 : 0) + (DlrLift.Dragged(c, body) ? 1 : 0);
                     }
+                    float fallStart = Time.time;
                     for (float w = 0f; w < 3f && !(body.characterMotor && body.characterMotor.isGrounded); w += 0.1f) yield return new WaitForSeconds(0.1f);
+                    float fallTook = Time.time - fallStart;
+                    var sideways = body.footPosition - start; sideways.y = 0f;
+                    Log.Info($"Melty test: {hero.Id} air Bashdown straight down: float left after the press {hangAfter:F2} s, {sideways.magnitude:F1} m sideways, down in {fallTook:F2} s, grounded {body.characterMotor && body.characterMotor.isGrounded}");
+                    if (hangAfter > 0.01f) why[0] += $"billy air Bashdown: his float was not ended ({hangAfter:F2} s left); ";
+                    if (sideways.magnitude > 1.5f) why[0] += $"billy air Bashdown: went {sideways.magnitude:F1} m sideways, not straight down; ";
+                    if (!(body.characterMotor && body.characterMotor.isGrounded)) why[0] += "billy air Bashdown: never reached the ground; ";
                     Shot(hero.Id + "_air_bashdown");
                     yield return new WaitForSeconds(0.4f);
                     float Flat(CharacterBody v) { var d = v.corePosition - body.corePosition; d.y = 0f; return d.magnitude; }

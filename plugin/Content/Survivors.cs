@@ -540,6 +540,10 @@ namespace DeadlockOfRain
             hangUntil = now + left + add;
         }
 
+        /// <summary>Owner: his float ends now and no hit holds him up again until he lands (air Bashdown, creator 2026-10-24:
+        /// "a clear decision to be brought down to the ground").</summary>
+        public void EndHang() { hangUntil = 0f; hangUsed = float.MaxValue; }
+
         /// <summary>Owner: a melee hit puts pct % of the gun's magazine back (Billy's Blasted), cutting a reload short.</summary>
         public void Refill(SkillRow gun, float pct)
         {

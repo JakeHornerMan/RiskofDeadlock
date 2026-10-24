@@ -238,10 +238,11 @@ namespace DeadlockOfRain.States
     // ---------------- Billy: Bashdown (Shift) ----------------
     /// <summary>Locks onto the nearest enemy within lockRange. On the ground: a minDuration hop, then damagePct, a knockback and a
     /// stunDuration stun on it (bosses: bossMult of the stun, no knockback) and splashPct to every other enemy within reach (the
-    /// shockwave). In the air: he dives at speed m/s; on contact damagePct x airMult to it and damagePct to every enemy within
-    /// radius of it, all stunned duration seconds; the ones in the air are chained to him and pulled down with him (the chains
-    /// break as he lands, and anyone still up is slammed the rest of the way), the rest driven into the floor. No target: on the
-    /// ground splashPct within reach in front, in the air straight down and damagePct within radius of where he lands.</summary>
+    /// shockwave). In the air (2026-10-24): his float ends and he goes straight down at speed m/s, smashing as he starts:
+    /// damagePct x airMult to the locked enemy (one on his screen) and damagePct to every enemy within radius, all stunned
+    /// duration seconds; the ones in the air are chained to him and pulled down with him (the chains break as he lands, and
+    /// anyone still up is slammed the rest of the way), the rest driven into the floor. No target: on the ground splashPct
+    /// within reach in front, in the air damagePct within radius of him.</summary>
     [Kind("bashdown")]
     public sealed class Bashdown : DlrState
     {
@@ -259,9 +260,11 @@ namespace DeadlockOfRain.States
             {
                 air = BillyAir.InAir(characterBody);
                 LockTarget = BillyAir.Nearest(characterBody, row.LockRange, air);
+                // in the air it is a decision to come down: no float from earlier hits holds him up any more
+                if (air && rt != null) rt.EndHang();
             }
             var t = Locked;
-            dir = t ? (t.corePosition - characterBody.corePosition).normalized : air ? Vector3.down : Flat(ThrowDir);
+            dir = air ? Vector3.down : t ? (t.corePosition - characterBody.corePosition).normalized : Flat(ThrowDir);
             Face();
             Sound("cast");
             characterBody.SetAimTimer(1.5f);
@@ -319,17 +322,9 @@ namespace DeadlockOfRain.States
                 if (smashed) DriveDown();
                 return;
             }
-            if (!smashed)
-            {
-                if (t) dir = (t.corePosition - characterBody.corePosition).normalized;
-                Face();
-                if (isAuthority && characterMotor) { characterMotor.moveDirection = Vector3.zero; characterMotor.velocity = dir * row.Speed; }
-                bool contact = t && Vector3.Distance(t.corePosition, characterBody.corePosition) <= characterBody.radius + t.radius + 1.2f;
-                bool landed = characterMotor && characterMotor.isGrounded && fixedAge > 0.05f;
-                if (contact || landed || fixedAge >= 1.2f) AirSmash();
-            }
-            // he drops with them
-            else DriveDown();
+            // straight down from where he is: the smash at once, then he drops with them
+            if (!smashed) AirSmash();
+            DriveDown();
         }
 
         /// <summary>After the smash: Billy stays in the slam pose, driven straight down, until he is on the floor (creator,

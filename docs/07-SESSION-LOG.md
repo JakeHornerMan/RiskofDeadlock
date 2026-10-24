@@ -1179,3 +1179,14 @@ then "I would like if they had acces to general area and also thir own area, wit
   profile box with the text over the logo, which led to the move. The bottom-left build compiles; not installed or seen yet (game open, creator testing).
 **Not done / open:** install the DLL when the game is closed and look at it; Apply-to-Join bypass and the old invite still the creator's call.
 **Lessons:** RoR2's title screen has the profile box and event banner at the top right; put mod UI in or under the menu column.
+
+### 2026-10-24 · Billy: air Bashdown straight down, float ended · v1.0.0 (not uploaded) · this commit
+**Request (verbatim):** "we need to fix [Bashdown's description pasted] when billy is in the air he shold go straight donw to the gorund and cancellout the float time from any hit or build up hittin that move in the air ia clear decision to be broughts down to the ground!", then "is bullet famage down to 8"
+**Questions asked → answers:** none.
+**Done:** air Bashdown: `HeroRuntime.EndHang` (his float ends and no hit restarts it until he lands), straight down at `speed`, the smash at
+  the press (2000 % to the enemy it locks, 1000 % + stun within 10 m, chains drag floating enemies down with him). Description; docs 02, 05 §0, 06.
+  `TestBillyAir` gives him a float first and checks: float 0 after the press, ≤ 1.5 m sideways, on the ground.
+**Results:** `run_test.sh billy` all pass: float left 0.00 s, 0.4 m sideways, down in 0.23 s; 2/2 enemies dragged down beside him.
+  Game closed, test mode off. A copy of the game was already running when the test started; `run_test.sh` closes any running copy first.
+**Bullet damage:** the sheet is 83.33 % = 10 at level 1; a smaller number in game comes from armor (shown after armor) or range falloff past 14 m.
+**Not done / open:** upload still on hold; Billy's page not refreshed.
