@@ -12,18 +12,26 @@ namespace DeadlockOfRain
     /// hover and click sound) in Discord blurple, in the bottom-right corner of the title screen (creator: "put it in the bottom
     /// right!"; the top right holds RoR2's profile box and event banner), as wide as a menu button and about twice as tall, with Discord's logo (`Assets/discord.png`, drawn by `tools/discord_logo.py`) on the left. It lives in the
     /// title screen, so it goes away with it. The invite never expires and gives everyone who joins through it the
-    /// "Risk of Deadlock Player" role (doc 03 §9). Hidden in test mode.</summary>
+    /// "Risk of Deadlock Player" role (doc 03 §9). Hidden in test mode.
+    /// Above it, the same kind of button in the hero pages' brass opens the balance overview, the hero sheets' hub (every hero's
+    /// damage next to its Risk of Rain match, with links to each kit sheet; creator, 2026-10-24: "a button ... just above the
+    /// discord button that bring them to the characters sheet artifacts the link should open up the damage comparisons").</summary>
     public sealed class CommunityButton : MonoBehaviour
     {
         public const string Invite = "https://discord.gg/sNByetmcqc";
+        /// <summary>The balance overview (docs/06 lists every page's link).</summary>
+        public const string Pages = "https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3";
         static readonly Color Blurple = new Color(0.345f, 0.396f, 0.949f);
-        const float HeightScale = 2.2f, Margin = 48f;
+        static readonly Color Brass = new Color(0.788f, 0.639f, 0.357f);
+        const float HeightScale = 2.2f, Margin = 48f, Gap = 16f;
         static Sprite logo;
 
         public static void Init()
         {
             Survivors.Tokens["DLR_DISCORD_JOIN"] = "Join the Discord";
             Survivors.Tokens["DLR_DISCORD_HOVER"] = "The Risk of Deadlock community: FAQ, hero requests and news from the mod's maker.";
+            Survivors.Tokens["DLR_PAGES_OPEN"] = "Hero Sheets & Damage";
+            Survivors.Tokens["DLR_PAGES_HOVER"] = "Every hero's abilities and numbers, and their damage next to their Risk of Rain 2 match (opens in your browser).";
             var go = new GameObject("DeadlockOfRainCommunity");
             DontDestroyOnLoad(go);
             go.AddComponent<CommunityButton>();
@@ -34,16 +42,20 @@ namespace DeadlockOfRain
             var menu = MainMenuController.instance;
             if (!menu || !menu.titleMenuScreen || MeltyTest.Active) return;
             var screen = menu.titleMenuScreen.transform;
-            if (screen.Find("DeadlockOfRainDiscord")) return;
-            var template = screen.GetComponentsInChildren<HGButton>(true).FirstOrDefault(b => b.GetComponentInChildren<LanguageTextMeshController>(true));
-            if (template) Build(screen, template);
+            if (screen.Find("DeadlockOfRainDiscord") && screen.Find("DeadlockOfRainPages")) return;
+            var template = screen.GetComponentsInChildren<HGButton>(true).FirstOrDefault(b => b.GetComponentInChildren<LanguageTextMeshController>(true)
+                && !b.name.StartsWith("DeadlockOfRain"));
+            if (!template) return;
+            // the Discord button in the corner, the hero pages' button one button-height plus a gap above it
+            if (!screen.Find("DeadlockOfRainDiscord")) Build(screen, template, "DeadlockOfRainDiscord", "DLR_DISCORD_JOIN", "DLR_DISCORD_HOVER", Invite, Blurple, 0, Logo());
+            if (!screen.Find("DeadlockOfRainPages")) Build(screen, template, "DeadlockOfRainPages", "DLR_PAGES_OPEN", "DLR_PAGES_HOVER", Pages, Brass, 1, null);
         }
 
-        static void Build(Transform screen, HGButton template)
+        static void Build(Transform screen, HGButton template, string name, string token, string hover, string url, Color colour, int row, Sprite icon)
         {
             var tr = (RectTransform)template.transform;
             var go = Instantiate(template.gameObject, screen, false);
-            go.name = "DeadlockOfRainDiscord";
+            go.name = name;
             go.SetActive(true);
             (go.GetComponent<LayoutElement>() ?? go.AddComponent<LayoutElement>()).ignoreLayout = true;
             foreach (var lg in go.GetComponentsInChildren<LayoutGroup>(true)) lg.enabled = false;
@@ -52,20 +64,20 @@ namespace DeadlockOfRain
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 0f);
             float w = tr.rect.width, h = tr.rect.height * HeightScale;
             rt.sizeDelta = new Vector2(w, h);
-            rt.anchoredPosition = new Vector2(-Margin, Margin);
+            rt.anchoredPosition = new Vector2(-Margin, Margin + row * (h + Gap));
             rt.localScale = tr.lossyScale.x > 0f && screen.lossyScale.x > 0f ? tr.lossyScale / screen.lossyScale.x : Vector3.one;
 
             var button = go.GetComponent<HGButton>();
             button.onClick = new Button.ButtonClickedEvent();
-            button.onClick.AddListener(() => Application.OpenURL(Invite));
+            button.onClick.AddListener(() => Application.OpenURL(url));
             button.interactable = true;
-            button.hoverToken = "DLR_DISCORD_HOVER";
-            if (button.targetGraphic) button.targetGraphic.color = Blurple;   // HGButton keeps this as its resting colour
+            button.hoverToken = hover;
+            if (button.targetGraphic) button.targetGraphic.color = colour;   // HGButton keeps this as its resting colour
             if (button.hoverHighlightGameObject) button.hoverHighlightGameObject.SetActive(false);
 
             var label = go.GetComponentInChildren<LanguageTextMeshController>(true);
-            label.token = "DLR_DISCORD_JOIN";
-            float logoH = h * 0.62f, logoW = logoH * 256f / 197f, left = h * 0.22f;
+            label.token = token;
+            float logoH = h * 0.62f, logoW = icon ? logoH * 256f / 197f : 0f, left = h * 0.22f;
             foreach (var tmp in go.GetComponentsInChildren<TMP_Text>(true))
             {
                 if (tmp.gameObject != label.gameObject) { tmp.gameObject.SetActive(false); continue; }   // "NEW" tags and the like
@@ -75,17 +87,19 @@ namespace DeadlockOfRain
                 tmp.color = Color.white;
                 var lr = tmp.rectTransform;
                 lr.anchorMin = Vector2.zero; lr.anchorMax = Vector2.one; lr.pivot = new Vector2(0.5f, 0.5f);
-                lr.offsetMin = new Vector2(left + logoW + left * 0.8f, 0f); lr.offsetMax = new Vector2(-8f, 0f);
+                lr.offsetMin = new Vector2(icon ? left + logoW + left * 0.8f : left, 0f); lr.offsetMax = new Vector2(-8f, 0f);
+                if (!icon) tmp.color = new Color(0.051f, 0.067f, 0.071f);   // dark ink on brass, as the pages' keys
             }
 
-            var icon = new GameObject("DiscordLogo", typeof(RectTransform), typeof(Image));
-            var ir = (RectTransform)icon.transform;
+            if (!icon) { Log.Info($"{name} added to the title screen, row {row} above the bottom-right corner ({w:F0}x{h:F0})"); return; }
+            var logoGo = new GameObject("DiscordLogo", typeof(RectTransform), typeof(Image));
+            var ir = (RectTransform)logoGo.transform;
             ir.SetParent(rt, false);
             ir.anchorMin = ir.anchorMax = ir.pivot = new Vector2(0f, 0.5f);
             ir.sizeDelta = new Vector2(logoW, logoH);
             ir.anchoredPosition = new Vector2(left, 0f);
-            var img = icon.GetComponent<Image>();
-            img.sprite = Logo();
+            var img = logoGo.GetComponent<Image>();
+            img.sprite = icon;
             img.preserveAspect = true;
             img.raycastTarget = false;
 

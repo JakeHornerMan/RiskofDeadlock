@@ -265,7 +265,13 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: Melty page issues researched; lab scripts never close the creator's game (2026-10-24)
+## 9. Last work: Chain Gang 20 chains, Billy bench 6393, the ult bench, a hero pages button (2026-10-24)
+
+- Chain Gang: 20 chains of 1500 %, one per enemy, bosses up to 5. Billy 6393 vs Mercenary 5112 (above).
+- Ult bench (`ULTS=1 run_bench.sh 30`, doc 05 §3.17): re-run only for new or changed ults. All ten pages republished.
+- "Hero Sheets & Damage" button above the Discord button (not yet seen in game). 1.0.0 still on hold; re-package before the upload.
+
+## 9-prev19. Melty page issues researched; lab scripts never close the creator's game (2026-10-24)
 
 - The two current Melty bugs on 0.11.0 (`ended:quick-close`, `load:not-loaded`, 16:22–16:29 UTC) came from this PC: a Billy test closed
   the creator's open game. No player crashed that day (`mashup_stats`). The older issues were already fixed; the co-op "no-marker" is by design.

@@ -29,6 +29,10 @@ namespace DeadlockOfRain
         // optional "survivors": "all" = every playable survivor (the DPS library, docs/dps-library.json); "heroes" = our heroes
         // only, no Commando or matches (they are stored in the library, so they are never re-measured); else Commando + heroes + matches
         static string survivorsMode = "";
+        // optional "ults": 1 = the ult bench (creator, 2026-10-24): every hero's Q (and Commando's Preon Accumulator) once against a
+        // bigger pack of 30 (5 rows of 6) plus a Beetle Queen behind it, for the "just for fun" table; no other passes
+        static bool ults;
+        const string UltBoss = "BeetleQueenMaster";
         // optional "repeat": how many times the whole set of passes runs in this session (each run is headed "run <k>")
         static int repeat = 1;
         // optional "portraits": a folder; studio renders of every hero, its RoR2 match and its ult figure go there first
@@ -47,6 +51,7 @@ namespace DeadlockOfRain
                 portraits = Value(text, "portraits") ?? "";
                 survivorsMode = Value(text, "survivors") ?? "";
                 if (int.TryParse(Value(text, "repeat"), out var rp) && rp > 0) repeat = rp;
+                ults = (Value(text, "ults") ?? "0") != "0";
                 // seconds 0: portraits only, no passes
                 if (float.TryParse(Value(text, "seconds"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s) && s >= 0) seconds = s;
                 Log.Info($"DPS bench: {seconds}s passes, writing to {outFile}");
@@ -108,7 +113,7 @@ namespace DeadlockOfRain
         // ---------------------------------------------------------------- recording
         sealed class Tally
         {
-            public double Raw, Pct; public int Hits; public readonly HashSet<CharacterBody> Victims = new HashSet<CharacterBody>();
+            public double Raw, Pct, BossPct; public int Hits; public readonly HashSet<CharacterBody> Victims = new HashSet<CharacterBody>();
             public readonly int[] Uses = new int[5];
         }
         Tally tally;
@@ -127,6 +132,7 @@ namespace DeadlockOfRain
             tally.Pct += dmg / Mathf.Max(1f, benchBody.damage) * 100f;
             tally.Hits++;
             tally.Victims.Add(r.victimBody);
+            if (r.victimBody.isChampion) tally.BossPct += dmg / Mathf.Max(1f, benchBody.damage) * 100f;
         }
 
         void OnSkill(GenericSkill s)
@@ -176,6 +182,11 @@ namespace DeadlockOfRain
             var aim0 = body.inputBank.aimDirection; aim0.y = 0; aim0.Normalize();
             List<Vector3> spots = null;
             int tries = 0, seen = 0;
+            int rows = ults ? 5 : 3, cols = ults ? 6 : 4, want = rows * cols;
+            // the ult pack is wide: up to 4 m of height and no line of sight needed (ults reach round corners too); if no
+            // spot holds all 30, the best one (24+) is used and the rest are filled in beside its spots
+            float tolerance = ults ? 4f : 2f;
+            List<Vector3> best = null; Vector3 bestCentre = default, bestFwd = default;
             for (int t = 0; t < 16 && spots == null; t++)
             {
                 tries = t + 1;
@@ -186,33 +197,50 @@ namespace DeadlockOfRain
                 var fwd = Quaternion.Euler(0f, 45f * (t % 8), 0f) * aim0;
                 var rgt = Vector3.Cross(Vector3.up, fwd);
                 var cand = new List<Vector3>(); seen = 0;
-                for (int row = 0; row < 3; row++)
-                    for (int col = 0; col < 4; col++)
+                for (int row = 0; row < rows; row++)
+                    for (int col = 0; col < cols; col++)
                     {
-                        var p = centre + fwd * (10f + row * 2.5f) + rgt * ((col - 1.5f) * 2.5f);
+                        var p = centre + fwd * (10f + row * 2.5f) + rgt * ((col - (cols - 1) / 2f) * 2.5f);
                         if (!Physics.Raycast(p + Vector3.up * 5f, Vector3.down, out var g, 15f, LayerIndex.world.mask)) continue;
-                        if (Mathf.Abs(g.point.y - centre.y) > 2f) continue;
-                        if (Physics.Linecast(centre + Vector3.up * 1.5f, g.point + Vector3.up * 1f, LayerIndex.world.mask)) continue;
+                        if (Mathf.Abs(g.point.y - centre.y) > tolerance) continue;
+                        if (!ults && Physics.Linecast(centre + Vector3.up * 1.5f, g.point + Vector3.up * 1f, LayerIndex.world.mask)) continue;
                         cand.Add(g.point); seen++;
                     }
-                if (cand.Count == 12) { spots = cand; arena = centre; forward = fwd; }
+                if (cand.Count == want) { spots = cand; arena = centre; forward = fwd; }
+                else if (best == null || cand.Count > best.Count) { best = cand; bestCentre = centre; bestFwd = fwd; }
+            }
+            if (spots == null && ults && best != null && best.Count >= want * 0.8f)
+            {
+                Write($"arena: no spot holds all {want}; using the best ({best.Count}) and filling in {want - best.Count} beside its spots");
+                spots = new List<Vector3>(best); arena = bestCentre; forward = bestFwd;
+                var side = Vector3.Cross(Vector3.up, forward);
+                for (int k = 0; spots.Count < want; k++) spots.Add(best[k % best.Count] + side * 1.25f);
             }
             if (spots == null) { Write("FAILED: no flat spot with a clear view of the pack on this stage"); yield break; }
             TeleportHelper.TeleportBody(body, arena + Vector3.up * 0.5f, false);
             yield return new WaitForSeconds(0.5f);
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < want; i++)
             {
-                int row = i / 4, col = i % 4;
+                int row = i / cols, col = i % cols;
                 packSpots.Add(spots[i] + Vector3.up * 0.5f);
-                packMasters.Add(row == 1 && (col == 0 || col == 3) || row == 2 && (col == 1 || col == 2) ? "BeetleMaster" : "LemurianMaster");
+                packMasters.Add(ults ? (i % 3 == 2 ? "BeetleMaster" : "LemurianMaster")
+                    : row == 1 && (col == 0 || col == 3) || row == 2 && (col == 1 || col == 2) ? "BeetleMaster" : "LemurianMaster");
             }
-            Write($"arena: spot {tries} of 16 tried, all 12 pack spots flat and in clear view");
-            Write($"setup: difficulty {Run.instance.selectedDifficulty}, pack {packSpots.Count} ({packMasters.Count(m => m == "LemurianMaster")} Lemurians, {packMasters.Count(m => m == "BeetleMaster")} Beetles) at 10-15 m, {seconds}s per pass");
+            if (ults)
+            {
+                // the boss stands behind the pack, on the ground in line with its middle
+                var bp = arena + forward * (10f + rows * 2.5f + 5f);
+                if (Physics.Raycast(bp + Vector3.up * 20f, Vector3.down, out var bg, 60f, LayerIndex.world.mask)) bp = bg.point;
+                packSpots.Add(bp + Vector3.up * 0.5f);
+                packMasters.Add(UltBoss);
+            }
+            Write($"arena: spot {tries} of 16 tried, all {want} pack spots flat and in clear view");
+            Write($"setup: difficulty {Run.instance.selectedDifficulty}, pack {packSpots.Count} ({packMasters.Count(m => m == "LemurianMaster")} Lemurians, {packMasters.Count(m => m == "BeetleMaster")} Beetles{(ults ? ", 1 Beetle Queen" : "")}) at 10-{10 + rows * 2.5f:F0} m, {seconds}s per pass{(ults ? " (ults only)" : "")}");
 
             GlobalEventManager.onServerDamageDealt += OnDamage;
             var master = user.cachedMaster;
             var pcmc = master.GetComponent<PlayerCharacterMasterController>();
-            var survivors = survivorsMode == "heroes" ? new List<string>() : new List<string> { "CommandoBody" };
+            var survivors = survivorsMode == "heroes" && !ults ? new List<string>() : new List<string> { "CommandoBody" };
             if (survivorsMode == "all")
             {
                 // every survivor this run can use: not hidden, and its expansion (DLC) enabled in this run
@@ -230,7 +258,7 @@ namespace DeadlockOfRain
                 foreach (var h in HeroRow.All)
                 {
                     if (!Survivors.Bodies.ContainsKey(h.Id) || only != "" && !only.Split(',').Contains(h.Id)) continue;
-                    if (survivorsMode == "heroes") { survivors.Add(Survivors.Bodies[h.Id].name); continue; }
+                    if (survivorsMode == "heroes" || ults) { survivors.Add(Survivors.Bodies[h.Id].name); continue; }
                     var match = StatRow.All.FirstOrDefault(r => r.Hero == h.Id)?.Analog;
                     if (!string.IsNullOrEmpty(match) && match != "none" && !survivors.Contains(match) && BodyCatalog.FindBodyPrefab(match)) survivors.Add(match);
                     survivors.Add(Survivors.Bodies[h.Id].name);
@@ -245,12 +273,12 @@ namespace DeadlockOfRain
                         master.TransformBody(bodyName);
                         yield return new WaitForSeconds(1.5f);
                     }
-                    if (run == 1) { WriteStats(bodyName); WriteSkills(master.GetBody(), bodyName); }
+                    if (run == 1 && !ults) { WriteStats(bodyName); WriteSkills(master.GetBody(), bodyName); }
                     // the Q pass only where it is shown: the heroes' ults and Commando's Preon Accumulator
                     bool equip = survivorsMode != "all" || bodyName == "CommandoBody" || Survivors.HeroOf(master.GetBody()) != null;
                     foreach (var mode in new[] { "all", "primary", "secondary", "utility", "special", "equipment" })
                     {
-                        if (mode == "equipment" && !equip) continue;
+                        if (mode == "equipment" && !equip || ults && mode != "equipment") continue;
                         yield return Pass(master, pcmc, bodyName.Replace("Body", ""), mode);
                     }
                 }
@@ -494,6 +522,7 @@ namespace DeadlockOfRain
             var sb = new StringBuilder();
             sb.Append($"{who} {mode}: raw {t.Raw:F0} ({t.Raw / dur:F1}/s), {t.Pct:F0}% of damage ({t.Pct / dur:F0}%/s), hits {t.Hits}, enemies hit {t.Victims.Count}, ");
             sb.Append($"uses M1 {t.Uses[0]} M2 {t.Uses[1]} Shift {t.Uses[2]} R {t.Uses[3]} Q {t.Uses[4]}, level {(b2 ? b2.level : 0):F0}, damage stat {(b2 ? b2.damage : 0):F1}");
+            if (ults) sb.Append($", boss {t.BossPct:F0}%");
             Write(sb.ToString());
             // let projectiles, storms and DoTs from this pass end before the next one is counted
             yield return new WaitForSeconds(2.5f);

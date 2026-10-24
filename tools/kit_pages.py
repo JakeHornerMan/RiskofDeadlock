@@ -88,7 +88,8 @@ CHANGES = {
                           'Project Mind: a purple smoke marker up to 60 m away, any key teleports you there; Full Auto: a full magazine fired 50 % faster',
                           'Telekinesis (Q): every enemy within 30 m lifted and thrown 50 m where you aim, harder into a wall; bosses lifted a little, hit and stunned',
                           'Purple smoke magic built in Unity on every move, and Deadlock’s own card for Card Trick'])],
- 'billy': [('v1.0.0', ['Bat: a 6 m arc (was 4 m) with a pink sweep showing all of it; the air dodge-in reaches 13 m (was 10)',
+ 'billy': [('v1.0.0b', ['Biquette 10 a bullet (was 6)', 'Never takes fall damage', 'In the air the bat and Bashdown only lock onto an enemy on your screen', 'Air Bashdown: your float ends and you go straight down, slamming at once', 'Chain Gang: up to 20 chains of 1,500 %, one per enemy; leftovers go to bosses, up to 5 each']),
+           ('v1.0.0', ['Bat: a 6 m arc (was 4 m) with a pink sweep showing all of it; the air dodge-in reaches 13 m (was 10)',
                        'Every air bat hit keeps the enemy hit up 1 s longer and every other floating enemy within 10 m 0.5 s longer (up to 6 s); Billy’s own float goes back to 1 s per hit, never more',
                        'Rising Ram floats everyone 3 s (was 2)',
                        'Air Bashdown: the chains run from Billy now, and the enemies fall down with him',
@@ -200,19 +201,19 @@ ANALYSIS = {
  'wraith': ['One run: 517 %/s with every main move, against Bandit’s 1,919. That is −1,402: far below the ±500 band. The creator chose to keep her as she is for now.',
             'The Rake carries her (440 %/s alone). Card Trick adds 187 (one 400 % card every 5 s, plus its bleed or burn); Project Mind and Full Auto deal no damage of their own (Full Auto only speeds up the gun), and the teleport carries her off the test spot, so the all-together number is under gun + cards.',
             'Bandit’s damage is his knife (1,478 alone) and his Smoke Bomb (709). Levers if she should catch up: Card Trick 400 → 1,500 %, The Rake 60 → 75 %, or a smoke blast where Project Mind lands.',
-            'Telekinesis (Q, the ult) did 1,400 %/s over its 30 s pass with one throw of the 12-enemy pack. It isn’t in the all-together number.'],
- 'billy': ['One run after the 2026-10-24 changes (6 m bat arc, 13 m air snap, floats kept going near every hit, Rising Ram 3 s float, air Bashdown dragging enemies down with him, 175 health): 7,957 %/s against Mercenary’s 5,112. That is +2,845: far above the ±500 band. (The build before measured 4,941, inside.)',
-           'Together he does far more than his moves alone (about 4,550 added up): Rising Ram floats the pack, the bat hits it in the air for double with its wider arc and keeps everyone up, and the air Bashdown lands on a floating pack. The bat alone 2,664 %/s, Rising Ram 902, Bashdown 683, Biquette 297.',
+            'Telekinesis (Q, the ult): one use on the ult bench (30 enemies and a Beetle Queen) did 48,000 % to 8 of them. It isn’t in the all-together number.'],
+ 'billy': ['One run after the latest changes (Biquette 10 a bullet, air locks only on screen, the air Bashdown straight down and ending his float): 6,393 %/s against Mercenary’s 5,112. That is +1,281: above the ±500 band. (The run before measured 7,957: his float no longer carries the air Bashdown onto a floating pack.)',
+           'The bat carries him (2,940 %/s alone); Rising Ram 941, Bashdown 743, Biquette 494 (297 at 6 a bullet). Together he still does more than the moves alone because Rising Ram floats the pack for the bat.',
            'Mercenary’s moves alone add up to far more than his 5,112 together (Laser Sword 2,850, Whirlwind 1,351, Blinding Assault 1,120), so compare the totals, not single moves. Levers if Billy should come down: the air bat ×2 → ×1.5, no extra float near a hit, or the arc 6 → 5 m.',
-           'Chain Gang (Q, the ult) did 1,000 %/s over its 30 s pass with one use. It isn’t in the all-together number.'],
+           'Chain Gang (Q, the ult): up to 20 chains of 1,500 %, one per enemy, leftovers to bosses (up to 5 each). One use on the ult bench (30 enemies and a Beetle Queen) did 10,500 % to the 7 it could see within 20 m; the queen stood out of its reach. It isn’t in the all-together number.'],
  'ratking': ['Three runs after the 0.9.0b changes (Royal Pestments doubled, Rat Swarm without a time limit): 3,567, 3,189 and 3,869 %/s, mean 3,542 against Captain’s 3,490. That is +52: inside the ±500 band. (0.9.0: 2,999.)',
              'The Scrap Grenade carries him (1,373 %/s alone, 1,260–1,530): its hops keep it in the pack, so most of its three blasts land on most of the 12. Rule, Ratannia! 1,123 (the 1,500 % centre blast plus the stun ring every 12 s), Royal Pestments 889 (was 509 at 25 %; the ring follows him, so the pack stays inside), the gun 547 (565 on paper).',
              'Captain’s own number is odd: his moves alone add up to about 800 (the shotgun; the probes and beacons barely touch a still pack) but together he measures 3,490, so compare the totals, not single moves.',
-             'Rat Swarm (Q, the ult) does about 4,620 %/s over its 30 s pass with one use (2,070 with the old 15 s limit): with no time limit the 50 rats keep biting, 5 on each of the 12, until their enemies die. It isn’t in the all-together number.'],
+             'Rat Swarm (Q, the ult): one use on the ult bench (30 enemies and a Beetle Queen) did 133,800 % to 10 of them in 30 s; the rats keep biting until their enemies die. It isn’t in the all-together number.'],
  'viscous': ['Three runs after the 0.8.0f changes (Puddle Punch leaves a puddle, every puddle 20 % smaller): 1,660, 1,805 and 2,410 %/s, mean 1,958 against REX’s 1,738. That is +220, inside the ±500 band.',
              'The runs swing a lot (1,660 to 2,410): how often a smaller puddle reaches the bench’s fixed spot and tops up the magazine decides how many Splatters it throws.',
              'Splatter 1,408 %/s alone, Puddle Punch 702, The Cube 493, the gun 412.',
-             'Goo Ball (Q, the ult) 1,612 %/s over its 30 s pass. It isn’t in the all-together number.'],
+             'Goo Ball (Q, the ult): one use on the ult bench (30 enemies and a Beetle Queen) did 42,749 % to 18 of them. It isn’t in the all-together number.'],
  'mokrill': ['After the 0.7.1c balance pass he does about 2,425 %/s with every move (one run), against MUL-T’s 1,450: above the ±500 band, about Abrams’ level (2,460). The creator chose to keep it.',
              'Tag Team (1,407 %/s alone, with Mo’s punches) and Burrow’s pop-out spin (1,150 %/s alone, now every 14 s) are the biggest parts; Sand Blast is 333 %/s and is there for control.',
              'His gun is slower than MUL-T’s nailgun (443 against 876 alone). No healing in the kit: he starts at 200 health and grows it with every kill.'],
@@ -268,17 +269,16 @@ def avg_all(who):
 def runs_of(who):
     return len(all_runs(who)) or 1
 
-# one Q use on the pack (total %, enemies hit) from each hero's last bench, for heroes the current bench file doesn't cover
-# (bench_results.txt holds only the last run's heroes). Update a hero's row whenever it is benched.
-LAST_USE = {
-    'DeadlockMoKrill': dict(total=57150, enemies=11),  # 2026-10-19, v0.7.1e
-    'DeadlockViscous': dict(total=60884, enemies=12),  # 2026-10-21, v0.8.0f
-    'DeadlockWraith': dict(total=42000, enemies=7),  # 2026-10-23, v0.11.0a
-    'DeadlockBilly': dict(total=30000, enemies=5),  # 2026-10-24, v0.11.0b
-}
+# one Q use each against the ult bench's pack (30 enemies + a Beetle Queen; `ULTS=1 bash tools/run_bench.sh 30`), kept in
+# docs/ult-bench.txt. Re-run it only for a new ult or a changed one (creator, 2026-10-24), then copy build/bench_ults.txt there.
+ULTS = {}
+for line in open(os.path.join(ROOT, 'docs', 'ult-bench.txt'), encoding='utf-8') if os.path.exists(os.path.join(ROOT, 'docs', 'ult-bench.txt')) else []:
+    m = re.match(r'(\S+) equipment: .*?([\d.]+)% of damage .*?enemies hit (\d+).*?boss (\d+)%', line)
+    if m: ULTS[m.group(1)] = dict(total=float(m.group(2)), enemies=int(m.group(3)), boss=float(m.group(4)))
+ULT_PACK = '30 enemies (20 Lemurians, 10 Beetles) and a Beetle Queen'
 
 def per_use(who):
-    return BENCH.get(who, {}).get('equipment') or LAST_USE.get(who)
+    return ULTS.get(who)
 
 def img(name):
     p = os.path.join(IMG, name + '.webp')
@@ -710,7 +710,7 @@ def hero_page(h):
     me, base = avg_all(hero_who(hid)), avg_all(v['who'])
     side, gap = verdict(me, base)
     eq = rows['equipment']; use = per_use(hero_who(hid))
-    use_html = f'<span class="num">One use on the pack: {use["total"]:,.0f} % ({use["enemies"]} enemies hit)</span>' if use else ''
+    use_html = f'<span class="num">One use on {ULT_PACK}: {use["total"]:,.0f} % ({use["enemies"]} hit, the boss {use["boss"]:,.0f} %)</span>' if use else ''
     changes = ''.join(f'<div><span class="ver">{E(ver)}</span><ul>' + ''.join(f'<li>{E(c)}</li>' for c in cs) + '</ul></div>' for ver, cs in CHANGES.get(hid, []))
     paras = ''.join(f'<p>{t}</p>' for t in analysis(h))
     return f'''<title>{E(h["displayName"])} Kit Sheet</title>
@@ -841,10 +841,10 @@ def overview_page():
   <p><a href="{LINKS.get(hid, "#")}">Open {E(h["displayName"])}’s kit sheet</a></p>
 </section>''')
         u = per_use(hero_who(hid)); eq = next(r for r in SKILLS if r['hero'] == hid and r['slot'] == 'equipment')
-        total = f'{u["total"]:,.0f} %' if u else '–'; hit = u['enemies'] if u else '–'
-        fun.append((u['total'] if u else 0, f'<tr><td><div class="who-cell">{img_tag(hid + "_figure", "", 48)}{E(eq["name"])}</div></td><td>{E(h["displayName"])}</td><td class="n">{total}</td><td class="n">{hit}</td></tr>'))
+        total = f'{u["total"]:,.0f} %' if u else '–'; hit = u['enemies'] if u else '–'; boss = f'{u["boss"]:,.0f} %' if u else '–'
+        fun.append((u['total'] if u else 0, f'<tr><td><div class="who-cell">{img_tag(hid + "_figure", "", 48)}{E(eq["name"])}</div></td><td>{E(h["displayName"])}</td><td class="n">{total}</td><td class="n">{hit}</td><td class="n">{boss}</td></tr>'))
     pre = per_use('Commando')
-    if pre: fun.append((pre['total'], f'<tr><td>Preon Accumulator</td><td>Commando (vanilla item)</td><td class="n">{pre["total"]:,.0f} %</td><td class="n">{pre["enemies"]}</td></tr>'))
+    if pre: fun.append((pre['total'], f'<tr><td>Preon Accumulator</td><td>Commando (vanilla item)</td><td class="n">{pre["total"]:,.0f} %</td><td class="n">{pre["enemies"]}</td><td class="n">{pre["boss"]:,.0f} %</td></tr>'))
     fun_html = ''.join(r for _, r in sorted(fun, key=lambda x: -x[0]))
     inside = sum(1 for h in HEROES if verdict(avg_all(hero_who(h['id'])), avg_all(match_of(h['id'])[1]['who']))[0] == 'inside')
     return f'''<title>Deadlock of Rain Balance</title>
@@ -873,9 +873,9 @@ def overview_page():
 
   <section class="section" aria-labelledby="fu">
     <h2 id="fu">Q ults, just for fun</h2>
-    <p class="muted">The ults are pickups any survivor can carry, so they are left out of balance and may be as strong as we like. One use each against the same pack.</p>
+    <p class="muted">The ults are pickups any survivor can carry, so they are left out of balance and may be as strong as we like. One use each against the same pack: {ULT_PACK}, the queen standing behind it about 27 m out (so short-reach ults never touch her). Enemies hit counts the queen too.</p>
     <div class="tablewrap"><table>
-      <thead><tr><th>Equipment</th><th>Starts on</th><th class="n">One use</th><th class="n">Enemies hit</th></tr></thead>
+      <thead><tr><th>Equipment</th><th>Starts on</th><th class="n">One use</th><th class="n">Enemies hit</th><th class="n">On the boss</th></tr></thead>
       <tbody>{fun_html}</tbody>
     </table></div>
   </section>

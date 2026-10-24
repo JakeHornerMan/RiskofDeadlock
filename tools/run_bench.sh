@@ -13,6 +13,7 @@
 #   times in one session. tools/dps_library.py turns the results into docs/dps-library.json.
 #   PORTRAITS=1 also writes studio renders to build/portraits first (tools/portraits.py cuts them out for the kit pages);
 #   PORTRAITS=1 tools/run_bench.sh 0 renders only (about 2 minutes).
+#   ULTS=1 tools/run_bench.sh 30: the ult bench instead (each hero's Q once against 30 enemies + a Beetle Queen, ~10 minutes).
 R="/c/Program Files (x86)/Steam/steamapps/common/Risk of Rain 2"
 UM=/c/Users/jakeh/tools/universal-modder/bin/um
 L="$R/BepInEx/LogOutput.log"
@@ -20,6 +21,9 @@ SECS="${1:-30}"
 ONLY="${2:-}"
 PDIR=""; [ -n "$PORTRAITS" ] && PDIR="$(cygpath -aw "$(dirname "$0")/../build")\portraits"
 OUT="$(cygpath -aw "$(dirname "$0")/../build")\\bench_results.txt"
+# ULTS=1: the ult bench (every hero's Q and Commando's Preon once, against 30 enemies + a Beetle Queen) into build/bench_ults.txt;
+# copy it to docs/ult-bench.txt for the pages' "just for fun" table (tools/kit_pages.py). Never merge it into the DPS library.
+[ -n "$ULTS" ] && OUT="$(cygpath -aw "$(dirname "$0")/../build")\\bench_ults.txt"
 B="$LOCALAPPDATA/DeadlockOfRain/bench.json"
 . "$(dirname "$0")/game_guard.sh"
 guard_open_game
@@ -28,7 +32,7 @@ rm -f "$L" "$(cygpath -u "$OUT")"
 rm -f "$LOCALAPPDATA/Melty/test/deadlock-of-rain.json" "$LOCALAPPDATA/Melty/test/risk-of-deadlock-2.json"
 mkdir -p "$LOCALAPPDATA/DeadlockOfRain"
 MODE=heroes; [ -n "$BASE" ] && MODE=""; [ -n "$ALL" ] && MODE=all
-printf '{ "out": "%s", "seconds": %s, "only": "%s", "portraits": "%s", "survivors": "%s", "repeat": %s }\n' "${OUT//\\/\\\\}" "$SECS" "$ONLY" "${PDIR//\\/\\\\}" "$MODE" "${REPEAT:-1}" >"$B"
+printf '{ "out": "%s", "seconds": %s, "only": "%s", "portraits": "%s", "survivors": "%s", "repeat": %s, "ults": %s }\n' "${OUT//\\/\\\\}" "$SECS" "$ONLY" "${PDIR//\\/\\\\}" "$MODE" "${REPEAT:-1}" "${ULTS:-0}" >"$B"
 bash "$(dirname "$0")/dev_run.sh" /nonexistent 3 || { rm -f "$B"; exit 1; }
 for i in $(seq 1 40); do tasklist | grep -qi "Risk of Rain" && break; sleep 3; done
 tasklist | grep -qi "Risk of Rain" || { echo "NOT_STARTED (is Steam signed in?)"; rm -f "$B"; bash "$(dirname "$0")/lab_restore.sh" >/dev/null 2>&1; exit 1; }

@@ -1530,55 +1530,55 @@
     "special": "Rising Ram"
    },
    "hero": true,
-   "measuredOn": "v0.11.0b",
+   "measuredOn": "v1.0.0a",
    "dps": {
     "all": {
      "runs": [
-      7957
+      6393
      ],
-     "mean": 7957,
-     "min": 7957,
-     "max": 7957
+     "mean": 6393,
+     "min": 6393,
+     "max": 6393
     },
     "primary": {
      "runs": [
-      297
+      494
      ],
-     "mean": 297,
-     "min": 297,
-     "max": 297
+     "mean": 494,
+     "min": 494,
+     "max": 494
     },
     "secondary": {
      "runs": [
-      2664
+      2940
      ],
-     "mean": 2664,
-     "min": 2664,
-     "max": 2664
+     "mean": 2940,
+     "min": 2940,
+     "max": 2940
     },
     "utility": {
      "runs": [
-      683
+      743
      ],
-     "mean": 683,
-     "min": 683,
-     "max": 683
+     "mean": 743,
+     "min": 743,
+     "max": 743
     },
     "special": {
      "runs": [
-      902
+      941
      ],
-     "mean": 902,
-     "min": 902,
-     "max": 902
+     "mean": 941,
+     "min": 941,
+     "max": 941
     },
     "equipment": {
      "runs": [
-      1000
+      300
      ],
-     "mean": 1000,
-     "min": 1000,
-     "max": 1000
+     "mean": 300,
+     "min": 300,
+     "max": 300
     }
    }
   },

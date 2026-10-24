@@ -14,8 +14,9 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
-| Billy | 2026-10-24 (latest): air Bashdown goes straight down at once and ends his float (was a dive at the locked enemy, smashing on contact) | the creator: "he shold go straight donw to the gorund and cancellout the float time" | this one | `run_test.sh billy` all pass; not benched | **open** |
-| Billy | 2026-10-24 (later): Biquette 50 → 83.3 % a bullet (10 at level 1; `targetDps` 300 → 500); the air locks (bat dodge-in, air Bashdown) take only enemies on his screen; no fall damage | the creator: "never recieve fall damage", "never snap to an eney in air if we is not looking in thier direction", "10 per bullet" | this one | `run_test.sh billy` all pass; **not benched** (creator: no DPS test); the gun alone should go from 297 to about 495 | **open** |
+| Billy | 2026-10-24 (Chain Gang): up to 20 chains of 1500 %, one per enemy, leftovers to bosses up to 5 each (was 6000 % per enemy) | the creator: "up to 20 chains ... only 5 of they can connect to 1 boss" | this one | ult only (left out of balance); ult bench 10,500 % (7 hit), §3.17 | **done** |
+| Billy | 2026-10-24 (latest): air Bashdown goes straight down at once and ends his float (was a dive at the locked enemy, smashing on contact) | the creator: "he shold go straight donw to the gorund and cancellout the float time" | this one | `run_test.sh billy` all pass; not benched | **done** (v1.0.0a bench, §3.16) |
+| Billy | 2026-10-24 (later): Biquette 50 → 83.3 % a bullet (10 at level 1; `targetDps` 300 → 500); the air locks (bat dodge-in, air Bashdown) take only enemies on his screen; no fall damage | the creator: "never recieve fall damage", "never snap to an eney in air if we is not looking in thier direction", "10 per bullet" | this one | `run_test.sh billy` all pass; **not benched** (creator: no DPS test); the gun alone should go from 297 to about 495 | **done** (v1.0.0a bench, §3.16) |
 | Billy | 2026-10-24: Bat 6 m arc (was 4 m), air lock-on/snap 13 m (was 10), each air hit keeps floating enemies within 10 m up 0.5 s more (cap 6 s, was 4); Rising Ram float 3 s (was 2); air Bashdown chains from Billy and drags them down with him; health 175 +52.5 (was 140 +42); his own float topped up to 1 s per air hit, never more (was stacking) | the creator's requests | this one | `run_test.sh billy` 20/20 pass; **benched** (one run, 2026-10-24): all **7957** vs Mercenary 5112 (+2845, **above**), §3.15 | **open** (above the band, the creator's call) |
 | Wraith | all (new hero, 0.11.0a): The Rake 60 % at ~10.6/s (52 rounds), Card Trick 400 % homing card with a random trick (5 bleed / crit / 2 s stun / 5 burn), Project Mind 60 m teleport, Full Auto (full magazine, +50 % fire rate until it is empty), Telekinesis 6000 % (×1.5 into a wall) | new hero (creator, 2026-10-23) | this one | **benched** (one run): all **517** vs Bandit 1919 (−1402, **below**), §3.14; the creator keeps her as she is ("Keep her as she is"); a second run would firm up the mean | **open** (one run) |
 | Infernus | 0.9.1: Concussive Combustion also blasts when its state ends within 1.5 s of the 3 s fuse (`UltSelfBomb.OnExit`), so a joined player's bomb lands on the host; numbers unchanged | co-op test: a joined player's Combustion did no damage on the host | this one | no DPS effect: solo the blast already lands at 3 s, and the bench leaves the ults out; checked by `run_test.sh infernus` and `run_coop_test.sh infernus` | **done** |
@@ -289,6 +290,41 @@ New hero, matched to REX (`TreebotBody`, library 1738 %/s). Three runs after the
 - **%/s hides base damage**: it is a share of the survivor's own damage stat. Viscous's 15 against REX's 12 means 25 % more
   real damage than the %/s says (≈336 dmg/s at level 1 against ≈209). Mo & Krill (11) are the only other hero off 12.
 - Levers if he needs pulling back: Splatter 200 → 150 % first (it is two thirds of the total), then the punch.
+
+### 3.17 The ult bench: 30 enemies and a Beetle Queen (all ults, 2026-10-24)
+`ULTS=1 run_bench.sh 30` (one run, v1.0.0a): each hero's Q and Commando's Preon once, 30 s, against 20 Lemurians and 10 Beetles in
+5 rows of 6 at 10-23 m plus a Beetle Queen behind them (~27 m). Ults are left out of balance; this feeds the pages' "just for fun"
+table (`docs/ult-bench.txt`). Re-run only for a new or changed ult (creator, 2026-10-24).
+
+| Ult | Hero | One use (% of damage) | Enemies hit (of 31) | On the queen |
+|---|---|---|---|---|
+| Seismic Impact | Abrams | 163,200 | 24 | 6,800 |
+| Concussive Combustion | Infernus | 156,400 | 23 | 0 |
+| Rat Swarm | Rat King | 133,800 | 10 | 0 |
+| Dust Devil | Mo & Krill | 66,150 | 8 | 0 |
+| Preon Accumulator | Commando | 62,400 | 28 | 2,000 |
+| Telekinesis | Wraith | 48,000 | 8 | 0 |
+| Goo Ball | Viscous | 42,749 | 18 | 0 |
+| Bullet Dance | Haze | 41,471 | 18 | 791 |
+| Thunderhead | Seven | 27,200 | 16 | 272 |
+| Chain Gang | Billy | 10,500 | 7 | 0 |
+
+- The queen stood ~27 m out, beyond most ults' reach (Chain Gang 20 m, Combustion 18 m); only Seismic Impact, the Preon,
+  Bullet Dance and Thunderhead touched her. Chain Gang saw 7 of the pack within 20 m, so it threw 7 chains (no boss in range for the rest).
+
+### 3.16 v1.0.0a Billy after the second 2026-10-24 pass (Billy-only run, 2026-10-24)
+`VERSION` v1.0.0a, `run_bench.sh 30 billy` (one run): Biquette 10 a bullet, on-screen air locks, air Bashdown straight down.
+
+| Pass | Billy (%/s) | Mercenary (library) |
+|---|---|---|
+| All main moves | **6393** | 5112 |
+| M1 Biquette | 494 | 2850 |
+| M2 Bat | 2940 | 1351 |
+| Shift Bashdown | 743 | 1120 |
+| R Rising Ram | 941 | 128 |
+| Q Chain Gang (not balanced) | 300 (9,000 % in one use, 6 chains) | – |
+
+- +1281 against Mercenary, still **above** the band (was +2845). The air Bashdown no longer dives onto a floating pack.
 
 ### 3.15 v0.11.0b Billy after the 2026-10-24 kit pass (Billy-only run, 2026-10-24)
 `VERSION` v0.11.0b, `run_bench.sh 30 billy` (one run). His match is Mercenary.

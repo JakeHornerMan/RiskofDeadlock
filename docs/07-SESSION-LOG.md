@@ -1222,3 +1222,19 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
   `lab_restore.sh` by hand: no test-mode file, `winhttp.dll` present.
 **Not done / open:** `report_bug_fix` for both issue keys once 1.0.0 is submitted (they clear when it goes live); 1.0.0 still on hold.
 **Lessons:** read the time of a Melty report against our own test runs before debugging the mod.
+
+### 2026-10-24 · Chain Gang 20 chains, Billy bench, the ult bench, a hero pages button · v1.0.0 (not uploaded) · this commit
+**Request (verbatim):** "ok we need to do something about billy [Chain Gang's page text pasted] let have up to 20 chains come out and lets make sure only 5 of they can connect to 1 boss, so it isnt too overpowered. One use on the pack: 30,000 % (5 enemies hit) dispease that damage from 20 chains, 1 chain per enemy unless they are a boss who can get 5 chains. when you are done test this and then runa dps test on billy and update the artifact!", then "also after you do the dos test let run a test on all the untested ultimaates have 30 enemys and boss in a 2he damage number and redo the section" (with the pages' ult table pasted), "lets add a button to the home page of risk of rain 2 just above the discord button that bring them to the characters sheer artifacts the link should open up the damage comparisions", "only run this test again on new ultimate items, or if we update an existing one".
+**Questions asked → answers:** none.
+**Done:**
+- Chain Gang: `damagePct` 1500 (30,000 % / 20), `chainCount` 20, `bossMult` 5 = chains a boss may take; one chain per enemy in sight, the leftovers to bosses
+  (`UltChains.chained`); each chain is its own hit; boss chains spread round it (`ChainFx` repeat offsets). Preflight counts `chainCount × damagePct`. Pickup text.
+- `run_test.sh billy` all pass. Bench (v1.0.0a): 6393 vs Mercenary 5112 (+1281). Library merged (`VERSION` v1.0.0a).
+- Ult bench: `DpsBench` `ults` mode, `ULTS=1 run_bench.sh 30` (30 enemies + a Beetle Queen; first try found no flat spot for 30, so the pack
+  allows 4 m of height and no line-of-sight rule, with a 24+ fallback). Results in `docs/ult-bench.txt`; `kit_pages.py` reads them (table gets an
+  "On the boss" column; each page's ult line names the pack). All ten pages republished.
+- Title screen: "Hero Sheets & Damage" button above the Discord one (`CommunityButton.Build` generalised), opens the balance overview.
+- Docs 02, 05 (§0, §3.16, §3.17), 06; memory `ult-bench-only-new-or-changed`.
+**Results:** run_test billy pass; bench 6393; ult bench all ten numbers (doc 05 §3.17). Game closed and test mode off after each run.
+**Not done / open:** the queen stood ~27 m out, so short-reach ults never touched her (not re-run, creator's rule); the button is built but not
+  seen in game (no screenshot run); the Wraith page is still private (the creator shares it); 1.0.0 upload still on hold (must be re-packaged).

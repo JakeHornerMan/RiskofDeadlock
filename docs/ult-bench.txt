@@ -1,0 +1,13 @@
+arena: spot 7 of 16 tried, all 30 pack spots flat and in clear view
+setup: difficulty Hard, pack 31 (20 Lemurians, 10 Beetles, 1 Beetle Queen) at 10-23 m, 30s per pass (ults only)
+Commando equipment: raw 7488 (249.6/s), 62400% of damage (2080%/s), hits 29, enemies hit 28, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 2000%
+DeadlockHaze equipment: raw 4977 (165.9/s), 41471% of damage (1382%/s), hits 367, enemies hit 18, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 791%
+DeadlockAbrams equipment: raw 19584 (652.8/s), 163200% of damage (5440%/s), hits 24, enemies hit 24, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 6800%
+DeadlockSeven equipment: raw 3264 (108.8/s), 27200% of damage (907%/s), hits 100, enemies hit 16, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 272%
+DeadlockInfernus equipment: raw 18768 (625.6/s), 156400% of damage (5213%/s), hits 23, enemies hit 23, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 0%
+DeadlockMoKrill equipment: raw 7277 (242.6/s), 66150% of damage (2205%/s), hits 147, enemies hit 8, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 11.0, boss 0%
+DeadlockViscous equipment: raw 5130 (171.0/s), 42749% of damage (1425%/s), hits 60, enemies hit 18, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 0%
+DeadlockRatKing equipment: raw 16056 (535.2/s), 133800% of damage (4460%/s), hits 1338, enemies hit 10, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 0%
+DeadlockBilly equipment: raw 1260 (42.0/s), 10500% of damage (350%/s), hits 7, enemies hit 7, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 0%
+DeadlockWraith equipment: raw 5760 (192.0/s), 48000% of damage (1600%/s), hits 8, enemies hit 8, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 0%
+DPS bench finished
