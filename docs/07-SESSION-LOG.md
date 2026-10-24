@@ -1150,3 +1150,19 @@ then "I would like if they had acces to general area and also thir own area, wit
   rebuild the 1.0.0 zip before uploading. The old invite `gftQ3fQj8` was left as it was.
 **Lessons:** Discord invites can carry roles now (Invite → Edit invite link → Roles), so no bot or Onboarding question is needed to tag players from one link.
   Channels with their own overwrites (#announcements, #general-private) don't follow the category: check with View Server As Role.
+
+### 2026-10-24 · Billy: no fall damage, air snap only on screen, Biquette 10 a bullet · v1.0.0 (not uploaded) · this commit
+**Request (verbatim):** "billy needs some work, he should never recieve fall damage, and he should never snap to an eney in air if we is not looking in thier direction. if they are on screen i think it good. also let put billys gun damage up to 15 no other change!", then "when ur done please just stop and dont do dps test on billy close th game when ur done and turn off test mode of course"
+**Questions asked → answers:** which "15" (15 a bullet / damage stat 15 / 150 %)? → "ok make it 10 per bullet".
+**Done:**
+- `heroes.json` billy `noFallDamage` true, passive text says so.
+- Biquette `damagePct` 50 → 83.33 (10 a bullet at damage 12), `targetDps` 300 → 500 (preflight's own sum), description.
+- `BillyAir.Nearest(body, range, onScreen)` + `BillyAir.OnScreen` (viewport of the camera rig following him; bots: in front of the aim);
+  the air bat's dodge-in and the air Bashdown use it. Descriptions of bat and Bashdown.
+- `TestBillyAir`: an air swing looking away from a floating enemy must not snap; fall damage must be off.
+- Docs 02, 05 §0, 06.
+**Results:** PREFLIGHT CLEAN; `run_test.sh billy` 1/1, every check pass (looking away: 10.0 m → 10.6 m, no snap; fall damage off: True;
+  the normal air snap still 8.9 → 4.2 m). Game closed, `lab_restore`, test-mode file removed, `winhttp.dll` in place. No bench (creator).
+**Not done / open:** the 1.0.0 zip built earlier is stale: re-run `package.py 1.0.0 --melty` before the upload (the setup hash changes with
+  the manifest only if Deadlock content changed; recompute it). Billy's kit page still shows 50 % (republish after a bench, or now if the creator wants).
+  Upload still on hold (creator: "hold off on the upload").

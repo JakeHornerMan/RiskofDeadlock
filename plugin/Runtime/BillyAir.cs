@@ -12,19 +12,36 @@ namespace DeadlockOfRain
     /// G.O.A.T. air dodge, and the slam that drives enemies into the floor. The enemies' float itself is <see cref="DlrLift"/>.</summary>
     public static class BillyAir
     {
-        /// <summary>The living enemy nearest the body within range that it can see (Bashdown and the air bat lock onto it), or null.</summary>
-        public static HurtBox Nearest(CharacterBody body, float range)
+        /// <summary>The living enemy nearest the body within range that it can see (Bashdown and the air bat lock onto it), or null.
+        /// onScreen: only enemies on the player's screen (the air locks, 2026-10-24: "never snap to an enemy in air if he is not
+        /// looking in their direction").</summary>
+        public static HurtBox Nearest(CharacterBody body, float range, bool onScreen = false)
         {
             if (!body) return null;
             foreach (var hb in Fx.Enemies(body, body.corePosition, range))
             {
                 var b = hb.healthComponent.body;
                 if (!b) continue;
+                if (onScreen && !OnScreen(body, b.corePosition)) continue;
                 if (Physics.Linecast(body.corePosition, b.corePosition, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)
                     && Physics.Linecast(body.corePosition, b.corePosition + Vector3.up * b.radius, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) continue;
                 return hb;
             }
             return null;
+        }
+
+        /// <summary>Whether a point is on the screen of the camera following this body (the owner's own camera; runs where the
+        /// lock is picked, on the authority). A body no camera follows (a bot) counts a point in front of its aim instead.</summary>
+        public static bool OnScreen(CharacterBody body, Vector3 point)
+        {
+            foreach (var rig in CameraRigController.readOnlyInstancesList)
+            {
+                if (!rig || rig.target != body.gameObject || !rig.sceneCam) continue;
+                var vp = rig.sceneCam.WorldToViewportPoint(point);
+                return vp.z > 0f && vp.x >= 0f && vp.x <= 1f && vp.y >= 0f && vp.y <= 1f;
+            }
+            var aim = body.inputBank ? body.inputBank.aimDirection : body.transform.forward;
+            return Vector3.Dot(aim, point - body.corePosition) > 0f;
         }
 
         /// <summary>Drive an enemy into the floor at speed m/s (air Bashdown, the chains' slam): ends its float, and a body in the

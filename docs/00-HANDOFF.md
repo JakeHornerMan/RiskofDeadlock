@@ -264,7 +264,14 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: Discord community and title-screen button (2026-10-24)
+## 9. Last work: Billy benched, co-op, 1.0.0 prepared; then no fall damage, on-screen air snap, gun 10 a bullet (2026-10-24)
+
+- Bench 7957 vs Mercenary 5112 (above, doc 05 §3.15); Billy page + overview republished; `run_coop_test.sh billy` pass.
+- 1.0.0 prepared for Melty (Billy playable, Wraith the coming-soon tile; `release.json`, CHANGELOG, `melty-description.md`), **not uploaded**: the creator said hold off.
+- Then: no fall damage, air locks only on screen, Biquette 83.3 % (10 a bullet); `run_test.sh billy` all pass; no bench (creator).
+- Next: on the creator's go, re-package 1.0.0 (it must also carry the Discord work below if that is finished), `RELEASE_ZIP` test + BREAK check, recipe, upload, publish. Billy's page still says 50 %.
+
+## 9-prev17. Discord community and title-screen button (2026-10-24)
 
 - Discord set up in the creator's browser: role `Risk of Deadlock Player`, public `Risk of Deadlock` category (#faq, #hero-requests),
   the role sees only that, #general and #promote-yourself; invite `discord.gg/sNByetmcqc` (never expires, gives the role); join rule added (doc 03 §9).

@@ -49,7 +49,7 @@ namespace DeadlockOfRain.States
                 if (Time.time - rt.LastSwingEnd > row.Interval) rt.Combo = 0;
                 swing = rt.Combo;
                 air = BillyAir.InAir(characterBody);
-                LockTarget = air ? BillyAir.Nearest(characterBody, row.LockRange) : null;
+                LockTarget = air ? BillyAir.Nearest(characterBody, row.LockRange, true) : null;
             }
             int burst = (int)Mathf.Max(1f, row.Burst);
             swing %= burst;
@@ -258,7 +258,7 @@ namespace DeadlockOfRain.States
             if (isAuthority)
             {
                 air = BillyAir.InAir(characterBody);
-                LockTarget = BillyAir.Nearest(characterBody, row.LockRange);
+                LockTarget = BillyAir.Nearest(characterBody, row.LockRange, air);
             }
             var t = Locked;
             dir = t ? (t.corePosition - characterBody.corePosition).normalized : air ? Vector3.down : Flat(ThrowDir);

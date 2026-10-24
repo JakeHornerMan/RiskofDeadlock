@@ -1490,6 +1490,32 @@ namespace DeadlockOfRain
             if (!nearUp) why[0] += "billy air bat: the enemy near the hit was not kept up; ";
             KillTargets();
 
+            // an air swing looking away: the enemy behind him is off screen, so no dodge-in (2026-10-24)
+            var behind = Summon(body, spot + fwd * 4f + Vector3.up * 0.5f);
+            if (behind)
+            {
+                targets.Add(behind);
+                yield return new WaitForSeconds(0.8f);
+                DlrLift.Float(behind, ram.LaunchHeight, ram.MinDuration, ram.FloatTime);
+                yield return new WaitForSeconds(ram.MinDuration + 0.1f);
+                TeleportHelper.TeleportBody(body, behind.footPosition - fwd * (bat.LockRange - 3f), false);
+                if (body.characterMotor) { body.characterMotor.velocity = Vector3.zero; body.characterMotor.jumpCount = body.maxJumpCount; }
+                AimCamera(body, -fwd);
+                for (int f = 0; f < 5; f++) { body.inputBank.aimDirection = -fwd; yield return new WaitForFixedUpdate(); }
+                float away0 = Vector3.Distance(body.corePosition, behind.corePosition);
+                gs.Reset();
+                gs.ExecuteIfReady();
+                yield return new WaitForSeconds(swing * 0.4f + 0.05f);
+                float away1 = Vector3.Distance(body.corePosition, behind.corePosition);
+                Log.Info($"Melty test: {hero.Id} air bat looking away: {away0:F1} m -> {away1:F1} m from the enemy behind him");
+                if (away1 < away0 - 1f) why[0] += $"billy air bat: snapped to an enemy behind him ({away0:F1} m -> {away1:F1} m); ";
+                KillTargets();
+            }
+            // no fall damage (heroes.json noFallDamage)
+            bool noFall = (body.bodyFlags & CharacterBody.BodyFlags.IgnoreFallDamage) != 0;
+            Log.Info($"Melty test: {hero.Id} fall damage off: {noFall}");
+            if (hero.NoFallDamage && !noFall) why[0] += "billy: takes fall damage; ";
+
             // air Bashdown at two floating enemies: both chained to him, pulled down with him, on the floor beside him when he lands
             var bash = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "bashdown");
             if (bash != null)
