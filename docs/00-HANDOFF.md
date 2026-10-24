@@ -277,7 +277,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
   the role sees only that, #general and #promote-yourself; invite `discord.gg/sNByetmcqc` (never expires, gives the role); join rule added (doc 03 §9).
 - `Runtime/CommunityButton.cs`: the title-screen button (doc 02 §8); "Community" section in all three listing texts and the 1.0.0 CHANGELOG.
 - First look in game (2026-10-24): top right covered RoR2's profile box, text over the logo; now RoR2's own button copied, blurple,
-  under Quit to Desktop with the logo and text apart. That version is built, **not installed yet** (the creator is testing in the open game).
+  in the bottom-right corner (creator's pick) with the logo and text apart. That version is built, **not installed yet** (the creator is testing in the open game).
   `build/DeadlockOfRain-1.0.0.zip` predates it: rebuild with `package.py 1.0.0 --melty` before the 1.0.0 upload.
 
 ## 9-prev16. Billy's kit pass (2026-10-24, in development)

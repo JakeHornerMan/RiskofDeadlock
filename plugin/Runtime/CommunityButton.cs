@@ -9,17 +9,16 @@ namespace DeadlockOfRain
 {
     /// <summary>The "Join the Discord" button on RoR2's title menu (creator, 2026-10-24: "use the discord log and put the
     /// writing in the same style as risk of rain 2"). A copy of the title menu's own Singleplayer button (same frame, font,
-    /// hover and click sound) in Discord blurple, put under the menu column (below Quit to Desktop), as wide as it and about
-    /// twice as tall, with Discord's logo (`Assets/discord.png`, drawn by `tools/discord_logo.py`) on the left. It lives in the
+    /// hover and click sound) in Discord blurple, in the bottom-right corner of the title screen (creator: "put it in the bottom
+    /// right!"; the top right holds RoR2's profile box and event banner), as wide as a menu button and about twice as tall, with Discord's logo (`Assets/discord.png`, drawn by `tools/discord_logo.py`) on the left. It lives in the
     /// title screen, so it goes away with it. The invite never expires and gives everyone who joins through it the
     /// "Risk of Deadlock Player" role (doc 03 §9). Hidden in test mode.</summary>
     public sealed class CommunityButton : MonoBehaviour
     {
         public const string Invite = "https://discord.gg/sNByetmcqc";
         static readonly Color Blurple = new Color(0.345f, 0.396f, 0.949f);
-        const float HeightScale = 2.2f, Gap = 18f;
+        const float HeightScale = 2.2f, Margin = 48f;
         static Sprite logo;
-        RectTransform built, column;
 
         public static void Init()
         {
@@ -34,37 +33,27 @@ namespace DeadlockOfRain
         {
             var menu = MainMenuController.instance;
             if (!menu || !menu.titleMenuScreen || MeltyTest.Active) return;
-            if (!built)
-            {
-                var template = menu.titleMenuScreen.GetComponentsInChildren<HGButton>(true)
-                    .FirstOrDefault(b => b.GetComponentInChildren<LanguageTextMeshController>(true) && b.transform.parent);
-                if (!template) return;
-                built = Build(template);
-                column = (RectTransform)template.transform.parent;
-            }
-            // under the lowest button of the column, every frame (the column lays itself out after we are built)
-            float bottom = 0f;
-            foreach (RectTransform c in column)
-                if (c != built && c.gameObject.activeSelf && c.GetComponent<HGButton>())
-                    bottom = Mathf.Min(bottom, c.anchoredPosition.y - c.rect.height * c.pivot.y);
-            built.anchoredPosition = new Vector2(0f, bottom - Gap);
+            var screen = menu.titleMenuScreen.transform;
+            if (screen.Find("DeadlockOfRainDiscord")) return;
+            var template = screen.GetComponentsInChildren<HGButton>(true).FirstOrDefault(b => b.GetComponentInChildren<LanguageTextMeshController>(true));
+            if (template) Build(screen, template);
         }
 
-        static RectTransform Build(HGButton template)
+        static void Build(Transform screen, HGButton template)
         {
             var tr = (RectTransform)template.transform;
-            var go = Instantiate(template.gameObject, tr.parent, false);
+            var go = Instantiate(template.gameObject, screen, false);
             go.name = "DeadlockOfRainDiscord";
             go.SetActive(true);
             (go.GetComponent<LayoutElement>() ?? go.AddComponent<LayoutElement>()).ignoreLayout = true;
             foreach (var lg in go.GetComponentsInChildren<LayoutGroup>(true)) lg.enabled = false;
             foreach (var f in go.GetComponentsInChildren<ContentSizeFitter>(true)) f.enabled = false;
             var rt = (RectTransform)go.transform;
-            rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
-            rt.pivot = new Vector2(0f, 1f);
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 0f);
             float w = tr.rect.width, h = tr.rect.height * HeightScale;
             rt.sizeDelta = new Vector2(w, h);
-            rt.localScale = Vector3.one;
+            rt.anchoredPosition = new Vector2(-Margin, Margin);
+            rt.localScale = tr.lossyScale.x > 0f && screen.lossyScale.x > 0f ? tr.lossyScale / screen.lossyScale.x : Vector3.one;
 
             var button = go.GetComponent<HGButton>();
             button.onClick = new Button.ButtonClickedEvent();
@@ -100,10 +89,9 @@ namespace DeadlockOfRain
             img.preserveAspect = true;
             img.raycastTarget = false;
 
-            Log.Info($"Discord button added under the title menu column (copied from {template.name}, {w:F0}x{h:F0})");
+            Log.Info($"Discord button added to the bottom right of the title screen (copied from {template.name}, {w:F0}x{h:F0})");
             foreach (var t in go.GetComponentsInChildren<Transform>(true))
                 Log.Info($"  discord button part: {t.name} [{string.Join(", ", t.GetComponents<Component>().Select(c => c.GetType().Name))}]");
-            return rt;
         }
 
         static Sprite Logo()

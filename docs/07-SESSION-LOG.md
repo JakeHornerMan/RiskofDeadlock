@@ -1174,7 +1174,7 @@ then "I would like if they had acces to general area and also thir own area, wit
 **Questions asked → answers:** none.
 **Done:** every role checked with "View Server As Role" (outline in the reply). The button is now a copy of RoR2's own Singleplayer
   button (font, frame, hover, click sound) in blurple with Discord's logo (`plugin/Assets/discord.png` from `tools/discord_logo.py`,
-  embedded resource), placed under Quit to Desktop, logo and text in separate areas. Doc 02 §8.
+  embedded resource), placed in the bottom-right corner ("sorry put it in the bottom right!"), logo and text in separate areas. Doc 02 §8.
 **Results:** first restyled build seen in game (log "copied from GenericMenuButton (Singleplayer)"): it sat top right over the
   profile box with the text over the logo, which led to the move. The bottom-left build compiles; not installed or seen yet (game open, creator testing).
 **Not done / open:** install the DLL when the game is closed and look at it; Apply-to-Join bypass and the old invite still the creator's call.
