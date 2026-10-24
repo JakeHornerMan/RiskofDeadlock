@@ -522,16 +522,22 @@ namespace DeadlockOfRain
         /// <summary>Biquette's place in its octagon (pattern octagon), carried on between bursts.</summary>
         public int Octagon;
         float hangUntil, hangUsed;
+        /// <summary>Seconds of hang (no falling) he has left (the test reads it).</summary>
+        public float HangLeft => Mathf.Max(0f, hangUntil - Time.fixedTime);
         bool hanging, jumpPressed;
         float airSince;
 
-        /// <summary>Owner: an air hit holds him up for seconds more (no falling), out of a budget per trip in the air.</summary>
+        /// <summary>Owner: an air hit holds him up (no falling) for seconds from now, out of a budget per trip in the air. It
+        /// tops the hold back up to seconds and never adds to it, so he never has more than seconds of float left (creator,
+        /// 2026-10-24: "EACH BAT HIT SHOULD EXTENND HIS TIME BY 1 SECOND BUT HE SHULD NEVER HAVE OVER 1 SECOND FLOATING").</summary>
         public void HangFor(float seconds, float budget)
         {
             if (!body || !body.characterMotor || body.characterMotor.isGrounded || hangUsed >= budget) return;
-            float t = Mathf.Min(seconds, budget - hangUsed);
-            hangUsed += t;
-            hangUntil = Mathf.Max(hangUntil, Time.fixedTime) + t;
+            float now = Time.fixedTime, left = Mathf.Max(0f, hangUntil - now);
+            float add = Mathf.Min(seconds - left, budget - hangUsed);
+            if (add <= 0f) return;
+            hangUsed += add;
+            hangUntil = now + left + add;
         }
 
         /// <summary>Owner: a melee hit puts pct % of the gun's magazine back (Billy's Blasted), cutting a reload short.</summary>

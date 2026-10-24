@@ -1102,3 +1102,13 @@ Ram float extras → "Hit +1s, nearby +0.5s" (cap 6 s); health → "+25% (140 �
 **Not done / open:** bench (it closes the game; after the creator's play), kit page refresh and republish (after the bench), co-op check of the drag.
 **Lessons:** never put a second command after a test in the same shell line: a stray `run_test.sh ... &` killed the practice game the
   creator was waiting for and had to be killed and rerun.
+
+### 2026-10-24 · Billy's own float: never more than 1 s left · v0.11.0 (in development) · this commit
+**Request (verbatim):** "OK I THINK THE FLOAT TIMING IS RIGHT ON THE ENEMYS BUT FOR BILLY HOW LONG DOES HE EGT IN ARI ON THE Rising Ram ABILITY",
+then "EACH BAT HIT SHOULD EXTENND HIS TIME BY 1 SECOND BUT HE SHULD NEVER HAVE OVER 1 SECOND FLOATING", then "DO NOT PLAY DO NOT TEST JUST MAKE THE CHANGE!"
+**Questions asked → answers:** how long should Billy stay up after Rising Ram → the answer above (tops up to 1 s, never more).
+**Done:** `HeroRuntime.HangFor` tops his hold back up to `hangTime` (1 s) from now instead of adding to it (two quick hits used to give 2 s);
+  `HangLeft` for the test; `TestBillyAir` checks at most 1 s left after two quick hits; bat description and skills `about`; docs 02, 06.
+  The DLL is installed for the creator's next start (the open game was left alone).
+**Results:** builds, preflight clean. **Not tested in game** (the creator: "DO NOT PLAY DO NOT TEST").
+**Not done / open:** run `run_test.sh billy` when the creator allows it (the new check is in); bench, kit pages, co-op check still open.

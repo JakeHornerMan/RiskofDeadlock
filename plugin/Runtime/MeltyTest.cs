@@ -1464,6 +1464,9 @@ namespace DeadlockOfRain
             yield return new WaitForSeconds(swing * 0.4f + 0.05f);
             float gap1 = Vector3.Distance(body.corePosition, t.corePosition);
             float y1 = body.footPosition.y;
+            // a second hit straight after: his hang goes back up to hangTime, never past it
+            rt.HangFor(bat.HangTime, bat.FloatTime);
+            float hangLeft = rt.HangLeft;
             yield return new WaitForSeconds(bat.HangTime * 0.6f);
             float y2 = body.footPosition.y;
             int ammo = rt.Ammo;
@@ -1481,6 +1484,8 @@ namespace DeadlockOfRain
             if (y1 - y2 > 0.35f) why[0] += $"billy air bat: fell {y1 - y2:F2} m right after the hit; ";
             if (ammo < wantAmmo) why[0] += $"billy air bat: magazine {ammo}, want {wantAmmo}; ";
             if (!stillUp) why[0] += "billy air bat: the float was not kept up; ";
+            Log.Info($"Melty test: {hero.Id} his own float after two quick air hits: {hangLeft:F2} s left (want at most {bat.HangTime:F1})");
+            if (hangLeft > bat.HangTime + 0.03f) why[0] += $"billy air bat: {hangLeft:F2} s of float left after two hits (want at most {bat.HangTime:F1}); ";
             if (n) Log.Info($"Melty test: {hero.Id} air bat, the enemy floating {Mathf.Min(7f, bat.NearRadius - 1f):F0} m from the one hit: still floating at {ram.FloatTime + bat.NearHang * 0.5f:F2} s: {nearUp}");
             if (!nearUp) why[0] += "billy air bat: the enemy near the hit was not kept up; ";
             KillTargets();
