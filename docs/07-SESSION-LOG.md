@@ -1131,25 +1131,24 @@ then "EACH BAT HIT SHOULD EXTENND HIS TIME BY 1 SECOND BUT HE SHULD NEVER HAVE O
   then the recipe (checks from that run), upload, submit, listing, publish.
 
 ### 2026-10-24 · Discord community, title-screen button · v1.0.0 (unreleased) · this commit
-**Request (verbatim):** "https://discord.gg/gftQ3fQj8 i have this server i want to create a place in this server for people who join through this mod how can we do this i would attach this to the melty page and the thunderstore page",
-then "I would like if they had acces to general area and also thir own area, with 2 channel faq and hero requests", "mkae this role 'risk of deadlock player'",
-"everyone can view the risk of deadlock channels but the risk of deadlock players can only view this section and promote your self and general",
-"please also make a generic onboard tjust saying done be an idiot f you are disrespectful to other member you will be removed",
+**Request (summarised; the creator asked to keep their own Discord server's details out of the repo):** a place in the creator's Discord for
+people who join through the mod, linked from the Melty and Thunderstore pages: a "risk of deadlock player" role, a Risk of Deadlock section
+with faq and hero requests that everyone can see, the role limited to that section plus the server's general and promote-yourself channels,
+and a join rule: "done be an idiot f you are disrespectful to other member you will be removed"; then
 "build on the risk of rain main menu page a big obvious button to join this community with the Risk of Deadlock player role on default thorugh this link",
 "just built it dont run the game to test it until i tell you".
 **Questions asked → answers:** who sets up Discord → "I do it in Chrome"; when the link goes live → "With the next release (Recommended)"; a line in game → "Yes, on the title screen".
 **Done:**
 - Discord (creator's browser, signed in): role `Risk of Deadlock Player` (orange); category `Risk of Deadlock` (public) with #faq and #hero-requests;
-  the role denied View Channel on rules, meat-rankings, Information (+ #announcements), Text Channels, Voice Channels, Private devs; allowed on #general and #promote-yourself.
-  "View Server As Role" shows exactly #general, #promote-yourself, #faq, #hero-requests. Invite `https://discord.gg/sNByetmcqc`: never expires, no use limit, gives the role, lands in #general.
+  the role is denied View Channel everywhere else and allowed on the server's #general and #promote-yourself;
+  "View Server As Role" shows exactly those plus #faq and #hero-requests. Invite `https://discord.gg/sNByetmcqc`: never expires, no use limit, gives the role, lands in #general.
   Join form: "Server Rules" with "Don't be an idiot. If you are disrespectful to other members you will be removed."
 - `plugin/Runtime/CommunityButton.cs` + `Plugin.cs` init: the title-screen button opening the invite. "Community" section in `README.md`, `thunderstore/README.md`, `thunderstore/melty-description.md`; 1.0.0 CHANGELOG line. Docs 00, 02, 03.
 **Results:** `dotnet build plugin -c Release` 0 errors. Not installed (game open), not run in game (creator's instruction).
-**Not done / open:** the server is "Apply to Join", so mod players still wait for approval unless the invite bypasses applications (the creator decides);
-  Onboarding was not switched on (Discord asks for 7 default channels; the invite role does the job). See the button in game when the creator allows it;
-  rebuild the 1.0.0 zip before uploading. The old invite `gftQ3fQj8` was left as it was.
+**Not done / open:** players joining through the invite still need the creator's approval unless it bypasses join applications (the creator decides);
+  Onboarding was not switched on (the invite role does the job). See the button in game when the creator allows it; rebuild the 1.0.0 zip before uploading.
 **Lessons:** Discord invites can carry roles now (Invite → Edit invite link → Roles), so no bot or Onboarding question is needed to tag players from one link.
-  Channels with their own overwrites (#announcements, #general-private) don't follow the category: check with View Server As Role.
+  Channels with their own permission overrides don't follow their category: check the role with View Server As Role.
 
 ### 2026-10-24 · Billy: no fall damage, air snap only on screen, Biquette 10 a bullet · v1.0.0 (not uploaded) · this commit
 **Request (verbatim):** "billy needs some work, he should never recieve fall damage, and he should never snap to an eney in air if we is not looking in thier direction. if they are on screen i think it good. also let put billys gun damage up to 15 no other change!", then "when ur done please just stop and dont do dps test on billy close th game when ur done and turn off test mode of course"
@@ -1172,12 +1171,12 @@ then "I would like if they had acces to general area and also thir own area, wit
 "now also let make the fucking discord button look pretty use the discord log and put the writing in the same style as risk of rain 2",
 "but it [Image #1] in the bottom left and make sure the discord logo and the text are not overlapping", "dont close the game im testing something".
 **Questions asked → answers:** none.
-**Done:** every role checked with "View Server As Role" (outline in the reply). The button is now a copy of RoR2's own Singleplayer
+**Done:** the Risk of Deadlock Player role re-checked with "View Server As Role" (the outline of the server's other roles is the creator's, not recorded). The button is now a copy of RoR2's own Singleplayer
   button (font, frame, hover, click sound) in blurple with Discord's logo (`plugin/Assets/discord.png` from `tools/discord_logo.py`,
   embedded resource), placed in the bottom-right corner ("sorry put it in the bottom right!"), logo and text in separate areas. Doc 02 §8.
 **Results:** first restyled build seen in game (log "copied from GenericMenuButton (Singleplayer)"): it sat top right over the
   profile box with the text over the logo, which led to the move. The bottom-left build compiles; not installed or seen yet (game open, creator testing).
-**Not done / open:** install the DLL when the game is closed and look at it; Apply-to-Join bypass and the old invite still the creator's call.
+**Not done / open:** install the DLL when the game is closed and look at it; whether the invite skips approval is still the creator's call.
 **Lessons:** RoR2's title screen has the profile box and event banner at the top right; put mod UI in or under the menu column.
 
 ### 2026-10-24 · Billy: air Bashdown straight down, float ended · v1.0.0 (not uploaded) · this commit
@@ -1203,9 +1202,3 @@ then "I would like if they had acces to general area and also thir own area, wit
 **Results:** dry run for 1.0.0 prints the message; nothing posted yet (no release since).
 **Not done / open:** first real post comes with the 1.0.0 publish.
 
-### 2026-10-24 · Discord member list grouped by role · this commit
-**Request (verbatim):** "can we section off the memeber by 3 roles 'London Calling', 'Dia dhuit Éire', and 'Risk of Deadlock Player'"
-**Questions asked → answers:** none.
-**Done:** "Display role members separately from online members" switched on for London Calling, Dia dhuit Éire and Risk of Deadlock Player
-  (each checked after saving). A member with several of these is listed under the highest one in the role order (London Calling, then Dia dhuit Éire, then Risk of Deadlock Player).
-**Results:** settings saved; the member list itself not looked at (the open channel had no member panel).
