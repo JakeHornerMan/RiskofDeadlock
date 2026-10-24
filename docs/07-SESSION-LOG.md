@@ -1246,3 +1246,20 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
   colour, the name under it, "6,393 vs Mercenary 5,112", and a band along the bottom: green "inside · +52", red "above · +1,281" / "below · −504");
   each card opens the hero's kit sheet. Wiki used for the idea only, no art from it. Balance overview republished.
 **Not done / open:** seen only as built HTML (the browser tool can't open local files); a look at the live page is the check.
+
+### 2026-10-24 · 1.0.0 on Melty: Billy playable, Wraith coming soon · v1.0.0 · this commit
+**Request (verbatim):** "ok let release billy on melty and grey out wraith!"
+**Questions asked → answers:** none (the 1.0.0 cut was prepared earlier: `release.json` `melty` with billy, `comingSoon` wraith).
+**Done:**
+- CHANGELOG 1.0.0 and `thunderstore/melty-description.md` gained the work since the prep (Chain Gang 20 chains, no fall damage,
+  on-screen air snap, straight-down air Bashdown, the "Hero Sheets & Damage" button). `gen.py` PREFLIGHT CLEAN, build, `package.py 1.0.0 --melty`
+  (8 heroes, `coming-soon.txt` wraith, sha256 `57d561c9…`, 40,654,020 bytes, `setup.done.contains` `|1.7.0|524B1AE7A140494E`).
+- Since 0.11.0 only Billy's code, the title-screen buttons, test/bench code and new sheet columns (0 for other heroes) changed, so not all heroes were re-run.
+- Melty: upload `12928fb1-c3d9-4bc7-9caf-116be51f9110`, release `534634ad-69e9-417c-aed8-3920c9d32241` (recipe as 0.11.0 with the new file, hash,
+  checks: deadlock-content, survivors-listed, coming-soon-tile, loading-screen, the eight `-plays`; 10 minutes); listing text, tagline, Discord link;
+  **published, in safety review**; no Melty test (a new version of a live mashup, creator asked to release). `report_bug_fix` for
+  `ended:quick-close` and `load:not-loaded` (pending until 1.0.0 is live). `discord_update.py 1.0.0` posted to #update.
+**Results:** `RELEASE_ZIP=build/DeadlockOfRain-1.0.0.zip run_test.sh billy` 1/1, every check pass (coming-soon-tile, loading-screen, billy-plays, ...);
+  `BREAK=infernus RELEASE_ZIP=... run_test.sh haze` 21/21 incl. missing-hero-tile and coming-soon-tile. `lab_restore.sh`: every hero ready, `winhttp.dll` in place, test-mode file gone.
+**Not done / open:** `mod_status` to confirm live; `install_outcomes` / `player_logs` on 1.0.0 next session; Thunderstore still on the 4-hero 0.7.x line; Wraith's page still private.
+

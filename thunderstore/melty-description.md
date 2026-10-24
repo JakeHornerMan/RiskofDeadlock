@@ -9,13 +9,13 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat
 - **Mo & Krill**: Sand Blast, Burrow, Tag Team; Q Dust Devil.
 - **Viscous**: goo blobs, Splatter, The Cube, Puddle Punch; puddles top up his ammo; Q Goo Ball.
 - **Rat King**: Sovereign's Decree spreadshot, a hopping Scrap Grenade, Royal Pestments, and Rule, Ratannia!, a banner leap; a cape, a tail and a crowd of Deadlock's rats. Q Rat Swarm.
-- **Billy** (new in 1.0.0): Biquette the machine gun, a 3-hit Bat combo that dodges onto enemies in the air and juggles them there, Bashdown, and Rising Ram, whose chains haul everyone around into the air; his air jump is a goring dodge. Q Chain Gang.
+- **Billy** (new in 1.0.0): Biquette the machine gun, a 3-hit Bat combo that dodges onto enemies in the air and juggles them there, Bashdown, and Rising Ram, whose chains haul everyone around into the air; his air jump is a goring dodge and he never takes fall damage. Q Chain Gang: up to 20 chains, one per enemy.
 - Each hero is balanced against a Risk of Rain 2 survivor, and levels up like one.
 - **Co-op for up to 4**: Melty's Join button, or Risk of Rain 2's own lobby and Steam invites. Every player needs this mashup and their own Deadlock.
 - If one hero can't be read from your Deadlock (after a Deadlock update), every other hero still works, and its tile says why.
 
 ## Community
-Join the **[Risk of Deadlock Discord](https://discord.gg/sNByetmcqc)**: FAQ, hero requests and news. The same button is on the game's title screen.
+Join the **[Risk of Deadlock Discord](https://discord.gg/sNByetmcqc)**: FAQ, hero requests and news. The same button is on the game's title screen, with a "Hero Sheets & Damage" button above it.
 
 ## Hero pages
 Every hero's abilities, numbers and measured damage, with our own in-game pictures:
