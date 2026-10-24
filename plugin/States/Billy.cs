@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using DeadlockOfRain.Sheets;
 using EntityStates;
 using RoR2;
@@ -697,6 +698,9 @@ namespace DeadlockOfRain.States
     public sealed class UltChains : UltState
     {
         readonly List<CharacterBody> victims = new List<CharacterBody>();
+        // one entry per chain: each enemy once, a boss up to bossMult times (creator, 2026-10-24: "1 chain per enemy unless they
+        // are a boss who can get 5 chains"); every chain deals damagePct, chainCount chains at most
+        readonly List<CharacterBody> chained = new List<CharacterBody>();
         bool hauled, slammed;
         GameObject chains;
         int loop;
@@ -716,7 +720,12 @@ namespace DeadlockOfRain.States
                 victims.Add(b);
                 if (victims.Count >= row.ChainCount) break;
             }
-            chains = Vfx.Chains(characterBody, victims, row.Interval, row.Duration + 0.2f);
+            chained.AddRange(victims);
+            // the chains left over go to the bosses, a few more each, until there are chainCount
+            for (int extra = 1; extra < row.BossMult && chained.Count < row.ChainCount; extra++)
+                foreach (var b in victims)
+                    if (b.isChampion && chained.Count < row.ChainCount) chained.Add(b);
+            chains = Vfx.Chains(characterBody, chained, row.Interval, row.Duration + 0.2f);
             loop = Fx.Loop(row.Id, transform.position);
             characterBody.SetAimTimer(row.Duration + 0.5f);
         }
@@ -755,11 +764,13 @@ namespace DeadlockOfRain.States
             foreach (var v in victims)
             {
                 if (!v || !v.healthComponent || !v.healthComponent.alive) continue;
+                int links = chained.Count(c => c == v);
                 var ground = v.footPosition;
                 if (Physics.Raycast(v.corePosition, Vector3.down, out var g, 40f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) ground = g.point;
                 Vfx.Play(row.Vfx, "hit", ground, Mathf.Max(2f, v.radius * 2f));
                 if (!Server) continue;
-                Fx.Hit(characterBody, v.mainHurtBox, Coef, row.ProcCoefficient, v.corePosition);
+                for (int i = 0; i < links && v.healthComponent.alive; i++)
+                    Fx.Hit(characterBody, v.mainHurtBox, Coef, row.ProcCoefficient, v.corePosition);
                 BillyAir.SlamDown(v.healthComponent, row.Speed);
                 Fx.Stun(v.healthComponent, row.StunDuration);
             }

@@ -381,6 +381,8 @@ namespace DeadlockOfRain
             float age;
             readonly List<List<GameObject>> links = new List<List<GameObject>>();
             readonly List<LineRenderer> lines = new List<LineRenderer>();
+            // a body listed more than once (a boss takes several chains) gets each extra chain on a spot around its middle
+            readonly List<int> repeat = new List<int>();
             const int MaxLinks = 40;
             const float BigLink = 0.55f;
 
@@ -388,6 +390,9 @@ namespace DeadlockOfRain
             {
                 for (int i = 0; i < Victims.Count; i++)
                 {
+                    int r = 0;
+                    for (int j = 0; j < i; j++) if (Victims[j] == Victims[i]) r++;
+                    repeat.Add(r);
                     links.Add(new List<GameObject>());
                     // a thin dark line under the links, the whole chain when the prop is missing
                     // a bright pink line under the links, so each chain reads at a glance (the whole chain when the prop is missing)
@@ -408,7 +413,9 @@ namespace DeadlockOfRain
                     var v = Victims[i];
                     var lr = lines[i];
                     if (!v) { lr.enabled = false; foreach (var l in links[i]) if (l) l.SetActive(false); continue; }
-                    var b = Vector3.Lerp(a, v.corePosition, reach);
+                    var to = v.corePosition;
+                    if (repeat[i] > 0) to += Quaternion.AngleAxis(repeat[i] * 72f, Vector3.up) * Vector3.forward * v.radius * 0.6f + Vector3.up * v.radius * 0.3f * (repeat[i] % 2 == 0 ? 1f : -1f);
+                    var b = Vector3.Lerp(a, to, reach);
                     lr.SetPosition(0, a); lr.SetPosition(1, b);
                     if (!Template) continue;
                     var d = b - a; float dist = d.magnitude;
