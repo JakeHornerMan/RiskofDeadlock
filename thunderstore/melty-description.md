@@ -30,5 +30,6 @@ Every hero's abilities, numbers and measured damage, with our own in-game pictur
 - [Balance overview](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3): every hero next to every Risk of Rain 2 survivor
 
 ## Good to know
-- You need **Risk of Rain 2 and Deadlock** installed. Nothing from either game is in this download: before the first start, Melty reads the heroes from your Deadlock folder (a few minutes, once per Deadlock update), and the setup screen says what it is reading. Then the loading screen shows each hero being built, with a timer: the game is not stuck.
-- Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.0, 2026-10-24).
+- You need **Risk of Rain 2 and Deadlock** installed. Nothing from either game is in this download: before the first start, Melty reads the heroes from your Deadlock folder (about 2 minutes, once per Deadlock update), and the setup screen says what it is reading. Then the loading screen shows each hero being built, with a timer: the game is not stuck.
+- Melty and Thunderstore players can play together, whatever their version, as long as they have the same heroes.
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.1, 2026-10-25).

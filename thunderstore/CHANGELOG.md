@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.1, 2026-10-25).
+- Setting up is about 15 times faster: all eight heroes are read from your Deadlock in about 2 minutes (it took up to half an hour). Abrams alone went from 9 minutes to 14 seconds (Deadlock reader 1.8.0).
+- The title screen's two buttons show their names, "Join the Risk of Deadlock Discord" and "Deadlock Hero Info" (with all eight heroes beside it); they were blank.
+- Melty and Thunderstore players can play together whatever their version, as long as they have the same heroes.
+
 ## 1.0.0
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.0, 2026-10-25).
 - Thunderstore gets all eight heroes: Haze, Abrams, Seven and Infernus, now joined by Mo & Krill (MUL-T's match), Viscous (REX's), Rat King (Captain's) and Billy (Mercenary's). Every hero's abilities are described on its hero page.

@@ -29,13 +29,20 @@ namespace DeadlockOfRain
             MeltyJoin.Init();
         }
 
-        /// <summary>RoR2 refuses players whose mod list differs (KICK_REASON_MOD_MISMATCH). Our entry names the version and the
+        /// <summary>The co-op version in the mod-list entry: Melty and Thunderstore players of different releases can play together
+        /// while it matches (creator, 2026-10-25: "allow any thunderstore player to play with any melty player regardless of
+        /// version number"). Raise it whenever two releases could disagree in a shared game: networked state (OnSerialize,
+        /// Relay, Net), or the content catalogs (a new or removed buff, equipment, effect, skill or body shifts every index).
+        /// "1.0.0" = the live 1.0.0 releases, so 1.0.1 joins them.</summary>
+        public const string CoopVersion = "1.0.0";
+
+        /// <summary>RoR2 refuses players whose mod list differs (KICK_REASON_MOD_MISMATCH). Our entry names the co-op version and the
         /// heroes actually built, because bodies and equipment are numbered by catalog position: a player with other heroes
         /// (another release, or none because Deadlock is missing) must be turned away, not let into a game that disagrees.
         /// Called at the end of content loading, once the heroes are known (the list is read when a lobby is joined).</summary>
         public static void RegisterModList()
         {
-            var id = Plugin.Guid + ";" + Plugin.Version + ";" + string.Join(",", Survivors.Released.Where(h => Survivors.Bodies.ContainsKey(h.Id)).Select(h => h.Id));
+            var id = Plugin.Guid + ";" + CoopVersion + ";" + string.Join(",", Survivors.Released.Where(h => Survivors.Bodies.ContainsKey(h.Id)).Select(h => h.Id));
             if (!NetworkModCompatibilityHelper.networkModList.Contains(id))
                 NetworkModCompatibilityHelper.networkModList = NetworkModCompatibilityHelper.networkModList.Concat(new[] { id });
             Log.Info("Mod list entry: " + id);
