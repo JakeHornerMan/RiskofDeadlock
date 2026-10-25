@@ -57,6 +57,8 @@ namespace DeadlockOfRain
 
         // the cape and tail springs (animations springRoots), stepped after the gun rig turns the spine they hang from
         SpringBones springs;
+        /// <summary>The model's spring chains (null when its row has none): a move can kick them (Wraith's coat flaring on a throw).</summary>
+        public SpringBones Springs => springs;
         // bones carrying a prop the hero only holds during a move (animations propBones: Rat King's banner), at scale 0 otherwise
         Transform[] propBones;
         Vector3[] propScale;
@@ -89,7 +91,7 @@ namespace DeadlockOfRain
             logical["idle"] = rows.Idle; logical["run_n"] = rows.RunN; logical["run_s"] = rows.RunS; logical["run_e"] = rows.RunE; logical["run_w"] = rows.RunW;
             logical["sprint"] = rows.Sprint; logical["jump_start"] = rows.JumpStart; logical["jump_air"] = rows.JumpAir; logical["land"] = rows.Land;
             logical["fire"] = rows.Fire; logical["fire_alt"] = rows.FireAlt; logical["reload"] = rows.Reload;
-            logical["secondary"] = rows.Secondary; logical["utility"] = rows.Utility; logical["utility_loop"] = rows.UtilityLoop;
+            logical["secondary"] = rows.Secondary; logical["secondary_air"] = rows.SecondaryAir; logical["utility"] = rows.Utility; logical["utility_loop"] = rows.UtilityLoop;
             logical["special_start"] = rows.SpecialStart; logical["special"] = rows.Special;
             logical["ult_start"] = rows.UltStart; logical["ult_loop"] = rows.UltLoop; logical["ult_end"] = rows.UltEnd; logical["death"] = rows.Death;
             logical["special_loop"] = rows.SpecialLoop; logical["melee"] = rows.Melee; logical["melee_alt"] = rows.MeleeAlt;

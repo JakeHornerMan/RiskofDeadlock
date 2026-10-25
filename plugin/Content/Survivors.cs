@@ -384,6 +384,8 @@ namespace DeadlockOfRain
         public bool Reloading;
         public bool AltMuzzle;
         public float SmokeUntil;
+        /// <summary>Gun bullets landed on enemies toward the secondary's next hitsPerRefund refund (Wraith's Card Trick; owner side).</summary>
+        public int RefundHits;
         float reloadEnd;
         int clip;
         CharacterBody body;
@@ -406,6 +408,8 @@ namespace DeadlockOfRain
             // Heavyweight: monsters' hits can't push, pull or knock the hero (jump pads and his own moves still move him)
             if (hero.ImmuneToForce && NetworkServer.active && !body.HasBuff(RoR2Content.Buffs.ImmuneToPhysicsForces)) body.AddBuff(RoR2Content.Buffs.ImmuneToPhysicsForces);
             var gun = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Slot == "primary");
+            // Card Trick's stored cards float over her head (every machine)
+            if (Sheet.SkillsOf(hero.Id).Any(s => s.Kind == "card_trick") && !GetComponent<WraithCardHalo>()) gameObject.AddComponent<WraithCardHalo>();
             steps = gun != null ? Sheet.Sound(gun.Id + "/step") : null;
             lands = gun != null ? Sheet.Sound(gun.Id + "/land") ?? steps : null;
             var model = body.modelLocator ? body.modelLocator.modelTransform : null;

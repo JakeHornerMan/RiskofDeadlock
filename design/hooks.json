@@ -401,6 +401,30 @@
       "purpose": "Rising Ram's float and Chain Gang's haul: gravity off on the enemy's motor (or a flyer's rigidbody held), its velocity driven up then down, stunned the whole time; air Bashdown drags the enemies in the air down with Billy (phase Drag, chained to him, slammed when he lands) and the chains' slam drives it into the floor; the air bat extends floats (hangTime on the enemy hit, nearHang within nearRadius)",
       "reads": "skills.launchHeight/floatTime/hangTime/nearHang/nearRadius/minDuration/duration/stunDuration/speed",
       "side": "server"
+    },
+    {
+      "id": "wraith_oob_credit",
+      "method": "MapZone.onOOBPreDeathServer",
+      "target": "WraithThrown.OnOutOfBounds (Runtime/WraithParts.cs), server",
+      "purpose": "An enemy Telekinesis threw that falls into a kill zone (off a cliff) dies as Wraith's kill: she is made its lastHitAttacker before RoR2 kills it, so she gets its gold and XP",
+      "reads": "none",
+      "side": "server"
+    },
+    {
+      "id": "wraith_card_refund",
+      "method": "BulletAttack.hitCallback",
+      "target": "GunState.RefundHit (States/Guns.cs), owner",
+      "purpose": "Every hitsPerRefund gun bullets that land on an enemy take refundSeconds off the secondary's recharge (Wraith: the next card 1 s sooner per 5 Rake hits)",
+      "reads": "skills.hitsPerRefund/refundSeconds",
+      "side": "owner"
+    },
+    {
+      "id": "wraith_card_halo",
+      "method": "component",
+      "target": "WraithCardHalo on the hero's body (Runtime/WraithParts.cs), every machine",
+      "purpose": "Card Trick's stored cards fanned above her head; the owner relays its charge count (Relay.Cards) when it changes",
+      "reads": "skills.stocks (and the slot's maxStock: Backup Magazine)",
+      "side": "all"
     }
   ]
 }

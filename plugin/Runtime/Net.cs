@@ -66,7 +66,7 @@ namespace DeadlockOfRain
     /// Shot/Reload, on the hero's owner); code that already runs everywhere (the skill states) plays locally instead.</summary>
     public static class Relay
     {
-        internal enum Kind : uint { Vfx = 1, Sound = 2, Impact = 3, Flash = 4, Bolt = 5, Shot = 6, Reload = 7 }
+        internal enum Kind : uint { Vfx = 1, Sound = 2, Impact = 3, Flash = 4, Bolt = 5, Shot = 6, Reload = 7, Cards = 8 }
         internal static readonly string[] Moments = { "cast", "loop", "hit", "end", "wave", "muzzle", "trigger", "aim", "reload", "hop", "slam" };
         public static int Received;
 
@@ -117,6 +117,16 @@ namespace DeadlockOfRain
             Send(Kind.Reload, 0, 0, d);
         }
 
+        /// <summary>The owner of a hero with stored cards (Wraith's Card Trick charges) has count of max: every other player's
+        /// copy fans that many cards above its head.</summary>
+        public static void Cards(CharacterBody body, int count, int max)
+        {
+            if (!body || !NetworkServer.active && !NetworkClient.active) return;
+            var d = new EffectData { origin = body.corePosition, genericFloat = count, scale = max };
+            d.SetNetworkedObjectReference(body.gameObject);
+            Send(Kind.Cards, 0, 0, d);
+        }
+
         internal static void Play(EffectData d)
         {
             Received++;
@@ -141,6 +151,17 @@ namespace DeadlockOfRain
                 case Kind.Bolt:
                     DeadlockOfRain.Vfx.Bolt(d.origin, d.start, d.color, d.scale, d.genericFloat);
                     break;
+                case Kind.Cards:
+                {
+                    var body = root ? root.GetComponent<CharacterBody>() : null;
+                    var halo = body ? body.GetComponent<WraithCardHalo>() : null;
+                    if (halo && !body.hasEffectiveAuthority)
+                    {
+                        halo.Set(Mathf.RoundToInt(d.genericFloat), Mathf.RoundToInt(d.scale));
+                        MeltyTest.Report("coop-remote-cards", true, body.baseNameToken);
+                    }
+                    break;
+                }
                 case Kind.Shot:
                 case Kind.Reload:
                 {

@@ -9,23 +9,29 @@ namespace DeadlockOfRain
     /// for dotTime s, Crit makes the hit a certain critical hit, Stun stuns for stunDuration s.</summary>
     public enum CardSuit { Bleed = 0, Crit = 1, Stun = 2, Burn = 3 }
 
-    /// <summary>Card Trick's card: flies on every machine (launched by the state that runs everywhere), homing on the enemy the
-    /// owner locked on to, or on any enemy within seekRange of its path; only the server's copy (damage = true) deals the hit and
-    /// its trick. The other copies are the same flight, drawn and heard.</summary>
+    /// <summary>Card Trick's card: flies on every machine (launched by the state that runs everywhere) and follows the owner's
+    /// crosshair while it flies (the aim is synced to every machine with the body): it leaves the hand launchArcDeg off to the
+    /// side and curves in, then steers at turnRate toward the enemy under the crosshair, or the locked target while the
+    /// crosshair stays on it, or the point the crosshair is on (bending onto an enemy within seekRange on the way). A miss
+    /// swings round in an arc and comes back. Only the server's copy (damage = true) deals the hit and its trick.</summary>
     public sealed class DlrCard : MonoBehaviour
     {
-        CharacterBody owner; SkillRow row; Vector3 dir; HurtBox target; CardSuit suit; bool damage;
+        CharacterBody owner; SkillRow row; Vector3 dir; HurtBox target, aimed; CardSuit suit; bool damage;
         float travelled, nextLook; int loop; GameObject vfx;
-        /// <summary>Degrees a second the card turns toward its target.</summary>
-        const float TurnRate = 720f;
+        /// <summary>The crosshair's cone (degrees) that picks the enemy the card goes for, and how far off the aim the locked
+        /// target may drift before the crosshair takes over.</summary>
+        const float AimCone = 8f, KeepLock = 20f;
 
         public static void Launch(CharacterBody owner, SkillRow row, Vector3 from, Vector3 dir, HurtBox target, CardSuit suit, bool damage)
         {
+            // out of the hand at an angle (to the left, a little up), curving in toward where she aims
+            var side = Vector3.Cross(Vector3.up, dir).normalized;
+            var start = Quaternion.AngleAxis(-row.LaunchArcDeg, Vector3.up) * Quaternion.AngleAxis(-row.LaunchArcDeg * 0.3f, side) * dir;
             var go = new GameObject("DlrCard_" + row.Id);
             go.transform.position = from;
-            go.transform.rotation = Quaternion.LookRotation(dir);
+            go.transform.rotation = Quaternion.LookRotation(start);
             var c = go.AddComponent<DlrCard>();
-            c.owner = owner; c.row = row; c.dir = dir.normalized; c.target = target; c.suit = suit; c.damage = damage;
+            c.owner = owner; c.row = row; c.dir = start.normalized; c.target = target; c.suit = suit; c.damage = damage;
             c.loop = Fx.Loop(row.Id, from);
             // the trick's colour rides in the angle argument (Vfx.WraithCard)
             c.vfx = Vfx.Play(row.Vfx, "loop", from, row.Radius, go.transform, null, (float)suit);
@@ -33,23 +39,53 @@ namespace DeadlockOfRain
 
         bool Alive(HurtBox hb) => hb && hb.healthComponent && hb.healthComponent.alive && hb.healthComponent.body;
 
+        /// <summary>The owner's aim right now (synced from its machine) and the enemy under it, if any.</summary>
+        Ray Aim(out HurtBox under)
+        {
+            under = null;
+            var ib = owner.inputBank;
+            var ray = ib ? ib.GetAimRay() : new Ray(owner.corePosition, owner.transform.forward);
+            var s = new BullseyeSearch
+            {
+                searchOrigin = ray.origin, searchDirection = ray.direction, maxAngleFilter = AimCone, maxDistanceFilter = row.Range,
+                teamMaskFilter = TeamMask.GetEnemyTeams(owner.teamComponent.teamIndex), filterByLoS = true,
+                sortMode = BullseyeSearch.SortMode.Angle,
+            };
+            s.RefreshCandidates();
+            s.FilterOutGameObject(owner.gameObject);
+            foreach (var hb in s.GetResults()) { under = hb; break; }
+            return ray;
+        }
+
         void FixedUpdate()
         {
-            if (!owner) { Destroy(gameObject); return; }
+            if (!owner || !owner.healthComponent || !owner.healthComponent.alive) { Done(); return; }
             float dt = Time.fixedDeltaTime;
             var pos = transform.position;
-            // thrown at nothing: it bends toward the first enemy that comes within seekRange of it
-            if (!Alive(target) && Time.time >= nextLook)
+            Vector3 goal;
+            var ray = Aim(out var under);
+            if (Time.time >= nextLook)
             {
                 nextLook = Time.time + 0.1f;
-                var near = Fx.Enemies(owner, pos, row.SeekRange, 1);
-                target = near.Count > 0 ? near[0] : null;
+                aimed = under;
+                // heading for the crosshair's point: it bends onto the first enemy within seekRange of it
+                if (!Alive(aimed) && !(Alive(target) && Vector3.Angle(ray.direction, target.healthComponent.body.corePosition - ray.origin) <= KeepLock))
+                {
+                    var near = Fx.Enemies(owner, pos, row.SeekRange, 1);
+                    target = near.Count > 0 ? near[0] : null;
+                }
             }
-            if (Alive(target))
+            if (Alive(aimed)) { target = aimed; goal = aimed.healthComponent.body.corePosition; }
+            else if (Alive(target) && Vector3.Angle(ray.direction, target.healthComponent.body.corePosition - ray.origin) <= KeepLock
+                     || Alive(target) && Vector3.Distance(pos, target.healthComponent.body.corePosition) <= row.SeekRange)
+                goal = target.healthComponent.body.corePosition;
+            else
             {
-                var want = (target.healthComponent.body.corePosition - pos).normalized;
-                dir = Vector3.RotateTowards(dir, want, TurnRate * Mathf.Deg2Rad * dt, 0f).normalized;
+                goal = Physics.Raycast(ray, out var wh, row.Range * 2f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore) ? wh.point : ray.origin + ray.direction * row.Range;
             }
+            var want = goal - pos;
+            if (want.sqrMagnitude > 0.01f)
+                dir = Vector3.RotateTowards(dir, want.normalized, row.TurnRate * Mathf.Deg2Rad * dt, 0f).normalized;
             float step = row.Speed * dt;
             transform.rotation = Quaternion.LookRotation(dir);
             int mask = LayerIndex.world.mask | LayerIndex.entityPrecise.mask;
@@ -91,10 +127,13 @@ namespace DeadlockOfRain
 
         void Done()
         {
+            if (done) return;
+            done = true;
             DeadlockAudio.Stop(loop);
             Vfx.Stop(vfx, 0.4f);
             Destroy(gameObject);
         }
+        bool done;
 
         void OnDestroy() => DeadlockAudio.Stop(loop);
     }
@@ -126,6 +165,8 @@ namespace DeadlockOfRain
             t.riseSpeed = height / Mathf.Max(0.05f, row.MinDuration);
             t.throwAt = t.start + row.Interval;
             t.GravityOff(true);
+            // her kill from here on, however it dies: a kill zone off a cliff pays the last attacker (OnOutOfBounds)
+            Credit(victim.healthComponent, owner);
             if (victim.characterMotor) victim.characterMotor.Motor.ForceUnground();
             // held and stunned until it lands (bosses get their own stun at the throw)
             Fx.Stun(victim.healthComponent, row.Interval + 2f);
@@ -171,6 +212,10 @@ namespace DeadlockOfRain
                     if (now >= throwAt)
                     {
                         if (boss) { Land(false); return; }
+                        // fully risen: thrown where she aims at this moment (her aim is synced to the server with her body)
+                        var aim = owner.inputBank ? owner.inputBank.aimDirection : Vector3.zero;
+                        aim.y = 0f;
+                        if (aim.sqrMagnitude > 0.01f) flat = aim.normalized;
                         phase = Phase.Throw;
                         vy = ArcLift;
                         // stunned again for the flight (a stun from the moment it left the ground did not hold through the lift)
@@ -226,6 +271,123 @@ namespace DeadlockOfRain
         }
 
         void OnDestroy() => GravityOff(false);
+
+        static System.Reflection.MethodInfo lastHitSetter;
+        /// <summary>Wraith becomes the enemy's last attacker (RoR2 gives a death's gold and XP to it).</summary>
+        static void Credit(HealthComponent hc, CharacterBody owner)
+        {
+            if (!hc || !owner) return;
+            if (lastHitSetter == null) lastHitSetter = HarmonyLib.AccessTools.PropertySetter(typeof(HealthComponent), nameof(HealthComponent.lastHitAttacker));
+            try { lastHitSetter?.Invoke(hc, new object[] { owner.gameObject }); }
+            catch (System.Exception e) { Log.Warn("telekinesis credit: " + e.Message); }
+        }
+
+        /// <summary>Server, hooked once: an enemy Telekinesis threw that falls into a kill zone (off a cliff, into the void) dies
+        /// as Wraith's kill, so she gets its gold and XP even if someone else hit it last.</summary>
+        public static void Init() => MapZone.onOOBPreDeathServer += OnOutOfBounds;
+
+        static void OnOutOfBounds(CharacterBody body, MapZone zone)
+        {
+            var t = body ? body.GetComponent<WraithThrown>() : null;
+            if (!t || !t.owner) return;
+            Credit(body.healthComponent, t.owner);
+            MeltyTest.Report("telekinesis-oob-credit", true, t.owner.baseNameToken);
+            if (MeltyTest.Active || DpsBench.Active) Log.Info($"telekinesis: {body.name} thrown out of bounds, Wraith's kill");
+        }
+    }
+
+    /// <summary>Card Trick's stored cards fanned above Wraith's head like a hand of cards, one per charge (Backup Magazine adds
+    /// more), on every machine. Charges live on the owner: it relays the count when it changes (Relay.Cards) and the others
+    /// draw what they were sent. Added by HeroRuntime to a hero with a card_trick skill.</summary>
+    public sealed class WraithCardHalo : MonoBehaviour
+    {
+        CharacterBody body; Transform head;
+        readonly System.Collections.Generic.List<GameObject> cards = new System.Collections.Generic.List<GameObject>();
+        GameObject root;
+        int count = -1, max = -1, sentCount = -1, sentMax = -1;
+        /// <summary>The count drawn now (test mode reads it).</summary>
+        public int Shown => count;
+        /// <summary>How far above the head the fan sits (m), each card's size against Deadlock's card, the fan's step (degrees).</summary>
+        const float Above = 0.42f, CardScale = 2.6f, FanStep = 13f;
+
+        void Awake() => body = GetComponent<CharacterBody>();
+
+        /// <summary>The owner's count reached this machine.</summary>
+        public void Set(int c, int m) { count = c; max = m; }
+
+        void LateUpdate()
+        {
+            if (!body) return;
+            var gs = body.skillLocator ? body.skillLocator.secondary : null;
+            if (body.hasEffectiveAuthority && gs)
+            {
+                count = gs.stock; max = gs.maxStock;
+                if (count != sentCount || max != sentMax) { sentCount = count; sentMax = max; Relay.Cards(body, count, max); }
+            }
+            else if (count < 0 && gs) { count = max = gs.maxStock; }
+            if (!head)
+            {
+                var model = body.modelLocator ? body.modelLocator.modelTransform : null;
+                if (!model) return;
+                foreach (var t in model.GetComponentsInChildren<Transform>(true)) if (t.name == "head") { head = t; break; }
+                if (!head) return;
+            }
+            if (!root) root = new GameObject("WraithCardHalo");
+            bool visible = body.healthComponent && body.healthComponent.alive && head.gameObject.activeInHierarchy;
+            if (root.activeSelf != visible) root.SetActive(visible);
+            if (!visible) return;
+            while (cards.Count < count) { var c = MakeCard(); if (!c) break; cards.Add(c); }
+            while (cards.Count > Mathf.Max(0, count)) { Vfx.Burst(cards[cards.Count - 1].transform.position, "mat_glow", new Color(0.8f, 0.62f, 1f), 3, 0.3f, 1f, 0.4f); Destroy(cards[cards.Count - 1]); cards.RemoveAt(cards.Count - 1); }
+            // the fan faces the camera, centred over the head, bobbing gently
+            var cam = Camera.main;
+            var face = cam ? cam.transform.position - head.position : -body.transform.forward;
+            face.y = 0f;
+            if (face.sqrMagnitude < 0.01f) face = Vector3.forward;
+            root.transform.position = head.position + Vector3.up * (Above + Mathf.Sin(Time.time * 2.2f) * 0.04f);
+            root.transform.rotation = Quaternion.LookRotation(-face.normalized, Vector3.up);
+            int n = cards.Count;
+            for (int i = 0; i < n; i++)
+            {
+                float a = (i - (n - 1) * 0.5f) * FanStep;
+                var t = cards[i].transform;
+                t.localRotation = Quaternion.AngleAxis(-a, Vector3.forward);
+                t.localPosition = t.localRotation * Vector3.up * 0.18f + Vector3.forward * (i * 0.005f) + Vector3.up * (-0.18f);
+            }
+        }
+
+        GameObject MakeCard()
+        {
+            var holder = new GameObject("card");
+            holder.transform.SetParent(root.transform, false);
+            var built = PropModels.Build("wraith_card_prop");
+            if (built != null)
+            {
+                // the card's thin side faces the camera, whichever way the model was made
+                var orient = built.Root.transform;
+                orient.SetParent(holder.transform, false);
+                var mf = built.Root.GetComponentInChildren<MeshFilter>();
+                if (mf && mf.sharedMesh)
+                {
+                    var s = mf.sharedMesh.bounds.size;
+                    var thin = s.x <= s.y && s.x <= s.z ? Vector3.right : s.y <= s.z ? Vector3.up : Vector3.forward;
+                    var tall = s.x >= s.y && s.x >= s.z ? Vector3.right : s.y >= s.z ? Vector3.up : Vector3.forward;
+                    orient.localRotation = Quaternion.Inverse(Quaternion.LookRotation(thin, tall));
+                    orient.localPosition = -(orient.localRotation * mf.sharedMesh.bounds.center) * ModelBuilder.GlobalScale * CardScale;
+                }
+                orient.localScale = Vector3.one * ModelBuilder.GlobalScale * CardScale;
+            }
+            else
+            {
+                var quad = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                Destroy(quad.GetComponent<Collider>());
+                quad.transform.SetParent(holder.transform, false);
+                quad.transform.localScale = new Vector3(0.2f, 0.3f, 0.01f);
+            }
+            Vfx.Play("wraith_card", "halo", holder.transform.position, 0.2f, holder.transform);
+            return holder;
+        }
+
+        void OnDestroy() { if (root) Destroy(root); }
     }
 
     /// <summary>Full Auto's smoke on The Rake while the buff lasts, on every machine (the buff is synced; the server ends it when

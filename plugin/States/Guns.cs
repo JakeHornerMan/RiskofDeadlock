@@ -301,9 +301,33 @@ namespace DeadlockOfRain.States
                     falloffModel = row.Pellets > 1 ? BulletAttack.FalloffModel.Buckshot : BulletAttack.FalloffModel.DefaultBullet,
                     damageType = new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Primary },
                 };
+                var sec = skillLocator ? Survivors.RowFor(skillLocator.secondary) : null;
+                if (sec != null && sec.HitsPerRefund > 0) ba.hitCallback = RefundHit;
                 ba.Fire();
             }
             MeltyTest.Report("gun-fires", true, characterBody.baseNameToken);
+        }
+
+        /// <summary>A bullet landed (owner side, where the skill charges live): every hitsPerRefund on an enemy takes the
+        /// secondary's refundSeconds off its recharge (Wraith: the next card comes 1 s sooner per 5 Rake hits).</summary>
+        bool RefundHit(BulletAttack attack, ref BulletAttack.BulletHit hit)
+        {
+            var hc = hit.hitHurtBox ? hit.hitHurtBox.healthComponent : null;
+            var gs = skillLocator ? skillLocator.secondary : null;
+            var sec = Survivors.RowFor(gs);
+            if (hc && hc.alive && hc.body && hc.body.teamComponent.teamIndex != characterBody.teamComponent.teamIndex && rt != null && sec != null && sec.HitsPerRefund > 0)
+            {
+                if (++rt.RefundHits >= (int)sec.HitsPerRefund)
+                {
+                    rt.RefundHits = 0;
+                    if (gs.stock < gs.maxStock)
+                    {
+                        gs.RunRecharge(sec.RefundSeconds);
+                        MeltyTest.Report("card-refund", true, characterBody.baseNameToken);
+                    }
+                }
+            }
+            return BulletAttack.defaultHitCallback(attack, ref hit);
         }
 
         /// <summary>A Sovereign's Decree pellet (or a Biquette bullet) landed: full damage to falloffStart metres, falling in a line to falloffMinPct % at

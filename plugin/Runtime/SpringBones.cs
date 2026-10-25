@@ -56,11 +56,17 @@ namespace DeadlockOfRain
                 var t = Find(root);
                 if (!t) { Log.Warn($"springs: no bone {root}"); continue; }
                 var list = new List<Transform> { t };
-                // down the chain: the child with the most bones below it (a cape strip, a tail)
+                // down the chain: the child with the most bones below it (a cape strip, a tail); a child that is itself a listed
+                // root is its own chain (Wraith's coat runs to coat_end, its tails hang off coat_7 on their own)
                 for (var b = t; b.childCount > 0;)
                 {
                     Transform next = null; int most = -1;
-                    foreach (Transform c in b) { int n = c.GetComponentsInChildren<Transform>(true).Length; if (n > most) { most = n; next = c; } }
+                    foreach (Transform c in b)
+                    {
+                        if (System.Array.IndexOf(Roots, c.name) >= 0) continue;
+                        int n = c.GetComponentsInChildren<Transform>(true).Length; if (n > most) { most = n; next = c; }
+                    }
+                    if (!next) break;
                     list.Add(next); b = next;
                 }
                 if (list.Count < 2) continue;
@@ -84,6 +90,10 @@ namespace DeadlockOfRain
 
         /// <summary>The chains started over at their animated pose (a teleport, a respawn, the model shown again).</summary>
         public void Reset() => primed = false;
+
+        Vector3 kick;
+        /// <summary>A push on every chain at the next step (m/s, world), strongest at the tips: Wraith's coat flares when she throws.</summary>
+        public void Kick(Vector3 velocity) => kick += velocity;
 
         void LateUpdate()
         {
@@ -132,10 +142,10 @@ namespace DeadlockOfRain
                 {
                     // 2. momentum and gravity, then a pull back toward the animated pose (stiff at the root, loose at the tip)
                     var p = ch.Pos[i];
-                    var v = (p - ch.Prev[i]) * keep;
+                    float along = (float)i / (n - 1);
+                    var v = (p - ch.Prev[i]) * keep + kick * dt * along;
                     ch.Prev[i] = p;
                     p += v + g3;
-                    float along = (float)i / (n - 1);
                     p += (ch.Target[i] - p) * pull * Mathf.Lerp(1.8f, 0.45f, along);
                     // 3. its length to the bone above, and at most MaxBend from the animated direction
                     var up = ch.Pos[i - 1];
@@ -160,6 +170,7 @@ namespace DeadlockOfRain
                 }
                 for (int i = 0; i < n; i++) ch.Written[i] = ch.Bones[i].localRotation;
             }
+            if (primed) kick = Vector3.zero;
             primed = true;
         }
 

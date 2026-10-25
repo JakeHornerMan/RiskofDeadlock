@@ -29,10 +29,24 @@ namespace DeadlockOfRain.States
                 fromOffset = HandPos() - characterBody.corePosition;
             }
             Sound("cast");
-            if (anim) anim.Gesture("secondary", 1.4f);
+            if (anim)
+            {
+                // Deadlock's whole card-trick throw (its in-air one off the ground), and her coat flaring out behind the arm
+                bool air = characterMotor && !characterMotor.isGrounded && anim.HasClip("secondary_air");
+                anim.Gesture(air ? "secondary_air" : "secondary", 1.4f);
+                if (anim.Springs)
+                {
+                    var aim = GetAimRay().direction; aim.y = 0f;
+                    var side = Vector3.Cross(Vector3.up, aim).normalized;
+                    anim.Springs.Kick((side * 0.6f - aim.normalized * 0.5f + Vector3.up * 0.4f) * CoatFlare);
+                }
+            }
             Vfx.Play(row.Vfx, "cast", From(), row.Radius, null, null, (float)suit);
             characterBody.SetAimTimer(1f);
         }
+
+        /// <summary>How hard the coat flares on a throw (m/s at the tips).</summary>
+        const float CoatFlare = 9f;
 
         Vector3 HandPos()
         {

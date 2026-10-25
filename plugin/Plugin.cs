@@ -41,6 +41,7 @@ namespace DeadlockOfRain
             Equipment.Init();
             Buffs.InitHooks();
             States.GunHits.Init();
+            WraithThrown.Init();
             Net.Init();
             if (!FirstRun.Started && !MeltyTest.Off("audio")) DeadlockAudio.Init();
             Voice.Init();

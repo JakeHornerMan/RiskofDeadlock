@@ -3580,7 +3580,7 @@
       "stocks": 1,
       "duration": 2.2,
       "minDuration": 0.6,
-      "interval": 1.25,
+      "interval": 0.6,
       "radius": 30,
       "range": 30,
       "speed": 45,

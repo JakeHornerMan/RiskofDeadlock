@@ -1392,62 +1392,6 @@
       "notes": "Deadlock's card model for the thrown card (8 x 13 cm, drawn about 6 times bigger)"
     },
     {
-      "id": "wraith_suits_tex",
-      "kind": "texture",
-      "addressable": "materials/particle/abilities/wraith/wraith_card_suit.vtex",
-      "scaleWithRadius": false,
-      "meshes": [
-        "none"
-      ],
-      "clips": [
-        "none"
-      ],
-      "tint": "none",
-      "notes": "Wraith's card-suit sheet: club, diamond, heart, spade in the top row, the joker below"
-    },
-    {
-      "id": "wraith_sigil_tex",
-      "kind": "texture",
-      "addressable": "materials/particle/abilities/wraith/wraith_symbols.vtex",
-      "scaleWithRadius": false,
-      "meshes": [
-        "none"
-      ],
-      "clips": [
-        "none"
-      ],
-      "tint": "none",
-      "notes": "Wraith's eye sigil (a diamond with rays), on Project Mind's ring"
-    },
-    {
-      "id": "wraith_ring_tex",
-      "kind": "texture",
-      "addressable": "materials/particle/abilities/wraith/wraith_rapid_fire_ring_trans_psd_c28add01.vtex",
-      "scaleWithRadius": false,
-      "meshes": [
-        "none"
-      ],
-      "clips": [
-        "none"
-      ],
-      "tint": "none",
-      "notes": "Full Auto's ground ring, also under Telekinesis"
-    },
-    {
-      "id": "wraith_eye_tex",
-      "kind": "texture",
-      "addressable": "materials/particle/abilities/wraith/wraith_crosshair.vtex",
-      "scaleWithRadius": false,
-      "meshes": [
-        "none"
-      ],
-      "clips": [
-        "none"
-      ],
-      "tint": "none",
-      "notes": "Wraith's eye symbol, over each enemy Telekinesis lifts"
-    },
-    {
       "id": "wraith_gun",
       "kind": "custom",
       "addressable": "none",
@@ -1516,6 +1460,62 @@
       ],
       "tint": "none",
       "notes": "Telekinesis: a purple shockwave and smoke dome sweeping out 30 m, a violet beam from her hand to each lifted enemy with her eye glowing over it and a ring under it, a violet smoke trail as it is thrown, a smoke blast where it lands (a bigger one on a wall)"
+    },
+    {
+      "id": "wraith_suits_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/wraith/wraith_card_suit.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Wraith's card-suit sheet: club, diamond, heart, spade in the top row, the joker below"
+    },
+    {
+      "id": "wraith_sigil_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/wraith/wraith_symbols.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Wraith's eye sigil (a diamond with rays), on Project Mind's ring"
+    },
+    {
+      "id": "wraith_ring_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/wraith/wraith_rapid_fire_ring_trans_psd_c28add01.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Full Auto's ground ring, also under Telekinesis"
+    },
+    {
+      "id": "wraith_eye_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/wraith/wraith_crosshair.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Wraith's eye symbol, over each enemy Telekinesis lifts"
     }
   ]
 }
