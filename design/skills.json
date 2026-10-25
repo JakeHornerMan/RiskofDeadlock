@@ -3406,8 +3406,8 @@
       "nearRadius": 0,
       "hitsPerRefund": 5,
       "refundSeconds": 1,
-      "turnRate": 300,
-      "launchArcDeg": 35
+      "turnRate": 540,
+      "launchArcDeg": 25
     },
     {
       "id": "wraith_mind",

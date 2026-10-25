@@ -631,6 +631,16 @@ the source values. The RoR2-scale numbers next to them are our own balance (doc 
   25 m, 0.75 s channel; Rapid Fire 45 s, 5 s, +20 % fire rate; Psychic Lift 150 s, 10 m cast, 13 m throw, 1.25 s channel, 100 dmg.
 - **Effect model (prop):** `models/heroes_wip/wraith/wraith_card_fx_model.vmdl` (one 8 × 13 cm card, one material; `wraith_card_prop`);
   `wraith_fx.vmdl` unused.
+- **Coat chain (2026-10-25):** `coat_0` (on `spine_3`) → `coat_1..7` → `coat_end`, 0.2 m apart down her back; `coattail_0_L/R` hang off
+  `coat_7`; `ponytail_0..5` → `ponytail_end` off `head`. All four are `springRoots` since v1.0.1a. Clips added: `ability_card_trick`
+  (the whole throw, Card Trick's `secondary`) and `ability_card_trick_cast_in_air` (`secondary_air`).
+- **Particle textures (effects kind `texture`, v1.0.1a, no new extractor):** the extractor's icon export reads any `.vtex`, so these
+  are listed as images (`gen.py` adds every texture row's path to `manifest.images`) and land in `cache/images/` (≤ 512 px PNG):
+  `materials/particle/abilities/wraith/wraith_card_suit` (a 4 × 4 sheet: club, diamond, heart, spade across the top, the joker
+  silhouette below; `wraith_suits_tex`), `wraith_symbols` (her eye in a rayed diamond; `wraith_sigil_tex`),
+  `wraith_rapid_fire_ring_trans_psd_c28add01` (a soft disc with spokes; `wraith_ring_tex`), `wraith_crosshair` (her eye; `wraith_eye_tex`).
+  White on transparent: tinted in Unity. Her particle systems (`particles/abilities/wraith/wraith_card_trick_*`, `_project_mind_*`,
+  `_psychic_lift_*`, `_rapid_fire_*`) are still never read: our effects only use these textures.
 - **Sounds** (`soundevents/hero/wraith.vsndevts`): `Wraith.Wpn.Fire.Main/.First/.Release`, `.Wpn.Reload.Start/.End/.Clip.In/.Clip.Out`,
   `Wraith.CardTrick.Proc/.Cast/.Proj.Lp/.Proj.Impact/.Hit`, `Wraith.ProjectMind.Select/.Deselect/.Cast/.Arrive`, `Wraith.RapidFire.Cast`,
   **both spellings**: `Wraith.Telekenisis.Select/.Select.Lp/.Cast.Delay/.Cast/.Proj.Lp/.Slam` and `Wraith.Telekinesis.Hit/.Victim.Alert`

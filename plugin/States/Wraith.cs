@@ -94,15 +94,19 @@ namespace DeadlockOfRain.States
     }
 
     // ---------------- Wraith: Project Mind (Shift) ----------------
-    /// <summary>A purple marker follows the crosshair on the ground up to range metres away; any key (M1, M2, Shift, R, jump)
-    /// pressed after minDuration teleports her there, and after duration she goes on her own. Only the owner sees the marker and
-    /// teleports; where she leaves and lands is relayed to every player.</summary>
+    /// <summary>A purple projection of Wraith follows the crosshair up to range metres away, standing on the ground or floating
+    /// in the air, with cards drifting to it from her; any key (M1, M2, Shift, R, jump) pressed after minDuration teleports her
+    /// there, and after duration she goes on her own. She can only go where she can see (no spot behind a rock) and where she
+    /// fits: elsewhere the marker turns a dim red and a key gives the charge back. Only the owner sees the marker and teleports;
+    /// where she leaves and lands is relayed to every player.</summary>
     [Kind("mind_port")]
     public sealed class MindPort : DlrState
     {
-        GameObject marker;
+        GameObject marker, ghost, link;
         Vector3 point;
         bool valid, gone;
+        /// <summary>How close the ground must be under an aimed spot for her to stand on it (else she floats there, in the air).</summary>
+        const float GroundSnap = 2.5f;
 
         public override void OnEnter()
         {
@@ -112,12 +116,20 @@ namespace DeadlockOfRain.States
             {
                 valid = AimPoint(out point);
                 marker = Vfx.Play(row.Vfx, "aim", point, row.Radius);
-                if (marker) marker.SetActive(valid);
+                ghost = Vfx.MindGhost(characterBody);
+                if (ghost)
+                {
+                    link = new GameObject("WraithMindLink");
+                    var ml = link.AddComponent<Vfx.MindLink>();
+                    ml.From = Fx.Muzzle(characterBody) ? Fx.Muzzle(characterBody) : transform; ml.To = ghost.transform;
+                }
+                Place();
             }
         }
 
-        /// <summary>The ground under the crosshair (or under the enemy it is on), in sight, at most range away; a step back
-        /// toward her from an enemy so she doesn't land inside it. False when there is no ground there (the sky, a pit).</summary>
+        /// <summary>The spot under the crosshair, at most range away: on the ground (or just in front of the wall or enemy it
+        /// is on), or in the air where the crosshair points at the sky. Valid when she can see it from her eyes and her body
+        /// fits there.</summary>
         bool AimPoint(out Vector3 p)
         {
             var aim = GetAimRay();
@@ -139,9 +151,38 @@ namespace DeadlockOfRain.States
             }
             var flat = p - transform.position; flat.y = 0;
             if (flat.magnitude > row.Range) p = transform.position + flat.normalized * row.Range + Vector3.up * (p.y - transform.position.y);
-            if (!Physics.Raycast(p + Vector3.up * 2f, Vector3.down, out var ground, 60f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) return false;
-            p = ground.point;
-            return true;
+            // standing on the ground when it is close under the spot; otherwise she floats there (the projection in the air)
+            if (Physics.Raycast(p + Vector3.up * 1f, Vector3.down, out var ground, GroundSnap + 1f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
+                p = ground.point;
+            return CanGo(characterBody, aim.origin, p);
+        }
+
+        /// <summary>She can go to p: nothing solid between her eyes and the spot's chest height (no spot behind a rock), and
+        /// her body fits there.</summary>
+        public static bool CanGo(CharacterBody body, Vector3 eye, Vector3 p)
+        {
+            var to = p + Vector3.up * 1f - eye;
+            if (Physics.Raycast(eye, to.normalized, out _, Mathf.Max(0f, to.magnitude - 0.3f), LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) return false;
+            float r = body.radius * 0.8f;
+            return !Physics.CheckCapsule(p + Vector3.up * (r + 0.15f), p + Vector3.up * Mathf.Max(r + 0.2f, 1.6f), r, LayerIndex.world.mask, QueryTriggerInteraction.Ignore);
+        }
+
+        void Place()
+        {
+            if (marker)
+            {
+                marker.transform.position = point;
+                var mm = marker.GetComponent<Vfx.MindMarker>();
+                if (mm) mm.SetValid(valid);
+            }
+            if (ghost)
+            {
+                ghost.SetActive(valid);
+                ghost.transform.position = point;
+                var face = GetAimRay().direction; face.y = 0f;
+                if (face.sqrMagnitude > 0.01f) ghost.transform.rotation = Quaternion.LookRotation(face.normalized);
+            }
+            if (link) link.SetActive(valid);
         }
 
         bool AnyKey()
@@ -156,7 +197,7 @@ namespace DeadlockOfRain.States
             base.FixedUpdate();
             if (row == null || !isAuthority) return;
             valid = AimPoint(out point);
-            if (marker) { marker.SetActive(valid); marker.transform.position = point; }
+            Place();
             // test mode and the bench have no player to press: she goes a moment after the marker is up
             bool bot = (MeltyTest.Active || DpsBench.Active) && fixedAge >= 0.8f;
             if (fixedAge >= row.MinDuration && (AnyKey() || bot) || fixedAge >= row.Duration) Go();
@@ -180,9 +221,10 @@ namespace DeadlockOfRain.States
             }
             else
             {
-                // nowhere to land (the sky, a pit): nothing happens and the charge comes back
+                // somewhere she can't see or doesn't fit: nothing happens and the charge comes back
                 Sound("reload");
                 RefundStock();
+                MeltyTest.Report("project-mind-refused", true, characterBody.baseNameToken);
             }
             outer.SetNextStateToMain();
         }
@@ -190,8 +232,13 @@ namespace DeadlockOfRain.States
         public override void OnExit()
         {
             Vfx.Stop(marker, 0.1f);
+            if (ghost) Object.Destroy(ghost);
+            if (link) Object.Destroy(link);
             base.OnExit();
         }
+
+        /// <summary>Test mode: where the state is aiming and whether it would go (the "behind a wall" check reads it).</summary>
+        public bool AimValid => valid;
 
         // nothing she presses to go (M2, R) may start its own move instead
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Pain;

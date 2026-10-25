@@ -16,7 +16,7 @@ OUT = os.path.join(ROOT, 'build', 'pages')
 IMG = os.path.join(OUT, 'img')
 os.makedirs(OUT, exist_ok=True)
 E = html.escape
-VERSION = 'v0.11.0a'
+VERSION = 'v1.0.1a'
 BAND = 500  # balanced = within ±500 %/s of the RoR2 match (creator, 2026-10-16)
 
 def sheet(name):
@@ -83,7 +83,14 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
- 'wraith': [('v0.11.0a', ['New hero: Wraith, matched to Bandit (Bandit’s stats exactly)',
+ 'wraith': [('v1.0.1a', ['The Rake 72 % a bullet (was 60, +20 %)',
+                          'Card Trick: the card follows your crosshair while it flies, leaves the hand on a curve and swings round to try again if it misses',
+                          'Card Trick holds 4 cards (Backup Magazine adds more), one back every 10 s, shown fanned above her head; every 5 Rake hits bring the next card 1 s sooner',
+                          'Deadlock’s whole card-trick throw (and its in-air one), her long coat and ponytail swing, the coat flares on every throw',
+                          'Project Mind works in the air, shows a purple projection of her with cards drifting to it, and only goes where she can see',
+                          'Telekinesis (Q) 100 s: thrown the moment they are up, wherever you aim then; enemies thrown off a cliff are your kills (gold and XP)',
+                          'Effects with Deadlock’s own Wraith textures: card suits, her eye sigil, the Full Auto ring']),
+            ('v0.11.0a', ['New hero: Wraith, matched to Bandit (Bandit’s stats exactly)',
                           'The Rake kicks hard like a tommy gun (20 % harder during Full Auto)',
                           'Card Trick: one homing card at a time, each drawing one of four tricks: 5 stacks of Bleed, a certain Crit, a 2 s Stun or 5 stacks of Burn',
                           'Project Mind: a purple smoke marker up to 60 m away, any key teleports you there; Full Auto: a full magazine fired 50 % faster',

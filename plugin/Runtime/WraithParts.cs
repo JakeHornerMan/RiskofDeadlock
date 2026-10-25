@@ -21,6 +21,8 @@ namespace DeadlockOfRain
         /// <summary>The crosshair's cone (degrees) that picks the enemy the card goes for, and how far off the aim the locked
         /// target may drift before the crosshair takes over.</summary>
         const float AimCone = 8f, KeepLock = 20f;
+        /// <summary>Within this many metres of its goal the card turns harder (see FixedUpdate).</summary>
+        const float CloseIn = 8f;
 
         public static void Launch(CharacterBody owner, SkillRow row, Vector3 from, Vector3 dir, HurtBox target, CardSuit suit, bool damage)
         {
@@ -84,8 +86,11 @@ namespace DeadlockOfRain
                 goal = Physics.Raycast(ray, out var wh, row.Range * 2f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore) ? wh.point : ray.origin + ray.direction * row.Range;
             }
             var want = goal - pos;
+            // near its goal it turns three times as hard: otherwise an enemy inside its turning circle (speed / turnRate,
+            // ~7 m) would be circled for ever instead of hit
+            float turn = row.TurnRate * (want.sqrMagnitude < CloseIn * CloseIn ? 3f : 1f);
             if (want.sqrMagnitude > 0.01f)
-                dir = Vector3.RotateTowards(dir, want.normalized, row.TurnRate * Mathf.Deg2Rad * dt, 0f).normalized;
+                dir = Vector3.RotateTowards(dir, want.normalized, turn * Mathf.Deg2Rad * dt, 0f).normalized;
             float step = row.Speed * dt;
             transform.rotation = Quaternion.LookRotation(dir);
             int mask = LayerIndex.world.mask | LayerIndex.entityPrecise.mask;
@@ -175,7 +180,8 @@ namespace DeadlockOfRain
                 var esm = EntityStateMachine.FindByCustomName(victim.gameObject, "Body");
                 Log.Info($"telekinesis: {victim.name} lifted, body state {(esm ? esm.state?.GetType().Name : "none")}");
             }
-            Relay.Vfx(row.Vfx, "loop", victim.corePosition, row.Interval + 0.3f, victim.gameObject);
+            // a beam from her hand to it while it rises
+            Relay.Vfx(row.Vfx, "loop", victim.corePosition, row.Interval + 0.3f, victim.gameObject, owner.corePosition + Vector3.up * 0.3f);
         }
 
         void GravityOff(bool off)
@@ -308,7 +314,7 @@ namespace DeadlockOfRain
         /// <summary>The count drawn now (test mode reads it).</summary>
         public int Shown => count;
         /// <summary>How far above the head the fan sits (m), each card's size against Deadlock's card, the fan's step (degrees).</summary>
-        const float Above = 0.42f, CardScale = 2.6f, FanStep = 13f;
+        const float Above = 0.35f, CardScale = 2.4f, FanStep = 17f, Pivot = 0.55f;
 
         void Awake() => body = GetComponent<CharacterBody>();
 
@@ -351,7 +357,8 @@ namespace DeadlockOfRain
                 float a = (i - (n - 1) * 0.5f) * FanStep;
                 var t = cards[i].transform;
                 t.localRotation = Quaternion.AngleAxis(-a, Vector3.forward);
-                t.localPosition = t.localRotation * Vector3.up * 0.18f + Vector3.forward * (i * 0.005f) + Vector3.up * (-0.18f);
+                // a hand of cards: each turned about a point Pivot below the fan, so they spread at the top like held cards
+                t.localPosition = t.localRotation * Vector3.up * Pivot + Vector3.forward * (i * 0.01f) - Vector3.up * Pivot;
             }
         }
 

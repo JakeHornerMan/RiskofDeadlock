@@ -1355,6 +1355,10 @@ namespace DeadlockOfRain
                 if (dmg <= 0f || !effect) why[0] += $"card {names[suit]}: damage {dmg:F0}, trick seen {effect}; ";
             }
             KillTargets();
+            yield return TestWraithCards(body, hero, rt, fwd, spot, why);
+            yield return TestWraithMind(body, hero, fwd, spot, why);
+            yield return TestWraithThrowCredit(body, hero, fwd, spot, why);
+            KillTargets();
             if (fa != null)
             {
                 var rest = EntityStateMachine.FindByCustomName(body.gameObject, "Weapon");
@@ -1389,6 +1393,226 @@ namespace DeadlockOfRain
                 if (!off) why[0] += $"{fa.Id}: buff still on after the reload; ";
                 yield return new WaitForSeconds(gunRow.ReloadTime + 0.3f);
             }
+        }
+
+        /// <summary>Card Trick's 2026-10-25 rework: the stored cards (sheet stocks, +1 with Backup Magazine, the fan over her
+        /// head), a card thrown at empty air that follows the crosshair onto an enemy off to the side, and Rake hits bringing
+        /// the next card sooner.</summary>
+        IEnumerator TestWraithCards(CharacterBody body, HeroRow hero, HeroRuntime rt, Vector3 fwd, Vector3 spot, string[] why)
+        {
+            var card = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "card_trick");
+            var gs = body.skillLocator.secondary;
+            if (card == null || !gs) { why[0] += "cards: no card_trick row; "; yield break; }
+            var weapon = EntityStateMachine.FindByCustomName(body.gameObject, "Weapon");
+            // 1. stocks: the sheet's, one more with Backup Magazine, and the fan shows them
+            gs.Reset();
+            yield return null;
+            int baseMax = gs.maxStock;
+            body.inventory.GiveItem(RoR2Content.Items.SecondarySkillMagazine, 1);
+            yield return new WaitForFixedUpdate(); yield return new WaitForFixedUpdate();
+            int magMax = gs.maxStock;
+            gs.Reset();
+            yield return new WaitForSeconds(0.2f);
+            var halo = body.GetComponent<WraithCardHalo>();
+            int shown = halo ? halo.Shown : -1;
+            if (DevShots) { AimCamera(body, fwd); yield return new WaitForSeconds(0.3f); Shot(hero.Id + "_card_halo"); }
+            body.inventory.RemoveItem(RoR2Content.Items.SecondarySkillMagazine.itemIndex, 1);
+            yield return new WaitForFixedUpdate(); yield return new WaitForFixedUpdate();
+            Log.Info($"Melty test: {hero.Id} cards: max {baseMax} (sheet {card.Stocks}), with Backup Magazine {magMax}, fan shows {shown}");
+            bool stocksOk = baseMax == (int)card.Stocks && magMax == baseMax + 1 && shown == magMax;
+            Report("card-stocks", stocksOk, body.baseNameToken);
+            if (!stocksOk) why[0] += $"cards: max {baseMax} (sheet {card.Stocks}), Backup Magazine {magMax}, fan {shown}; ";
+
+            // 2. steering: thrown at empty air ahead, then the crosshair moves onto an enemy 35 degrees to the side
+            KillTargets();
+            if (weapon) weapon.SetNextStateToMain();
+            TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+            if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+            var side = Vector3.Cross(Vector3.up, fwd).normalized;
+            var t = Summon(body, spot + (fwd * 12f + side * 8.5f) + Vector3.up * 0.5f);
+            float dmg = 0f;
+            if (t)
+            {
+                if (t.master && t.master.inventory) t.master.inventory.GiveItem(RoR2Content.Items.BoostHp, 200);
+                targets.Add(t);
+                yield return new WaitForSeconds(0.8f);
+                System.Action<DamageReport> onDamage = r =>
+                {
+                    if (r != null && r.attackerBody == body && r.victimBody == t && r.damageInfo.damageType.damageSource != DamageSource.Primary) dmg += r.damageDealt;
+                };
+                GlobalEventManager.onServerDamageDealt += onDamage;
+                try
+                {
+                    var ahead = (fwd + Vector3.up * 0.05f).normalized;
+                    AimCamera(body, ahead);
+                    for (int f = 0; f < 6; f++) { body.inputBank.aimDirection = ahead; yield return null; }
+                    gs.Reset();
+                    gs.ExecuteIfReady();
+                    for (float w = 0f; w < 0.25f; w += Time.deltaTime) { body.inputBank.aimDirection = ahead; yield return null; }
+                    // now the crosshair goes onto the enemy: the card in the air turns after it
+                    for (float w = 0f; w < 1.6f && dmg <= 0f; w += Time.deltaTime)
+                    {
+                        if (t) body.inputBank.aimDirection = (t.corePosition - body.inputBank.aimOrigin).normalized;
+                        yield return null;
+                    }
+                }
+                finally { GlobalEventManager.onServerDamageDealt -= onDamage; }
+            }
+            Log.Info($"Melty test: {hero.Id} card steer: damage {dmg:F0} after the crosshair moved onto an enemy 35 degrees off");
+            Report("card-steer", dmg > 0f, body.baseNameToken);
+            if (dmg <= 0f) why[0] += "card-steer: the card did not follow the crosshair onto the enemy; ";
+
+            // 3. Rake hits bring the next card sooner: hitsPerRefund hits take refundSeconds off the recharge
+            if (card.HitsPerRefund > 0 && t && t.healthComponent && t.healthComponent.alive)
+            {
+                if (weapon) weapon.SetNextStateToMain();
+                yield return new WaitForSeconds(0.3f);
+                while (gs.stock > 0) gs.DeductStock(1);
+                rt.RefundHits = 0; rt.Reloading = false; rt.Ammo = -1;
+                yield return null;
+                float before = gs.cooldownRemaining, t0 = Time.time;
+                var look = (t.corePosition - body.inputBank.aimOrigin).normalized;
+                AimCamera(body, look);
+                fireBody = body; fireUntil = Time.time + 1.6f;
+                body.skillLocator.primary.ExecuteIfReady();
+                while (Time.time < fireUntil)
+                {
+                    if (t) body.inputBank.aimDirection = (t.corePosition - body.inputBank.aimOrigin).normalized;
+                    yield return null;
+                }
+                fireBody = null;
+                float after = gs.cooldownRemaining, elapsed = Time.time - t0;
+                // stock 0: one card recharging; more taken off than time passed = the hits did it
+                float extra = before - after - elapsed;
+                Log.Info($"Melty test: {hero.Id} card refund: recharge {before:F1} -> {after:F1} s in {elapsed:F1} s ({extra:F1} s from Rake hits, stock {gs.stock})");
+                bool ok = extra >= card.RefundSeconds * 0.9f || gs.stock > 0 && before < elapsed + card.RefundSeconds * 2f;
+                Report("card-refund", ok, body.baseNameToken);
+                if (!ok) why[0] += $"card-refund: only {extra:F1} s taken off by Rake hits; ";
+                yield return new WaitForSeconds(0.3f);
+            }
+            KillTargets();
+            gs.Reset();
+        }
+
+        /// <summary>Project Mind's rules: a spot behind a wall is refused, the same spot with the wall gone is fine, and a spot
+        /// in the air takes her up there.</summary>
+        IEnumerator TestWraithMind(CharacterBody body, HeroRow hero, Vector3 fwd, Vector3 spot, string[] why)
+        {
+            var mind = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "mind_port");
+            if (mind == null) yield break;
+            var weapon = EntityStateMachine.FindByCustomName(body.gameObject, "Weapon");
+            if (weapon) weapon.SetNextStateToMain();
+            TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+            if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+            yield return new WaitForSeconds(0.3f);
+            // a wall of rock 6 m ahead, 5 m tall: the ground 14 m ahead is behind it
+            var eye = body.inputBank.aimOrigin;
+            var behind = spot + fwd * 14f;
+            if (Physics.Raycast(behind + Vector3.up * 3f, Vector3.down, out var g, 10f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) behind = g.point;
+            bool open = States.MindPort.CanGo(body, eye, behind);
+            var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.layer = LayerIndex.world.intVal;
+            wall.transform.position = spot + fwd * 6f + Vector3.up * 2.5f;
+            wall.transform.rotation = Quaternion.LookRotation(fwd);
+            wall.transform.localScale = new Vector3(8f, 5f, 0.6f);
+            yield return new WaitForFixedUpdate();
+            bool blocked = !States.MindPort.CanGo(body, eye, behind);
+            if (DevShots) { AimCamera(body, (behind - eye).normalized); yield return new WaitForSeconds(0.2f); }
+            UnityEngine.Object.Destroy(wall);
+            yield return new WaitForFixedUpdate();
+            Log.Info($"Melty test: {hero.Id} project mind: spot 14 m ahead open {open}, behind a wall refused {blocked}");
+            bool losOk = open && blocked;
+            Report("mind-sight", losOk, body.baseNameToken);
+            if (!losOk) why[0] += $"mind-sight: open {open}, behind a wall refused {blocked}; ";
+
+            // in the air: aimed at the sky she goes up there
+            var up = (fwd + Vector3.up * 0.35f).normalized;
+            AimCamera(body, up);
+            for (int f = 0; f < 6; f++) { body.inputBank.aimDirection = up; yield return null; }
+            float y0 = body.footPosition.y;
+            var us = body.skillLocator.utility;
+            us.Reset();
+            us.ExecuteIfReady();
+            float peak = y0;
+            for (float w = 0f; w < 1.6f; w += Time.deltaTime)
+            {
+                body.inputBank.aimDirection = up;
+                if (DevShots && w > 0.4f && w < 0.45f) Shot(hero.Id + "_mind_air");
+                peak = Mathf.Max(peak, body.footPosition.y);
+                yield return null;
+            }
+            Log.Info($"Melty test: {hero.Id} project mind in the air: from {y0:F1} up to {peak:F1} m");
+            bool airOk = peak - y0 > 4f;
+            Report("mind-air", airOk, body.baseNameToken);
+            if (!airOk) why[0] += $"mind-air: rose only {peak - y0:F1} m; ";
+            // back down to the test spot
+            TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+            if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        /// <summary>Telekinesis off a cliff: an enemy thrown into a kill zone dies as Wraith's kill and pays her its gold.</summary>
+        IEnumerator TestWraithThrowCredit(CharacterBody body, HeroRow hero, Vector3 fwd, Vector3 spot, string[] why)
+        {
+            var def = Equipment.OfHero(hero.Id);
+            var inv = body.inventory;
+            if (!def || !inv) yield break;
+            KillTargets();
+            TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+            if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+            var t = Summon(body, spot + fwd * 6f + Vector3.up * 0.5f);
+            if (!t) { why[0] += "telekinesis credit: no target; "; yield break; }
+            targets.Add(t);
+            yield return new WaitForSeconds(0.8f);
+            AimCamera(body, fwd);
+            for (int f = 0; f < 6; f++) { body.inputBank.aimDirection = fwd; yield return null; }
+            // a test enemy carries no gold or XP (the game's directors set those when they spawn one), so the check is RoR2's
+            // own: the death is an out-of-bounds kill and its killer, who gets those rewards, is Wraith
+            GameObject killer = null; bool oob = false;
+            System.Action<DamageReport> onDeath = r =>
+            {
+                if (r == null || r.victimBody != t) return;
+                killer = r.attacker;
+                oob = (r.damageInfo.damageType.damageType & DamageType.OutOfBounds) != 0;
+            };
+            GlobalEventManager.onCharacterDeathGlobal += onDeath;
+            // a kill zone where it flies: the thrown enemy goes into it (RoR2's own MapZone, called as if it touched it)
+            var zoneGo = new GameObject("TestKillZone");
+            var zone = zoneGo.AddComponent<MapZone>();
+            zone.zoneType = MapZone.ZoneType.OutOfBounds;
+            zone.triggerType = MapZone.TriggerType.TriggerEnter;
+            try
+            {
+                inv.SetEquipment(new EquipmentState(def.equipmentIndex, Run.FixedTimeStamp.now, 1), inv.activeEquipmentLocation);
+                yield return new WaitForFixedUpdate(); yield return new WaitForFixedUpdate();
+                if (body.equipmentSlot) body.equipmentSlot.ExecuteIfReady();
+                bool entered = false;
+                for (float w = 0f; w < 3f && killer == null; w += Time.deltaTime)
+                {
+                    body.inputBank.aimDirection = fwd;
+                    // in flight, past the lift: it reaches the cliff's edge
+                    if (!entered && t && t.GetComponent<WraithThrown>() && (t.corePosition - spot).magnitude > 12f)
+                    {
+                        entered = true;
+                        var col = t.GetComponent<Collider>();
+                        if (col) zone.OnTriggerEnter(col);
+                    }
+                    yield return null;
+                }
+            }
+            finally
+            {
+                GlobalEventManager.onCharacterDeathGlobal -= onDeath;
+                UnityEngine.Object.Destroy(zoneGo);
+            }
+            yield return new WaitForSeconds(0.2f);
+            bool ok = killer == body.gameObject && oob;
+            Log.Info($"Melty test: {hero.Id} telekinesis off a cliff: out-of-bounds death {oob}, killer {(killer ? killer.name : "none")}");
+            Report("telekinesis-oob", ok, body.baseNameToken);
+            if (!ok) why[0] += $"telekinesis-oob: out-of-bounds {oob}, killer {(killer ? killer.name : "none")}; ";
+            // the ult's cooldown must not hold up the rest
+            if (body.equipmentSlot) inv.SetEquipment(new EquipmentState(def.equipmentIndex, Run.FixedTimeStamp.now, 1), inv.activeEquipmentLocation);
+            yield return new WaitForSeconds(1.5f);
         }
 
         IEnumerator TestBillyAir(CharacterMaster master, HeroRow hero, string[] why)

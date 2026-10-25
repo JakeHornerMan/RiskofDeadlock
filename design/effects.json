@@ -1516,6 +1516,20 @@
       ],
       "tint": "none",
       "notes": "Wraith's eye symbol, over each enemy Telekinesis lifts"
+    },
+    {
+      "id": "mat_ghost",
+      "kind": "material",
+      "addressable": "RoR2/Base/Common/VFX/matGhostEffect.mat",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Happiest Mask's ghost, its ramp recoloured: Project Mind's see-through purple projection of Wraith"
     }
   ]
 }
