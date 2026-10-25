@@ -24,14 +24,25 @@ Stuck? Ask in the **[Risk of Deadlock Discord](https://discord.gg/sNByetmcqc)**.
 6. The eight heroes are in character select. Have fun!
 
 ## Option B: by hand
-1. Download **BepInExPack** from <https://thunderstore.io/c/riskofrain2/p/bbepis/BepInExPack/> (**Manual Download**) and unzip it.
-2. Open your Risk of Rain 2 folder: Steam → right-click **Risk of Rain 2** → **Manage** → **Browse local files**.
-3. From the unzipped BepInExPack, open the `BepInExPack` folder and copy **everything inside it** (`BepInEx`, `winhttp.dll`,
-   `doorstop_config.ini`, ...) into the Risk of Rain 2 folder.
-4. Download **Risk of Deadlock** (**Manual Download** on its Thunderstore page) and unzip it.
-5. In the Risk of Rain 2 folder, open `BepInEx\plugins`, make a folder called `Risk_of_Deadlock`, and copy **everything inside the
-   zip's `plugins` folder** into it (`DeadlockOfRain.dll`, the `extract` folder, `heroes.txt`, ...).
-6. Start Risk of Rain 2 from Steam, pick your heroes in the window that opens and press **Go** (about 2 minutes for all eight, first time only).
+1. Open your Risk of Rain 2 folder: Steam → right-click **Risk of Rain 2** → **Manage** → **Browse local files**.
+2. Download **BepInExPack** from <https://thunderstore.io/c/riskofrain2/p/bbepis/BepInExPack/> (**Manual Download**) and unzip it.
+   Open its `BepInExPack` folder and copy **everything inside it** (`BepInEx`, `winhttp.dll`, `doorstop_config.ini`,
+   `.doorstop_version`) into the Risk of Rain 2 folder.
+3. Download **RoR2BepInExPack** from <https://thunderstore.io/c/riskofrain2/p/RiskofThunder/RoR2BepInExPack/> (**Manual Download**)
+   and unzip it. In the Risk of Rain 2 folder, open `BepInEx\plugins`, make a folder called exactly
+   **`RiskofThunder-RoR2BepInExPack`**, and copy the zip's `plugins\RoR2BepInExPack` folder into it.
+   *(Without it the mod doesn't load. Any other folder name, and BepInEx deletes it on start.)*
+4. Download **Risk of Deadlock** (**Manual Download** on its Thunderstore page) and unzip it. In `BepInEx\plugins`, make a
+   folder called `Risk_of_Deadlock` and copy **everything inside the zip's `plugins` folder** into it (`DeadlockOfRain.dll`,
+   the `extract` folder, `heroes.txt`, ...).
+5. Start Risk of Rain 2 from Steam, pick your heroes in the window that opens and press **Go** (about 2 minutes for all eight, first time only).
+
+Your `BepInEx\plugins` folder should look like this:
+```
+BepInEx\plugins\
+  RiskofThunder-RoR2BepInExPack\RoR2BepInExPack\RoR2BepInExPack.dll ...
+  Risk_of_Deadlock\DeadlockOfRain.dll, extract\, heroes.txt ...
+```
 
 To remove it again: delete `winhttp.dll` from the Risk of Rain 2 folder (that switches every BepInEx mod off).
 

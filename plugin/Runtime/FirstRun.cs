@@ -491,7 +491,7 @@ namespace DeadlockOfRain
             else if (reading)
             {
                 headline = "Reading the heroes from your own Deadlock install";
-                detail = $"{FirstRun.Progress * 100f:F0} %   ·   {clock}   ·   first start or after a Deadlock update: a few minutes. The game is not stuck.";
+                detail = $"{FirstRun.Progress * 100f:F0} %   ·   {clock}   ·   first start or after a Deadlock update: about 2 minutes for every hero. The game is not stuck.";
             }
             else
             {
@@ -523,7 +523,7 @@ namespace DeadlockOfRain
             GUI.Box(r, GUIContent.none, box);
             GUILayout.BeginArea(new Rect(r.x + 14, r.y + 10, r.width - 28, r.height - 20));
             GUILayout.Label("Deadlock of Rain: " + FirstRun.Status, title);
-            if (reading) GUILayout.Label($"{FirstRun.Progress * 100f:F0} %   ·   {clock}   ·   first start only: it is not stuck (Abrams alone takes a few minutes)", text);
+            if (reading) GUILayout.Label($"{FirstRun.Progress * 100f:F0} %   ·   {clock}   ·   first start only: it is not stuck", text);
             else GUILayout.Label(FirstRun.BuildTotal > 0 ? $"{FirstRun.BuildDone} of {FirstRun.BuildTotal} heroes done   ·   {clock}" : clock, text);
             GUILayout.Space(6);
             lock (FirstRun.Lines)

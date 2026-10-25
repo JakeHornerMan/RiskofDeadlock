@@ -401,6 +401,11 @@ work; the player's own Deadlock install is read on their PC, exactly as on Melty
   before each Thunderstore release (below).
 - `package.py --thunderstore` runs every refusal (plugin version, store text naming a hero outside the release, the exe's
   sha256, and `extractor.json`'s version == `extractor/Program.cs`'s) **before** it writes `built-with.json` or stamps texts.
+- **Fresh-player test (2026-10-25, before every Thunderstore release):** close Melty; move the game folder's `BepInEx`,
+  `winhttp.dll*`, `doorstop_config.ini`, `.doorstop_version` and `%LOCALAPPDATA%\DeadlockOfRain` aside; follow `INSTALL.md`
+  exactly, once with r2modman (BepInExPack from Online first, then Import local mod) and once by hand; check the picker, Go,
+  the heroes built, a second start (no picker) and a partial pick; then put everything back and `lab_restore.sh`. r2modman
+  leaves its loader files in the game folder after Start modded.
 - Test a package on this PC: put `plugins/extract/` and `plugins/heroes.txt` into the installed `BepInEx/plugins/DeadlockOfRain/`, move
   `%LOCALAPPDATA%\DeadlockOfRain\cache` aside, `run_test.sh <hero>`; afterwards `lab_restore.sh`, remove `extract/` from
   the plugin folder and put the cache back. (A release manifest has its own stamp, so the test extracts again.)

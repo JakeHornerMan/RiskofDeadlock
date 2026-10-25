@@ -16,7 +16,8 @@ namespace DeadlockOfRain
         sealed class Choice { public HeroRow Hero; public bool Installed, Ticked; }
         static HeroPicker instance;
         readonly List<Choice> choices = new List<Choice>();
-        GUIStyle dim, panel, title, sub, note, row, tag, time, total, button, go;
+        GUIStyle dim, panel, title, sub, note, row, tag, time, total, button, go, hit;
+        Texture2D boxEdge, boxOn, boxInstalled;
         Vector2 scroll;
 
         public static void Show(IEnumerable<HeroRow> heroes, ICollection<string> installed)
@@ -41,8 +42,9 @@ namespace DeadlockOfRain
             Cursor.lockState = CursorLockMode.None;
         }
 
-        void Go()
+        void Go(string how)
         {
+            Log.Info("Hero picker: Go pressed (" + how + ")");
             var ids = choices.Where(c => c.Ticked).Select(c => c.Hero.Id).ToList();
             Log.Info($"Hero picker: Go with {string.Join(", ", ids)} (new: {string.Join(", ", choices.Where(c => c.Ticked && !c.Installed).Select(c => c.Hero.Id))}, about {Clock(Seconds())})");
             FirstRun.Chosen(ids);
@@ -62,7 +64,11 @@ namespace DeadlockOfRain
                 title = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, normal = { textColor = brass } };
                 sub = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, wordWrap = true, normal = { textColor = new Color(0.85f, 0.83f, 0.8f) } };
                 note = new GUIStyle(sub) { fontStyle = FontStyle.Bold, normal = { textColor = new Color(1f, 0.62f, 0.3f) } };
-                row = new GUIStyle(GUI.skin.toggle) { normal = { textColor = Color.white }, onNormal = { textColor = Color.white }, hover = { textColor = brass }, onHover = { textColor = brass } };
+                row = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft, normal = { textColor = Color.white } };
+                hit = new GUIStyle { hover = { background = Fill(new Color(1f, 1f, 1f, 0.06f)) } };   // the whole row is clickable
+                boxEdge = Fill(new Color(0.55f, 0.5f, 0.42f));
+                boxOn = Fill(brass);
+                boxInstalled = Fill(new Color(0.45f, 0.85f, 0.45f));
                 tag = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleRight, fontStyle = FontStyle.Bold, normal = { textColor = new Color(0.45f, 0.85f, 0.45f) } };
                 time = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleRight, normal = { textColor = new Color(0.78f, 0.76f, 0.72f) } };
                 total = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, normal = { textColor = Color.white } };
@@ -78,7 +84,7 @@ namespace DeadlockOfRain
             go.fontSize = Mathf.RoundToInt(28 * k);
 
             var e = Event.current;
-            if (e.type == EventType.KeyDown && (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter)) { e.Use(); Go(); return; }
+            if (e.type == EventType.KeyDown && (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter)) { e.Use(); Go("Enter key"); return; }
 
             GUI.Box(new Rect(0, 0, Screen.width, Screen.height), GUIContent.none, dim);
             float lineH = 44f * k, w = Mathf.Min(760f * k, Screen.width - 40f);
@@ -102,9 +108,13 @@ namespace DeadlockOfRain
             {
                 var c = choices[i];
                 var lr = new Rect(0, i * lineH, view.width, lineH);
-                GUI.enabled = !c.Installed;
-                c.Ticked = GUI.Toggle(new Rect(lr.x, lr.y + 6f * k, lr.width * 0.6f, lineH - 8f * k), c.Ticked || c.Installed, "  " + c.Hero.DisplayName, row);
-                GUI.enabled = true;
+                // a big tick box (IMGUI's own toggle is a few pixels): an edge, and a filled square when ticked
+                if (!c.Installed && GUI.Button(lr, GUIContent.none, hit)) { c.Ticked = !c.Ticked; Log.Info($"Hero picker: {c.Hero.DisplayName} {(c.Ticked ? "ticked" : "unticked")}"); }
+                float bs = 26f * k, by = lr.y + (lineH - bs) / 2f;
+                GUI.DrawTexture(new Rect(lr.x + 4f * k, by, bs, bs), boxEdge);
+                GUI.DrawTexture(new Rect(lr.x + 4f * k + 3f, by + 3f, bs - 6f, bs - 6f), Texture2D.blackTexture);
+                if (c.Ticked || c.Installed) GUI.DrawTexture(new Rect(lr.x + 4f * k + 6f, by + 6f, bs - 12f, bs - 12f), c.Installed ? boxInstalled : boxOn);
+                GUI.Label(new Rect(lr.x + bs + 18f * k, lr.y, lr.width * 0.6f, lineH), c.Hero.DisplayName, row);
                 if (c.Installed) GUI.Label(new Rect(lr.x, lr.y, lr.width, lineH), "Installed  ✓", tag);
                 else GUI.Label(new Rect(lr.x, lr.y, lr.width, lineH), c.Ticked ? $"about {Clock(c.Hero.ReadSeconds)}" : "skipped", time);
             }
@@ -118,7 +128,7 @@ namespace DeadlockOfRain
             float bw = 150f * k, bh = 40f * k;
             if (GUI.Button(new Rect(x, y + 10f * k, bw, bh), "Select all", button)) foreach (var c in choices) c.Ticked = true;
             if (GUI.Button(new Rect(x + bw + 12f * k, y + 10f * k, bw, bh), "Select none", button)) foreach (var c in choices) c.Ticked = c.Installed;
-            if (GUI.Button(new Rect(r.xMax - 30f * k - 220f * k, y, 220f * k, 60f * k), "GO", go)) Go();
+            if (GUI.Button(new Rect(r.xMax - 30f * k - 220f * k, y, 220f * k, 60f * k), "GO", go)) Go("button");
         }
     }
 }

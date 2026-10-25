@@ -4,6 +4,7 @@
   "website_url": "https://github.com/JakeHornerMan/RiskofDeadlock",
   "description": "Play as eight Deadlock heroes: Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King and Billy, with their abilities and ults. Needs Deadlock (free on Steam): models and sounds are read from your own copy.",
   "dependencies": [
-    "bbepis-BepInExPack-5.4.2122"
+    "bbepis-BepInExPack-5.4.2122",
+    "RiskofThunder-RoR2BepInExPack-1.49.0"
   ]
 }
