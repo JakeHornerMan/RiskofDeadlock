@@ -14,7 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
-| Wraith | 2026-10-25 (v1.0.1a): The Rake 60 → 72 % a bullet; Card Trick 5 s / 1 card → 10 s / 4 cards, a card steered by the crosshair (arcs out of the hand, swings back on a miss), 5 Rake hits = 1 s off the next card; Telekinesis (Q) 120 → 100 s, thrown at full rise (0.6 s, was 1.25 s) along the aim then, kill-zone deaths credited to her | the creator's Wraith feedback ("increase base gun damage by 20%", "store up to 4", "every 5 shot landed ... lower the wait time") | this one | PENDING | **open** |
+| Wraith | 2026-10-25 (v1.0.1a): The Rake 60 → 72 % a bullet; Card Trick 5 s / 1 card → 10 s / 4 cards, a card steered by the crosshair (arcs out of the hand, swings back on a miss), 5 Rake hits = 1 s off the next card; Telekinesis (Q) 120 → 100 s, thrown at full rise (0.6 s, was 1.25 s) along the aim then, kill-zone deaths credited to her | the creator's Wraith feedback ("increase base gun damage by 20%", "store up to 4", "every 5 shot landed ... lower the wait time") | this one | `run_test.sh wraith` 1/1 pass (every new check); **benched** (one run): all **944** vs Bandit 1919 (−975, **below**), §3.18; ult bench 60,000 % (10 hit) | **open** (below the band, the creator's call) |
 | Billy | 2026-10-24 (Chain Gang): up to 20 chains of 1500 %, one per enemy, leftovers to bosses up to 5 each (was 6000 % per enemy) | the creator: "up to 20 chains ... only 5 of they can connect to 1 boss" | this one | ult only (left out of balance); ult bench 10,500 % (7 hit), §3.17 | **done** |
 | Billy | 2026-10-24 (latest): air Bashdown goes straight down at once and ends his float (was a dive at the locked enemy, smashing on contact) | the creator: "he shold go straight donw to the gorund and cancellout the float time" | this one | `run_test.sh billy` all pass; not benched | **done** (v1.0.0a bench, §3.16) |
 | Billy | 2026-10-24 (later): Biquette 50 → 83.3 % a bullet (10 at level 1; `targetDps` 300 → 500); the air locks (bat dodge-in, air Bashdown) take only enemies on his screen; no fall damage | the creator: "never recieve fall damage", "never snap to an eney in air if we is not looking in thier direction", "10 per bullet" | this one | `run_test.sh billy` all pass; **not benched** (creator: no DPS test); the gun alone should go from 297 to about 495 | **done** (v1.0.0a bench, §3.16) |
@@ -292,6 +292,25 @@ New hero, matched to REX (`TreebotBody`, library 1738 %/s). Three runs after the
   real damage than the %/s says (≈336 dmg/s at level 1 against ≈209). Mo & Krill (11) are the only other hero off 12.
 - Levers if he needs pulling back: Splatter 200 → 150 % first (it is two thirds of the total), then the punch.
 
+### 3.18 v1.0.1a Wraith after the creator's feedback (Wraith-only run, 2026-10-25)
+`VERSION` v1.0.1a, `run_bench.sh 30 wraith` (one run): The Rake 72 %, Card Trick 4 cards / 10 s steered by the crosshair with
+5 Rake hits = 1 s off, Telekinesis thrown at full rise.
+
+| Pass | Wraith (%/s) | Bandit (library) |
+|---|---|---|
+| All main moves | **944** (was 517) | 1919 |
+| M1 The Rake | 528 (was 440) | 1478 (knife and gun) |
+| M2 Card Trick | 133 (7 cards, 22 hits on 2 enemies; was 187) | – |
+| Shift Project Mind | 0 | – |
+| R Full Auto | 0 alone (it lifts M1) | – |
+| Q Telekinesis (not balanced) | 900 (27,000 % in one use, 3 hit) | – |
+
+- −975 against Bandit: still **below** the band, but nearly double the last run. All 11 cards and 13 M1 bursts in the all pass;
+  the 5-hit refund keeps the cards coming while the gun runs.
+- Card Trick alone fell (187 → 133): the bench's bot aims at the pack's middle, and the card now follows the crosshair, so a
+  card meant for one enemy goes where the bot looks; its cards also arc out of the hand. Its stun/bleed/burn still land.
+- Ult bench (`ULTS=1`, Wraith only): Telekinesis **60,000 %, 10 of 31 hit, 6,000 % on the Beetle Queen** (was 48,000 %, 8, 0).
+
 ### 3.17 The ult bench: 30 enemies and a Beetle Queen (all ults, 2026-10-24)
 `ULTS=1 run_bench.sh 30` (one run, v1.0.0a): each hero's Q and Commando's Preon once, 30 s, against 20 Lemurians and 10 Beetles in
 5 rows of 6 at 10-23 m plus a Beetle Queen behind them (~27 m). Ults are left out of balance; this feeds the pages' "just for fun"
@@ -304,7 +323,7 @@ table (`docs/ult-bench.txt`). Re-run only for a new or changed ult (creator, 202
 | Rat Swarm | Rat King | 133,800 | 10 | 0 |
 | Dust Devil | Mo & Krill | 66,150 | 8 | 0 |
 | Preon Accumulator | Commando | 62,400 | 28 | 2,000 |
-| Telekinesis | Wraith | 48,000 | 8 | 0 |
+| Telekinesis | Wraith | 60,000 (v1.0.1a; 48,000 before) | 10 | 6,000 |
 | Goo Ball | Viscous | 42,749 | 18 | 0 |
 | Bullet Dance | Haze | 41,471 | 18 | 791 |
 | Thunderhead | Seven | 27,200 | 16 | 272 |

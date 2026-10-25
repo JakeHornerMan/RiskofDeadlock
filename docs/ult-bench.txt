@@ -9,5 +9,5 @@ DeadlockMoKrill equipment: raw 7277 (242.6/s), 66150% of damage (2205%/s), hits 
 DeadlockViscous equipment: raw 5130 (171.0/s), 42749% of damage (1425%/s), hits 60, enemies hit 18, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 0%
 DeadlockRatKing equipment: raw 16056 (535.2/s), 133800% of damage (4460%/s), hits 1338, enemies hit 10, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 0%
 DeadlockBilly equipment: raw 1260 (42.0/s), 10500% of damage (350%/s), hits 7, enemies hit 7, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 0%
-DeadlockWraith equipment: raw 5760 (192.0/s), 48000% of damage (1600%/s), hits 8, enemies hit 8, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 0%
+DeadlockWraith equipment: raw 7200 (240.0/s), 60000% of damage (2000%/s), hits 10, enemies hit 10, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 6000%
 DPS bench finished

@@ -206,10 +206,10 @@ PAPER = {
 }
 
 ANALYSIS = {
- 'wraith': ['One run: 517 %/s with every main move, against Bandit’s 1,919. That is −1,402: far below the ±500 band. The creator chose to keep her as she is for now.',
-            'The Rake carries her (440 %/s alone). Card Trick adds 187 (one 400 % card every 5 s, plus its bleed or burn); Project Mind and Full Auto deal no damage of their own (Full Auto only speeds up the gun), and the teleport carries her off the test spot, so the all-together number is under gun + cards.',
-            'Bandit’s damage is his knife (1,478 alone) and his Smoke Bomb (709). Levers if she should catch up: Card Trick 400 → 1,500 %, The Rake 60 → 75 %, or a smoke blast where Project Mind lands.',
-            'Telekinesis (Q, the ult): one use on the ult bench (30 enemies and a Beetle Queen) did 48,000 % to 8 of them. It isn’t in the all-together number.'],
+ 'wraith': ['One run after the 2026-10-25 rework: 944 %/s with every main move (517 before), against Bandit’s 1,919. That is −975: below the ±500 band, but nearly double.',
+            'The Rake carries her (528 %/s alone, 72 % a bullet now), and every 5 hits bring the next card a second sooner, so the 4 stored cards keep coming while she shoots. Card Trick alone measured 133: the test’s bot aims at the middle of the pack and the card now follows its crosshair.',
+            'Bandit’s damage is his knife (1,478 alone) and his Smoke Bomb (709). Levers if she should catch up: Card Trick 400 → 800 %, The Rake 72 → 85 %, or a smoke blast where Project Mind lands.',
+            'Telekinesis (Q, the ult): one use on the ult bench (30 enemies and a Beetle Queen) did 60,000 % to 10 of them, 6,000 % on the queen. It isn’t in the all-together number.'],
  'billy': ['One run after the latest changes (Biquette 10 a bullet, air locks only on screen, the air Bashdown straight down and ending his float): 6,393 %/s against Mercenary’s 5,112. That is +1,281: above the ±500 band. (The run before measured 7,957: his float no longer carries the air Bashdown onto a floating pack.)',
            'The bat carries him (2,940 %/s alone); Rising Ram 941, Bashdown 743, Biquette 494 (297 at 6 a bullet). Together he still does more than the moves alone because Rising Ram floats the pack for the bat.',
            'Mercenary’s moves alone add up to far more than his 5,112 together (Laser Sword 2,850, Whirlwind 1,351, Blinding Assault 1,120), so compare the totals, not single moves. Levers if Billy should come down: the air bat ×2 → ×1.5, no extra float near a hit, or the arc 6 → 5 m.',
