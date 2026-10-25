@@ -3,7 +3,8 @@
 Inputs (nothing here is typed in twice):
   design/*.json               every ability number, description, stat and colour (the source of truth)
   build/bench_results.txt     the last `bash tools/run_bench.sh` (DPS per pass, and a `stats` line per survivor)
-  build/pages/img/*.webp      studio renders cut out by tools/portraits.py (our own in-game renders; no Deadlock art)
+  build/pages/img/*.webp      studio renders cut out by tools/portraits.py (ult figures, the RoR2 matches) and
+                              <id>_card.webp, each hero's deadlock.wiki hero-select card (tools/wiki_portraits.py)
 Hand-written here: the RoR2 matches' vanilla skill names, the per-version change notes (CHANGES) and extra analysis
 lines per hero (ANALYSIS); update them after a bench run, as doc 05 §3/§5 change.
 
@@ -290,6 +291,13 @@ def img_tag(name, alt='', height=None):
     style = f' style="height:{height}px;width:auto"' if height else ''
     return f'<img src="{src}" alt="{E(alt)}"{style}>'
 
+def card_tag(hid, alt='', height=None):
+    # the hero's deadlock.wiki hero-select card (creator, 2026-10-25); our render if it hasn't been downloaded
+    src = img(hid + '_card')
+    if not src: return img_tag(hid, alt, height)
+    style = f' style="height:{height}px;width:auto"' if height else ''
+    return f'<img class="card" src="{src}" alt="{E(alt)}"{style}>'
+
 def strip_tags(s):
     return re.sub(r'<[^>]+>', '', s)
 
@@ -458,7 +466,9 @@ p {{ margin: 0; max-width: 68ch; }}
 .portrait::before, .portrait::after {{ content: ""; position: absolute; inset: 10px; border: 1px solid color-mix(in srgb, var(--brass) 45%, transparent); pointer-events: none; }}
 .portrait::after {{ inset: 16px; border-color: color-mix(in srgb, var(--brass) 18%, transparent); }}
 .portrait img {{ position: relative; max-height: 410px; width: auto; margin-bottom: 26px; filter: drop-shadow(0 18px 22px rgba(0,0,0,.65)); }}
-.portrait figcaption {{ position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); background: var(--ink); border: 1px solid var(--brass); border-bottom: 0;
+.portrait:has(img.card) {{ min-height: 0; align-self: start; }}
+.portrait img.card {{ display: block; width: 100%; height: auto; max-height: none; margin: 0; filter: none; }}
+.portrait figcaption {{ z-index: 1; position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); background: var(--ink); border: 1px solid var(--brass); border-bottom: 0;
     padding: 5px 16px; font: 600 12px/1.4 var(--cond); letter-spacing: .2em; text-transform: uppercase; color: var(--brass); white-space: nowrap; }}
 .id {{ display: grid; gap: 16px; align-content: start; min-width: 0; }}
 .id h1 {{ font-size: clamp(54px, 9vw, 100px); line-height: .9; letter-spacing: .02em; }}
@@ -721,7 +731,7 @@ def hero_page(h):
 
   <header class="dossier">
     <figure class="portrait">
-      {img_tag(hid, h["displayName"] + " rendered in Risk of Rain 2")}
+      {card_tag(hid, h["displayName"] + ", hero-select portrait from deadlock.wiki")}
       <figcaption>Survivor · {E(h["displayName"])}</figcaption>
     </figure>
     <div class="id">
@@ -826,17 +836,17 @@ def overview_page():
         hid = h['id']; body, v = match_of(hid)
         me, base = avg_all(hero_who(hid)), avg_all(v['who'])
         side, gap = verdict(me, base)
-        # a hero-select card in the manner of deadlock.wiki/Heroes: a tall portrait (our own in-game render) with the name
+        # a hero-select card in the manner of deadlock.wiki/Heroes: the hero's wiki card portrait with the name
         # under it, and the verdict as a band along the bottom (creator, 2026-10-24)
         pairs.append(f'''<a class="hcard {side}" href="{LINKS.get(hid, "#")}" style="--accent:{h["primaryColor"]}">
-  <span class="hpic">{img_tag(hid, h["displayName"])}</span>
+  <span class="hpic">{card_tag(hid, h["displayName"])}</span>
   <span class="hname">{E(h["displayName"])}</span>
   <span class="hvs">{fmt(me)} vs {E(v["name"])} {fmt(base)}</span>
   <span class="hband">{side} · {signed(gap)}</span>
 </a>''')
         paras = ''.join(f'<p>{t}</p>' for t in analysis(h))
         cards.append(f'''<section class="box" style="--accent:{h["primaryColor"]};border-top:3px solid {h["primaryColor"]}" aria-labelledby="an-{hid}">
-  <div class="head">{img_tag(hid, "", 90)}<div><h3 id="an-{hid}">{E(h["displayName"])} <span class="muted">vs {E(v["name"])}</span></h3><div class="eyebrow">{E(h["subtitle"])}</div></div></div>
+  <div class="head">{card_tag(hid, "", 90)}<div><h3 id="an-{hid}">{E(h["displayName"])} <span class="muted">vs {E(v["name"])}</span></h3><div class="eyebrow">{E(h["subtitle"])}</div></div></div>
   <div><span class="verdict {side}">{side} the band · {signed(gap)} %/s</span></div>
   {balance_scale(h, v, me, base)}
   {paras}
@@ -859,6 +869,7 @@ def overview_page():
 .hpic {{ display: grid; place-items: end center; aspect-ratio: 3 / 4.2; overflow: hidden;
     background: radial-gradient(70% 55% at 50% 45%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 75%), linear-gradient(180deg, var(--panel2), var(--ink)); }}
 .hpic img {{ height: 94%; width: auto; max-width: none; filter: drop-shadow(0 8px 10px rgba(0,0,0,.6)); }}
+.hpic img.card {{ width: 100%; height: 100%; object-fit: cover; object-position: top; filter: none; }}
 .hname {{ font: 400 20px/1.1 var(--display); letter-spacing: .04em; text-align: center; padding: 8px 6px 2px; border-top: 2px solid var(--accent); }}
 .hvs {{ font: 500 11px/1.3 var(--mono); color: var(--muted); text-align: center; padding: 0 6px 8px; font-variant-numeric: tabular-nums; }}
 .hband {{ font: 700 12px/1 var(--cond); letter-spacing: .16em; text-transform: uppercase; text-align: center; padding: 8px 4px; color: var(--ink); }}

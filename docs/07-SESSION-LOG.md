@@ -1308,3 +1308,14 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** BepInEx on, cache `ready.json` lists all nine heroes; the game was not started.
 **Not done / open:** Melty's "players hit bugs" notice on Risk of Deadlock (not looked at yet).
 **Lessons:** a Melty `test_release` on this PC changes the PC *after* our scripts: once `test_result` says done, check `winhttp.dll` and the cache's hero list again (doc 00 §7).
+
+### 2026-10-25 · Hero pages: portraits from the deadlock.wiki hero-select cards · no version
+**Request (verbatim):** "https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3 the picture of the character are still fucked up can you please fix them just pull the ones fomr the wiki for their eneter gaim portrait!"
+**Questions asked → answers:** none (a direct instruction; it replaces the 2026-10-16 "no Deadlock art on pages" answer).
+**Done:**
+- `tools/wiki_portraits.py`: downloads `<Display_Name>_card.png` (280 x 380, the hero-pick portrait) from cdn.deadlock.wiki for every hero into the gitignored `build/pages/img/<id>_card.webp`.
+- `tools/kit_pages.py`: `card_tag()` uses the card for the hero page portrait, the overview's hero cards and the analysis heads (falls back to our render if missing); the ult figures and RoR2 matches stay our renders. Portrait frame shows the card at its own shape.
+- All ten pages republished to their links (the live copies differed only in the pictures). CLAUDE.md rule, doc 03 (layout + decision row), doc 08 step 3.
+**Results:** checked in a headless browser: overview cards and Haze's page look right at desktop width.
+**Not done / open:** Wraith's page is still private (the creator shares it). The wiki cards are 280 px wide, so the hero page portrait is slightly upscaled.
+**Lessons:** the renders were accurate (Haze's dark face, Viscous's green body, Seven's ring are how the heroes look); the creator wanted Deadlock's own painted portraits.

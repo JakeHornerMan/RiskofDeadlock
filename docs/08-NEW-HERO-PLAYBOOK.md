@@ -107,7 +107,8 @@ Tell the creator the count first: normally **3 launches** (test, bench, portrait
    `python tools/dps_library.py --add build/bench_results.txt`. Compare with the match in `docs/dps-library.json`
    (±500 %/s). **Never re-bench vanilla survivors.** Report; retune only with the creator's say.
 3. `PORTRAITS=1 bash tools/run_bench.sh 0 <hero>`, then `python tools/portraits.py`: our own cut-out renders of the hero,
-   its match and its ult figure for the page (never Deadlock art files).
+   its match and its ult figure for the page (never Deadlock art files). The hero's portrait is its deadlock.wiki card:
+   `python tools/wiki_portraits.py <hero>` (creator, 2026-10-25).
 4. `bash tools/run_coop_test.sh <hero>`: the joined player's moves work and the relay shows server-side effects.
 5. After any launch: `bash tools/lab_restore.sh`, then copy `winhttp.dll.melty-off` back to `winhttp.dll` (the creator
    plays from Steam). Never launch the game for the creator's own playtest.

@@ -45,8 +45,10 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 - **Every artifact from this project is public** (creator, 2026-10-19: "alway make the artifacts public"). Sharing is set in the
   page's Share menu, which only the creator can use: after publishing a new page, ask them to set it to "Anyone with the link",
   and add its link to `README.md` ("Hero pages") and the top of doc 06.
-- **Pages show no Deadlock art files.** The kit pages (claude.ai Artifacts) use our own in-game renders
-  (`PORTRAITS=1 bash tools/run_bench.sh 0`), never hero cards or icons copied from the VPK.
+- **Hero portraits on the pages are the deadlock.wiki hero-select cards** (creator, 2026-10-25: "just pull the ones fomr
+  the wiki for their eneter gaim portrait!"): `python tools/wiki_portraits.py` downloads `<Name>_card.png` into the gitignored
+  `build/pages/img/<id>_card.webp`. Everything else on the pages (ult figures, RoR2 matches) stays our own in-game renders
+  (`PORTRAITS=1 bash tools/run_bench.sh 0`). Never copy art out of the VPK, and never ship or commit the cards.
 - **Update the docs with every change.** Any change to code, design sheets, tools, recipe, versions or decisions must
   update the affected document(s) in `docs/` **in the same commit**: Deadlock side → 01, RoR2 side → 02, process,
   release and decisions → 03. Treat a change without its doc update as unfinished.

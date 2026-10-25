@@ -89,6 +89,7 @@ tools/quit_test.sh        run_test.sh, then close the game like a player and rep
                           VANILLA=1 plays a plain Commando run instead of the hero checks (OFF=mod VANILLA=1: the control)
 tools/lab_restore.sh      put the PC back the way Melty set it up
 tools/kit_pages.py        builds the hero kit pages + balance page (claude.ai Artifacts, links in doc 06) into build/pages/
+tools/wiki_portraits.py   downloads each hero's deadlock.wiki hero-select card for the pages' portraits (build/pages/img, gitignored)
 tools/run_bench.sh        DPS benchmark (Monsoon, 12-enemy pack, 30 s passes) -> build/bench_results.txt; closes the game itself (doc 05)
 tools/dlm_*.py            DLM debugging (skinning check, triangles, submeshes, gun pose per clip)
 tools/dev/                (gitignored) listings from this PC's installs: vpk_files.txt, sound_events.txt, anim_names.json, addressable_keys.txt
@@ -511,6 +512,7 @@ doc 02 §11. In short:
 | Gun kick is a sheet column (`recoil`, `aimKick`) | Wraith's tommy gun needed a bigger kick than the hard-coded 3/9; every other gun keeps its old number |
 
 | A Discord community for players (2026-10-24) | A public `Risk of Deadlock` section in the creator's own Discord server (#update, #faq-issues, #hero-requests). Invite `discord.gg/sNByetmcqc` never expires and gives the `Risk of Deadlock Player` role, which sees only that section plus the server's #general and #promote-yourself (checked with View Server As Role). Join rule: "Don't be an idiot. If you are disrespectful to other members you will be removed." Linked in all three listing texts and from a title-screen button (doc 02 §8). #update (announcement channel, only the owner and the `Risk of Deadlock` webhook post) gets every Melty release from `tools/discord_update.py`; webhook link in `%LOCALAPPDATA%\DeadlockOfRain\discord-update-webhook.txt` (secret, not in the repo). The rest of the server (roles, channels, every webhook, management scripts) is managed in the creator's private repo `discord-GDCH-management`; this repo keeps only the Risk of Deadlock section, role and invite |
+| Hero portraits from deadlock.wiki (2026-10-25) | The creator found the in-game renders on the pages ugly: "the picture of the character are still fucked up ... just pull the ones fomr the wiki for their eneter gaim portrait!". Each hero's portrait (hero page, overview card, analysis) is now its wiki `<Name>_card.png` (`tools/wiki_portraits.py`); ult figures and RoR2 matches stay our renders. Replaces the 2026-10-16 "no Deadlock art on pages" answer |
 
 ## 10. Known open items and ideas
 
