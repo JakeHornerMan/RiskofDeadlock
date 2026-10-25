@@ -21,7 +21,7 @@ namespace DeadlockOfRain
         static string progressFile, logFile;
         static float progress, nextRead, started, stepStarted, lastActivity;
         static bool stalled;
-        /// <summary>No new extractor line or step for this long: it is hung (Abrams, the slowest step, takes about 4 min), so
+        /// <summary>No new extractor line or step for this long: it is hung (the slowest hero takes well under a minute since 1.8.0), so
         /// the loading screen stops waiting instead of sitting there forever (a player waited over an hour, 2026-10-24).</summary>
         const float StallSeconds = 600f;
         static int lastDone = -1;
@@ -43,7 +43,13 @@ namespace DeadlockOfRain
             }
         }
         static float endedAt = -1f;
-        public static bool Started => proc != null;
+        /// <summary>This start reads from Deadlock (Thunderstore): the loading screen waits for the picker and the extractor.</summary>
+        public static bool Started { get; private set; }
+        /// <summary>The hero picker is up (HeroPicker): nothing is read until the player presses Go.</summary>
+        public static bool Choosing { get; private set; }
+        /// <summary>The heroes this start reads or keeps (--heroes): every read one plus the ones ticked in the picker.</summary>
+        public static HashSet<string> Wanted;
+        static string exePath, deadlockDir, cache;
 
         public static string ExtractDir => Path.Combine(Plugin.PluginDir, "extract");
 
@@ -87,14 +93,60 @@ namespace DeadlockOfRain
                 Status = "Deadlock not found: the game starts without the Deadlock heroes";
                 return false;
             }
+            exePath = exe; deadlockDir = deadlock; cache = cacheDir;
+            Started = true;
+            // the heroes already read: a hero of this release that isn't brings up the picker (creator, 2026-10-25); with every
+            // one read, the extractor still runs with all of them (about a second, or a re-read after a Deadlock update)
+            var installed = ReadyIds(cacheDir, "heroes");
+            var all = new List<string>();
+            foreach (var h in Survivors.Released) all.Add(h.Id);
+            if (!MeltyTest.Active && all.Exists(id => !installed.Contains(id)))
+            {
+                Choosing = true;
+                Status = "Choose your Deadlock heroes";
+                Say($"Heroes read from Deadlock already: {(installed.Count > 0 ? string.Join(", ", installed) : "none")}; showing the hero picker");
+                HeroPicker.Show(Survivors.Released, installed);
+                return true;
+            }
+            return Launch(all);
+        }
+
+        /// <summary>The picker's Go: read these heroes (and keep the ones already read).</summary>
+        public static void Chosen(List<string> ids)
+        {
+            Choosing = false;
+            Launch(ids);
+        }
+
+        /// <summary>The ids in ready.json's list (e.g. "heroes"): what an earlier start already read.</summary>
+        static HashSet<string> ReadyIds(string cacheDir, string key)
+        {
+            var ids = new HashSet<string>();
+            try
+            {
+                var f = Path.Combine(cacheDir, "ready.json");
+                if (!File.Exists(f)) return ids;
+                var m = Regex.Match(File.ReadAllText(f), "\"" + key + "\"\\s*:\\s*\\[([^\\]]*)\\]");
+                if (m.Success) foreach (Match id in Regex.Matches(m.Groups[1].Value, "\"([^\"]+)\"")) ids.Add(id.Groups[1].Value);
+            }
+            catch { }
+            return ids;
+        }
+
+        static bool Launch(List<string> ids)
+        {
+            Wanted = new HashSet<string>(ids);
+            if (ids.Count == 0) { Say("No heroes chosen: the game starts without the Deadlock heroes"); return true; }
+            var cacheDir = cache;
             Directory.CreateDirectory(cacheDir);
             progressFile = Path.Combine(cacheDir, "progress.txt");
             logFile = Path.Combine(cacheDir, "extract.log");
             try { File.Delete(progressFile); File.Delete(logFile); } catch { }
-            var args = $"--deadlock \"{deadlock}\" --out \"{cacheDir}\" --manifest \"{Path.Combine(ExtractDir, "deadlock-manifest.json")}\"";
-            Say($"Reading the heroes from Deadlock at {deadlock} into {cacheDir} (a few minutes on the first start or after a Deadlock update, about a second otherwise)");
-            Log.Info($"  {exe} {args}");   // log only: too long for the box
+            var args = $"--deadlock \"{deadlockDir}\" --out \"{cacheDir}\" --manifest \"{Path.Combine(ExtractDir, "deadlock-manifest.json")}\" --heroes {string.Join(",", ids)}";
+            Say($"Reading {string.Join(", ", ids)} from Deadlock at {deadlockDir} into {cacheDir} (about 2 minutes for every hero on the first start or after a Deadlock update, about a second otherwise)");
+            Log.Info($"  {exePath} {args}");   // log only: too long for the box
             started = stepStarted = lastActivity = Time.realtimeSinceStartup;
+            var exe = exePath;
             try
             {
                 proc = Process.Start(new ProcessStartInfo(exe, args) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = ExtractDir });
@@ -409,6 +461,7 @@ namespace DeadlockOfRain
 
         void OnGUI()
         {
+            if (FirstRun.Choosing) return;   // the hero picker has the screen
             bool reading = FirstRun.Started && FirstRun.BuildStarted < 0f && FirstRun.DoneAt < 0f;
             // a Thunderstore start whose cache is current ends the extractor in about a second: no reading phase on screen
             if (reading && (FirstRun.Quick || Time.realtimeSinceStartup - shownAt < 3f)) return;

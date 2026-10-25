@@ -3,13 +3,15 @@
 Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King or Billy** from Deadlock, with their real models, animations, guns, abilities, icons and voices.
 
 ## You need Deadlock installed
-- Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.0, 2026-10-24).
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.0, 2026-10-25).
 Nothing from Deadlock is in this download. The heroes are read from **your own Deadlock install** (free on Steam):
 
 1. Install **Deadlock** on Steam (you never need to open it).
 2. Install this mod with **r2modman** (or the Thunderstore Mod Manager) and click **Start modded**.
-3. **The first start takes about 10 minutes:** the loading screen shows each hero being read from Deadlock. It isn't stuck.
-   Later starts are normal; it happens again only after a Deadlock update.
+3. **On the first start, pick your heroes:** a window lists them with the time each takes (all eight: about 2 minutes).
+   Press **Go** and the loading screen shows each one being read from Deadlock. It isn't stuck. Later starts are normal;
+   heroes you skipped come back in that window, and a Deadlock update re-reads them by itself.
+   **Playing online? Every player needs the same heroes installed:** install all of them to join any game.
 
 Installing by hand, or something went wrong? The step-by-step guide is
 **[INSTALL.md](https://github.com/JakeHornerMan/RiskofDeadlock/blob/main/INSTALL.md)**. In short:
@@ -52,7 +54,7 @@ The mod comes with one small program, `DeadlockExtract.exe`. It reads the heroes
 read-only) and saves them to `%LOCALAPPDATA%\DeadlockOfRain\cache` for the mod. It makes no network connections and changes
 nothing else. It is a separate program because the Valve file reader it uses only runs on .NET 10, which Risk of Rain 2 can't
 load. GitHub builds it in public from the source in [`extractor/`](https://github.com/JakeHornerMan/RiskofDeadlock/tree/main/extractor):
-the [release page](https://github.com/JakeHornerMan/RiskofDeadlock/releases/tag/extractor-1.7.0) links the build log and lists
+the [release page](https://github.com/JakeHornerMan/RiskofDeadlock/releases/tag/extractor-1.8.0) links the build log and lists
 its SHA-256, the same file that is in this download. Some antivirus programs distrust any new unsigned program; if yours removes
 it, restore it from quarantine.
 

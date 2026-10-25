@@ -75,6 +75,7 @@ parts.append('    public static class SheetInfo')
 parts.append('    {')
 parts.append(f'        public const string AnchorHero = "{h["anchorHero"]}";')
 parts.append(f'        public const string AnchorRoR2Body = "{h["anchorRoR2Body"]}";')
+parts.append(f'        public const float SharedReadSeconds = {float(h["sharedReadSeconds"])}f;')
 parts.append('    }')
 parts.append('}')
 os.makedirs(os.path.join(ROOT, 'plugin', 'Generated'), exist_ok=True)
@@ -130,4 +131,7 @@ for e in effects:
         for hero in h['rows']:
             if e['id'].startswith(hero['id'] + '_'): own(e['id'], hero['id'])
 json.dump({k: sorted(v) for k, v in sorted(owners.items())}, open(os.path.join(ROOT, 'extractor', 'manifest_owners.json'), 'w', encoding='utf-8'), indent=2)
+# extractor 1.8.0 reads the owners from the manifest itself to read only the heroes a player picks (--heroes)
+manifest['owners'] = {k: sorted(v) for k, v in sorted(owners.items())}
+json.dump(manifest, open(os.path.join(ROOT, 'extractor', 'manifest.json'), 'w', encoding='utf-8'), indent=2)
 print(f'gen: wrote plugin/Generated/Sheets.g.cs and extractor/manifest.json ({len(manifest["images"])} images, {len(manifest["soundEvents"])} sound events, {len(manifest["voiceGroups"])} voice groups, {len(manifest["props"])} props)')

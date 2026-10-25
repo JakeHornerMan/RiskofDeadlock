@@ -79,6 +79,17 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
      Deadlock". A stall guard: no new extractor line or step for 10 min (`StallSeconds`; Abrams takes ~4) →
      `FirstRun.StopIfStalled` kills it, the loading screen goes on without the heroes, and the title screen says it got stuck.
      A cache from an older extractor needs no check here: the stamp holds the extractor version, so the bundled exe re-reads it.
+     **Hero picker (Thunderstore, 2026-10-25, `Runtime/HeroPicker.cs`):** when a hero of the release isn't in `ready.json`'s
+     `heroes`, `FirstRun.Start` shows an IMGUI window on the loading screen instead of starting the extractor (`Choosing`;
+     the content provider waits). Read heroes are ticked and marked Installed; each new one shows `heroes.json` `readSeconds`
+     and the total adds `sharedReadSeconds` (`SheetInfo`); an orange note says online play needs the same heroes on every PC.
+     Go (or Enter) runs the extractor with `--heroes <installed + ticked>`; `Survivors.LimitTo(FirstRun.Wanted)` then builds
+     only those, so the co-op mod-list entry names them and mismatched picks are refused. Every hero read: no window, the
+     extractor runs as before (about a second). Test mode skips the window and reads every hero.
+     **Title-screen buttons (fixed 2026-10-25):** RoR2 keeps the `LanguageTextMeshController` on the button and the text on
+     its `ButtonText` child; 1.0.0 hid every text not on the controller's object, so both buttons were blank. Now "Join the
+     Risk of Deadlock Discord" and "Deadlock Hero Info" auto-size beside their image (the Discord logo; `plugin/Assets/heroes.png`,
+     the eight heads from `tools/hero_strip.py`); the copied `ViewableTag` (it threw on quit) is removed.
    - **On screen, every start (v0.11.0, creator 2026-10-23 after a player closed 0.10.0 at 41 s before the title screen):**
      `FirstRunOverlay` (IMGUI, so it draws while RoR2's UI is still loading; needs `UnityEngine.IMGUIModule` in the csproj),
      shown from `Plugin.Awake` on Melty and Thunderstore starts alike, draws two things:

@@ -44,5 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\discord.png" LogicalName="DeadlockOfRain.discord.png" />
+    <EmbeddedResource Include="Assets\heroes.png" LogicalName="DeadlockOfRain.heroes.png" />
   </ItemGroup>
 </Project>

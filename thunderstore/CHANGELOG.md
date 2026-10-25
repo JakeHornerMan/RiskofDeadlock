@@ -1,11 +1,14 @@
 # Changelog
 
 ## 1.0.0
-- Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.0, 2026-10-24).
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.0, 2026-10-25).
 - Thunderstore gets all eight heroes: Haze, Abrams, Seven and Infernus, now joined by Mo & Krill (MUL-T's match), Viscous (REX's), Rat King (Captain's) and Billy (Mercenary's). Every hero's abilities are described on its hero page.
 - Billy, the newest: Biquette the machine gun, a 3-hit Bat combo that dodges onto enemies in the air and juggles them, Bashdown, Rising Ram (chains haul everyone around into the air) and the Chain Gang ult (up to 20 chains of 1500 %, one per enemy in sight, leftovers to bosses). The G.O.A.T. passive turns his air jump into a goring dodge, and he never takes fall damage.
+- **Pick your heroes:** on the first start a window lists every hero with the time it takes to read; tick the ones you want and press Go. Installed heroes are marked, skipped ones come back next start, and the window stays away once every hero is installed. Playing online needs the same heroes on every PC: install all of them to join any game.
+- **The first start is about 15 times faster:** all eight heroes in about 2 minutes (it took 16 to 34 minutes). Abrams alone went from 9 minutes to 14 seconds (Deadlock reader 1.8.0).
+- The title screen's two buttons show their names again, "Join the Risk of Deadlock Discord" and "Deadlock Hero Info" (with all eight heroes beside it); they were blank.
 - First start fixed for more PCs: the "Deadlock folder" setting accepts a path ending in \ and the game or game\citadel folder too (a trailing \ used to break the reader); when an antivirus has removed DeadlockExtract.exe the game says so instead of asking you to install Deadlock; and if the reader ever stops responding for 10 minutes the loading screen stops waiting and tells you what to do.
-- The Deadlock reader is version 1.7.0, built in public by GitHub: effect models, capes and Deadlock's colours read from your install like the heroes.
+- The Deadlock reader is version 1.8.0, built in public by GitHub: effect models, capes and Deadlock's colours read from your install like the heroes.
 - A big "Join the Discord" button at the bottom right of the title screen opens the mod's Discord community (FAQ, hero requests, news), and a "Hero Sheets & Damage" button above it opens every hero's ability and damage pages.
 
 ## 0.11.0

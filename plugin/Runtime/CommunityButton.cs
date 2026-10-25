@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using RoR2.UI;
 using RoR2.UI.MainMenu;
@@ -24,13 +25,13 @@ namespace DeadlockOfRain
         static readonly Color Blurple = new Color(0.345f, 0.396f, 0.949f);
         static readonly Color Brass = new Color(0.788f, 0.639f, 0.357f);
         const float HeightScale = 2.2f, Margin = 48f, Gap = 16f;
-        static Sprite logo;
+        static readonly Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>();
 
         public static void Init()
         {
-            Survivors.Tokens["DLR_DISCORD_JOIN"] = "Join the Discord";
+            Survivors.Tokens["DLR_DISCORD_JOIN"] = "Join the Risk of Deadlock Discord";
             Survivors.Tokens["DLR_DISCORD_HOVER"] = "The Risk of Deadlock community: FAQ, hero requests and news from the mod's maker.";
-            Survivors.Tokens["DLR_PAGES_OPEN"] = "Hero Sheets & Damage";
+            Survivors.Tokens["DLR_PAGES_OPEN"] = "Deadlock Hero Info";
             Survivors.Tokens["DLR_PAGES_HOVER"] = "Every hero's abilities and numbers, and their damage next to their Risk of Rain 2 match (opens in your browser).";
             var go = new GameObject("DeadlockOfRainCommunity");
             DontDestroyOnLoad(go);
@@ -47,8 +48,8 @@ namespace DeadlockOfRain
                 && !b.name.StartsWith("DeadlockOfRain"));
             if (!template) return;
             // the Discord button in the corner, the hero pages' button one button-height plus a gap above it
-            if (!screen.Find("DeadlockOfRainDiscord")) Build(screen, template, "DeadlockOfRainDiscord", "DLR_DISCORD_JOIN", "DLR_DISCORD_HOVER", Invite, Blurple, 0, Logo());
-            if (!screen.Find("DeadlockOfRainPages")) Build(screen, template, "DeadlockOfRainPages", "DLR_PAGES_OPEN", "DLR_PAGES_HOVER", Pages, Brass, 1, null);
+            if (!screen.Find("DeadlockOfRainDiscord")) Build(screen, template, "DeadlockOfRainDiscord", "DLR_DISCORD_JOIN", "DLR_DISCORD_HOVER", Invite, Blurple, 0, Embedded("discord.png"));
+            if (!screen.Find("DeadlockOfRainPages")) Build(screen, template, "DeadlockOfRainPages", "DLR_PAGES_OPEN", "DLR_PAGES_HOVER", Pages, Brass, 1, Embedded("heroes.png"));
         }
 
         static void Build(Transform screen, HGButton template, string name, string token, string hover, string url, Color colour, int row, Sprite icon)
@@ -56,6 +57,8 @@ namespace DeadlockOfRain
             var tr = (RectTransform)template.transform;
             var go = Instantiate(template.gameObject, screen, false);
             go.name = name;
+            // the "new" badge: copied, it threw on quit (ViewableTag.OnDisable)
+            foreach (var tag in go.GetComponentsInChildren<ViewableTag>(true)) DestroyImmediate(tag);
             go.SetActive(true);
             (go.GetComponent<LayoutElement>() ?? go.AddComponent<LayoutElement>()).ignoreLayout = true;
             foreach (var lg in go.GetComponentsInChildren<LayoutGroup>(true)) lg.enabled = false;
@@ -77,22 +80,32 @@ namespace DeadlockOfRain
 
             var label = go.GetComponentInChildren<LanguageTextMeshController>(true);
             label.token = token;
-            float logoH = h * 0.62f, logoW = icon ? logoH * 256f / 197f : 0f, left = h * 0.22f;
+            // the text the label writes to: RoR2 keeps the controller on the button and the text on its ButtonText child (1.0.0
+            // hid every text not on the controller's own object, so both buttons were blank)
+            var text = label.GetComponent<TMP_Text>() ?? go.transform.Find("ButtonText")?.GetComponent<TMP_Text>() ?? go.GetComponentInChildren<TMP_Text>(true);
+            // the image left, the text in the rest of the button: never on top of each other
+            bool heroes = icon && icon.rect.width / icon.rect.height > 1.5f;   // the heads grid is drawn taller than the logo
+            float logoH = h * (heroes ? 0.82f : 0.62f), logoW = icon ? logoH * icon.rect.width / icon.rect.height : 0f, left = h * (heroes ? 0.09f : 0.22f);
             foreach (var tmp in go.GetComponentsInChildren<TMP_Text>(true))
             {
-                if (tmp.gameObject != label.gameObject) { tmp.gameObject.SetActive(false); continue; }   // "NEW" tags and the like
-                tmp.enableAutoSizing = false;
-                tmp.fontSize = tmp.fontSize * 1.6f;
+                if (tmp != text) { tmp.gameObject.SetActive(false); continue; }   // "NEW" tags and the like
+                tmp.gameObject.SetActive(true);
+                // up to two lines, shrinking to fit beside the image
+                float size = tmp.fontSize * 1.6f;
+                tmp.enableWordWrapping = true;
+                tmp.enableAutoSizing = true;
+                tmp.fontSizeMax = size;
+                tmp.fontSizeMin = size * 0.5f;
                 tmp.alignment = TextAlignmentOptions.MidlineLeft;
                 tmp.color = Color.white;
                 var lr = tmp.rectTransform;
                 lr.anchorMin = Vector2.zero; lr.anchorMax = Vector2.one; lr.pivot = new Vector2(0.5f, 0.5f);
                 lr.offsetMin = new Vector2(icon ? left + logoW + left * 0.8f : left, 0f); lr.offsetMax = new Vector2(-8f, 0f);
-                if (!icon) tmp.color = new Color(0.051f, 0.067f, 0.071f);   // dark ink on brass, as the pages' keys
+                if (colour == Brass) tmp.color = new Color(0.051f, 0.067f, 0.071f);   // dark ink on brass, as the pages' keys
             }
 
             if (!icon) { Log.Info($"{name} added to the title screen, row {row} above the bottom-right corner ({w:F0}x{h:F0})"); return; }
-            var logoGo = new GameObject("DiscordLogo", typeof(RectTransform), typeof(Image));
+            var logoGo = new GameObject(name + "Image", typeof(RectTransform), typeof(Image));
             var ir = (RectTransform)logoGo.transform;
             ir.SetParent(rt, false);
             ir.anchorMin = ir.anchorMax = ir.pivot = new Vector2(0f, 0.5f);
@@ -103,23 +116,21 @@ namespace DeadlockOfRain
             img.preserveAspect = true;
             img.raycastTarget = false;
 
-            Log.Info($"Discord button added to the bottom right of the title screen (copied from {template.name}, {w:F0}x{h:F0})");
-            foreach (var t in go.GetComponentsInChildren<Transform>(true))
-                Log.Info($"  discord button part: {t.name} [{string.Join(", ", t.GetComponents<Component>().Select(c => c.GetType().Name))}]");
+            Log.Info($"{name} added to the title screen, row {row} above the bottom-right corner (copied from {template.name}, {w:F0}x{h:F0}, text '{text?.text}' at {text?.fontSize:F0} pt)");
         }
 
-        static Sprite Logo()
+        /// <summary>An image embedded in the DLL (plugin/Assets: discord.png from tools/discord_logo.py, heroes.png from tools/hero_strip.py).</summary>
+        static Sprite Embedded(string file)
         {
-            if (logo) return logo;
-            using (var s = typeof(CommunityButton).Assembly.GetManifestResourceStream("DeadlockOfRain.discord.png"))
+            if (sprites.TryGetValue(file, out var sp) && sp) return sp;
+            using (var s = typeof(CommunityButton).Assembly.GetManifestResourceStream("DeadlockOfRain." + file))
             {
                 var bytes = new byte[s.Length];
                 s.Read(bytes, 0, bytes.Length);
                 var t = new Texture2D(2, 2, TextureFormat.RGBA32, false);
                 t.LoadImage(bytes);
-                logo = Sprite.Create(t, new Rect(0, 0, t.width, t.height), new Vector2(0.5f, 0.5f));
+                return sprites[file] = Sprite.Create(t, new Rect(0, 0, t.width, t.height), new Vector2(0.5f, 0.5f));
             }
-            return logo;
         }
     }
 }

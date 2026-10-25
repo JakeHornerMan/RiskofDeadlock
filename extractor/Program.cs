@@ -22,13 +22,14 @@ namespace DeadlockExtract;
 
 public static class Program
 {
-    public const string Version = "1.7.0";
+    public const string Version = "1.8.0";
     static StreamWriter? log;
 
     public static int Main(string[] args)
     {
         string? deadlock = null, outDir = null, manifestPath = null;
         bool force = false, listModels = false;
+        HashSet<string>? only = null;   // 1.8.0: --heroes a,b: read only these (the plugin's hero picker)
         for (int i = 0; i < args.Length; i++)
         {
             switch (args[i])
@@ -38,6 +39,7 @@ public static class Program
                 case "--manifest": manifestPath = args[++i]; break;
                 case "--force": force = true; break;
                 case "--list-models": listModels = true; break;
+                case "--heroes": only = new HashSet<string>(args[++i].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), StringComparer.OrdinalIgnoreCase); break;
             }
         }
         deadlock ??= Environment.GetEnvironmentVariable("DEADLOCKOFRAIN_DEADLOCK");
@@ -49,7 +51,7 @@ public static class Program
         {
             if (deadlock == null) throw new Exception("No Deadlock folder given (--deadlock).");
             if (listModels) return ListModels(deadlock);
-            return Run(deadlock, outDir, manifestPath, force);
+            return Run(deadlock, outDir, manifestPath, force, only);
         }
         catch (Exception e)
         {
@@ -79,7 +81,7 @@ public static class Program
         throw new FileNotFoundException("pak01_dir.vpk not found under " + deadlock + " (is this the Deadlock folder?)");
     }
 
-    static int Run(string deadlock, string outDir, string manifestPath, bool force)
+    static int Run(string deadlock, string outDir, string manifestPath, bool force, HashSet<string>? only)
     {
         var vpkPath = FindVpk(deadlock);
         var steamInf = Path.Combine(Path.GetDirectoryName(vpkPath)!, "steam.inf");
@@ -89,25 +91,33 @@ public static class Program
         var manifestText = File.ReadAllText(manifestPath);
         var manifest = JsonSerializer.Deserialize<Manifest>(manifestText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
         var stamp = $"{build}|{Version}|{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(manifestText)))[..16]}";
+        // 1.8.0: --heroes keeps only the chosen heroes and what they use (manifest "owners", written by tools/gen.py; an entry
+        // with no owner is shared and always kept)
+        if (only != null) Cut(manifest, only);
         var readyPath = Path.Combine(outDir, "ready.json");
+        // 1.8.0: heroes already read from this same Deadlock build, reader and manifest are kept (adding Billy later reads only Billy)
+        var keep = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         if (!force && File.Exists(readyPath))
         {
             try
             {
-                var ready = JsonDocument.Parse(File.ReadAllText(readyPath));
-                if (ready.RootElement.GetProperty("stamp").GetString() == stamp)
-                {
-                    Log($"Cache is current for Deadlock build {build}; nothing to do (the Deadlock heroes were already read from this Deadlock).");
-                    return 0;
-                }
+                var ready = JsonDocument.Parse(File.ReadAllText(readyPath)).RootElement;
+                if (ready.GetProperty("stamp").GetString() == stamp)
+                    foreach (var h in ready.GetProperty("heroes").EnumerateArray())
+                        if (Directory.Exists(Path.Combine(outDir, "heroes", h.GetString()!))) keep.Add(h.GetString()!);
             }
             catch { }
+            if (manifest.Heroes.All(h => keep.Contains(h.Id)))
+            {
+                Log($"Cache is current for Deadlock build {build}; nothing to do (the Deadlock heroes were already read from this Deadlock).");
+                return 0;
+            }
             File.Delete(readyPath);
         }
         Log($"DeadlockExtract {Version}: Deadlock build {build} at {deadlock}");
         // 1.7.0: say plainly what is happening; Melty's setup shows these lines while the player waits (creator, 2026-10-23)
         Log($"Deadlock of Rain is reading the heroes' models, animations, icons and sounds from your own Deadlock install and converting them for Risk of Rain 2.");
-        Log($"This happens once, and again after each Deadlock update: it takes a few minutes (Abrams alone can take two). It is not stuck.");
+        Log($"This happens once per hero, and again after each Deadlock update: about 2 minutes for every hero, less for a few. It is not stuck.");
 
         using var package = new Package();
         package.OptimizeEntriesForBinarySearch(StringComparison.OrdinalIgnoreCase);
@@ -116,15 +126,17 @@ public static class Program
 
         var heroesDir = Path.Combine(outDir, "heroes");
         Directory.CreateDirectory(heroesDir);
-        int total = manifest.Heroes.Count + 3, step = 0;
+        var toRead = manifest.Heroes.Where(h => !keep.Contains(h.Id)).ToList();
+        if (keep.Count > 0) Log($"Already read from this Deadlock: {string.Join(", ", manifest.Heroes.Where(h => keep.Contains(h.Id)).Select(Name))}");
+        int total = toRead.Count + 3, step = 0;
         // Each hero is read on its own (1.3.0): a Deadlock update that breaks one model must not cost the player the others.
         // A hero is written to <id>.tmp and swapped in only when it finished; a failed one has no folder at all, so the plugin
         // never loads an old copy that no longer matches, and ready.json lists it under "failed".
-        var read = new List<string>();
+        var read = manifest.Heroes.Where(h => keep.Contains(h.Id)).Select(h => h.Id).ToList();
         var failed = new List<object>();
         var modelPaths = new Dictionary<string, string>();
         var heroModels = HeroModels(loader);
-        foreach (var hero in manifest.Heroes)
+        foreach (var hero in toRead)
         {
             Progress(outDir, step, total, hero.Id);
             Log($"[{++step}/{total}] Reading {Name(hero)} from Deadlock (model and animations)...");
@@ -220,6 +232,19 @@ public static class Program
         Log("Ready: " + string.Join(", ", read) + (failed.Count > 0 ? " | Skipped: " + string.Join(", ", manifest.Heroes.Select(h => h.Id).Except(read)) : ""));
         Log("All read. Risk of Rain 2 starts next and builds the heroes on its loading screen.");
         return 0;
+    }
+
+    /// <summary>The manifest cut to the chosen heroes: their rows, and the images, sounds, voice groups and props they own.</summary>
+    static void Cut(Manifest m, HashSet<string> only)
+    {
+        bool Used(string e) => !m.Owners.TryGetValue(e, out var o) || o.Any(only.Contains);
+        m.Heroes = m.Heroes.Where(h => only.Contains(h.Id)).ToList();
+        m.Images = m.Images.Where(Used).ToList();
+        m.SoundEvents = m.SoundEvents.Where(Used).ToList();
+        m.VoiceGroups = m.VoiceGroups.Where(Used).ToList();
+        m.VoiceAllTakes = m.VoiceAllTakes.Where(Used).ToList();
+        m.Props = m.Props.Where(p => Used(p.Id)).ToList();
+        Log($"Chosen heroes: {string.Join(", ", m.Heroes.Select(Name))}" + (m.Owners.Count == 0 ? " (this manifest has no owners: every icon and sound is kept)" : ""));
     }
 
     /// <summary>Each hero key's model as Deadlock itself names it (scripts/heroes.vdata, m_strModelName). A Deadlock build can
@@ -340,7 +365,7 @@ public static class Program
             SatelliteImages = false,
             // Deadlock's shoot/land clips are additive layers; compose them over the bind pose so every clip is a full pose
             ComposeAdditiveAnimations = true,
-            ProgressReporter = new Progress<string>(_ => { }),
+            ProgressReporter = new Progress<string>(m => Log("    " + m)),
         };
         foreach (var c in hero.Clips) exporter.AnimationFilter.Add(c);
         foreach (var m in hero.Meshes) exporter.MeshFilter.Add(m);
@@ -371,7 +396,7 @@ public static class Program
             AdaptTextures = true,
             SatelliteImages = false,
             ComposeAdditiveAnimations = true,
-            ProgressReporter = new Progress<string>(_ => { }),
+            ProgressReporter = new Progress<string>(m => Log("    " + m)),
         };
         foreach (var c in prop.Clips) exporter.AnimationFilter.Add(c);
         foreach (var m in prop.Meshes) exporter.MeshFilter.Add(m);
@@ -615,6 +640,8 @@ public sealed class Manifest
     public List<string> VoiceGroups { get; set; } = new();
     public List<string> VoiceAllTakes { get; set; } = new();
     public List<PropEntry> Props { get; set; } = new();
+    /// <summary>1.8.0: which hero(es) use each image, sound event, voice group and prop (tools/gen.py); none listed = shared.</summary>
+    public Dictionary<string, List<string>> Owners { get; set; } = new();
 }
 
 public sealed class PropEntry

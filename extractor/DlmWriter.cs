@@ -225,22 +225,34 @@ public static class DlmWriter
         int totalTracks = 0;
         foreach (var anim in anims)
         {
-            float length = Math.Max(anim.Duration, 1f / Fps);
+            // 1.8.0: Duration read once; SharpGLTF works it out from every channel's keys on each read, and it was read per
+            // frame per bone (Abrams, 499 bones: 9.5 min, Rat King 9, Wraith 7)
+            float duration = anim.Duration;
+            float length = Math.Max(duration, 1f / Fps);
             int frames = Math.Max(1, (int)Math.Round(length * Fps) + 1);
             w.Write(Short(anim.Name)); w.Write(length); w.Write(Fps); w.Write(frames);
             var tracks = new List<(int bone, Vector3[] p, Quaternion[] r)>();
+            // the clip's channels indexed once instead of a Find*Channel scan per bone
+            var tChannels = new Dictionary<Node, AnimationChannel>();
+            var rChannels = new Dictionary<Node, AnimationChannel>();
+            foreach (var ch in anim.Channels)
+            {
+                if (ch.TargetNode == null) continue;
+                if (ch.TargetNodePath == PropertyPath.translation) tChannels.TryAdd(ch.TargetNode, ch);
+                else if (ch.TargetNodePath == PropertyPath.rotation) rChannels.TryAdd(ch.TargetNode, ch);
+            }
             for (int bi = 0; bi < boneNodes.Count; bi++)
             {
                 var node = boneNodes[bi];
                 var ps = new Vector3[frames]; var rs = new Quaternion[frames];
                 bool moved = false;
                 Matrix4x4.Decompose(node.LocalMatrix, out _, out var r0, out var t0);
-                var tch = anim.FindTranslationChannel(node)?.GetTranslationSampler()?.CreateCurveSampler(true);
-                var rch = anim.FindRotationChannel(node)?.GetRotationSampler()?.CreateCurveSampler(true);
+                var tch = tChannels.GetValueOrDefault(node)?.GetTranslationSampler()?.CreateCurveSampler(true);
+                var rch = rChannels.GetValueOrDefault(node)?.GetRotationSampler()?.CreateCurveSampler(true);
                 if (tch == null && rch == null) continue;
                 for (int f = 0; f < frames; f++)
                 {
-                    float time = Math.Min(f / Fps, anim.Duration);
+                    float time = Math.Min(f / Fps, duration);
                     ps[f] = tch != null ? tch.GetPoint(time) : t0;
                     rs[f] = Quaternion.Normalize(rch != null ? rch.GetPoint(time) : r0);
                     if (Vector3.DistanceSquared(ps[f], t0) > 1e-8f || Math.Abs(Quaternion.Dot(rs[f], r0)) < 0.999999f) moved = true;

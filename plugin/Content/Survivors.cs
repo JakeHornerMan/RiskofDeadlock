@@ -62,6 +62,14 @@ namespace DeadlockOfRain
             }
         }
 
+        /// <summary>The Thunderstore hero picker's choice: build only these of the release's heroes.</summary>
+        public static void LimitTo(ICollection<string> ids)
+        {
+            var skipped = Released.Where(h => !ids.Contains(h.Id)).Select(h => h.DisplayName).ToList();
+            if (skipped.Count > 0) Log.Info("Not chosen in the hero picker (not read from Deadlock yet): " + string.Join(", ", skipped));
+            released = Released.Where(h => ids.Contains(h.Id)).ToArray();
+        }
+
         static HeroRow[] comingSoon;
         /// <summary>Heroes this build shows as "coming soon": the ids in coming-soon.txt beside the DLL (tools/package.py --melty,
         /// from thunderstore/release.json comingSoon). Each gets a locked tile with its portrait blacked out to a silhouette; nothing else of it loads.</summary>
@@ -613,9 +621,12 @@ namespace DeadlockOfRain
             if (FirstRun.Started)
             {
                 // first launch from Thunderstore: the loading screen waits while the heroes are read from Deadlock
-                while (FirstRun.Running && !FirstRun.StopIfStalled()) { args.ReportProgress(0.45f * FirstRun.Progress); yield return null; }
+                // the hero picker first (only while a hero isn't read yet), then the extractor
+                while (FirstRun.Choosing || (FirstRun.Running && !FirstRun.StopIfStalled())) { args.ReportProgress(0.45f * FirstRun.Progress); yield return null; }
                 FirstRun.Finish(DeadlockCache.DefaultDir());
                 Plugin.OpenCache();
+                // only the heroes read or chosen are built; the mod-list entry names them, so co-op needs the same picks (Net.cs)
+                if (FirstRun.Wanted != null) Survivors.LimitTo(FirstRun.Wanted);
                 DeadlockAudio.Init();
             }
             if (DeadlockCache.Ready)
