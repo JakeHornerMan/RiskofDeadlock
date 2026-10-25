@@ -161,6 +161,7 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
 ---
 
 ## 7. Lessons from past sessions (things that cost time)
+- **After a Melty `test_release` on this PC, re-check the Steam copy once the test is done:** Melty renames `winhttp.dll` to `winhttp.dll.melty-off` and re-reads the cache from the release manifest *after* our `lab_restore.sh` ran. Copy `winhttp.dll` back and rebuild the cache with the full manifest if `ready.json` misses a hero (2026-10-25: Steam Play started without the mod).
 - **Thunderstore installs (2026-10-25):** r2modman's Import local mod adds no dependencies; a by-hand install needs RoR2BepInExPack in `BepInEx\plugins\RiskofThunder-RoR2BepInExPack` (any other name is deleted on start; without it the mod fails on `Newtonsoft.Json`). r2modman can be driven with `--remote-debugging-port=9222` (Electron) for a real fresh-install test.
 - **Profile before optimising:** the 9-minute Abrams read was one SharpGLTF property (`Animation.Duration`) read per frame per bone; two guessed fixes changed nothing.
 - **A test that closes the creator's game becomes a Melty bug report** (2026-10-24): Melty records the creator's own Plays in `player_logs`. Billy's test closed an open game and showed up as "closed right after starting" and "its code didn't load" on 0.11.0. Before blaming the mod, compare a report's time with our test runs, and check `mashup_stats` (it leaves the creator's own plays out). The lab scripts now refuse to close a game they didn't start (`tools/game_guard.sh`).
@@ -268,6 +269,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 ---
 
 ## 9. Last work: 1.0.1 on Melty (2026-10-25)
+- After the release test Melty had switched BepInEx off and left an eight-hero cache, so Steam Play started vanilla RoR2; put back the same day (BepInEx on, cache 9/9, doc 07).
 - Discord server management (roles, channels, webhooks, scripts) moved to the creator's private repo `discord-GDCH-management` (2026-10-25); keep only the Risk of Deadlock section, role and invite here.
 - Release `b8769360-c0fb-469d-911d-fd85cc8c33f4`, `setup.done.contains` `|1.8.0|A4EDD4289999B185`, test `50b34902-…` passed 2/2 (graduates false only because the recipe listed `billy-plays` outside the first 12 check lines: fix the list next time, doc 03). Listing and #update post done.
 - Co-op: `Net.CoopVersion` ("1.0.0") is what must match, not the release version; raise it when networked code or the content catalogs change.

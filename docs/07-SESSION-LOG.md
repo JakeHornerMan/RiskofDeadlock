@@ -1300,3 +1300,11 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** the check script reads the Risk of Deadlock webhook as alive (GET only, nothing posted).
 **Not done / open:** roles Dia dhuit Éire, @everyone, and who sees #moderator-only and Magic Casting Rouge Like are marked "to check" (the browser extension was not connected). The creator pastes the webhook link into webhooks.json.
 **Lessons:** none new.
+
+### 2026-10-25 · Steam Play started without the mod again: put the dev setup back · no version
+**Request (verbatim):** "let start working on my mod again! why isnt it attachhed to my steam client when i press play!!!"
+**Questions asked → answers:** none.
+**Done:** found `winhttp.dll` renamed to `winhttp.dll.melty-off` (Melty switched BepInEx off after its 1.0.1 `test_release` on this PC, after our `lab_restore.sh` had run) and a cache with eight heroes (Melty's setup re-read it from the release manifest, no Wraith). Copied `winhttp.dll` back; rebuilt the cache from the full `extractor/manifest.json` (9/9 heroes, Deadlock 6819). The installed DLL already matched the dev build, `heroes.txt` lists all nine, no `coming-soon.txt`.
+**Results:** BepInEx on, cache `ready.json` lists all nine heroes; the game was not started.
+**Not done / open:** Melty's "players hit bugs" notice on Risk of Deadlock (not looked at yet).
+**Lessons:** a Melty `test_release` on this PC changes the PC *after* our scripts: once `test_result` says done, check `winhttp.dll` and the cache's hero list again (doc 00 §7).
