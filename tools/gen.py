@@ -97,6 +97,8 @@ for hero in h['rows']:
     manifest['images'] += [hero['imageSmall'], hero['imageCard']]
     if hero['passiveIcon'] != 'none': manifest['images'].append(hero['passiveIcon'])
 manifest['images'] += [s['icon'] for s in skills] + [b['icon'] for b in buffs if b['icon'] != 'none']
+# effects kind texture: a Deadlock particle texture read like an icon (Wraith's card suits, her sigil)
+manifest['images'] += [e['addressable'] for e in load('effects')['rows'] if e['kind'] == 'texture']
 manifest['images'] = sorted(set(manifest['images']))
 manifest['soundEvents'] = sorted({r[c] for r in sounds for c in ['cast', 'loop', 'hit', 'end', 'reload', 'castLayer', 'hitLayer', 'tick', 'tickFinal'] if r[c] != 'none'})
 manifest['soundEventFiles'] = sorted({hero['soundevents'] for hero in h['rows']})
@@ -125,11 +127,11 @@ for r in sounds:
         base = r['skill'].split('/')[0]   # 'mokrill_gun/step': a variant of the gun row
         if r[c] != 'none' and base in skill_hero: own(r[c], skill_hero[base])
 for r in load('voice')['rows']: own(r['group'], r['hero'])
-# a prop belongs to the hero its id starts with (viscous_cube_prop)
+# a prop belongs to the hero its id starts with (viscous_cube_prop); a texture the same way, by its image path
 for e in effects:
-    if e['kind'] == 'prop':
+    if e['kind'] in ('prop', 'texture'):
         for hero in h['rows']:
-            if e['id'].startswith(hero['id'] + '_'): own(e['id'], hero['id'])
+            if e['id'].startswith(hero['id'] + '_'): own(e['id'] if e['kind'] == 'prop' else e['addressable'], hero['id'])
 json.dump({k: sorted(v) for k, v in sorted(owners.items())}, open(os.path.join(ROOT, 'extractor', 'manifest_owners.json'), 'w', encoding='utf-8'), indent=2)
 # extractor 1.8.0 reads the owners from the manifest itself to read only the heroes a player picks (--heroes)
 manifest['owners'] = {k: sorted(v) for k, v in sorted(owners.items())}

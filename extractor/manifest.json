@@ -289,7 +289,8 @@
         "gun_model"
       ],
       "clips": [
-        "ability_card_trick_cast",
+        "ability_card_trick",
+        "ability_card_trick_cast_in_air",
         "ability_full_auto",
         "ability_telekinesis",
         "ability_telekinesis_cast",
@@ -309,6 +310,10 @@
     }
   ],
   "images": [
+    "materials/particle/abilities/wraith/wraith_card_suit.vtex",
+    "materials/particle/abilities/wraith/wraith_crosshair.vtex",
+    "materials/particle/abilities/wraith/wraith_rapid_fire_ring_trans_psd_c28add01.vtex",
+    "materials/particle/abilities/wraith/wraith_symbols.vtex",
     "panorama/images/heroes/bull_card_psd.vtex",
     "panorama/images/heroes/bull_sm_psd.vtex",
     "panorama/images/heroes/digger_card_psd.vtex",
@@ -1377,6 +1382,18 @@
     ],
     "krill/krill_use_power4": [
       "mokrill"
+    ],
+    "materials/particle/abilities/wraith/wraith_card_suit.vtex": [
+      "wraith"
+    ],
+    "materials/particle/abilities/wraith/wraith_crosshair.vtex": [
+      "wraith"
+    ],
+    "materials/particle/abilities/wraith/wraith_rapid_fire_ring_trans_psd_c28add01.vtex": [
+      "wraith"
+    ],
+    "materials/particle/abilities/wraith/wraith_symbols.vtex": [
+      "wraith"
     ],
     "panorama/images/heroes/bull_card_psd.vtex": [
       "abrams"

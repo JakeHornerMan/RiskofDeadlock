@@ -1,6 +1,6 @@
 {
   "sheet": "effects",
-  "about": "Visual effect ids used by skills.effect/vfx/extra. Deadlock's particle systems (.vpcf) are never read or copied: visuals reuse Risk of Rain 2's own effect prefabs and materials (Addressables keys checked against the installed catalog.json) or are built by our own code in Unity (kind custom: plugin/Runtime/Vfx.cs, made to look like Deadlock). kind: tracer (bullet line muzzle->hit), impact (one-shot at a point, scaled by radius when scaleWithRadius), ghost (attached visual that follows a mod-simulated projectile), orb (RoR2 OrbManager lightning orb), trail (vanilla DamageTrail fire trail), attachment (a RoR2 NetworkedBodyAttachment put on the hero), ward (a RoR2 BuffWard placed on the ground), material (a RoR2 material our custom visuals are drawn with), custom (built by Vfx.cs; addressable none), none. prop: a Deadlock model the extractor reads from the player's install as a plain mesh (addressable = its vmdl path; extractor 1.5.0+), drawn by Vfx with our own materials; a prop that could not be read falls back to a simple shape. meshes / clips (props only, extractor 1.6.0+): the model's meshes to read (none = all) and the clips to read with its skeleton (none = a still mesh): Rat King's rat runs and leaps, his banner's sewer rises out of the ground. tint: a RoR2 prefab (tracer, impact) recoloured to this colour (#RRGGBB) as our own copy, registered as an effect of the mod (Fx.Prefab); its materials' colour ramps are redrawn in it (Seven's yellow Shock Rifle tracer), none = as RoR2 has it.",
+  "about": "Visual effect ids used by skills.effect/vfx/extra. Deadlock's particle systems (.vpcf) are never read or copied: visuals reuse Risk of Rain 2's own effect prefabs and materials (Addressables keys checked against the installed catalog.json) or are built by our own code in Unity (kind custom: plugin/Runtime/Vfx.cs, made to look like Deadlock). kind: tracer (bullet line muzzle->hit), impact (one-shot at a point, scaled by radius when scaleWithRadius), ghost (attached visual that follows a mod-simulated projectile), orb (RoR2 OrbManager lightning orb), trail (vanilla DamageTrail fire trail), attachment (a RoR2 NetworkedBodyAttachment put on the hero), ward (a RoR2 BuffWard placed on the ground), material (a RoR2 material our custom visuals are drawn with), custom (built by Vfx.cs; addressable none), none. prop: a Deadlock model the extractor reads from the player's install as a plain mesh (addressable = its vmdl path; extractor 1.5.0+), drawn by Vfx with our own materials; a prop that could not be read falls back to a simple shape. meshes / clips (props only, extractor 1.6.0+): the model's meshes to read (none = all) and the clips to read with its skeleton (none = a still mesh): Rat King's rat runs and leaps, his banner's sewer rises out of the ground. tint: a RoR2 prefab (tracer, impact) recoloured to this colour (#RRGGBB) as our own copy, registered as an effect of the mod (Fx.Prefab); its materials' colour ramps are redrawn in it (Seven's yellow Shock Rifle tracer), none = as RoR2 has it. texture: a Deadlock particle texture the extractor reads like an icon (addressable = its vtex path; no new extractor), drawn by Vfx with the Sprites/Default shader: Wraith's card suits (a 4 x 4 sheet: club, diamond, heart, spade across the top), her eye sigil, the Full Auto ring and her eye.",
   "columns": [
     "id",
     "kind",
@@ -1392,6 +1392,62 @@
       "notes": "Deadlock's card model for the thrown card (8 x 13 cm, drawn about 6 times bigger)"
     },
     {
+      "id": "wraith_suits_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/wraith/wraith_card_suit.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Wraith's card-suit sheet: club, diamond, heart, spade in the top row, the joker below"
+    },
+    {
+      "id": "wraith_sigil_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/wraith/wraith_symbols.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Wraith's eye sigil (a diamond with rays), on Project Mind's ring"
+    },
+    {
+      "id": "wraith_ring_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/wraith/wraith_rapid_fire_ring_trans_psd_c28add01.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Full Auto's ground ring, also under Telekinesis"
+    },
+    {
+      "id": "wraith_eye_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/wraith/wraith_crosshair.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Wraith's eye symbol, over each enemy Telekinesis lifts"
+    },
+    {
       "id": "wraith_gun",
       "kind": "custom",
       "addressable": "none",
@@ -1417,7 +1473,7 @@
         "none"
       ],
       "tint": "none",
-      "notes": "Card Trick: purple smoke gathering in her hand, the spinning card trailing violet smoke and a glow in its trick's colour (bleed red, crit gold, stun pale blue, burn orange), a burst of smoke, sparks and that colour where it hits"
+      "notes": "Card Trick: purple smoke gathering in her hand, the spinning card trailing violet smoke and its suit's symbol in its trick's colour (bleed red, crit gold, stun pale blue, burn orange), a burst of suit symbols, smoke and that colour where it hits; the stored cards float fanned above her head"
     },
     {
       "id": "wraith_mind",
@@ -1431,7 +1487,7 @@
         "none"
       ],
       "tint": "none",
-      "notes": "Project Mind: a swirling purple smoke circle on the ground where she will appear, a column of smoke and a violet flash where she leaves and where she arrives"
+      "notes": "Project Mind: a purple projection of Wraith where she will appear (ground or air) over a ring with her eye sigil, cards drifting toward it, a column of smoke, cards and a violet flash where she leaves and where she arrives; dimmed red where she can't go"
     },
     {
       "id": "wraith_fullauto",
@@ -1445,7 +1501,7 @@
         "none"
       ],
       "tint": "none",
-      "notes": "Full Auto: a purple smoke burst around her as she reloads, then smoke and sparks curling off The Rake until the magazine is empty"
+      "notes": "Full Auto: a purple smoke burst and Deadlock's ring around her as she reloads, cards spiralling round The Rake, then smoke and sparks off it until the magazine is empty"
     },
     {
       "id": "wraith_tk",
@@ -1459,7 +1515,7 @@
         "none"
       ],
       "tint": "none",
-      "notes": "Telekinesis: a purple shockwave and smoke dome sweeping out 30 m, purple smoke and a glow under each lifted enemy, a violet smoke trail as it is thrown, a smoke blast where it lands (a bigger one on a wall)"
+      "notes": "Telekinesis: a purple shockwave and smoke dome sweeping out 30 m, a violet beam from her hand to each lifted enemy with her eye glowing over it and a ring under it, a violet smoke trail as it is thrown, a smoke blast where it lands (a bigger one on a wall)"
     }
   ]
 }

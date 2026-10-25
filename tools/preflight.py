@@ -86,7 +86,7 @@ for b in buffs.values():
     ref('buffs', b['id'], 'vfx', b['vfx'], {k for k, e in effects.items() if e['kind'] == 'custom'})
     if b['triggerStacks'] and not b['canStack']: bad(f'buffs[{b["id"]}].triggerStacks: needs a stacking buff')
     if b['triggerStacks'] > b['maxStacks']: bad(f'buffs[{b["id"]}].triggerStacks: above maxStacks, it can never fire')
-EFFECT_KINDS = {'none', 'tracer', 'impact', 'ghost', 'orb', 'trail', 'attachment', 'ward', 'material', 'custom', 'prop'}
+EFFECT_KINDS = {'none', 'tracer', 'impact', 'ghost', 'orb', 'trail', 'attachment', 'ward', 'material', 'custom', 'prop', 'texture'}
 for e in effects.values():
     if e['kind'] not in EFFECT_KINDS: bad(f'effects[{e["id"]}].kind: "{e["kind"]}" unknown')
     if (e['kind'] in ('custom', 'none')) != (e['addressable'] == 'none'): bad(f'effects[{e["id"]}].addressable: custom/none rows have none, every other kind a key')
@@ -214,7 +214,7 @@ if vpk:
     for r in sheets['voice']['rows']:
         if f"sounds/vo/{r['group']}" not in takes: bad(f'voice[{r["id"]}].group: no sounds/vo/{r["group"]}_NN.vsnd in Deadlock install')
     for e in effects.values():
-        if e['kind'] == 'prop': has(e['addressable'], f'effects[{e["id"]}].addressable')
+        if e['kind'] in ('prop', 'texture'): has(e['addressable'], f'effects[{e["id"]}].addressable')
     for b in buffs.values():
         if b['icon'] != 'none': has(b['icon'], f'buffs[{b["id"]}].icon')
 else:
@@ -255,8 +255,8 @@ ak = dev('addressable_keys.txt')
 if ak:
     keys = set(l.strip() for l in open(ak, encoding='utf-8'))
     for e in effects.values():
-        # a prop is a Deadlock model path (checked against the VPK listing above), not a RoR2 key
-        if e['addressable'] != 'none' and e['kind'] != 'prop' and e['addressable'] not in keys: bad(f'effects[{e["id"]}].addressable: "{e["addressable"]}" not in RoR2 catalog')
+        # a prop or texture is a Deadlock path (checked against the VPK listing above), not a RoR2 key
+        if e['addressable'] != 'none' and e['kind'] not in ('prop', 'texture') and e['addressable'] not in keys: bad(f'effects[{e["id"]}].addressable: "{e["addressable"]}" not in RoR2 catalog')
 else:
     bad('dev listing tools/dev/addressable_keys.txt missing: effect keys unverified')
 
