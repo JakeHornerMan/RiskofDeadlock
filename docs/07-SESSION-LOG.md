@@ -1292,3 +1292,11 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** `RELEASE_ZIP=build/DeadlockOfRain-1.0.1.zip run_test.sh billy` pass; `BREAK=infernus RELEASE_ZIP=… run_test.sh haze` 21/21 (missing-hero-tile, coming-soon-tile, loading-screen). Melty's own setup on this PC read all eight heroes in **2 min 2 s** with extractor 1.8.0 and wrote exactly the recipe's stamp. Melty test: both runs ran 10:00, no crash, all 12 self-checks Melty read passed (Titanic Plains, then Rallypoint Delta).
 **Not done / open:** `graduates: false`: the recipe listed `billy-plays`, but the first 12 lines the test writes end with `trophies, viscous-plays, ratking-plays`; next recipe: use exactly those first 12 (doc 03). The creator adds the GitHub secret. `mod_status` to confirm 1.0.1 live; `install_outcomes` next session.
 **Lessons:** take the recipe's checks from the first 12 lines of `build/checks.txt` of a full run, not from a list of heroes; a heredoc with escaped quotes failed three times this session: write such scripts with Write/Edit.
+
+### 2026-10-25 · Discord server managed in a private repo · no version
+**Request (verbatim):** "i would actually like to create a new provate github repo called discord-GDCH-management and here we will manage the server and thier access, also any webhook and anything like that. there will be reference to this project form ridk of deadlock but now indpeth details"
+**Questions asked → answers:** server docs move, post tools stay in this repo; webhook links stored in the private repo; contents: server map, webhook inventory, projects list, management scripts, "a run down on each role and what they have access to".
+**Done:** `JakeHornerMan/discord-GDCH-management` (private): README, docs/server-map.md, docs/roles.md, docs/projects.md, webhooks/webhooks.json (link slot for the creator to paste), scripts/post.py and check_webhooks.py. Doc 03 §9 and doc 00 §9 point to it.
+**Results:** the check script reads the Risk of Deadlock webhook as alive (GET only, nothing posted).
+**Not done / open:** roles Dia dhuit Éire, @everyone, and who sees #moderator-only and Magic Casting Rouge Like are marked "to check" (the browser extension was not connected). The creator pastes the webhook link into webhooks.json.
+**Lessons:** none new.

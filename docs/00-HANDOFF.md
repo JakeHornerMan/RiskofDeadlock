@@ -268,6 +268,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 ---
 
 ## 9. Last work: 1.0.1 on Melty (2026-10-25)
+- Discord server management (roles, channels, webhooks, scripts) moved to the creator's private repo `discord-GDCH-management` (2026-10-25); keep only the Risk of Deadlock section, role and invite here.
 - Release `b8769360-c0fb-469d-911d-fd85cc8c33f4`, `setup.done.contains` `|1.8.0|A4EDD4289999B185`, test `50b34902-…` passed 2/2 (graduates false only because the recipe listed `billy-plays` outside the first 12 check lines: fix the list next time, doc 03). Listing and #update post done.
 - Co-op: `Net.CoopVersion` ("1.0.0") is what must match, not the release version; raise it when networked code or the content catalogs change.
 - The Thunderstore watcher runs on GitHub Actions every 3 hours; it needs the repo secret `DISCORD_UPDATE_WEBHOOK` (the creator adds it). Thunderstore 1.0.0 waits for the moderators' reapproval.
