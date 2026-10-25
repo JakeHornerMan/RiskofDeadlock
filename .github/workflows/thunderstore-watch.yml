@@ -1,0 +1,30 @@
+# Posts "Risk of Deadlock <version> is out on Thunderstore" to the Discord #update channel once Thunderstore's moderators
+# approve the latest upload (creator, 2026-10-25: "the watcher should check every 3 hours, and ... deployed on git"). Runs every
+# 3 hours; after it has posted it switches this workflow off. After the next Thunderstore upload, switch it back on
+# (GitHub > Actions > Thunderstore live watch > Enable workflow). Needs the repo secret DISCORD_UPDATE_WEBHOOK (the #update
+# webhook link; it never appears in the repo or the log). Doc 03 §5.
+name: Thunderstore live watch
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Post once Thunderstore approves the latest version
+        env:
+          DISCORD_UPDATE_WEBHOOK: ${{ secrets.DISCORD_UPDATE_WEBHOOK }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$DISCORD_UPDATE_WEBHOOK" ]; then echo "The repo secret DISCORD_UPDATE_WEBHOOK is missing"; exit 1; fi
+          v=$(python3 tools/discord_update.py --ts-latest)
+          echo "Thunderstore's latest: $v"
+          python3 tools/discord_update.py "$v" --thunderstore --if-live | tee out.txt
+          if grep -q "posted to #update" out.txt; then
+            gh workflow disable "Thunderstore live watch" --repo "$GITHUB_REPOSITORY"
+          fi

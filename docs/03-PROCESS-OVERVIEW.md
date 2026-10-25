@@ -323,10 +323,11 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 8. `update_mod` for listing text (description, tagline) when features change. `add_screenshot`/`finish_screenshot` for real in-game shots.
 9. **Ask the creator before `publish`.** Only after a clear yes: `publish`, then `mod_status`. Say "live" only if the server says so; otherwise it is "awaiting review".
    Then `python tools/discord_update.py <version>` posts the update to the Discord #update channel (since 2026-10-24, §9).
-   **Thunderstore (2026-10-25):** after an upload, create the watcher task `RiskOfDeadlock-Thunderstore-<version>` (every 10 min,
-   `pythonw tools/discord_update.py <version> --thunderstore --if-live`). It posts "is out on Thunderstore" once the API's
-   Risk of Rain 2 `review_status` is `approved` for that version, writes `posted-thunderstore-<version>.txt` and deletes itself.
-   The script refuses unknown flags (a half-applied edit once ignored `--if-live` and posted a wrong Melty message).
+   **Thunderstore (2026-10-25):** GitHub Actions `.github/workflows/thunderstore-watch.yml` runs every 3 hours (creator: not on
+   this PC) and posts "is out on Thunderstore" once the API's Risk of Rain 2 `review_status` is `approved` for the latest
+   version, then disables itself; re-enable it after each upload (Actions > Thunderstore live watch > Enable workflow). It
+   needs the repo secret `DISCORD_UPDATE_WEBHOOK` (the creator adds it; never in files). The script refuses unknown flags
+   (a half-applied edit once ignored `--if-live` and posted a wrong Melty message).
 10. **After publishing (since v0.7.2):** check `install_outcomes` and `player_logs` the next session. A setup failure or
    a "HERO FAILED" line from players shows a Deadlock change before the creator hears about it. The 2026-10-19 Infernus
    skip on a player's Deadlock 5977 was found this way.

@@ -6,8 +6,9 @@
     python tools/discord_update.py 1.0.0 --dry-run  # print the message only
     python tools/discord_update.py 1.0.0 --thunderstore            # "is out on Thunderstore" instead
     python tools/discord_update.py 1.0.0 --thunderstore --if-live  # post only once Thunderstore approved this version (the
-        API's review_status) and only once (a marker file); the scheduled task "RiskOfDeadlock-Thunderstore-<version>" runs
-        it every 10 minutes and removes itself after posting
+        API's review_status) and only once (a marker file). GitHub runs it every 3 hours (.github/workflows/thunderstore-watch.yml,
+        with the webhook as the repo secret DISCORD_UPDATE_WEBHOOK) and switches the workflow off after posting
+    python tools/discord_update.py --ts-latest   # print the latest version Thunderstore has (for the workflow)
 
 Any other flag is refused, so a typo never posts by accident (2026-10-25: a half-applied edit ignored --if-live and posted).
 The channel's webhook link is a secret: it lives only in %LOCALAPPDATA%\\DeadlockOfRain\\discord-update-webhook.txt (or the
@@ -19,8 +20,8 @@ MELTY = "https://melty.gg/m/risk-of-deadlock-2"
 TS_PAGE = "https://thunderstore.io/c/riskofrain2/p/JakeHornerMan/Risk_of_Deadlock/"
 TS_API = "https://thunderstore.io/api/experimental/package/JakeHornerMan/Risk_of_Deadlock/"
 GUIDE = "https://github.com/JakeHornerMan/RiskofDeadlock/blob/main/INSTALL.md"
-DATA = os.path.join(os.environ.get("LOCALAPPDATA", ""), "DeadlockOfRain")
-FLAGS = {"--dry-run", "--thunderstore", "--if-live"}
+DATA = os.path.join(os.environ.get("LOCALAPPDATA") or os.environ.get("RUNNER_TEMP") or ".", "DeadlockOfRain")
+FLAGS = {"--dry-run", "--thunderstore", "--if-live", "--ts-latest"}
 LIMIT = 2000   # Discord's message length
 
 
@@ -52,11 +53,15 @@ def webhook():
     return url
 
 
-def ts_live(version):
-    """Live = Thunderstore's moderators approved the package for Risk of Rain 2 and this version is the latest."""
+def ts_package():
     req = urllib.request.Request(TS_API, headers={"User-Agent": "RiskOfDeadlock-update/1.0"})
     with urllib.request.urlopen(req, timeout=30) as r:
-        d = json.load(r)
+        return json.load(r)
+
+
+def ts_live(version):
+    """Live = Thunderstore's moderators approved the package for Risk of Rain 2 and this version is the latest."""
+    d = ts_package()
     status = next((c.get("review_status") for c in d.get("community_listings", []) if c.get("community") == "riskofrain2"), None)
     latest = d.get("latest", {}).get("version_number")
     print(f"Thunderstore: latest {latest}, review status {status}")
@@ -64,13 +69,16 @@ def ts_live(version):
 
 
 def remove_task(version):
-    """The watcher's scheduled task is done once the post went out."""
+    """A local watcher task (Windows) is done once the post went out; on GitHub the workflow switches itself off instead."""
+    if os.name != "nt": return
     subprocess.run(["schtasks", "/Delete", "/TN", f"RiskOfDeadlock-Thunderstore-{version}", "/F"], capture_output=True)
 
 
 def main():
     flags = {a for a in sys.argv[1:] if a.startswith("--")}
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if flags == {"--ts-latest"} and not args:
+        print(ts_package().get("latest", {}).get("version_number", "")); return
     if len(args) != 1 or flags - FLAGS: sys.exit(__doc__)
     ts = "--thunderstore" in flags
     if "--if-live" in flags and not ts: sys.exit("--if-live is for --thunderstore")
@@ -87,6 +95,7 @@ def main():
     with urllib.request.urlopen(req, timeout=30) as r:
         print(f"posted to #update (HTTP {r.status}, message {json.load(r).get('id')})")
     if ts:
+        os.makedirs(DATA, exist_ok=True)
         open(marker, "w").write("posted\n")
         if "--if-live" in flags: remove_task(args[0])
 
