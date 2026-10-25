@@ -15,7 +15,7 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat
 - If one hero can't be read from your Deadlock (after a Deadlock update), every other hero still works, and its tile says why.
 
 ## Community
-Join the **[Risk of Deadlock Discord](https://discord.gg/sNByetmcqc)**: FAQ, hero requests and news. The same button is on the game's title screen, with a "Hero Sheets & Damage" button above it.
+Join the **[Risk of Deadlock Discord](https://discord.gg/sNByetmcqc)**: FAQ, hero requests and news. The same button is on the game's title screen, with a "Deadlock Hero Info" button above it.
 
 ## Hero pages
 Every hero's abilities, numbers and measured damage, with our own in-game pictures:

@@ -313,7 +313,13 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
      never be "done". Recompute it whenever the manifest or extractor version changes:
      `python -c "import hashlib;print(hashlib.sha256(open('extractor/manifest.json','rb').read()).hexdigest()[:16].upper())"`
      and check it against `%LOCALAPPDATA%/DeadlockOfRain/cache/ready.json` after a rebuild. 0.6.3: `|1.2.0|39DC86C5579DF781`.
-   - **Max 12 checks.** Only list names the mod really reports.
+   - **Max 12 checks.** Only list names the mod really reports. **Copy the first 12 lines of `build/checks.txt` from a full
+     `RELEASE_ZIP` run, in order.** 1.0.1 listed `billy-plays`, which comes after `trophies`, so Melty never read it and the
+     test did not graduate. For eight heroes the first 12 are: deadlock-content, survivors-listed, coming-soon-tile,
+     loading-screen, haze/abrams/seven/infernus/mokrill-plays, trophies, viscous-plays, ratking-plays.
+   - **Co-op across releases (1.0.1):** the mod-list entry holds `Net.CoopVersion`, not `Plugin.Version`, so Melty and
+     Thunderstore releases play together. Raise `CoopVersion` when networked state (OnSerialize, Relay, Net) or a content
+     catalog (buffs, equipment, effects, skills, bodies) changes.
    - `multiplayer` (since 0.6.0) is what `setup_multiplayer` returned for this mashup; call it again before `submit_release`, then with the co-op test's `build/coop_host.log` / `build/coop_join.log` as `hostLog` / `joinLog`.
    - **Do not** take `inspect_package`'s draft mappings. It suggests `{game}/BepInEx/plugins/DeadlockOfRain-<ver>`, which is version-named, and puts the extractor inside the plugins folder.
 4. `validate_recipe` (with `slug` and entries) → expect `valid`, one-click `yes`.
