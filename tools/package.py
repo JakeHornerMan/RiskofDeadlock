@@ -161,12 +161,6 @@ def ts_manifest():
     return json.dumps(m, indent=2).encode('utf-8')
 
 
-check_plugin_version()
-BW = built_with()
-stamp_texts(BW)
-BW_TXT = ''.join(f'{k}={v}\n' for k, v in BW.items()).encode('utf-8')
-print(built_with_line(BW))
-
 def check_github_exe():
     """The Thunderstore zip ships only the GitHub-built exe (tools/fetch_extractor.py), so its SHA-256 is the public one."""
     f = os.path.join(TS, 'extractor.json')
@@ -175,11 +169,23 @@ def check_github_exe():
     got = hashlib.sha256(open(os.path.join(ROOT, EXTRACT['DeadlockExtract.exe']), 'rb').read()).hexdigest()
     if got != want['sha256']:
         raise SystemExit(f'build/extract/DeadlockExtract.exe is not the GitHub-built {want["version"]} ({want["url"]}): run python tools/fetch_extractor.py {want["version"]}')
+    # the pinned exe must be the extractor this code is: an older one reads less (1.4.0 had no props and no DLM2)
+    code = re.search(r'Version = "([^"]+)"', open(os.path.join(ROOT, 'extractor', 'Program.cs'), encoding='utf-8').read()).group(1)
+    if want['version'] != code:
+        raise SystemExit(f'thunderstore/extractor.json pins extractor {want["version"]} but extractor/Program.cs is {code}: tag extractor-{code}, then python tools/fetch_extractor.py {code}')
 
 
+# every check that can refuse runs before anything is written (built_with and stamp_texts rewrite files)
+check_plugin_version()
 if thunderstore:
     check_store_text()
     check_github_exe()
+BW = built_with()
+stamp_texts(BW)
+BW_TXT = ''.join(f'{k}={v}\n' for k, v in BW.items()).encode('utf-8')
+print(built_with_line(BW))
+
+if thunderstore:
     out = os.path.join(ROOT, 'build', f'{RELEASE["name"]}-{version}-thunderstore.zip')
     files = {
         'README.md': 'thunderstore/README.md',

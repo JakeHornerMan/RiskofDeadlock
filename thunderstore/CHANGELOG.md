@@ -2,9 +2,10 @@
 
 ## 1.0.0
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.0, 2026-10-24).
-- Billy joins the Melty build as its eighth playable hero, matched to Mercenary: Biquette the machine gun, a 3-hit Bat combo that dodges onto enemies in the air and juggles them, Bashdown, Rising Ram (chains haul everyone around into the air) and the Chain Gang ult. The G.O.A.T. passive turns his air jump into a goring dodge (not part of this store release yet; the four heroes here are unchanged).
-- Wraith takes Billy's place as the locked "coming soon" tile.
-- Billy's Chain Gang sends up to 20 chains of 1500 %, one per enemy in sight; leftover chains go to bosses, up to 5 on each. Billy never takes fall damage, his air bat only snaps to enemies on screen, and his air Bashdown takes him straight down.
+- Thunderstore gets all eight heroes: Haze, Abrams, Seven and Infernus, now joined by Mo & Krill (MUL-T's match), Viscous (REX's), Rat King (Captain's) and Billy (Mercenary's). Every hero's abilities are described on its hero page.
+- Billy, the newest: Biquette the machine gun, a 3-hit Bat combo that dodges onto enemies in the air and juggles them, Bashdown, Rising Ram (chains haul everyone around into the air) and the Chain Gang ult (up to 20 chains of 1500 %, one per enemy in sight, leftovers to bosses). The G.O.A.T. passive turns his air jump into a goring dodge, and he never takes fall damage.
+- First start fixed for more PCs: the "Deadlock folder" setting accepts a path ending in \ and the game or game\citadel folder too (a trailing \ used to break the reader); when an antivirus has removed DeadlockExtract.exe the game says so instead of asking you to install Deadlock; and if the reader ever stops responding for 10 minutes the loading screen stops waiting and tells you what to do.
+- The Deadlock reader is version 1.7.0, built in public by GitHub: effect models, capes and Deadlock's colours read from your install like the heroes.
 - A big "Join the Discord" button at the bottom right of the title screen opens the mod's Discord community (FAQ, hero requests, news), and a "Hero Sheets & Damage" button above it opens every hero's ability and damage pages.
 
 ## 0.11.0
@@ -16,7 +17,7 @@
 
 ## 0.10.0
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6817 (v0.10.0, 2026-10-22).
-- Rat King joins the Melty build as its seventh playable hero: Sovereign's Decree, the hopping Scrap Grenade, Royal Pestments, the banner leap Rule, Ratannia! and the Rat Swarm ult (not part of this store release yet; the four heroes here are unchanged).
+- Rat King joins as the seventh playable hero: Sovereign's Decree, the hopping Scrap Grenade, Royal Pestments, the banner leap Rule, Ratannia! and the Rat Swarm ult.
 - Billy takes Rat King's place as the locked "coming soon" tile.
 - Co-op: a friend's Scrap Grenade now always hits on the host too (it could fly over the enemy it hit on their screen).
 - Checked against Deadlock's update of 22 October (build 6817): every hero reads and plays.
@@ -31,14 +32,14 @@
 
 ## 0.9.0
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6807 (v0.9.0, 2026-10-21).
-- A seventh hero for the Melty build, Rat King (not part of this store release yet; the four heroes here are unchanged).
+- A seventh hero, Rat King.
 - Heroes and effects can use Deadlock models with their own animations, and swinging capes (extractor 1.6.0).
 - Clips that left a hero's root turned no longer carry that turn into the next clip.
 - Effect models keep Deadlock's vertex colours and material tints (extractor 1.6.1).
 - Every hero shows its magazine (rounds/magazine) just above the M1 icon of the skill bar.
 
 ## 0.8.0
-- A sixth hero for the Melty build (not part of this store release yet; the four heroes here are unchanged).
+- A sixth hero, Viscous.
 - Moves of a future hero can use Deadlock's own effect models, read from your install like the heroes (extractor 1.5.0).
 
 ## 0.7.4

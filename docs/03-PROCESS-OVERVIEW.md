@@ -377,7 +377,8 @@ The same DLL and GUID (`melty.deadlockofrain`) as on Melty, so Melty and Thunder
 **Nothing from Deadlock is in the package** (asked and declined: shipping ripped Deadlock files is redistributing Valve's
 work; the player's own Deadlock install is read on their PC, exactly as on Melty).
 - **A release's heroes:** `thunderstore/release.json` (`name` `Risk_of_Deadlock`, shown as "Risk of Deadlock"; `heroes`
-  haze, abrams, seven, infernus for the first release, creator 2026-10-19; Mo & Krill later). The packager writes
+  haze, abrams, seven, infernus for the first release, creator 2026-10-19; **1.0.0 (2026-10-25): the eight Melty heroes, no
+  Wraith and no coming-soon tile** (the Thunderstore zip never writes `coming-soon.txt`)). The packager writes
   `plugins/heroes.txt` (the plugin builds only those, `Survivors.Released`) and cuts `deadlock-manifest.json` down to them
   with `extractor/manifest_owners.json` (from `gen.py`), so the first start reads only those heroes. The store README and
   CHANGELOG are written by hand per release; `package.py` refuses to build if they name a hero not in the list.
@@ -395,6 +396,11 @@ work; the player's own Deadlock install is read on their PC, exactly as on Melty
 - Upload: the creator signs in to thunderstore.io with their own account and team and uploads the zip (Risk of Rain 2
   community, categories Mods + Survivors), or approves the agent driving the upload page. No API token in files or chat.
   Uploads can't be edited: every change is a new version.
+- **Player guide:** `INSTALL.md` (repo root; linked from the store README and `README.md`): r2modman and by-hand steps,
+  the Deadlock folder setting, antivirus, the log, Discord and hero pages. Both routes are checked from a fresh state
+  before each Thunderstore release (below).
+- `package.py --thunderstore` runs every refusal (plugin version, store text naming a hero outside the release, the exe's
+  sha256, and `extractor.json`'s version == `extractor/Program.cs`'s) **before** it writes `built-with.json` or stamps texts.
 - Test a package on this PC: put `plugins/extract/` and `plugins/heroes.txt` into the installed `BepInEx/plugins/DeadlockOfRain/`, move
   `%LOCALAPPDATA%\DeadlockOfRain\cache` aside, `run_test.sh <hero>`; afterwards `lab_restore.sh`, remove `extract/` from
   the plugin folder and put the cache back. (A release manifest has its own stamp, so the test extracts again.)

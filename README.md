@@ -2,6 +2,8 @@
 
 Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus or Mo & Krill** from Deadlock, using their real models, animations, guns, abilities, icons and sounds, read from your own Deadlock install.
 
+**How to install:** [INSTALL.md](INSTALL.md) (r2modman or by hand), or one click on [Melty](https://melty.gg/m/risk-of-deadlock-2).
+
 ## Community
 Join the **[Risk of Deadlock Discord](https://discord.gg/sNByetmcqc)**: FAQ, hero requests and news. The same button is on the game's title screen.
 
@@ -43,7 +45,7 @@ Every hero's abilities, numbers and measured damage against their Risk of Rain 2
 - Risk of Rain 2 and Deadlock, both installed (for co-op, on every player's PC).
 - On first start, the bundled DeadlockExtract tool reads the five heroes from your Deadlock folder into `%LOCALAPPDATA%\DeadlockOfRain\cache`. This takes a few minutes and happens once per Deadlock update.
 - Melty does all of this for you: press Play.
-- **Thunderstore** (r2modman, as "Risk of Deadlock": Haze, Abrams, Seven and Infernus in the first release): install the mod, and the first start waits on the loading screen while the heroes are read from Deadlock (a few minutes, once per Deadlock update). If Deadlock is in an unusual folder, set *Deadlock folder* in the mod's config.
+- **Thunderstore** (r2modman, as "Risk of Deadlock", eight heroes since 1.0.0): install the mod, and the first start waits on the loading screen while the heroes are read from Deadlock (about 10 minutes, once per Deadlock update). If Deadlock is in an unusual folder, set *Deadlock folder* in the mod's config. **Step-by-step guide (r2modman or by hand, and what to do if it fails): [INSTALL.md](INSTALL.md).**
 
 ## How it is built
 - `design/*.json`: the design sheets (heroes, stats, skills, equipment, buffs, animations, sounds, effects, hooks). They are the source of truth.

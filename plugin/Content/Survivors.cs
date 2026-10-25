@@ -613,7 +613,7 @@ namespace DeadlockOfRain
             if (FirstRun.Started)
             {
                 // first launch from Thunderstore: the loading screen waits while the heroes are read from Deadlock
-                while (FirstRun.Running) { args.ReportProgress(0.45f * FirstRun.Progress); yield return null; }
+                while (FirstRun.Running && !FirstRun.StopIfStalled()) { args.ReportProgress(0.45f * FirstRun.Progress); yield return null; }
                 FirstRun.Finish(DeadlockCache.DefaultDir());
                 Plugin.OpenCache();
                 DeadlockAudio.Init();

@@ -19,7 +19,11 @@ namespace DeadlockOfRain
         const int DeadlockAppId = 1422450;
         static Process proc;
         static string progressFile, logFile;
-        static float progress, nextRead, started, stepStarted;
+        static float progress, nextRead, started, stepStarted, lastActivity;
+        static bool stalled;
+        /// <summary>No new extractor line or step for this long: it is hung (Abrams, the slowest step, takes about 4 min), so
+        /// the loading screen stops waiting instead of sitting there forever (a player waited over an hour, 2026-10-24).</summary>
+        const float StallSeconds = 600f;
         static int lastDone = -1;
         static long logPos;
         public static string Problem;   // shown on the title screen when the heroes could not be loaded
@@ -60,14 +64,25 @@ namespace DeadlockOfRain
         public static bool Start(string cacheDir, string configuredFolder)
         {
             var exe = Path.Combine(ExtractDir, "DeadlockExtract.exe");
-            if (!File.Exists(exe)) return false;
+            if (!File.Exists(exe))
+            {
+                // extract/ without the exe: a Thunderstore install whose exe was removed, nearly always by antivirus (Melty has no extract/)
+                if (!Directory.Exists(ExtractDir)) return false;
+                Say($"DeadlockExtract.exe is missing from {ExtractDir}");
+                Status = "DeadlockExtract.exe is missing (antivirus?)";
+                ProblemHeader = "Deadlock of Rain: DeadlockExtract.exe is missing";
+                if (!File.Exists(Path.Combine(cacheDir, "ready.json")))
+                    Problem = "The mod's Deadlock reader, DeadlockExtract.exe, is missing from\n" + ExtractDir + "\n\nThis is nearly always your antivirus removing it. "
+                        + "Restore it from the antivirus quarantine (or allow it), or reinstall the mod, then restart Risk of Rain 2. The Deadlock folder setting can't help with this.\n\n" + BuiltWith.Versions();
+                return false;
+            }
             FirstRunOverlay.Show();
             var deadlock = FindDeadlock(configuredFolder);
             if (deadlock == null)
             {
                 Problem = File.Exists(Path.Combine(cacheDir, "ready.json"))
                     ? null   // an older extract is still there: play with it
-                    : "Deadlock was not found. Install Deadlock (free on Steam), then restart Risk of Rain 2.\n\nIf it is installed somewhere unusual, set \"Deadlock folder\" in the mod's config.";
+                    : "Deadlock was not found. Install Deadlock (free on Steam), then restart Risk of Rain 2.\n\nIf it is installed somewhere unusual, set \"Deadlock folder\" in the mod's config (BepInEx/config/melty.deadlockofrain.cfg, or r2modman's Config editor) to the Deadlock folder, for example\nD:\\SteamLibrary\\steamapps\\common\\Deadlock";
                 Say("Deadlock install not found; no extraction");
                 Status = "Deadlock not found: the game starts without the Deadlock heroes";
                 return false;
@@ -79,7 +94,7 @@ namespace DeadlockOfRain
             var args = $"--deadlock \"{deadlock}\" --out \"{cacheDir}\" --manifest \"{Path.Combine(ExtractDir, "deadlock-manifest.json")}\"";
             Say($"Reading the heroes from Deadlock at {deadlock} into {cacheDir} (a few minutes on the first start or after a Deadlock update, about a second otherwise)");
             Log.Info($"  {exe} {args}");   // log only: too long for the box
-            started = stepStarted = Time.realtimeSinceStartup;
+            started = stepStarted = lastActivity = Time.realtimeSinceStartup;
             try
             {
                 proc = Process.Start(new ProcessStartInfo(exe, args) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = ExtractDir });
@@ -114,6 +129,7 @@ namespace DeadlockOfRain
                             if (done != lastDone)
                             {
                                 lastDone = done;
+                                lastActivity = Time.realtimeSinceStartup;
                                 stepStarted = Time.realtimeSinceStartup;
                                 if (done < total) Say($"Reading Deadlock: step {done + 1}/{total}, {(p.Length > 2 ? p[2].Trim() : "")} ({Time.realtimeSinceStartup - started:F0} s so far)");
                                 Status = done < total ? $"Reading the heroes from Deadlock: step {done + 1} of {total} ({(p.Length > 2 ? p[2].Trim() : "")})" : "Done reading Deadlock";
@@ -141,6 +157,7 @@ namespace DeadlockOfRain
                     int end = text.LastIndexOf('\n');
                     if (end < 0) return;   // wait for a whole line
                     logPos += System.Text.Encoding.UTF8.GetByteCount(text.Substring(0, end + 1));
+                    lastActivity = Time.realtimeSinceStartup;
                     foreach (var line in text.Substring(0, end).Split('\n'))
                         if (line.Trim().Length > 0) Say("[DeadlockExtract] " + line.TrimEnd('\r'));
                 }
@@ -194,16 +211,35 @@ namespace DeadlockOfRain
             DoneAt = Time.realtimeSinceStartup + (Missing ? 4f : -4f);
         }
 
+        /// <summary>Polled while the loading screen waits: true (once) when the extractor has been silent for StallSeconds; it is
+        /// then stopped and Finish reports it.</summary>
+        public static bool StopIfStalled()
+        {
+            if (!Running || stalled || Time.realtimeSinceStartup - lastActivity < StallSeconds) return false;
+            stalled = true;
+            Say($"DeadlockExtract printed nothing for {StallSeconds / 60f:F0} minutes; stopping it");
+            try { proc.Kill(); proc.WaitForExit(5000); } catch (Exception e) { Log.Warn("Could not stop DeadlockExtract: " + e.Message); }
+            return true;
+        }
+
         /// <summary>Called once the process has exited: records why, when it failed.</summary>
         public static void Finish(string cacheDir)
         {
             if (proc == null) return;
             nextRead = 0f;
             var _ = Progress;   // relay the last log lines
-            int code = proc.ExitCode;
+            int code = proc.HasExited ? proc.ExitCode : -1;
             Say($"DeadlockExtract finished with exit code {code} after {Time.realtimeSinceStartup - started:F0} s");
             Status = code == 0 ? $"Deadlock read ({Time.realtimeSinceStartup - started:F0} s)" : "Reading Deadlock failed: see BepInEx/LogOutput.log";
-            if (code != 0)
+            if (stalled)
+            {
+                Status = "Reading Deadlock stopped responding: see BepInEx/LogOutput.log";
+                ProblemHeader = "Deadlock of Rain: reading Deadlock got stuck";
+                Problem = $"Reading the heroes from Deadlock printed nothing for {StallSeconds / 60f:F0} minutes, so it was stopped and the game started without them. "
+                    + "Restart Risk of Rain 2 to try again. If it happens again, an antivirus scanning DeadlockExtract.exe is the usual cause: allow it. The details are in "
+                    + Path.Combine(cacheDir, "extract.log") + ".\n\n" + BuiltWith.Versions();
+            }
+            else if (code != 0)
                 Problem = File.Exists(Path.Combine(cacheDir, "ready.json"))
                     ? null
                     : "Reading the heroes from Deadlock failed. Restart to try again; if it keeps failing, the details are in " + Path.Combine(cacheDir, "extract.log") + ".\n\n" + BuiltWith.Versions();
@@ -219,14 +255,32 @@ namespace DeadlockOfRain
             {
                 if (string.IsNullOrEmpty(dir) || tried.Exists(t => Same(t, dir))) continue;
                 tried.Add(dir);
-                if (File.Exists(Path.Combine(dir, "game", "citadel", "pak01_dir.vpk")))
+                var root = DeadlockRoot(dir);
+                if (root != null)
                 {
-                    Say($"  found Deadlock: {dir}");
-                    return dir;
+                    Say($"  found Deadlock: {root}");
+                    return root;
                 }
                 Say($"  not here: {dir}");
             }
             Say($"Deadlock not found in any of {tried.Count} places; set \"Deadlock folder\" in the config if it is installed somewhere else");
+            return null;
+        }
+
+        /// <summary>The Deadlock folder (the one holding game/citadel/pak01_dir.vpk) for a typed path: also accepts its game or
+        /// game/citadel folder, or pak01_dir.vpk itself, and drops a trailing slash (a trailing \ inside the quoted
+        /// --deadlock "...\" argument escapes the quote and broke the extractor's arguments). Null when it isn't one.</summary>
+        static string DeadlockRoot(string dir)
+        {
+            try
+            {
+                var d = dir.Trim().Trim('"').Trim().Replace('/', '\\').TrimEnd('\\');
+                if (d.Length == 2 && d[1] == ':') d += "\\";   // a bare drive
+                for (int i = 0; i < 4 && !string.IsNullOrEmpty(d); i++, d = Path.GetDirectoryName(d))
+                    if (File.Exists(Path.Combine(d, "game", "citadel", "pak01_dir.vpk")))
+                        return d.EndsWith("\\") ? d + "." : d;   // "D:\." : never a \ before the argument's closing quote
+            }
+            catch { }
             return null;
         }
 

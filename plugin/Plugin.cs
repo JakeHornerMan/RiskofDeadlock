@@ -25,7 +25,7 @@ namespace DeadlockOfRain
             PluginDir = Path.GetDirectoryName(Info.Location);
             Volume = Config.Bind("Audio", "Deadlock sound volume", 1f, "Volume of the Deadlock sounds (0-1), on top of the game's master and SFX volume.");
 
-            DeadlockFolder = Config.Bind("Deadlock", "Deadlock folder", "", "Only needed if Deadlock is not found by itself: the folder that holds game/citadel/pak01_dir.vpk.");
+            DeadlockFolder = Config.Bind("Deadlock", "Deadlock folder", "", "Only needed if Deadlock is not found by itself: your Deadlock folder, e.g. D:\\SteamLibrary\\steamapps\\common\\Deadlock (Steam: Deadlock > Manage > Browse local files). Its game or game\\citadel folder works too.");
 
             QuitSafety.Init();
             // test-mode "off": "mod": nothing but the quit fixes and the test itself, to see whether a problem needs the mod

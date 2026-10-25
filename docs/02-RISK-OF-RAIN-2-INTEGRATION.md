@@ -71,6 +71,14 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
      Every place it looks is logged (`found Deadlock` / `not here`, Steam's registry path, the libraries in each
      `libraryfolders.vdf`); while the exe runs, its `extract.log` lines are copied into the BepInEx log as
      `[DeadlockExtract] ...` with a `Reading Deadlock: step n/total` line per step and the total time at the end.
+     **Since Thunderstore 1.0.0 (2026-10-25, after a player's "specify the directory and it still doesn't work"):**
+     `DeadlockRoot` accepts a typed folder with a trailing `\` or `/`, quotes, or the `game` / `game\citadel` folder or
+     `pak01_dir.vpk` itself (walks up to 3 levels) and never returns a path ending in `\` (a `\` before the closing quote
+     of `--deadlock "..."` escaped it, so the extractor got a broken path and exited 1). `extract/` without the exe (antivirus
+     quarantine) gets its own title-screen message ("DeadlockExtract.exe is missing") instead of falling through to "install
+     Deadlock". A stall guard: no new extractor line or step for 10 min (`StallSeconds`; Abrams takes ~4) →
+     `FirstRun.StopIfStalled` kills it, the loading screen goes on without the heroes, and the title screen says it got stuck.
+     A cache from an older extractor needs no check here: the stamp holds the extractor version, so the bundled exe re-reads it.
    - **On screen, every start (v0.11.0, creator 2026-10-23 after a player closed 0.10.0 at 41 s before the title screen):**
      `FirstRunOverlay` (IMGUI, so it draws while RoR2's UI is still loading; needs `UnityEngine.IMGUIModule` in the csproj),
      shown from `Plugin.Awake` on Melty and Thunderstore starts alike, draws two things:

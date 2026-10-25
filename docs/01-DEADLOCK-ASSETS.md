@@ -299,6 +299,9 @@ this cache is "stale" but still a superset of what 0.2.0 needs:
   "heroes": ["haze","abrams","seven","infernus"], "images": 28, "soundEvents": 51, "time": "..." }
 ```
 - `stamp = <ClientVersion>|<Program.Version>|<first 16 hex of SHA-256(manifest text)>`.
+  The stamp does **not** see Steam builds that keep the same ClientVersion (2026-10-23: build 26143760 → 26147187, both
+  6819), so a small Deadlock hotfix leaves the cache "current". That's fine while the hotfix leaves hero files alone; a fresh
+  extraction (the Thunderstore install test, doc 03 §6b) reads the installed build again.
 - On start without `--force`, if `ready.json` exists **and** its stamp equals the new one, the run is a no-op ("Cache
   is current"). Otherwise `ready.json` is deleted first and a full extraction runs. **With `--force` the old
   `ready.json` is not deleted**, so a forced run that fails partway leaves the old "complete" marker in place. Delete it

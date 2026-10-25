@@ -2,7 +2,7 @@
   "name": "Risk_of_Deadlock",
   "version_number": "0.0.0",
   "website_url": "https://github.com/JakeHornerMan/RiskofDeadlock",
-  "description": "Play as Haze, Abrams, Seven and Infernus from Deadlock, with their guns, abilities and ults. Needs Deadlock (free on Steam) installed: their models and sounds are read from your own copy.",
+  "description": "Play as eight Deadlock heroes: Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King and Billy, with their abilities and ults. Needs Deadlock (free on Steam): models and sounds are read from your own copy.",
   "dependencies": [
     "bbepis-BepInExPack-5.4.2122"
   ]
