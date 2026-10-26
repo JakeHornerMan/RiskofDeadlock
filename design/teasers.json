@@ -1,0 +1,8 @@
+{
+  "sheet": "teasers",
+  "about": "Heroes shown only as a greyed-out \"coming soon\" tile in character select, before their kit is in the sheets (a hero with a kit uses heroes.json; release.json comingSoon greys it out). Nothing of a teaser is read from Deadlock but its select-screen portrait (imageSmall), blacked out to a silhouette. Move the hero to heroes.json (and remove its row here) when its kit lands.",
+  "columns": ["id", "displayName", "imageSmall", "sortPosition"],
+  "rows": [
+    {"id": "mina", "displayName": "Mina", "imageSmall": "panorama/images/heroes/vampirebat_sm_psd.vtex", "sortPosition": 101.0}
+  ]
+}

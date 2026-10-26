@@ -72,7 +72,7 @@ namespace DeadlockOfRain
 
         static HeroRow[] comingSoon;
         /// <summary>Heroes this build shows as "coming soon": the ids in coming-soon.txt beside the DLL (tools/package.py --melty,
-        /// from thunderstore/release.json comingSoon). Each gets a locked tile with its portrait blacked out to a silhouette; nothing else of it loads.</summary>
+        /// from thunderstore/release.json comingSoon; a hero row or a teaser row). Each gets a locked tile with its portrait blacked out to a silhouette; nothing else of it loads.</summary>
         public static HeroRow[] ComingSoon
         {
             get
@@ -81,7 +81,10 @@ namespace DeadlockOfRain
                 var file = System.IO.Path.Combine(Plugin.PluginDir ?? "", "coming-soon.txt");
                 if (!System.IO.File.Exists(file)) return comingSoon = new HeroRow[0];
                 var ids = new HashSet<string>(System.IO.File.ReadAllLines(file).Select(l => l.Trim()).Where(l => l.Length > 0));
-                return comingSoon = HeroRow.All.Where(h => ids.Contains(h.Id) && !Released.Contains(h)).ToArray();
+                // a teaser (design/teasers.json) has no kit yet: a hero row with just what the tile shows
+                var teasers = TeaserRow.All.Where(t => ids.Contains(t.Id) && !HeroRow.All.Any(h => h.Id == t.Id))
+                    .Select(t => new HeroRow { Id = t.Id, DisplayName = t.DisplayName, ImageSmall = t.ImageSmall, SortPosition = t.SortPosition });
+                return comingSoon = HeroRow.All.Where(h => ids.Contains(h.Id) && !Released.Contains(h)).Concat(teasers).ToArray();
             }
         }
 
@@ -117,11 +120,21 @@ namespace DeadlockOfRain
             holder.SetActive(false);
             UnityEngine.Object.DontDestroyOnLoad(holder);
 
-            var commando = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Commando/CommandoBody.prefab").WaitForCompletion();
+            // RoR2 loads its own content beside ours and reads the same Commando bundle: wait for the loads frame by frame,
+            // never with WaitForCompletion, which holds the game's main thread (a player's game froze here on 1.0.1)
+            Log.Info("loading the Commando template...");
+            float t0 = Time.realtimeSinceStartup;
+            var bodyLoad = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Commando/CommandoBody.prefab");
+            // RoR2's own deferred shader (Unity's Standard shader is stripped from the game): take Commando's material
+            var matLoad = Addressables.LoadAssetAsync<Material>("RoR2/Base/Commando/matCommandoDualies.mat");
+            while (!bodyLoad.IsDone || !matLoad.IsDone) yield return null;
+            float took = Time.realtimeSinceStartup - t0;
+            if (took > 10f) Log.Warn($"the Commando template took {took:F1} s to load");
+            else Log.Info($"Commando template loaded ({took:F1} s)");
+            var commando = bodyLoad.Result;
             var cmdModel = commando.GetComponent<ModelLocator>().modelTransform;
             var cmdSmr = cmdModel.GetComponentInChildren<SkinnedMeshRenderer>(true);
-            // RoR2's own deferred shader (Unity's Standard shader is stripped from the game): take Commando's material
-            ModelBuilder.Template = Addressables.LoadAssetAsync<Material>("RoR2/Base/Commando/matCommandoDualies.mat").WaitForCompletion();
+            ModelBuilder.Template = matLoad.Result;
             Log.Info("hero material template: " + (ModelBuilder.Template ? ModelBuilder.Template.shader.name : "none"));
             var cap = commando.GetComponent<CapsuleCollider>();
             float meshH = 0;
@@ -133,8 +146,8 @@ namespace DeadlockOfRain
 
             var kinds = kindTypes = KindTypes();
             Buffs.Create();
-            Fx.Preload();
-            yield return null;
+            var fx = Fx.Preload();
+            while (fx.MoveNext()) yield return fx.Current;
 
             foreach (var hero in ComingSoon) MissingHeroes.Add(commando, holder.transform, hero, null);
             FirstRun.BuildBegin(Released.Length);
@@ -618,6 +631,7 @@ namespace DeadlockOfRain
 
         public IEnumerator LoadStaticContentAsync(LoadStaticContentAsyncArgs args)
         {
+            Log.Info("content load started");
             if (FirstRun.Started)
             {
                 // first launch from Thunderstore: the loading screen waits while the heroes are read from Deadlock

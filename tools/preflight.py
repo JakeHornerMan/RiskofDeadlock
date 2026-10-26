@@ -24,7 +24,7 @@ def load(name):
     with open(os.path.join(D, name + '.json'), encoding='utf-8') as f:
         return json.load(f)
 
-sheets = {n: load(n) for n in ['heroes', 'stats', 'skills', 'equipment', 'buffs', 'animations', 'sounds', 'effects', 'hooks', 'voice']}
+sheets = {n: load(n) for n in ['heroes', 'stats', 'skills', 'equipment', 'buffs', 'animations', 'sounds', 'effects', 'hooks', 'voice', 'teasers']}
 
 # 1. every cell filled
 for name, s in sheets.items():
@@ -50,6 +50,10 @@ def ref(sheet, rid, col, val, valid, allow_none=True):
         return
     if val not in valid:
         bad(f'{sheet}[{rid}].{col}: "{val}" does not resolve')
+
+# a teaser is a coming-soon tile for a hero not in heroes.json yet: never both
+for t in sheets['teasers']['rows']:
+    if t['id'] in heroes: bad(f'teasers[{t["id"]}]: also a heroes row; remove the teaser once the hero has a kit')
 
 # 2. references
 EXTRA_FLAGS = {'pierce': 'projectile', 'shockwave': 'heavy_melee', 'punch': 'krill_hop'}
@@ -208,6 +212,7 @@ if vpk:
     for h in heroes.values():
         for c in ['vmdl', 'imageSmall', 'imageCard', 'soundevents']: has(h[c], f'heroes[{h["id"]}].{c}')
         if h['passiveIcon'] != 'none': has(h['passiveIcon'], f'heroes[{h["id"]}].passiveIcon')
+    for t in sheets['teasers']['rows']: has(t['imageSmall'], f'teasers[{t["id"]}].imageSmall')
     for r in skills.values(): has(r['icon'].replace('.vtex', '.vtex'), f'skills[{r["id"]}].icon')
     # any numbered take will do (Viscous' use_power4 takes start at _11)
     takes = {re.sub(r'_[0-9]+\.vsnd_c$', '', f) for f in files if f.startswith('sounds/vo/') and re.search(r'_[0-9]+\.vsnd_c$', f)}

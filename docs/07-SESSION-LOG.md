@@ -1308,3 +1308,11 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** BepInEx on, cache `ready.json` lists all nine heroes; the game was not started.
 **Not done / open:** Melty's "players hit bugs" notice on Risk of Deadlock (not looked at yet).
 **Lessons:** a Melty `test_release` on this PC changes the PC *after* our scripts: once `test_result` says done, check `winhttp.dll` and the cache's hero list again (doc 00 §7).
+
+### 2026-10-25/26 · Melty freeze report, 1.0.2 · branch fix-1.0.2
+**Request (verbatim):** "there is a few issue on melty witha freeze can you pull this information and see if we need to fix something!" Later: "do not release wraith when you push this update to melty", "you wait until wraith is fixed", "before we publich can you sheck the melty page again for anymore issue and fix them".
+**Questions asked → answers:** release shape → "Fix alone as 1.0.2"; timing → "ship the fix with no wraith and no mina have them both greyed out".
+**Done:** read player_logs / install_outcomes / player_reports. One freeze on 1.0.1 (a player's game hung 66 s in; both logs stop just before our first build line). Loads on the loading screen now yield instead of `WaitForCompletion()` (Survivors.Build, Fx.Preload), with log lines `content load started` and the Commando template time. New sheet `design/teasers.json` (gen, preflight, package) so Mina shows as a greyed tile with no kit; release.json comingSoon wraith, mina. Plugin 1.0.2, CHANGELOG 1.0.2. Docs 00, 02 §12, 03, MODLOG.
+**Results:** release-cut test (8 heroes, both tiles in the lobby) every check pass; BREAK=infernus 21/21; Commando template 2.7 s on this PC. Second Melty check: a `never-started` Play with no logs (nothing to act on), no failed installs, 12/12 1.0.1 Plays worked, no player comments.
+**Not done / open:** Melty upload, test_release, publish (ask first), Discord post, merge into main, then put main's all-heroes dev build back on the Steam copy.
+**Lessons:** the newest log line a frozen player sends tells you where it stopped: compare it with this PC's log order. Never block on Addressables while RoR2 loads.

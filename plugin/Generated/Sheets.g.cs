@@ -763,6 +763,20 @@ namespace DeadlockOfRain.Sheets
         };
     }
 
+    /// <summary>Row of design/teasers.json. Heroes shown only as a greyed-out "coming soon" tile in character select, before their kit is in the sheets (a hero with a kit uses heroes.json; release.json co...</summary>
+    public sealed class TeaserRow
+    {
+        public string Id;
+        public string DisplayName;
+        public string ImageSmall;
+        public float SortPosition;
+
+        public static readonly TeaserRow[] All = new TeaserRow[]
+        {
+            new TeaserRow { Id = "mina", DisplayName = "Mina", ImageSmall = "panorama/images/heroes/vampirebat_sm_psd.vtex", SortPosition = 101.0f },
+        };
+    }
+
     public static class SheetInfo
     {
         public const string AnchorHero = "haze";
