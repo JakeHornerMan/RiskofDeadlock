@@ -429,7 +429,13 @@ namespace DeadlockOfRain
                     us.ExecuteIfReady();
                     yield return new WaitForSeconds(States.Burrow.SinkDelay + States.Burrow.SinkTime + 0.3f);
                     var cm = body.modelLocator && body.modelLocator.modelTransform ? body.modelLocator.modelTransform.GetComponent<CharacterModel>() : null;
-                    for (float w = 0f; w < 1.5f && !(cm && cm.invisibilityCount > 0); w += 0.1f) yield return new WaitForSeconds(0.1f);
+                    // on a slow PC (Melty's 1.1.0 test with little memory free) 1.5 s wasn't enough, or the press didn't take: wait
+                    // up to 4 s, pressing Burrow once more if he isn't in it yet
+                    for (float w = 0f; w < 4f && !(cm && cm.invisibilityCount > 0); w += 0.1f)
+                    {
+                        if (w > 1.5f && w < 1.6f && idle && !(idle.state is States.Burrow)) { us.Reset(); us.ExecuteIfReady(); }
+                        yield return new WaitForSeconds(0.1f);
+                    }
                     bool under = cm && cm.invisibilityCount > 0;
                     var qInv = body.inventory; var qDef = Equipment.OfHero(hero.Id);
                     if (qInv && qDef) qInv.SetEquipment(new EquipmentState(qDef.equipmentIndex, Run.FixedTimeStamp.now, 1), qInv.activeEquipmentLocation);
