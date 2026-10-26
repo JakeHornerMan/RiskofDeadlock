@@ -1166,7 +1166,7 @@ namespace DeadlockOfRain
                 }
 
                 // Storm Cloud can't be cut short (skills locked, he flies the whole time): wait it out before the next skill
-                float window = row.Slot == "primary" ? 6f : row.Kind == "storm_flight" || row.Kind == "nox_flight" ? row.Duration + 1.5f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
+                float window = row.Slot == "primary" ? 6f : row.Kind == "storm_flight" || row.Kind == "nox_stream" ? row.Duration + 1.5f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
                 float t0 = Time.time;
                 int shots = 0;
                 while (Time.time - t0 < window)
@@ -1607,7 +1607,7 @@ namespace DeadlockOfRain
         /// <summary>Mina (spec, 2026-10-22): twenty New Money bullets on one enemy put Love Bites on it (the debuff), take 10 s off
         /// Nox Nostra and bring Rake back early; five more bites in the air with every jump spent give a jump back; high up with
         /// Jump held the umbrella opens (about floatFallSpeed, the glide clip, no fall damage) and letting go closes it; Sanguine
-        /// Retreat's recast, Nox Nostra's planted swarm and Rake's hits were seen in their skill tests. why[0] = "" on success.</summary>
+        /// Retreat's recast, Nox Nostra's stream and Rake's hits were seen in their skill tests. why[0] = "" on success.</summary>
         IEnumerator TestMina(CharacterMaster master, HeroRow hero, string[] why)
         {
             why[0] = "";
@@ -1704,9 +1704,9 @@ namespace DeadlockOfRain
             yield return new WaitForSeconds(0.5f);
 
             // 4. seen in the skill tests: Sanguine Retreat's recast (test mode recasts by itself inside its window), Nox Nostra's
-            // swarm planted, Rake's sweep landing
+            // stream catching an enemy, Rake's sweep landing
             if (!seen.Contains("bat-blink-recast")) why[0] += "sanguine retreat: no recast seen; ";
-            if (!seen.Contains("nox-planted")) why[0] += "nox nostra: the swarm was never planted; ";
+            if (!seen.Contains("nox-stream")) why[0] += "nox nostra: the stream never caught an enemy; ";
             if (!seen.Contains("rake-hits")) why[0] += "rake: hit nothing; ";
         }
 

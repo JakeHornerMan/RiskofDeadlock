@@ -380,23 +380,25 @@ namespace DeadlockOfRain.States
     }
 
     /// <summary>The flight controls on the flying player's own screen: "[Space] Higher [Shift] Lower" with the Jump and Sprint keys
-    /// they really bound (their Rewired player's keyboard maps), "Jump" / "Sprint" on a gamepad, and a bar for the time left.</summary>
+    /// they really bound (their Rewired player's keyboard maps), "Jump" / "Sprint" on a gamepad, and a bar for the time left. With
+    /// cancel (Mina's Nox Nostra, which doesn't fly) it reads "[R] Cancel" instead, with the Special key they bound.</summary>
     public sealed class FlightHint : MonoBehaviour
     {
-        float until, total; string up = "Space", down = "Shift"; GUIStyle box, keys;
+        float until, total; string up = "Space", down = "Shift", special = "R"; bool cancel; GUIStyle box, keys;
 
-        public static GameObject Show(CharacterBody body, float duration)
+        public static GameObject Show(CharacterBody body, float duration, bool cancel = false)
         {
             var user = LocalUserManager.readOnlyLocalUsersList.FirstOrDefault(u => u != null && u.cachedBody == body);
             if (user == null) return null;
             var go = new GameObject("DlrFlightHint");
             var h = go.AddComponent<FlightHint>();
-            h.total = Mathf.Max(0.1f, duration); h.until = Time.time + duration;
+            h.total = Mathf.Max(0.1f, duration); h.until = Time.time + duration; h.cancel = cancel;
             try
             {
                 bool pad = user.eventSystem && user.eventSystem.currentInputSource == RoR2.UI.MPEventSystem.InputSource.Gamepad;
                 h.up = pad ? "Jump" : Key(user, RewiredConsts.Action.Jump) ?? "Space";
                 h.down = pad ? "Sprint" : Key(user, RewiredConsts.Action.Sprint) ?? "Shift";
+                h.special = pad ? "Special" : Key(user, RewiredConsts.Action.SpecialSkill) ?? "R";
             }
             catch (System.Exception e) { Log.Warn("flight hint keys: " + e.Message); }
             return go;
@@ -421,7 +423,8 @@ namespace DeadlockOfRain.States
             float w = 460f, h = 64f;
             var r = new Rect((Screen.width - w) / 2f, Screen.height * 0.72f, w, h);
             GUI.Box(r, GUIContent.none, box);
-            GUI.Label(new Rect(r.x, r.y + 4f, w, 40f), $"<color=#FFD633>[{up}]</color> Higher      <color=#FFD633>[{down}]</color> Lower", keys);
+            GUI.Label(new Rect(r.x, r.y + 4f, w, 40f), cancel ? $"<color=#FFD633>[{special}]</color> Cancel"
+                : $"<color=#FFD633>[{up}]</color> Higher      <color=#FFD633>[{down}]</color> Lower", keys);
             // the time left
             float left = Mathf.Clamp01((until - Time.time) / total);
             var bar = new Rect(r.x + 16f, r.y + h - 14f, (w - 32f) * left, 6f);

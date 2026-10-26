@@ -86,15 +86,14 @@ namespace DeadlockOfRain.States
     /// (vanilla HiddenInvincibility and Cloak, so monsters lose her), over duration seconds; walls stop the flight just short; she
     /// reforms launchHeight metres above the ground there, ready to float. For interval seconds after the first, Shift again
     /// recasts it (chainCount times); the cooldown starts when that window ends (<see cref="MinaRecast"/>). The owner picks the
-    /// point and it travels with the state. Used during Nox Nostra's flight, the flight carries on afterwards (NoxLeft).</summary>
+    /// point and it travels with the state. Used during Nox Nostra, the stream carries on afterwards (NoxLeft).</summary>
     [Kind("bat_blink")]
     public sealed class BatBlink : DlrState
     {
         /// <summary>A recast (no new recast window after it).</summary>
         public bool Recast;
-        /// <summary>Seconds of Nox Nostra's flight left when this started from it (0: none), and whether its swarm was planted.</summary>
+        /// <summary>Seconds of Nox Nostra left when this started from it (0: none).</summary>
         public float NoxLeft;
-        public bool NoxPlanted;
         Vector3 to, from;
         bool hidden, floating, ended;
         int loop;
@@ -160,9 +159,9 @@ namespace DeadlockOfRain.States
             {
                 if (NoxLeft > 0f)
                 {
-                    // back to Nox Nostra's flight for what was left of it
-                    var nox = Sheet.SkillsOf(Survivors.HeroOf(characterBody)).FirstOrDefault(r => r.Kind == "nox_flight");
-                    if (nox != null) { outer.SetNextState(new NoxFlight { RowOverride = nox, Left = NoxLeft, Planted = NoxPlanted }); return; }
+                    // back to Nox Nostra for what was left of it, hanging at the new spot
+                    var nox = Sheet.SkillsOf(Survivors.HeroOf(characterBody)).FirstOrDefault(r => r.Kind == "nox_stream");
+                    if (nox != null) { outer.SetNextState(new NoxStream { RowOverride = nox, Left = NoxLeft }); return; }
                 }
                 outer.SetNextStateToMain();
             }
@@ -212,13 +211,13 @@ namespace DeadlockOfRain.States
         public override void OnSerialize(NetworkWriter writer)
         {
             base.OnSerialize(writer);
-            writer.Write(to); writer.Write(Recast); writer.Write(NoxLeft); writer.Write(NoxPlanted);
+            writer.Write(to); writer.Write(Recast); writer.Write(NoxLeft);
         }
 
         public override void OnDeserialize(NetworkReader reader)
         {
             base.OnDeserialize(reader);
-            to = reader.ReadVector3(); Recast = reader.ReadBoolean(); NoxLeft = reader.ReadSingle(); NoxPlanted = reader.ReadBoolean();
+            to = reader.ReadVector3(); Recast = reader.ReadBoolean(); NoxLeft = reader.ReadSingle();
         }
 
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Frozen;
@@ -268,22 +267,24 @@ namespace DeadlockOfRain.States
     }
 
     // ---------------- Mina: Nox Nostra ----------------
-    /// <summary>Mina rises launchHeight metres and flies for duration with gravity off: the move keys at speed m/s, Jump climbs and
-    /// Sprint sinks. A circle under the crosshair (up to range metres away, on the ground) shows where her bats will land; Left
-    /// Click plants them (<see cref="NoxPlant"/>), and after that New Money fires again. Unplanted when the flight ends, the swarm
-    /// drops on the circle by itself; then her umbrella opens and she drifts down. Rake works in the flight (another machine);
-    /// Shift is caught here and becomes a Sanguine Retreat after which the flight carries on.</summary>
-    [Kind("nox_flight")]
-    public sealed class NoxFlight : DlrState
+    /// <summary>Mina rises launchHeight metres and hangs still for duration (no flying, creator 2026-10-26): a stream of bats pours
+    /// out of her in a cone down to the ground under the crosshair (at most range metres away, following the aim the whole time),
+    /// reach metres wide at her and radius at the ground. Every interval everything inside the cone takes damagePct (server).
+    /// Special again (after minDuration) ends it early; the on-screen hint says so. The gun waits until it ends; Rake works
+    /// (another machine); Shift is caught here and becomes a Sanguine Retreat, after which she hangs on at the new spot for the time
+    /// left. Every machine works the target out from the body's aim (RoR2 syncs it), so the stream and the server's hits follow
+    /// the owner's crosshair; then her umbrella opens and she drifts down.</summary>
+    [Kind("nox_stream")]
+    public sealed class NoxStream : DlrState
     {
-        /// <summary>Resuming after a Sanguine Retreat: the flight time left and whether the swarm is already down.</summary>
+        /// <summary>Resuming after a Sanguine Retreat: the time left.</summary>
         public float Left;
-        public bool Planted;
         const float RiseTime = 0.6f;
-        float length;
-        bool ended, floating, toBlink, resumed;
-        int loop;
-        GameObject reticle, hint, lift;
+        float length, nextTick;
+        bool ended, floating, toBlink, resumed, reported;
+        int loop, ticks, bites;
+        GameObject reticle, hint, lift, stream;
+        Vfx.NoxStreamFx streamFx;
         Vector3 target;
 
         public override void OnEnter()
@@ -291,11 +292,12 @@ namespace DeadlockOfRain.States
             base.OnEnter();
             resumed = Left > 0f;
             length = resumed ? Left : row.Duration;
+            nextTick = resumed ? 0f : RiseTime;
             if (!resumed)
             {
                 Sound("cast");
                 if (anim) anim.Override("special_start", RiseTime);
-                Vfx.Play(row.Vfx, "cast", characterBody.footPosition, 1f, characterBody.transform);
+                Vfx.Play(row.Vfx, "cast", characterBody.footPosition, row.Radius, characterBody.transform);
             }
             loop = Fx.Loop(row.Id, transform.position);
             if (anim) anim.Hold("special_loop");
@@ -306,19 +308,31 @@ namespace DeadlockOfRain.States
                 var gp = characterMotor.gravityParameters; gp.channeledAntiGravityGranterCount++; characterMotor.gravityParameters = gp;
                 floating = true;
             }
-            // a few bats hold her up under the umbrella the whole flight
+            // a few bats hold her up under the umbrella the whole time
             lift = Vfx.Play(row.Vfx, "loop", characterBody.corePosition, 1f, characterBody.transform);
+            target = Target();
             if (isAuthority)
             {
-                target = AimPoint();
-                if (!Planted) reticle = Vfx.Play(row.Vfx, "aim", target, row.Radius);
-                hint = FlightHint.Show(characterBody, length);
+                reticle = Vfx.Play(row.Vfx, "aim", target, row.Radius);
+                hint = FlightHint.Show(characterBody, length, true);
             }
         }
 
-        /// <summary>The ground under the crosshair, at most range metres away (flat), or below the end of the aim.</summary>
-        Vector3 AimPoint()
+        /// <summary>Where the stream comes out: just under her umbrella, in front of her.</summary>
+        Vector3 Mouth
         {
+            get
+            {
+                var f = GetAimRay().direction; f.y = 0f;
+                return characterBody.corePosition + (f.sqrMagnitude > 0.01f ? f.normalized * 0.5f : Vector3.zero) - Vector3.up * 0.2f;
+            }
+        }
+
+        /// <summary>The ground under the crosshair, at most range metres away (flat), or below the end of the aim. The bench's bot
+        /// aims at its pack's middle, as a player puts the cone on a pack.</summary>
+        Vector3 Target()
+        {
+            if (DpsBench.PackCentre is Vector3 pc) return pc;
             var aim = GetAimRay();
             var point = aim.origin + aim.direction * row.Range;
             if (Physics.Raycast(aim, out var hit, row.Range * 1.5f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) point = hit.point;
@@ -328,69 +342,100 @@ namespace DeadlockOfRain.States
             return point;
         }
 
-        bool Bot => MeltyTest.Active || DpsBench.Active;
+        /// <summary>Every enemy inside the cone from Mouth to target (its core or its feet), widening from reach to radius.</summary>
+        List<HurtBox> Inside()
+        {
+            var apex = Mouth;
+            var axis = target - apex;
+            float len = Mathf.Max(0.5f, axis.magnitude);
+            var dir = axis / len;
+            var list = new List<HurtBox>();
+            foreach (var hb in Fx.Enemies(characterBody, apex + axis * 0.5f, len * 0.5f + row.Radius + 2f))
+            {
+                var b = hb.healthComponent.body;
+                float pad = b ? b.radius : 0.5f;
+                bool In(Vector3 p)
+                {
+                    var v = p - apex;
+                    float along = Vector3.Dot(v, dir);
+                    if (along < 0f || along > len + 2f) return false;
+                    float wide = Mathf.Lerp(row.Reach, row.Radius, Mathf.Clamp01(along / len)) + pad;
+                    return (v - dir * along).sqrMagnitude <= wide * wide;
+                }
+                if (In(b ? b.corePosition : hb.transform.position) || b && In(b.footPosition)) list.Add(hb);
+            }
+            return list;
+        }
 
         public override void FixedUpdate()
         {
             base.FixedUpdate();
+            if (row == null) { if (isAuthority) outer.SetNextStateToMain(); return; }
+            target = Target();
             if (isAuthority && characterMotor)
             {
+                // no flying: she rises, then hangs where she is
                 characterBody.isSprinting = false;
                 characterMotor.moveDirection = Vector3.zero;
-                float vy;
-                if (!resumed && fixedAge < RiseTime) vy = row.LaunchHeight / RiseTime;
-                else
-                {
-                    // Jump (Space) climbs, Sprint (the key itself: Ctrl or Shift as the player bound it) sinks
-                    bool sink = inputBank && inputBank.rawSprintInput.down;
-                    int dir = (inputBank && inputBank.jump.down ? 1 : 0) - (sink ? 1 : 0);
-                    vy = dir * row.Speed;
-                }
-                var move = inputBank ? inputBank.moveVector : Vector3.zero;
-                characterMotor.velocity = new Vector3(move.x * row.Speed, vy, move.z * row.Speed);
+                float vy = !resumed && fixedAge < RiseTime ? row.LaunchHeight / RiseTime : 0f;
+                characterMotor.velocity = new Vector3(0f, vy, 0f);
                 var aim = GetAimRay().direction; aim.y = 0f;
                 if (characterDirection) characterDirection.moveVector = aim.sqrMagnitude > 0.09f ? aim.normalized : characterDirection.forward;
-
-                target = AimPoint();
-                // the bench's bot centres the circle on its pack, as a player puts it on a pack (aiming at the nearest enemy's chest
-                // from up here put the circle behind the pack, or on whatever enemy floated nearest)
-                if (DpsBench.PackCentre is Vector3 pc) target = pc;
-                if (reticle) reticle.transform.position = target;
-                if (!Planted)
-                {
-                    // the gun waits until the swarm is down: until then Left Click plants
-                    if (rt != null) rt.GunBlockedUntil = Time.time + 0.15f;
-                    bool click = inputBank && inputBank.skill1.justPressed && fixedAge >= row.MinDuration;
-                    // test mode plants after a moment; the bench's bot plants as soon as she is up (a player plants before flying off)
-                    if (click || MeltyTest.Active && fixedAge >= 1.2f || DpsBench.Active && (resumed || fixedAge >= RiseTime)) Plant();
-                }
-                // Shift: a Sanguine Retreat, and the flight carries on after it
+                // the gun waits until the stream ends
+                if (rt != null) rt.GunBlockedUntil = Time.time + 0.15f;
+                // Shift: a Sanguine Retreat, and the stream carries on after it
                 var util = skillLocator ? skillLocator.utility : null;
                 var urow = Survivors.RowFor(util);
-                // (test mode blinks once by itself, to check the flight carries on after it; the bench presses keys like a player)
+                // (test mode blinks once by itself, to check it carries on after it; the bench presses keys like a player)
                 bool shift = inputBank && inputBank.skill3.justPressed || MeltyTest.Active && fixedAge >= 2.5f && fixedAge < 2.6f;
                 if (shift && (resumed || fixedAge >= RiseTime) && urow != null && urow.Kind == "bat_blink" && util.stock > 0 && fixedAge < length - 0.3f)
                 {
                     util.DeductStock(1);
                     toBlink = true;
-                    outer.SetNextState(new BatBlink { RowOverride = urow, NoxLeft = Mathf.Max(0.3f, length - fixedAge), NoxPlanted = Planted });
+                    outer.SetNextState(new BatBlink { RowOverride = urow, NoxLeft = Mathf.Max(0.3f, length - fixedAge) });
                     return;
                 }
-                if (fixedAge >= length)
-                {
-                    if (!Planted) Plant();
-                    outer.SetNextStateToMain();
-                }
+                // R again ends it early (the bench presses keys over and over: for it, the stream runs its full time)
+                bool again = !DpsBench.Active && inputBank && inputBank.skill4.justPressed && fixedAge >= row.MinDuration;
+                if (fixedAge >= length || again) { outer.SetNextStateToMain(); return; }
+            }
+            if (reticle) reticle.transform.position = target;
+            if (!(resumed || fixedAge >= RiseTime)) return;
+            if (!stream)
+            {
+                // (life carries the cone's width at her)
+                stream = Vfx.Play(row.Vfx, "stream", Mouth, row.Radius, null, target, 0f, row.Reach);
+                streamFx = stream ? stream.GetComponent<Vfx.NoxStreamFx>() : null;
+                Fx.Sound(row.Id, "reload", characterBody.corePosition);
+            }
+            if (streamFx) streamFx.Aim(Mouth, target);
+            if (fixedAge >= nextTick)
+            {
+                nextTick += row.Interval;
+                Tick();
             }
         }
 
-        void Plant()
+        void Tick()
         {
-            if (Planted) return;
-            Planted = true;
-            Vfx.Stop(reticle, 0.1f); reticle = null;
-            var weapon = EntityStateMachine.FindByCustomName(gameObject, "Weapon");
-            if (weapon) weapon.SetNextState(new NoxPlant { RowOverride = row, Point = target });
+            var inside = Inside();
+            ticks++; bites += inside.Count;
+            if (Server)
+                foreach (var hb in inside)
+                    Fx.Hit(characterBody, hb, row.DamagePct / 100f, row.ProcCoefficient, hb.transform.position,
+                        new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Special });
+            // every machine: the ground pulses where the bats land, and what is caught bursts red
+            if (streamFx) streamFx.Pulse();
+            if (inside.Count > 0)
+            {
+                Fx.Sound(row.Id, "hit", target);
+                foreach (var hb in inside.Take(6)) Vfx.Play(row.Vfx, "hit", hb.transform.position);
+                if (!reported)
+                {
+                    reported = true;
+                    MeltyTest.Report("nox-stream", true, characterBody.baseNameToken);
+                }
+            }
         }
 
         void End()
@@ -400,6 +445,8 @@ namespace DeadlockOfRain.States
             DeadlockAudio.Stop(loop);
             Vfx.Stop(reticle, 0.1f); reticle = null;
             if (hint) Object.Destroy(hint);
+            if (streamFx) streamFx.Release();
+            Vfx.Stop(stream, 1.2f); stream = null;
             var bats = lift ? lift.GetComponentInChildren<BatSwarm>() : null;
             if (bats) bats.Stop(4f);
             Vfx.Stop(lift, 0.5f); lift = null;
@@ -408,16 +455,19 @@ namespace DeadlockOfRain.States
                 floating = false;
                 var gp = characterMotor.gravityParameters; gp.channeledAntiGravityGranterCount--; characterMotor.gravityParameters = gp;
             }
+            if (MeltyTest.Active || DpsBench.Active) Log.Info($"nox nostra: stream done, {ticks} ticks, {bites} bites ({(ticks > 0 ? bites / (float)ticks : 0f):F1} enemies a tick)");
         }
 
         public override void OnExit()
         {
+            bool streamed = stream;
             End();
             if (anim) { anim.StopOverride(); if (!toBlink) anim.Hold(null); }
             if (!toBlink)
             {
                 Sound("end");
-                // the flight is over: her umbrella opens and she drifts down (no fall damage until she lands)
+                if (streamed) Vfx.Play(row.Vfx, "end", target, row.Radius);
+                // it is over: her umbrella opens and she drifts down (no fall damage until she lands)
                 var mr = characterBody.GetComponent<MinaRuntime>();
                 if (mr && isAuthority) mr.AutoFloat = true;
                 if (!Survivors.NoFallDamage(characterBody) && characterBody.GetComponent<SoftLanding>() == null) characterBody.gameObject.AddComponent<SoftLanding>();
@@ -428,129 +478,16 @@ namespace DeadlockOfRain.States
         public override void OnSerialize(NetworkWriter writer)
         {
             base.OnSerialize(writer);
-            writer.Write(Left); writer.Write(Planted);
+            writer.Write(Left);
         }
 
         public override void OnDeserialize(NetworkReader reader)
         {
             base.OnDeserialize(reader);
-            Left = reader.ReadSingle(); Planted = reader.ReadBoolean();
+            Left = reader.ReadSingle();
         }
 
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Frozen;
-    }
-
-    /// <summary>Nox Nostra's swarm planted at Point (the owner's circle, sent with the state): on every machine the bats pour down
-    /// into it (<see cref="NoxSwarm"/>), on the server they bite. A moment on the Weapon machine, then back to the gun.</summary>
-    public sealed class NoxPlant : DlrState
-    {
-        public Vector3 Point;
-
-        public override void OnEnter()
-        {
-            base.OnEnter();
-            Fx.Sound(row.Id, "reload", characterBody.corePosition);
-            var swarm = NoxSwarm.Make(characterBody, row, Point);
-            MeltyTest.Report("nox-planted", true, characterBody.baseNameToken);
-            if (MeltyTest.Active || DpsBench.Active)
-                Log.Info($"nox nostra: planted {Vector3.Distance(characterBody.footPosition, Point):F1} m from her ({characterBody.footPosition.y - Point.y:F1} m above it), {swarm.Count} enemies inside");
-            if (MeltyTest.Active || DpsBench.Active)
-                Log.Info("nox nostra: enemies near the circle (flat m, height m): " + string.Join(" ", Fx.Enemies(characterBody, Point, 25f).Select(h =>
-                {
-                    var b = h.healthComponent.body; var f = (b ? b.footPosition : h.transform.position) - Point;
-                    return $"{new Vector2(f.x, f.z).magnitude:F1}/{f.y:F1}";
-                })));
-        }
-
-        public override void FixedUpdate()
-        {
-            base.FixedUpdate();
-            if (isAuthority && fixedAge >= 0.1f) outer.SetNextStateToMain();
-        }
-
-        public override void OnSerialize(NetworkWriter writer) { base.OnSerialize(writer); writer.Write(Point); }
-        public override void OnDeserialize(NetworkReader reader) { base.OnDeserialize(reader); Point = reader.ReadVector3(); }
-        public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Skill;
-    }
-
-    /// <summary>Nox Nostra's swarm on the ground: dotTime seconds, a circle of radius, reach metres tall (fliers low over it are
-    /// caught too). Every interval everything inside takes damagePct (server). Every machine draws the bats swirling low over it
-    /// and diving at what is inside, and plays the bites.</summary>
-    public sealed class NoxSwarm : MonoBehaviour
-    {
-        CharacterBody owner;
-        SkillRow row;
-        float age, next, nextBite;
-        GameObject fx;
-        BatSwarm bats;
-        int loop;
-
-        public static NoxSwarm Make(CharacterBody owner, SkillRow row, Vector3 at)
-        {
-            var go = new GameObject("DlrNoxSwarm");
-            go.transform.position = at;
-            var s = go.AddComponent<NoxSwarm>();
-            s.owner = owner; s.row = row;
-            s.fx = Vfx.Play(row.Vfx, "swarm", at, row.Radius, null, null, 0f, row.DotTime);
-            s.bats = s.fx ? s.fx.GetComponentInChildren<BatSwarm>() : null;
-            s.loop = DeadlockAudio.Play(Sheet.Sound(row.Id)?.Loop, at, true, Sheet.Sound(row.Id)?.Gain ?? 1f);
-            return s;
-        }
-
-        int bites, ticks;
-        /// <summary>Enemies inside the circle now (the bench and test log it).</summary>
-        public int Count => Inside().Count;
-
-        List<HurtBox> Inside()
-        {
-            var p = transform.position;
-            var list = new List<HurtBox>();
-            foreach (var hb in Fx.Enemies(owner, p + Vector3.up * row.Reach * 0.5f, row.Radius + row.Reach))
-            {
-                var b = hb.healthComponent.body;
-                var at = b ? b.footPosition : hb.transform.position;
-                var flat = at - p; flat.y = 0;
-                if (flat.magnitude > row.Radius + (b ? b.radius * 0.5f : 0f)) continue;
-                if (at.y < p.y - 2f || at.y > p.y + row.Reach) continue;
-                list.Add(hb);
-            }
-            return list;
-        }
-
-        void FixedUpdate()
-        {
-            age += Time.fixedDeltaTime;
-            if (!owner || age >= row.DotTime) { Destroy(gameObject); return; }
-            if (age >= next)
-            {
-                next += row.Interval;
-                var inside = Inside();
-                ticks++; bites += inside.Count;
-                if (NetworkServer.active)
-                    foreach (var hb in inside)
-                        Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, hb.transform.position,
-                            new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Special });
-                // a few bats dive at what is inside, with Deadlock's bite
-                if (inside.Count > 0 && age >= nextBite)
-                {
-                    nextBite = age + 0.5f;
-                    Fx.Sound(row.Id, "hit", transform.position);
-                    foreach (var hb in inside.Take(4))
-                    {
-                        if (bats) bats.Lunge(hb.transform, 2, 0.4f);
-                        Vfx.Play(row.Vfx, "hit", hb.transform.position);
-                    }
-                }
-            }
-        }
-
-        void OnDestroy()
-        {
-            if (MeltyTest.Active || DpsBench.Active) Log.Info($"nox nostra: swarm done, {ticks} ticks, {bites} bites ({(ticks > 0 ? bites / (float)ticks : 0f):F1} enemies a tick)");
-            DeadlockAudio.Stop(loop);
-            if (bats) bats.Stop(5f);
-            Vfx.Stop(fx, 0.6f);
-        }
     }
 
     // ---------------- Mina's item: Mist Form (Q, any survivor) ----------------

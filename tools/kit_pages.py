@@ -88,7 +88,9 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
- 'mina': [('v1.1.0a', ['New hero: Mina, matched to Huntress (Huntress’s stats exactly: the smallest health in Deadlock, the glass cannon of Risk of Rain)',
+ 'mina': [('v1.1.0b', ['Nox Nostra: she hangs still for 5 s and a blood-red stream of bats pours out of her in a cone to wherever you aim, 600 % every 0.5 s to everything inside it; press R again to stop early',
+                        'Mist Form lasts 8 s (was 5) and recharges in 60 s (was 120), with much bigger bat and blood-red effects']),
+          ('v1.1.0a', ['New hero: Mina, matched to Huntress (Huntress’s stats exactly: the smallest health in Deadlock, the glass cannon of Risk of Rain)',
                         'Love Bites: every bullet bites the enemy; 5 bites on one enemy give a jump back, 10 bring Rake 3 s sooner, 20 bring Nox Nostra 10 s sooner',
                         'The umbrella: hold Jump in the air to float down under it, no fall damage; her skirt and hair flutter as she drifts',
                         'Deadlock’s own bats (flapping) for Sanguine Retreat, Nox Nostra’s swarm and Mist Form; her bite mark, marker and Rake cone from Deadlock',

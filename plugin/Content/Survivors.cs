@@ -103,7 +103,7 @@ namespace DeadlockOfRain
         /// <summary>Movement skills run on the Body machine (they steer the character), everything else on Weapon.</summary>
         public static string MachineFor(string kind) =>
             kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "ult_devil" || kind == "goo_cube" || kind == "banner_leap" || kind == "storm_flight" || kind == "bashdown" || kind == "rising_ram" || kind == "ult_chains" ||
-            kind == "bat_blink" || kind == "nox_flight" || kind == "ult_mist" ? "Body" : "Weapon";
+            kind == "bat_blink" || kind == "nox_stream" || kind == "ult_mist" ? "Body" : "Weapon";
 
         /// <summary>The hero never takes fall damage (heroes.json noFallDamage: Viscous). Moves that switch fall damage off for a while
         /// (Seismic Impact, Goo Ball) leave it off for such a hero when they end.</summary>

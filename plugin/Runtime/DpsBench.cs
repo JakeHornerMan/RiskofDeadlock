@@ -84,7 +84,7 @@ namespace DeadlockOfRain
         /// <summary>The pack enemy the bench aims at now.</summary>
         public static CharacterBody Aimed;
         static DpsBench current;
-        /// <summary>Where a bot puts an area move it aims (Nox Nostra's circle): the middle of the live pack, on the ground, as a
+        /// <summary>Where a bot puts an area move it aims (where Nox Nostra's cone lands): the middle of the live pack, on the ground, as a
         /// player centres a circle on a pack; null when no bench runs.</summary>
         public static Vector3? PackCentre
         {
