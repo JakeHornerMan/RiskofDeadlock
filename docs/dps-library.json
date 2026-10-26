@@ -1676,22 +1676,18 @@
     "special": "Nox Nostra"
    },
    "hero": true,
-   "measuredOn": "v1.1.0a",
+   "measuredOn": "v1.1.0b",
    "dps": {
     "all": {
      "runs": [
-      1632,
-      1500,
-      1292
+      3098
      ],
-     "mean": 1475,
-     "min": 1292,
-     "max": 1632
+     "mean": 3098,
+     "min": 3098,
+     "max": 3098
     },
     "primary": {
      "runs": [
-      252,
-      252,
       252
      ],
      "mean": 252,
@@ -1700,18 +1696,14 @@
     },
     "secondary": {
      "runs": [
-      27,
-      53,
       27
      ],
-     "mean": 36,
+     "mean": 27,
      "min": 27,
-     "max": 53
+     "max": 27
     },
     "utility": {
      "runs": [
-      0,
-      0,
       0
      ],
      "mean": 0,
@@ -1720,23 +1712,19 @@
     },
     "special": {
      "runs": [
-      1405,
-      1630,
-      1280
+      2580
      ],
-     "mean": 1438,
-     "min": 1280,
-     "max": 1630
+     "mean": 2580,
+     "min": 2580,
+     "max": 2580
     },
     "equipment": {
      "runs": [
-      1200,
-      1200,
-      1200
+      2050
      ],
-     "mean": 1200,
-     "min": 1200,
-     "max": 1200
+     "mean": 2050,
+     "min": 2050,
+     "max": 2050
     }
    }
   }

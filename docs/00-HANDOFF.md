@@ -275,7 +275,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 ## 9. Last work: Mina v1.1.0b, Nox Nostra stream and Mist Form (2026-10-26, branch `mina`)
 - Creator's feedback: Nox Nostra without flight controls, 5 s, a movable target, a blood-red cone of bats streaming out of her, damage every 0.5 s in the cone, doubled damage (asked: 600 % every 0.5 s), R again cancels with a HUD hint; Mist Form 8 s, 60 s cooldown, far bigger effects.
 - New kind `nox_stream` (`NoxStream`, replaces `nox_flight`/`NoxPlant`/`NoxSwarm`), `Vfx.NoxStreamFx`, `FlightHint` cancel mode; sheets, test check `nox-stream`.
-- Preflight clean, plugin builds. **Not tested in game or benched** (creator: code only): owed `run_test.sh mina`, a Mina bench, the ult bench for Mist Form, and her page and the overview republished (`kit_pages.py` updated). Expect Nox Nostra to lift her above Huntress's band.
+- Preflight clean, plugin builds. **Not tested in game** (creator: code only): `run_test.sh mina` owed. Benched afterwards at the creator's request: all 3098 vs Huntress 1921 (**above, +1177**; Nox Nostra 2580 alone), Mist Form 100,500 % (29 hit); library (VERSION v1.1.0b) and `docs/ult-bench.txt` updated. Her page and the overview not republished yet.
 
 ## 9-prev27. Mina, the tenth hero (2026-10-26, v1.1.0a, branch `mina`)
 - From the creator's spec (doc 07 has the request): sheets, extractor 1.9.0 (morph poses), `MinaRuntime`, `BatFlock`, `VfxMina`, `States/Mina.cs`, `TestMina`; cache rebuilt 10/10.

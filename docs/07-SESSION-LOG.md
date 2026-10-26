@@ -1370,3 +1370,11 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** preflight clean, plugin builds (0 errors). No game run.
 **Not done / open:** `run_test.sh mina`, a Mina bench and Mist Form's ult bench; republish Mina's page and the overview; the creator's play of the new look.
 **Lessons:** none new.
+
+### 2026-10-26 · Benches for Wraith and Mina (and their ults) · branch `mina` (Mina), main (Wraith)
+**Request (verbatim):** "run dps test on both mina and wraith also run the test for thier Ultimate · Q equipment"
+**Questions asked → answers:** none.
+**Done:** `run_bench.sh 30 mina` and `ULTS=1 run_bench.sh 30 mina` from this folder (Wraith's from `main`, recorded there). Library merged (VERSION v1.1.0b), Mina's line in `docs/ult-bench.txt`, docs 00, 05, 06.
+**Results:** Mina all 3098 vs Huntress 1921 (above, +1177), Nox Nostra 2580 alone, New Money 252; Mist Form 100,500 % (29 hit, boss 5700 %). Wraith (main): 937 vs Bandit 1919 (below), Telekinesis 78,000 %.
+**Not done / open:** `run_test.sh mina`; pages not republished; balance is the creator's call.
+**Lessons:** none new.
