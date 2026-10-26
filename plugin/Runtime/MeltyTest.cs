@@ -1420,9 +1420,10 @@ namespace DeadlockOfRain
                 Report("reload-time", reloadOk, body.baseNameToken);
                 if (!reloadOk) why[0] += $"reload-time: {reloaded:F2} s, sheet {gunRow.ReloadTime:F1} s; ";
                 bool off = !States.GunState.FullAutoOn(body);
-                float plain = gunRow.ClipSize * gunRow.Interval;
-                Log.Info($"Melty test: {hero.Id} full auto: magazine {filled}/{gunRow.ClipSize}, buff {on}, emptied in {spent:F2} s (plain gun {plain:F2} s), buff off after the reload {off}");
-                if (filled != (int)gunRow.ClipSize || !on) why[0] += $"{fa.Id}: magazine {filled}, buff {on}; ";
+                int mag = (int)(fa.ClipSize > 0 ? fa.ClipSize : gunRow.ClipSize);
+                float plain = mag * gunRow.Interval;
+                Log.Info($"Melty test: {hero.Id} full auto: magazine {filled}/{mag}, buff {on}, emptied in {spent:F2} s (plain gun {plain:F2} s), buff off after the reload {off}");
+                if (filled != mag || !on) why[0] += $"{fa.Id}: magazine {filled}, buff {on}; ";
                 if (spent < 0f || spent > plain * 0.85f) why[0] += $"{fa.Id}: magazine emptied in {spent:F2} s, plain {plain:F2} s; ";
                 if (!off) why[0] += $"{fa.Id}: buff still on after the reload; ";
                 yield return new WaitForSeconds(gunRow.ReloadTime + 0.3f);

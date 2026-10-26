@@ -1371,3 +1371,11 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **After:** live 2026-10-26 11:15 UTC; `discord_update.py 1.0.2` posted; `fix-1.0.2` merged into main (teasers.json empty there, Mina is a hero; gen reads the sheet's `types`); cache rebuilt 10/10 with main's manifest (local extractor 1.9.0); main's dev build with every hero on the Steam copy, BepInEx on.
 **Not done / open:** watch `player_logs` for the hang on 1.0.2 (the new log lines say where a start stalls).
 **Lessons:** the newest log line a frozen player sends tells you where it stopped: compare it with this PC's log order. Never block on Addressables while RoR2 loads.
+
+### 2026-10-26 · Wraith feedback: Project Mind 75 m, Full Auto double magazine · v1.0.1c (not released) · main
+**Request (verbatim):** "feedback on wraith! Project Mind increase range to 75 meteres, Full Auto let double the ammo in the clip". Then: "please do not run any tests just code changes!"
+**Questions asked → answers:** none.
+**Done:** `wraith_mind` range 75 (description too); `wraith_fullauto` `clipSize` 104, and `FullAuto` loads the row's `clipSize` (0 = the gun's) instead of the gun's; MeltyTest's full-auto check expects that magazine and times it against it. Docs 00, 02, 05 §0 (flag), 06, kit_pages.py.
+**Results:** preflight clean, plugin builds (0 errors). No game run.
+**Not done / open:** `run_test.sh wraith`, a Wraith bench, republishing the pages. The ammo counter reads `104/52` during Full Auto.
+**Lessons:** `main` is checked out in `../RiskofDeadlock-wraith`; the main folder was on the old `fix-1.0.2` branch: check the branch before editing.
