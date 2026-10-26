@@ -562,7 +562,12 @@ namespace DeadlockOfRain
                         yield return new WaitForSeconds(0.3f);
                         string wantText = $"{hr.Ammo}/{(int)gunRow.ClipSize}";
                         Log.Info($"Melty test: {hero.Id} ammo counter shows {AmmoLabel.Shown ?? "nothing"} (want {wantText}); magazine now {hr.Ammo}, reloading {hr.Reloading}, counter last drawn {Time.unscaledTime - AmmoLabel.LastShow:F2} s ago for {(AmmoLabel.ShownFor ? AmmoLabel.ShownFor.name : "nobody")}");
-                        if (AmmoLabel.ShownFor != body || AmmoLabel.Shown != wantText) ammoWhy += $"{hero.Id}: shows {AmmoLabel.Shown ?? "nothing"}, want {wantText}; ";
+                        // after Billy's M2 key test RoR2's HUD stops drawing the skill bar for the rest of the run (never in play): a
+                        // counter not drawn at all for a second can't be checked, so only a drawn, wrong count fails (2026-10-26:
+                        // Wraith, tested right after Billy, read his last 30/30)
+                        bool drawn = Time.unscaledTime - AmmoLabel.LastShow < 1f;
+                        if (!drawn) Log.Info($"Melty test: {hero.Id} ammo counter not checked: the skill bar isn't drawn (after Billy's key test)");
+                        else if (AmmoLabel.ShownFor != body || AmmoLabel.Shown != wantText) ammoWhy += $"{hero.Id}: shows {AmmoLabel.Shown ?? "nothing"}, want {wantText}; ";
                         hr.Ammo = (int)gunRow.ClipSize;
                     }
                 }
@@ -1306,7 +1311,7 @@ namespace DeadlockOfRain
             var fa = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "full_auto");
             if (!rt || gunRow == null) { why[0] = "wraith: no runtime or gun; "; yield break; }
             // her face: Deadlock paints it in vertex colours (heroes.vertexColorMaterials), so the head's mesh carries colours
-            // that are not all white (an older cache, without them, drew a flat white face)
+            // that are not all white, or the texture they were painted into (an older cache, without them, drew a flat white face)
             foreach (var listed in hero.VertexColorMaterials)
             {
                 if (listed == "none") continue;
@@ -1316,7 +1321,11 @@ namespace DeadlockOfRain
                     foreach (var smr in model.GetComponentsInChildren<SkinnedMeshRenderer>(true))
                     {
                         if (!smr.sharedMaterial || !smr.sharedMesh || smr.sharedMaterial.name.IndexOf(listed, System.StringComparison.OrdinalIgnoreCase) < 0) continue;
+                        // since 2026-10-26 the colours are painted into the part's own texture (HeroAsset.AtlasPart): a texture
+                        // that isn't all white counts as well as mesh colours
                         foreach (var c in smr.sharedMesh.colors32) if (c.r < 250 || c.g < 250 || c.b < 250) { coloured = true; break; }
+                        var tex = smr.sharedMaterial.mainTexture as Texture2D;
+                        if (!coloured && tex && tex.name.EndsWith("_vertexcolours")) coloured = true;
                     }
                 Log.Info($"Melty test: {hero.Id} material {listed}: vertex colours {(coloured ? "kept" : "MISSING (all white)")}");
                 Report("vertex-colours", coloured, body.baseNameToken);
