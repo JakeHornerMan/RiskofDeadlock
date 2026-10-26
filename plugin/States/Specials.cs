@@ -397,7 +397,8 @@ namespace DeadlockOfRain.States
             {
                 bool pad = user.eventSystem && user.eventSystem.currentInputSource == RoR2.UI.MPEventSystem.InputSource.Gamepad;
                 h.up = pad ? "Jump" : Key(user, RewiredConsts.Action.Jump) ?? "Space";
-                h.down = pad ? "Sprint" : Key(user, RewiredConsts.Action.Sprint) ?? "Shift";
+                // the flights sink on Utility or Sprint: the hint names the Utility key (Shift by default)
+                h.down = pad ? "Sprint" : Key(user, RewiredConsts.Action.UtilitySkill) ?? Key(user, RewiredConsts.Action.Sprint) ?? "Shift";
                 h.special = pad ? "Special" : Key(user, RewiredConsts.Action.SpecialSkill) ?? "R";
             }
             catch (System.Exception e) { Log.Warn("flight hint keys: " + e.Message); }

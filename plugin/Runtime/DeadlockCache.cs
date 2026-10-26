@@ -341,6 +341,12 @@ namespace DeadlockOfRain
                 parts = new Mesh[Submeshes.Count];
                 for (int s = 0; s < Submeshes.Count; s++)
                 {
+                    int sm = Submeshes[s].Key;
+                    if (AtlasVertexColors && Colors != null && sm >= 0 && sm < Materials.Length && Materials[sm].VertexColor)
+                    {
+                        var atlas = AtlasPart(s, bp);
+                        if (atlas) { parts[s] = atlas; continue; }
+                    }
                     var src = Submeshes[s].Value;
                     var map = new Dictionary<int, int>();
                     var idx = new int[src.Length];
@@ -372,6 +378,72 @@ namespace DeadlockOfRain
                 }
                 return parts;
             }
+        }
+
+        /// <summary>Set by ModelBuilder for a hero before Parts is read: a vertex-coloured material's part gets its own texture
+        /// (<see cref="AtlasPart"/>).</summary>
+        public bool AtlasVertexColors;
+        readonly Dictionary<int, Texture2D> atlases = new Dictionary<int, Texture2D>();
+
+        /// <summary>The texture <see cref="AtlasPart"/> painted for this material, or null.</summary>
+        public Texture2D VertexColorAtlas(MaterialDef def)
+        {
+            int m = Array.IndexOf(Materials, def);
+            return m >= 0 && atlases.TryGetValue(m, out var t) ? t : null;
+        }
+
+        /// <summary>A material Deadlock colours by its vertices (Wraith's face: a 1 × 1 white texture, her skin, lips and eye paint
+        /// in the vertex colours) as a part whose every triangle has its own small square of a new texture, painted with that
+        /// triangle's three vertex colours blended across it: exactly Deadlock's look, whatever the shader does with vertex
+        /// colours (RoR2's showed none: her face stayed white; creator, 2026-10-26). The model's own UVs can't be used, its face
+        /// halves and hair share them. The file's colours are linear (glTF), the texture sRGB. Null when it would need more
+        /// than 4096 px.</summary>
+        Mesh AtlasPart(int s, Matrix4x4[] bp)
+        {
+            var src = Submeshes[s].Value;
+            int mat = Submeshes[s].Key, tris = src.Length / 3;
+            const int cell = 4;
+            int size = Mathf.NextPowerOfTwo(Mathf.CeilToInt(Mathf.Sqrt(tris)) * cell);
+            if (tris == 0 || size > 4096) return null;
+            int perRow = size / cell;
+            var px = new Color32[size * size];
+            var pos = new Vector3[tris * 3]; var nrm = new Vector3[tris * 3]; var uv = new Vector2[tris * 3];
+            var bw = new BoneWeight[tris * 3]; var idx = new int[tris * 3]; var cols = new Color32[tris * 3];
+            for (int t = 0; t < tris; t++)
+            {
+                int cx = t % perRow * cell, cy = t / perRow * cell;
+                var c = new Color[3];
+                for (int k = 0; k < 3; k++)
+                {
+                    int v = src[t * 3 + k], o = t * 3 + k;
+                    pos[o] = Positions[v]; nrm[o] = Normals[v]; bw[o] = Weights[v]; idx[o] = o; cols[o] = new Color32(255, 255, 255, 255);
+                    c[k] = Colors[v];
+                }
+                // the triangle's corners on pixel centres in its cell: A low left, B low right, C top left
+                uv[t * 3] = new Vector2(cx + 0.5f, cy + 0.5f) / size;
+                uv[t * 3 + 1] = new Vector2(cx + cell - 0.5f, cy + 0.5f) / size;
+                uv[t * 3 + 2] = new Vector2(cx + 0.5f, cy + cell - 0.5f) / size;
+                for (int y = 0; y < cell; y++)
+                    for (int x = 0; x < cell; x++)
+                    {
+                        float wb = x / (cell - 1f), wc = y / (cell - 1f);
+                        if (wb + wc > 1f) { float k = wb + wc; wb /= k; wc /= k; }
+                        var col = c[0] * (1f - wb - wc) + c[1] * wb + c[2] * wc;
+                        col.a = 1f;
+                        px[(cy + y) * size + cx + x] = col.gamma;
+                    }
+            }
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { name = Materials[mat].Name + "_vertexcolours", wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            tex.SetPixels32(px);
+            tex.Apply(false, true);
+            atlases[mat] = tex;
+            var mesh = new Mesh { name = Path.GetFileName(Dir) + "_part" + s + "_vc", indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+            mesh.vertices = pos; mesh.normals = nrm; mesh.uv = uv; mesh.colors32 = cols;
+            mesh.boneWeights = bw; mesh.bindposes = bp;
+            mesh.SetTriangles(idx, 0, true);
+            mesh.RecalculateTangents();
+            mesh.UploadMeshData(false);
+            return mesh;
         }
 
         public Texture2D Texture(string file, bool linear)

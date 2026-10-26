@@ -161,6 +161,7 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
 ---
 
 ## 7. Lessons from past sessions (things that cost time)
+- **RoR2's standard shader ignores mesh vertex colours** (2026-10-26, Wraith's face): `_ColorsOn` 1 and `VERTEXCOLOR` changed nothing; a hero's vertex-coloured material is painted into its own texture (`HeroAsset.AtlasPart`). Check a render (`PORTRAITS=1 run_bench.sh 0 <hero>`) before trusting a shader flag.
 - **`run_test.sh` / `run_bench.sh` can leave our game copy running** (2026-10-26, twice): before the next run, `tasklist`; if the PID is in `%LOCALAPPDATA%\DeadlockOfRain\lab-game-pids.txt` it is ours: `lab_restore.sh`. A skill longer than 7 s needs its kind in MeltyTest's long-window list.
 - **An aimed area move needs the DPS bench bot to aim it** (2026-10-26, Mina's Nox Nostra): the bot aims at the nearest enemy's chest, so a circle planted from the air landed behind the pack (or on a stray monster 28 m off); runs swung 429-1514. Plant on `DpsBench.PackCentre`, keep the bot from mashing a move into cutting itself short, and take three runs (`REPEAT=3`) before tuning.
 - **A flat white hero face can be vertex colours** (2026-10-26, Wraith): dump the vmat first (`F_VERTEX_COLOR`, a 1 × 1 white `g_tColor`); heroes keep vertex colours only for `heroes.vertexColorMaterials`.
@@ -274,6 +275,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 ---
 
 ## 9. Last work: Mina v1.1.0b, Nox Nostra stream and Mist Form (2026-10-26, branch `mina`)
+- **v1.1.0c+ (latest):** Mist Form sinks on Shift (Utility) as well as Sprint, hint names Shift; Wraith's face finally dark (vertex colours painted into a per-triangle texture, `HeroAsset.AtlasPart`: RoR2's shader never showed vertex colours); benches: Mina 2644 vs Huntress 1921 (above), Wraith 2426 vs Bandit 1919 (+507, just above), ults Mist Form 115,200 %, Telekinesis 93,000 %; library VERSION v1.1.0c; pages republished.
 - **v1.1.0c (latest):** Wraith's card trick splashes 7 m (crit = `wraithmark`, `markCrit` column), Project Mind 60 m, refund documented (M2 text, page tile); Mina's Rake 1000 % with a slash per hit and the area at her height, umbrella opens whenever Jump is held in the air (0.8 air control, +50 % speed: new column `floatMoveSpeedMult`), reload keeps the umbrella hand while floating (gesture mask). Built and installed, not tested (the creator plays it); pages republished.
 - **Latest:** Wraith takes no fall damage from the drop after Project Mind (`MindTravel.OnExit` + `SoftLanding`, until she lands); other falls hurt. Built and installed in the Steam copy, not tested (the creator tests it in play).
 - **Since:** `main` (Wraith v1.0.1c) merged into `mina`, so this branch has both; `run_test.sh` Wraith and Mina every check pass (Mina after `MeltyTest` gave `ult_mist` its full duration as the test window); Mina's, Wraith's and the overview pages republished (Mina's and Wraith's still private: the creator shares them); the Steam copy has this branch's build, all ten heroes, cache 10/10, BepInEx on.

@@ -52,6 +52,8 @@ namespace DeadlockOfRain
                 }
 
             // one skinned renderer per material: RoR2's CharacterModel drives exactly one material per renderer
+            // a vertex-coloured material (Wraith's face) gets its own painted texture (HeroAsset.AtlasPart)
+            asset.AtlasVertexColors = true;
             var parts = asset.Parts;
             var infos = new List<CharacterModel.RendererInfo>();
             // heroes.splitMeshes (Rat King's ammo belt): parts named "<material>@<mesh>", drawn one at a time by AmmoBelt
@@ -72,7 +74,7 @@ namespace DeadlockOfRain
                 smr.bones = bones;
                 smr.rootBone = armature;
                 smr.updateWhenOffscreen = true;
-                var mat = MakeMaterial(asset, def);
+                var mat = MakeMaterial(asset, def, true);
                 smr.sharedMaterial = mat;
                 smr.shadowCastingMode = ShadowCastingMode.On;
                 infos.Add(new CharacterModel.RendererInfo { renderer = smr, defaultMaterial = mat, defaultShadowCastingMode = ShadowCastingMode.On, ignoreOverlays = false });
@@ -244,7 +246,8 @@ namespace DeadlockOfRain
 
         static bool vcLogged;
 
-        internal static Material MakeMaterial(HeroAsset asset, MaterialDef def)
+        /// <param name="hero">a hero's model: a vertex-coloured material takes the texture its part was painted with</param>
+        internal static Material MakeMaterial(HeroAsset asset, MaterialDef def, bool hero = false)
         {
             Material m = Template ? new Material(Template) : new Material(Shader.Find("Standard"));
             m.name = "matDeadlock_" + def.Name;
@@ -253,6 +256,11 @@ namespace DeadlockOfRain
                 if (k.Contains("LIMB") || k.Contains("SPLATMAP") || k.Contains("FLOWMAP") || k.Contains("VERTEX") || k.Contains("FORCE_SPEC") || k.Contains("SKIN"))
                     m.DisableKeyword(k);
             var albedo = asset.Texture(def.Albedo, false);
+            // a material coloured by its vertices (Wraith's face): the texture its part was painted with (HeroAsset.AtlasPart),
+            // since RoR2's shader showed none of the vertex colours
+            bool baked = false;
+            var atlas = hero && def.VertexColor ? asset.VertexColorAtlas(def) : null;
+            if (atlas) { albedo = atlas; baked = true; Log.Info($"vertex colours of {def.Name} painted into a {atlas.width} px texture, one square per triangle"); }
             if (albedo)
             {
                 m.mainTexture = albedo;
@@ -269,7 +277,7 @@ namespace DeadlockOfRain
             // def.Emission (Deadlock's self-illumination) is read but not used: Deadlock lights only the masked part of a
             // material, and the mask isn't exported, so a whole-material glow would light the slime (or a hero) all over
             // a material Deadlock colours by its vertices (the banner's earth and garbage): the shader's vertex colours on
-            if (def.VertexColor)
+            if (def.VertexColor && !baked)
             {
                 if (m.HasProperty("_ColorsOn")) m.SetFloat("_ColorsOn", 1f);
                 m.EnableKeyword("VERTEXCOLOR");

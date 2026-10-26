@@ -556,7 +556,9 @@ namespace DeadlockOfRain.States
                 else
                 {
                     var move = inputBank ? inputBank.moveVector : Vector3.zero;
-                    bool sink = inputBank && inputBank.rawSprintInput.down;
+                    // Jump (Space) climbs; Shift sinks: the Utility key, or the Sprint key itself (rawSprintInput), as in Storm Cloud
+                    // (creator, 2026-10-26: Shift did nothing when Sprint was bound elsewhere)
+                    bool sink = inputBank && (inputBank.rawSprintInput.down || inputBank.skill3.down);
                     int dir = (inputBank && inputBank.jump.down ? 1 : 0) - (sink ? 1 : 0);
                     v = new Vector3(move.x * row.Speed, dir * row.Speed, move.z * row.Speed);
                 }

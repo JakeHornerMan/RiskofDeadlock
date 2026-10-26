@@ -641,7 +641,9 @@ the source values. The RoR2-scale numbers next to them are our own balance (doc 
 - **Face (2026-10-26, extractor 1.8.1):** `wraith_head.vmat` (pbr.vfx, NPR) has `F_VERTEX_COLOR` 1, `g_fVertexColorStrength1` 1 and a 1 × 1 white
   `g_tColor` (`TextureColor1` white): Deadlock paints her face in **vertex colours**. Heroes used to be written without vertex colours,
   so the face came out flat white. `heroes.vertexColorMaterials` (`["wraith_head"]`) now keeps them for that material only (manifest
-  `vertexColors`); no other material setting reaches a hero. (`heroes_staging/wraith_magician` has a 512 px painted face: an old
+  `vertexColors`); no other material setting reaches a hero. The colours are right in the cache (average linear RGB 0.27 / 0.21 / 0.19,
+  dark brown), but RoR2's shader never showed vertex colours, so she stayed white until the plugin painted them into a texture
+  (2026-10-26, doc 02 §4, `HeroAsset.AtlasPart`); no new extractor needed. (`heroes_staging/wraith_magician` has a 512 px painted face: an old
   prototype head, not this model's.)
 - **Particle textures (effects kind `texture`, v1.0.1a, no new extractor):** the extractor's icon export reads any `.vtex`, so these
   are listed as images (`gen.py` adds every texture row's path to `manifest.images`) and land in `cache/images/` (≤ 512 px PNG):

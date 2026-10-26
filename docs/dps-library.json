@@ -1603,15 +1603,15 @@
     "special": "Full Auto"
    },
    "hero": true,
-   "measuredOn": "v1.0.1c",
+   "measuredOn": "v1.1.0c",
    "dps": {
     "all": {
      "runs": [
-      937
+      2426
      ],
-     "mean": 937,
-     "min": 937,
-     "max": 937
+     "mean": 2426,
+     "min": 2426,
+     "max": 2426
     },
     "primary": {
      "runs": [
@@ -1623,11 +1623,11 @@
     },
     "secondary": {
      "runs": [
-      207
+      1413
      ],
-     "mean": 207,
-     "min": 207,
-     "max": 207
+     "mean": 1413,
+     "min": 1413,
+     "max": 1413
     },
     "utility": {
      "runs": [
@@ -1647,11 +1647,11 @@
     },
     "equipment": {
      "runs": [
-      1400
+      1600
      ],
-     "mean": 1400,
-     "min": 1400,
-     "max": 1400
+     "mean": 1600,
+     "min": 1600,
+     "max": 1600
     }
    }
   },
@@ -1676,31 +1676,31 @@
     "special": "Nox Nostra"
    },
    "hero": true,
-   "measuredOn": "v1.1.0b",
+   "measuredOn": "v1.1.0c",
    "dps": {
     "all": {
      "runs": [
-      3098
+      2644
      ],
-     "mean": 3098,
-     "min": 3098,
-     "max": 3098
+     "mean": 2644,
+     "min": 2644,
+     "max": 2644
     },
     "primary": {
      "runs": [
-      252
+      249
      ],
-     "mean": 252,
-     "min": 252,
-     "max": 252
+     "mean": 249,
+     "min": 249,
+     "max": 249
     },
     "secondary": {
      "runs": [
-      27
+      367
      ],
-     "mean": 27,
-     "min": 27,
-     "max": 27
+     "mean": 367,
+     "min": 367,
+     "max": 367
     },
     "utility": {
      "runs": [
@@ -1712,19 +1712,19 @@
     },
     "special": {
      "runs": [
-      2580
+      2500
      ],
-     "mean": 2580,
-     "min": 2580,
-     "max": 2580
+     "mean": 2500,
+     "min": 2500,
+     "max": 2500
     },
     "equipment": {
      "runs": [
-      2050
+      2310
      ],
-     "mean": 2050,
-     "min": 2050,
-     "max": 2050
+     "mean": 2310,
+     "min": 2310,
+     "max": 2310
     }
    }
   }

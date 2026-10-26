@@ -3968,7 +3968,7 @@
       "slot": "equipment",
       "deadlockAbility": "upgrade_ethereal_shift",
       "name": "Mist Form",
-      "description": "Burst into a flock of furious bats for <style=cIsUtility>8s</style>: <style=cIsUtility>untouchable</style>, flying freely (Jump climbs, Sprint sinks). Every enemy the flock passes through takes <style=cIsDamage>300% damage</style> (again every 0.5s); when it ends (or Q again) you reform in a <style=cIsDamage>3000%</style> burst of bats within <style=cIsUtility>15m</style>.",
+      "description": "Burst into a flock of furious bats for <style=cIsUtility>8s</style>: <style=cIsUtility>untouchable</style>, flying freely (Jump climbs, Shift sinks). Every enemy the flock passes through takes <style=cIsDamage>300% damage</style> (again every 0.5s); when it ends (or Q again) you reform in a <style=cIsDamage>3000%</style> burst of bats within <style=cIsUtility>15m</style>.",
       "kind": "ult_mist",
       "icon": "panorama/images/items/spirit/ethereal_shift_psd.vtex",
       "damagePct": 300,
