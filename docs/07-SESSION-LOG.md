@@ -1410,3 +1410,11 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** Wraith every check pass (Full Auto 104/104, Project Mind flight 1.02 s). Mina: first run failed only `mina-plays` ("no runtime or gun": the kit check began while the 8 s Mist Form still locked her skills); after the window fix `run_test.sh mina` 1/1 every check pass (Nox Nostra stream 9 ticks, Love Bites, umbrella, Mist Form on Commando).
 **Not done / open:** the creator shares Mina's and Wraith's pages ("Anyone with the link"); Mina sits above Huntress's band (3098 vs 1921), the creator's call; `mina` not merged back into `main` yet.
 **Lessons:** doc 00 §7 (our test copy can be left running; long skills need the long test window).
+
+### 2026-10-26 · Wraith: no fall damage after Project Mind · branch `mina`
+**Request (verbatim):** "mkae wraith take no fall damage after Project Mind but this character can take fall damage regularly!" Then: "do not run any tests, i will tets it on my game"
+**Questions asked → answers:** none.
+**Done:** `MindTravel.OnExit` sets `IgnoreFallDamage` and adds `SoftLanding` (the guard Mina's umbrella uses), cleared once she is on the ground; Wraith keeps `noFallDamage` false. Docs 00, 02, 05 §0, 06.
+**Results:** plugin builds (0 errors); copied into the Steam copy. No game run.
+**Not done / open:** the creator's play-check.
+**Lessons:** none new.

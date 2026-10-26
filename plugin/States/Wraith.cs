@@ -321,6 +321,13 @@ namespace DeadlockOfRain.States
                 Fx.Sound(row.Id, "hit", To);
                 if (anim) { anim.Gesture("utility", 1.5f); if (anim.Springs) anim.Springs.Reset(); }
                 if (Server) characterBody.ClearTimedBuffs(RoR2Content.Buffs.HiddenInvincibility);
+                // no fall damage from the drop after it (a spot in the air), until she next lands; other falls hurt as usual
+                // (creator, 2026-10-26)
+                if (!Survivors.NoFallDamage(characterBody) && characterBody.GetComponent<SoftLanding>() == null)
+                {
+                    characterBody.bodyFlags |= CharacterBody.BodyFlags.IgnoreFallDamage;
+                    characterBody.gameObject.AddComponent<SoftLanding>();
+                }
                 MeltyTest.Report("mind-travel", true, characterBody.baseNameToken);
             }
             base.OnExit();
