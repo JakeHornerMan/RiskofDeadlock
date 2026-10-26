@@ -25,6 +25,7 @@
   during test_release). Dev screenshots: create %LOCALAPPDATA%\DeadlockOfRain\devshots.
 
 ## Balance
+- 1.0.1b (2026-10-26, not released): Wraith's reload 2 → 3 s (her clip), Project Mind a 1 s untouchable flight, face in vertex colours (extractor 1.8.1). Not benched yet.
 - 1.0.1a (2026-10-25, not released): Wraith rework: The Rake 72 %, Card Trick 4 cards / 10 s steered by the crosshair, 5 Rake hits = 1 s off, Telekinesis 100 s thrown at full rise, kill-zone kills credited; Deadlock's Wraith particle textures read as images (effects kind texture). Bench 944 vs Bandit 1919 (below, was 517); ult bench 60,000 % (10 hit).
 - 0.8.0 (2026-10-20, not released): Viscous, matched to REX. 0.8.0b after the creator's first play: Puddle Punch 800 % and a cel-goo fist, Goo Ball 15 s with 70 % grip, Splatter through enemies onto the floor, The Cube frozen in a goo block, goo head in a glass helmet, landing shake 0.2. 0.8.0c: base damage 15 +3, Cube burst 600 %. Bench 2236 vs REX 1738 (inside, just; +25 % real damage from the base damage).
 - 0.8.0d (2026-10-20): puddles 10 s + 20 s shrink and +20 rounds per new puddle (puddleAmmo, HeroRuntime.GiveAmmo), The Cube leaves a 10 m puddle (extra = viscous_splatter), BigSplash for Splatter and the Cube, base damage back to 12, Goo Ball 75 % and grip -0.5, voiceGain 1.2. Bench 2422 vs REX 1738 (above, +684).

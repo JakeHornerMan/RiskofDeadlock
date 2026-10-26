@@ -36,7 +36,7 @@ Related documents:
 | NLayer (MP3 decoder) | 1.16.0 | `extractor/DeadlockExtract.csproj` |
 | .NET SDK for the extractor | **net10.0**. VRF 20 needs it; net8 does not compile against it. | csproj `TargetFramework` |
 | SharpGLTF, SkiaSharp, ValvePak, ValveKeyValue | transitive deps of VRF | `THIRD-PARTY-NOTICES.txt` |
-| Extractor version | `1.8.0` (1.8.0: `--heroes a,b` reads only those heroes and what they own (manifest `owners`, from `gen.py`), keeps heroes already read with the same stamp, and is about 15x faster: `anim.Duration` was read per frame per bone, and SharpGLTF works it out from every channel's keys on each read (Abrams 9.5 min → 14 s, all nine heroes 2 min; output byte-identical); the glTF exporter's progress lines go to the log; 1.7.0: plain-words progress lines for Melty's setup screen, the hero's display name from the manifest; 1.6.2: voice takes named by Deadlock's take number, every take for `voiceAllTakes` groups; 1.6.1: DLM2, each material's Deadlock tint, cut-out, glow and vertex colours; `Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1, 1.4.0 the heroes.vdata model lookup, 1.5.0 effect models (props), 1.6.0 props with meshes, skeleton and clips, and split hero meshes) | `extractor/Program.cs`; also part of the cache stamp |
+| Extractor version | `1.8.1` (1.8.1: a hero's `vertexColors` materials keep Deadlock's vertex colours (Wraith's face; local build only, the GitHub tag comes with the next release); 1.8.0: `--heroes a,b` reads only those heroes and what they own (manifest `owners`, from `gen.py`), keeps heroes already read with the same stamp, and is about 15x faster: `anim.Duration` was read per frame per bone, and SharpGLTF works it out from every channel's keys on each read (Abrams 9.5 min → 14 s, all nine heroes 2 min; output byte-identical); the glTF exporter's progress lines go to the log; 1.7.0: plain-words progress lines for Melty's setup screen, the hero's display name from the manifest; 1.6.2: voice takes named by Deadlock's take number, every take for `voiceAllTakes` groups; 1.6.1: DLM2, each material's Deadlock tint, cut-out, glow and vertex colours; `Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1, 1.4.0 the heroes.vdata model lookup, 1.5.0 effect models (props), 1.6.0 props with meshes, skeleton and clips, and split hero meshes) | `extractor/Program.cs`; also part of the cache stamp |
 
 A Deadlock update can change asset paths, clip names, mesh names or sound event names. **Section 9** explains how to
 re-validate everything after an update.
@@ -421,7 +421,7 @@ emission = `g_vSelfIllumTint1` × `g_flSelfIllumScale1` when `F_SELF_ILLUM`; the
 Rat King's banner: `ratking_ult_diorama` (the earth) and `ratking_garbage` have a 1×1 white `g_tColor` and take all their colour
 from vertex colours (and a dark olive tint); `ratking_ult_diorama_sewage` is alpha-tested, vertex-coloured and glows faintly; the
 grenade's `vertcolor_pbr_basic_glass` is vertex-coloured too. The log prints `N material(s) with Deadlock tint/glow/vertex colour/cut-out`
-per model. **Props only:** heroes are written without these settings (their DLM2 has no colours and zero extras), because the
+per model. **Props only** (except, since 1.8.1, the vertex colours of the materials a hero lists in `heroes.vertexColorMaterials`: Wraith's face): heroes are written without these settings (their DLM2 has no colours and zero extras), because the
 first try changed approved heroes: whole-material tints (Viscous' glass black, Seven's greybox grey) and glows (Infernus' clothes
 6.55/0.2/0 all over, Abrams' head white). Deadlock lights only the masked part of a self-illum material (`g_tSelfIllumMask`, not
 exported), so the plugin also ignores `emission` for now. To look at a material: `build/vrfdump/vrfdump.exe <vpk> text <path>.vmat out.txt` (path without `_c`).
@@ -634,6 +634,11 @@ the source values. The RoR2-scale numbers next to them are our own balance (doc 
 - **Coat chain (2026-10-25):** `coat_0` (on `spine_3`) → `coat_1..7` → `coat_end`, 0.2 m apart down her back; `coattail_0_L/R` hang off
   `coat_7`; `ponytail_0..5` → `ponytail_end` off `head`. All four are `springRoots` since v1.0.1a. Clips added: `ability_card_trick`
   (the whole throw, Card Trick's `secondary`) and `ability_card_trick_cast_in_air` (`secondary_air`).
+- **Face (2026-10-26, extractor 1.8.1):** `wraith_head.vmat` (pbr.vfx, NPR) has `F_VERTEX_COLOR` 1, `g_fVertexColorStrength1` 1 and a 1 × 1 white
+  `g_tColor` (`TextureColor1` white): Deadlock paints her face in **vertex colours**. Heroes used to be written without vertex colours,
+  so the face came out flat white. `heroes.vertexColorMaterials` (`["wraith_head"]`) now keeps them for that material only (manifest
+  `vertexColors`); no other material setting reaches a hero. (`heroes_staging/wraith_magician` has a 512 px painted face: an old
+  prototype head, not this model's.)
 - **Particle textures (effects kind `texture`, v1.0.1a, no new extractor):** the extractor's icon export reads any `.vtex`, so these
   are listed as images (`gen.py` adds every texture row's path to `manifest.images`) and land in `cache/images/` (≤ 512 px PNG):
   `materials/particle/abilities/wraith/wraith_card_suit` (a 4 × 4 sheet: club, diamond, heart, spade across the top, the joker

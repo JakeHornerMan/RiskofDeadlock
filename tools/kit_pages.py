@@ -16,7 +16,7 @@ OUT = os.path.join(ROOT, 'build', 'pages')
 IMG = os.path.join(OUT, 'img')
 os.makedirs(OUT, exist_ok=True)
 E = html.escape
-VERSION = 'v1.0.1a'
+VERSION = 'v1.0.1b'
 BAND = 500  # balanced = within ±500 %/s of the RoR2 match (creator, 2026-10-16)
 
 def sheet(name):
@@ -83,7 +83,8 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
- 'wraith': [('v1.0.1a', ['The Rake 72 % a bullet (was 60, +20 %)',
+ 'wraith': [('v1.0.1b', ['Her face in Deadlock’s own colours (it was flat white)', 'The Rake reloads in 3 s, as long as her reload animation (it fired again before the animation ended)', 'Project Mind: she bursts into purple smoke and cards and flies there in up to 1 s, untouchable', 'Full Auto plays Deadlock’s own Full Auto cast']),
+            ('v1.0.1a', ['The Rake 72 % a bullet (was 60, +20 %)',
                           'Card Trick: the card follows your crosshair while it flies, leaves the hand on a curve and swings round to try again if it misses',
                           'Card Trick holds 4 cards (Backup Magazine adds more), one back every 10 s, shown fanned above her head; every 5 Rake hits bring the next card 1 s sooner',
                           'Deadlock’s whole card-trick throw (and its in-air one), her long coat and ponytail swing, the coat flares on every throw',
