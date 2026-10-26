@@ -2,5 +2,5 @@
   "name": "Risk_of_Deadlock",
   "heroes": ["haze", "abrams", "seven", "infernus", "mokrill", "viscous", "ratking", "billy"],
   "melty": ["haze", "abrams", "seven", "infernus", "mokrill", "viscous", "ratking", "billy"],
-  "comingSoon": ["wraith"]
+  "comingSoon": ["wraith", "mina"]
 }

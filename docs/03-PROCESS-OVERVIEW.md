@@ -338,6 +338,9 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 10. **After publishing (since v0.7.2):** check `install_outcomes` and `player_logs` the next session. A setup failure or
    a "HERO FAILED" line from players shows a Deadlock change before the creator hears about it. The 2026-10-19 Infernus
    skip on a player's Deadlock 5977 was found this way.
+  A hero with no kit in the sheets yet (Mina in 1.0.2) can still be greyed out: give it a row in `design/teasers.json`
+  (id, name, portrait, sort position) and list it in `comingSoon`; only its portrait is read from Deadlock. Move it to
+  `heroes.json` (and drop the teaser row; preflight refuses both) when its kit lands. The sheet may be empty (main since Mina joined), so its `types` key names the C# type of each column for gen.
 
 **Status at the time of writing (2026-10-18):**
 - 0.1.0, 0.2.0 and **0.6.3** are draft releases. 0.2.0's test passed; 0.6.3 (release `5e542898-bfa4-4bad-9f8c-631175af83f1`,

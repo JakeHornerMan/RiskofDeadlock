@@ -1,4 +1,4 @@
-Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King or Billy** from Deadlock, with their real models, animations, guns, abilities, icons, sounds and voice lines, read from your own Deadlock install. **Wraith is coming soon**: she waits in character select as a black silhouette.
+Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King or Billy** from Deadlock, with their real models, animations, guns, abilities, icons, sounds and voice lines, read from your own Deadlock install. **Wraith and Mina are coming soon**: they wait in character select as black silhouettes.
 
 ## What you get
 - Eight new survivors, each with Risk of Rain 2's four skills built from their Deadlock kit, and their **Deadlock ultimate as equipment** (Q). Every hero starts holding their own, and anyone can find the ults in chests.
@@ -32,4 +32,4 @@ Every hero's abilities, numbers and measured damage, with our own in-game pictur
 ## Good to know
 - You need **Risk of Rain 2 and Deadlock** installed. Nothing from either game is in this download: before the first start, Melty reads the heroes from your Deadlock folder (about 2 minutes, once per Deadlock update), and the setup screen says what it is reading. Then the loading screen shows each hero being built, with a timer: the game is not stuck.
 - Melty and Thunderstore players can play together, whatever their version, as long as they have the same heroes.
-- Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.1, 2026-10-25).
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.2, 2026-10-26).

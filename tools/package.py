@@ -43,6 +43,8 @@ EXTRACT = {
 RELEASE = json.load(open(os.path.join(TS, 'release.json'), encoding='utf-8'))
 HERO_ROWS = {r['id']: r for r in json.load(open(os.path.join(ROOT, 'design', 'heroes.json'), encoding='utf-8'))['rows']}
 SHEET_HEROES = {i: r['displayName'] for i, r in HERO_ROWS.items()}
+# heroes with no kit yet, only ever shown as a coming-soon tile (design/teasers.json)
+TEASER_ROWS = {r['id']: r for r in json.load(open(os.path.join(ROOT, 'design', 'teasers.json'), encoding='utf-8'))['rows']}
 # --melty ships release.json's melty heroes (and shows comingSoon greyed); --release and Thunderstore its heroes
 CUT_HEROES = RELEASE['melty'] if melty else RELEASE['heroes']
 SOON = RELEASE.get('comingSoon', []) if melty else []
@@ -107,7 +109,7 @@ def release_manifest():
     used = lambda e: e not in owners or bool(keep & set(owners[e]))
     m['heroes'] = [h for h in m['heroes'] if h['id'] in keep]
     # a coming-soon hero keeps only its select-screen portrait
-    portraits = {HERO_ROWS[h]['imageSmall'] for h in SOON}
+    portraits = {(HERO_ROWS.get(h) or TEASER_ROWS[h])['imageSmall'] for h in SOON}
     for k in ['images', 'soundEvents', 'soundEventFiles', 'voiceGroups', 'voiceAllTakes']:
         m[k] = [e for e in m.get(k, []) if used(e) or (k == 'images' and e in portraits)]
     m['props'] = [p for p in m.get('props', []) if used(p['id'])]
@@ -118,7 +120,7 @@ def check_store_text():
     """The store README/CHANGELOG are written by hand for each release: refuse to package one naming a hero not in it."""
     for f in ['README.md', 'CHANGELOG.md']:
         text = open(os.path.join(TS, f), encoding='utf-8').read()
-        for hid, name in SHEET_HEROES.items():
+        for hid, name in {**SHEET_HEROES, **{i: r['displayName'] for i, r in TEASER_ROWS.items()}}.items():
             if hid not in RELEASE['heroes'] and name in text:
                 raise SystemExit(f'thunderstore/{f} mentions {name}, who is not in thunderstore/release.json')
 

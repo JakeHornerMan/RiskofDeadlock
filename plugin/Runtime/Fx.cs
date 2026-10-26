@@ -1,8 +1,11 @@
+using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using RoR2;
 using RoR2.Projectile;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace DeadlockOfRain
 {
@@ -52,8 +55,18 @@ namespace DeadlockOfRain
             return copy;
         }
 
-        public static void Preload()
+        /// <summary>Loads every effect on the loading screen. All loads start at once and are waited for frame by frame
+        /// (RoR2 is loading its own content at the same time); the lookups after it find them already loaded.</summary>
+        public static IEnumerator Preload()
         {
+            var loads = new List<AsyncOperationHandle>();
+            foreach (var e in Sheets.EffectRow.All)
+            {
+                if (e.Addressable == "none" || e.Kind == "prop") continue;
+                try { loads.Add(e.Kind == "material" ? Addressables.LoadAssetAsync<Material>(e.Addressable) : (AsyncOperationHandle)Addressables.LoadAssetAsync<GameObject>(e.Addressable)); }
+                catch (System.Exception ex) { Log.Warn($"effect {e.Id}: {ex.Message}"); }
+            }
+            while (loads.Any(l => !l.IsDone)) yield return null;
             foreach (var e in Sheets.EffectRow.All) Prefab(e.Id);
             Vfx.Preload();
         }
