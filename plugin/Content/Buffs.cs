@@ -299,6 +299,13 @@ namespace DeadlockOfRain
             if (accelAdd != 0) Set(b, "acceleration", b.acceleration * Mathf.Max(0.02f, 1f + accelAdd));
             if (jumpAdd != 0) Set(b, "jumpPower", b.jumpPower * Mathf.Max(0.1f, 1f + jumpAdd));
             if (jumpCount != 0) SetInt(b, "maxJumpCount", Mathf.Max(0, b.maxJumpCount + (int)jumpCount));
+            // Mina's open umbrella (heroes floatMoveSpeedMult; MinaRuntime.Floating, on her owner's machine, which moves her)
+            var mina = b.GetComponent<MinaRuntime>();
+            if (mina && mina.Floating)
+            {
+                var hero = Sheet.Hero(Survivors.HeroOf(b));
+                if (hero != null && hero.FloatMoveSpeedMult > 0f) Set(b, "moveSpeed", b.moveSpeed * hero.FloatMoveSpeedMult);
+            }
             if (moveAdd == 0 && attackAdd == 0 && armorAdd == 0 && regenAdd == 0 && slowResist == 0 && linearMove == 0) return;
             // move speed: positive adds like vanilla speed buffs, negative like slows
             float ms = b.moveSpeed;
@@ -363,6 +370,15 @@ namespace DeadlockOfRain
                 return;
             }
             if (!attacker) return;
+            // markCrit (Wraith's crit card mark): the next real hit on the marked body (not a DoT tick) is a certain crit, and the
+            // mark is used up
+            if (NetworkServer.active && damageInfo.procCoefficient > 0f && damageInfo.damage > 0f)
+                foreach (var row in BuffRow.All)
+                {
+                    if (!row.MarkCrit || Buffs.Count(victim, row.Id) <= 0) continue;
+                    damageInfo.crit = true;
+                    Buffs.Clear(victim, row.Id);
+                }
             // Fixation, Napalm: the victim takes more damage from whoever applied the debuff
             foreach (var row in BuffRow.All)
             {

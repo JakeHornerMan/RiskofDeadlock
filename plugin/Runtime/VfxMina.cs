@@ -210,18 +210,23 @@ namespace DeadlockOfRain
             {
                 case "cast":
                 {
-                    // Deadlock's Rake cone laid on the ground in front of her for the swing
-                    var foot = follow ? follow.position : at;
-                    if (Physics.Raycast(foot + Vector3.up, Vector3.down, out var g, 20f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) foot = g.point;
-                    var root = Root(foot + Vector3.up * 0.08f, 0.6f, null);
+                    // the area the swing covers, as a flat half-disc at her own height (creator, 2026-10-26: the floor cone looked
+                    // wrong in the air): just above the floor when she stands on it, at her waist when she is in the air.
+                    // Deadlock's Rake cone, a bright crimson edge at its full reach and a glow inside it
+                    var plane = at - Vector3.up * 0.3f;
+                    if (Physics.Raycast(at, Vector3.down, out var g, 1.6f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) plane = g.point + Vector3.up * 0.08f;
+                    var root = Root(plane, 0.6f, null);
                     root.transform.rotation = Quaternion.LookRotation(flat);
-                    var q = SymbolQuad(root, "mina_cone_tex", new Color(minaCrimson.r, minaCrimson.g, minaCrimson.b, 0.55f), radius * 2f, false);
+                    var tint = new Color(minaCrimson.r, minaCrimson.g, minaCrimson.b, 0.6f);
+                    var q = SymbolQuad(root, "mina_cone_tex", tint, radius * 2f, false);
                     if (q)
                     {
-                        // the cone's tip at her feet, pointing along the swing
+                        // the cone's tip at her, pointing along the swing
                         q.transform.localPosition = Vector3.forward * radius * 0.5f;
-                        var p = q.AddComponent<QuadPulse>(); p.From = radius * 1.6f; p.To = radius * 2f; p.Life = 0.55f; p.Tint = new Color(minaCrimson.r, minaCrimson.g, minaCrimson.b, 0.55f);
+                        var p = q.AddComponent<QuadPulse>(); p.From = radius * 1.6f; p.To = radius * 2f; p.Life = 0.55f; p.Tint = tint;
                     }
+                    AddArc(root, new Color(minaRose.r, minaRose.g, minaRose.b, 0.85f), radius, 0.14f, 0.12f);
+                    Particles(root, "mat_glow", new Color(minaCrimson.r, minaCrimson.g, minaCrimson.b, 0.5f), count: 6, life: 0.4f, speed: 0f, size: radius * 0.5f, shapeRadius: radius * 0.4f, flat: true);
                     return root;
                 }
                 case "swing":
@@ -238,7 +243,15 @@ namespace DeadlockOfRain
                 }
                 case "hit":
                 {
-                    // blood-red sparks on the enemy, small red motes flying back into Mina for the heal
+                    // a crescent slash cutting across the enemy, the swing's own crimson arcs in small (creator, 2026-10-26: "a slash
+                    // vfx on them just like on the character"), blood-red sparks, and red motes flying back into Mina for the heal
+                    var from = to.HasValue ? to.Value : at - Vector3.forward;
+                    var away = at - from; away.y = 0; away = away.sqrMagnitude > 1e-4f ? away.normalized : Vector3.forward;
+                    var slash = Root(at - away * 1.1f, 0.6f, null);
+                    slash.transform.rotation = Quaternion.LookRotation(away) * Quaternion.Euler(0f, 0f, Random.Range(-35f, 35f));
+                    AddArc(slash, minaCrimson, 1.1f, 0.3f, 0.1f);
+                    AddArc(slash, new Color(minaRose.r, minaRose.g, minaRose.b, 0.6f), 1.4f, 0.14f, 0.13f);
+                    var fl = Light(slash, minaGlow, 4f, 2.5f, away * 1.1f).gameObject.AddComponent<FadeLight>(); fl.Life = 0.2f; fl.From = 2.5f;
                     Burst(at, "mat_spark", minaCrimson, 14, 0.3f, 8f, 0.07f, 0.1f);
                     Burst(at, "mat_glow", minaBlood, 3, 0.2f, 0f, 1.0f);
                     if (to.HasValue) Motes(at, to.Value, minaRose, 3, 0.35f);

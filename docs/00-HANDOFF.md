@@ -274,6 +274,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 ---
 
 ## 9. Last work: Mina v1.1.0b, Nox Nostra stream and Mist Form (2026-10-26, branch `mina`)
+- **v1.1.0c (latest):** Wraith's card trick splashes 7 m (crit = `wraithmark`, `markCrit` column), Project Mind 60 m, refund documented (M2 text, page tile); Mina's Rake 1000 % with a slash per hit and the area at her height, umbrella opens whenever Jump is held in the air (0.8 air control, +50 % speed: new column `floatMoveSpeedMult`), reload keeps the umbrella hand while floating (gesture mask). Built and installed, not tested (the creator plays it); pages republished.
 - **Latest:** Wraith takes no fall damage from the drop after Project Mind (`MindTravel.OnExit` + `SoftLanding`, until she lands); other falls hurt. Built and installed in the Steam copy, not tested (the creator tests it in play).
 - **Since:** `main` (Wraith v1.0.1c) merged into `mina`, so this branch has both; `run_test.sh` Wraith and Mina every check pass (Mina after `MeltyTest` gave `ult_mist` its full duration as the test window); Mina's, Wraith's and the overview pages republished (Mina's and Wraith's still private: the creator shares them); the Steam copy has this branch's build, all ten heroes, cache 10/10, BepInEx on.
 - Creator's feedback: Nox Nostra without flight controls, 5 s, a movable target, a blood-red cone of bats streaming out of her, damage every 0.5 s in the cone, doubled damage (asked: 600 % every 0.5 s), R again cancels with a HUD hint; Mist Form 8 s, 60 s cooldown, far bigger effects.

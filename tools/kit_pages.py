@@ -88,14 +88,18 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
- 'mina': [('v1.1.0b', ['Nox Nostra: she hangs still for 5 s and a blood-red stream of bats pours out of her in a cone to wherever you aim, 600 % every 0.5 s to everything inside it; press R again to stop early',
+ 'mina': [('v1.1.0c', ['Rake 1000 % (was 400 %), a crimson slash across every enemy it hits, and its area shown as a half-disc at her own height (on the ground or in the air)',
+                        'The umbrella: hold Jump in the air and it opens, after a jump or not, and stays open while you hold it; 80 % steering and 50 % faster drift',
+                        'Her umbrella hand stays on the umbrella through a reload while she floats']),
+          ('v1.1.0b', ['Nox Nostra: she hangs still for 5 s and a blood-red stream of bats pours out of her in a cone to wherever you aim, 600 % every 0.5 s to everything inside it; press R again to stop early',
                         'Mist Form lasts 8 s (was 5) and recharges in 60 s (was 120), with much bigger bat and blood-red effects']),
           ('v1.1.0a', ['New hero: Mina, matched to Huntress (Huntress’s stats exactly: the smallest health in Deadlock, the glass cannon of Risk of Rain)',
                         'Love Bites: every bullet bites the enemy; 5 bites on one enemy give a jump back, 10 bring Rake 3 s sooner, 20 bring Nox Nostra 10 s sooner',
                         'The umbrella: hold Jump in the air to float down under it, no fall damage; her skirt and hair flutter as she drifts',
                         'Deadlock’s own bats (flapping) for Sanguine Retreat, Nox Nostra’s swarm and Mist Form; her bite mark, marker and Rake cone from Deadlock',
                         'Mist Form (Q): Deadlock’s Ethereal Shift as a flock of furious bats, for any survivor'])],
- 'wraith': [('v1.0.1c', ['Project Mind reaches 75 m (was 60)', 'Full Auto loads a double magazine: 104 rounds (it refilled the 52)']),
+ 'wraith': [('v1.1.0c', ['Card Trick: the trick splashes onto every enemy within 7 m of where the card hits (no extra damage): 5 Bleed, 5 Burn, a 2 s stun, or a crit mark (their next hit taken crits), each with its own burst', 'Project Mind back to 60 m', 'No fall damage from the drop after Project Mind']),
+            ('v1.0.1c', ['Project Mind reaches 75 m (was 60)', 'Full Auto loads a double magazine: 104 rounds (it refilled the 52)']),
             ('v1.0.1b', ['Her face in Deadlock’s own colours (it was flat white)', 'The Rake reloads in 3 s, as long as her reload animation (it fired again before the animation ended)', 'Project Mind: she bursts into purple smoke and cards and flies there in up to 1 s, untouchable', 'Full Auto plays Deadlock’s own Full Auto cast']),
             ('v1.0.1a', ['The Rake 72 % a bullet (was 60, +20 %)',
                           'Card Trick: the card follows your crosshair while it flies, leaves the hand on a curve and swings round to try again if it misses',
@@ -222,7 +226,7 @@ PAPER = {
 ANALYSIS = {
  'mina': ['One run after Nox Nostra became a stream (v1.1.0b): 3,098 %/s with every main move (1,475 before), against Huntress’s 1,921 (library). That is +1,177: above the ±500 band.',
           'Nox Nostra carries her (2,580 %/s alone: she hangs still for 5 s and the cone of bats hits everything inside it for 600 % every half second, about 9 hits a cast, every 15 s; 1,438 as the planted circle). New Money 252, Rake 27 (the bench’s pack stands 10–15 m out, at the edge of its 10 m reach).',
-          'Levers if she should come back into the band: 600 → 300 % a hit (about 1,800 all together), or a longer cooldown. In the bench the bot shoots whatever enemy is nearest, so 20 bites rarely land on one enemy and the Love Bites cuts seldom fire; a player holding the gun on one target gets Nox Nostra back sooner.',
+          'Since this run (v1.1.0c) Rake does 1,000 % (was 400 %); not benched again, so she sits further above. Levers if she should come back into the band: Nox Nostra 600 → 300 % a hit (about 1,800 all together), or a longer cooldown. In the bench the bot shoots whatever enemy is nearest, so 20 bites rarely land on one enemy and the Love Bites cuts seldom fire; a player holding the gun on one target gets Nox Nostra back sooner.',
           'Mist Form (Q, the ult): one use on the ult bench (30 enemies and a Beetle Queen) did 100,500 % to 29 of them, 5,700 % on the queen, now that it lasts 8 s (57,000 % at 5 s): 300 % for every pass through an enemy, then the 3,000 % burst. It recharges in 60 s. It isn’t in the all-together number.'],
  'wraith': ['One run after Project Mind 75 m and Full Auto’s double magazine (v1.0.1c): 937 %/s with every main move (944 the run before), against Bandit’s 1,919. That is −982: below the ±500 band.',
             'The Rake carries her (684 %/s alone, 72 % a bullet), and every 5 hits bring the next card a second sooner, so the 4 stored cards keep coming while she shoots. Card Trick alone measured 207. Full Auto now loads 104 rounds fired 50 % faster, but the bench uses each move alone, so its lift to the gun only shows when they are used together.',
@@ -443,8 +447,11 @@ def tiles(r):
     if r['duration'] and not gun: t.append(('Duration', f"{n(r['duration'])} s"))
     if r['radius'] and not gun and r['kind'] not in ('dash_charge', 'heavy_melee', 'projectile'): t.append(('Radius', f"{n(r['radius'])} m"))
     if r['stunDuration']: t.append(('Stun', f"{n(r['stunDuration'])} s"))
-    if r['stocks'] > 1: t.append(('Charges', n(r['stocks'])))
-    return t[:4]
+    if r['stocks'] > 1: t.insert(2, ('Charges', n(r['stocks'])))
+    # the gun hits that bring it back sooner (Wraith's Rake hits per card, Mina's Love Bites), and Card Trick's splash
+    if r.get('hitsPerRefund'): t.insert(2, ('Gun hits → sooner', f"{n(r['hitsPerRefund'])} → −{n(r['refundSeconds'])} s"))
+    if r['kind'] == 'card_trick' and r.get('reach'): t.insert(3, ('Trick splash', f"{n(r['reach'])} m"))
+    return t[:5]
 
 def tiles_html(t):
     return ''.join(f'<div class="tile"><b>{E(b)}</b><span>{E(a)}</span></div>' for a, b in t)

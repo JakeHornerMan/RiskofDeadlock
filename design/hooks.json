@@ -38,7 +38,7 @@
       "id": "damage_mods",
       "method": "harmony-prefix",
       "target": "RoR2.HealthComponent.TakeDamage(RoR2.DamageInfo)",
-      "purpose": "Fixation and Napalm damage amp from their owner, Bullet Dance evasion",
+      "purpose": "Fixation and Napalm damage amp from their owner, Bullet Dance evasion; markCrit buffs (Wraith's crit card mark): the next real hit on the marked body is a certain crit and uses the mark up",
       "reads": "buffs.damageTakenFromOwnerPerStack/evasionChance",
       "side": "server"
     },

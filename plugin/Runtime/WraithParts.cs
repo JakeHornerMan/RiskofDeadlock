@@ -103,7 +103,7 @@ namespace DeadlockOfRain
                 {
                     transform.position = hit.point;
                     if (enemy) HitEnemy(hb, hit.point);
-                    else { Fx.Sound(row.Id, "end", hit.point); Vfx.Play(row.Vfx, "end", hit.point, row.Radius, null, null, (float)suit); }
+                    else { Fx.Sound(row.Id, "end", hit.point); Vfx.Play(row.Vfx, "end", hit.point, row.Radius, null, null, (float)suit); Splash(hit.point, null); }
                     Done();
                     return;
                 }
@@ -128,6 +128,34 @@ namespace DeadlockOfRain
             }
             Fx.Sound(row.Id, "hit", at);
             Vfx.Play(row.Vfx, "hit", victim ? victim.corePosition : at, row.Radius, null, null, (float)suit);
+            Splash(at, hb.healthComponent);
+        }
+
+        /// <summary>The trick splashes (creator, 2026-10-26): every other enemy within reach of where the card hit (an enemy or a
+        /// wall) gets the same trick at full strength, but no damage: buffStacks of Bleed or Burn, the stun, or for Crit the debuff
+        /// row (a mark: the next hit on it is a certain crit, Content/Buffs.cs). Every machine plays the suit's splash and a mark on
+        /// each enemy it reaches; only the server's card applies the trick.</summary>
+        void Splash(Vector3 at, HealthComponent skip)
+        {
+            if (row.Reach <= 0f) return;
+            Vfx.Play(row.Vfx, "splash", at, row.Reach, null, null, (float)suit);
+            int n = 0;
+            foreach (var hb in Fx.Enemies(owner, at, row.Reach))
+            {
+                var hc = hb.healthComponent;
+                if (!hc || hc == skip || !hc.body || !hc.alive) continue;
+                n++;
+                var b = hc.body;
+                Vfx.Play(row.Vfx, "mark", b.corePosition, row.Radius, b.coreTransform ? b.coreTransform : b.transform, null, (float)suit);
+                if (!damage) continue;
+                int stacks = Mathf.Max(1, (int)row.BuffStacks);
+                if (suit == CardSuit.Bleed) Buffs.Dot(owner, b, DotController.DotIndex.Bleed, row.DotTime, stacks);
+                else if (suit == CardSuit.Burn) Buffs.Dot(owner, b, DotController.DotIndex.Burn, row.DotTime, stacks);
+                else if (suit == CardSuit.Stun) Fx.Stun(hc, row.StunDuration);
+                else if (suit == CardSuit.Crit && row.Debuff != "none") Buffs.AddTimed(b, row.Debuff, Sheet.Buff(row.Debuff)?.Duration ?? 6f);
+            }
+            if (damage && n > 0) MeltyTest.Report("card-splash", true, owner.baseNameToken);
+            if (damage && MeltyTest.Active) Log.Info($"card trick: {suit} splashed onto {n} enemies within {row.Reach:F0} m");
         }
 
         void Done()

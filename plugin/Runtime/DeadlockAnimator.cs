@@ -71,6 +71,10 @@ namespace DeadlockOfRain
         string holdLogical;
         bool[] rigOff;
         float offWeight = 1f;
+        // while a held pose plays, gestures (a reload) leave that arm to it: the upper body's bones without the off arm, and which
+        // mask each gesture clip has now (true: without the off arm) (creator, 2026-10-26: her hand left the umbrella on a reload)
+        List<Transform> upperNoOff;
+        readonly Dictionary<string, bool> maskNoOff = new Dictionary<string, bool>();
         // animations holdBones: a prop on the root (Mina's umbrella) kept in its hand the way each clip holds it, whatever the gun
         // rig does to that arm
         Transform[] weldBone, weldHand;
@@ -185,6 +189,8 @@ namespace DeadlockOfRain
                 // the arm whose hand doesn't hold the gun (Mina's umbrella arm) is let go while a held pose plays
                 bool isOff = mainHand && !mainHand.IsChildOf(clav);
                 foreach (var t in clav.GetComponentsInChildren<Transform>(true)) if (!gun.Contains(t)) { arms.Add(t); off.Add(isOff); }
+                if (isOff && upperBody && clav.IsChildOf(upperBody))
+                    upperNoOff = upperBody.GetComponentsInChildren<Transform>(true).Where(t => !t.IsChildOf(clav)).ToList();
             }
             Snapshot(arms, out rigBones, out rigPos, out rigRot);
             rigOff = off.ToArray();
@@ -407,7 +413,7 @@ namespace DeadlockOfRain
             var c = Clip(logicalName);
             if (c == null) return;
             var st = anim[c];
-            if (upperBody) { st.RemoveMixingTransform(upperBody); st.AddMixingTransform(upperBody, true); }
+            MaskUpper(st, c, holdLogical != null && upperNoOff != null);
             st.layer = 1;
             st.speed = speed;
             st.time = 0;
@@ -415,6 +421,27 @@ namespace DeadlockOfRain
             gestureClip = c;
             // reload and ability clips move the arms; landing/jump layers leave the gun arms in their holding pose
             if (logicalName != "land" && logicalName != "jump_start") armFreeUntil = Mathf.Max(armFreeUntil, Time.time + st.length / Mathf.Max(0.1f, speed));
+        }
+
+        /// <summary>A gesture clip plays on the upper body; with noOff (a held pose playing) on every upper-body bone but the off
+        /// arm, so that arm keeps the held pose (Mina's umbrella hand stays up through a reload).</summary>
+        void MaskUpper(AnimationState st, string c, bool noOff)
+        {
+            if (!upperBody) return;
+            if (maskNoOff.TryGetValue(c, out var was) && was == noOff) return;
+            Unmask(st, c);
+            if (noOff) foreach (var t in upperNoOff) st.AddMixingTransform(t, false);
+            else st.AddMixingTransform(upperBody, true);
+            maskNoOff[c] = noOff;
+        }
+
+        /// <summary>Takes a clip's upper-body mask off again (an override plays it on the whole body).</summary>
+        void Unmask(AnimationState st, string c)
+        {
+            if (!upperBody || !maskNoOff.TryGetValue(c, out var was)) return;
+            if (was) foreach (var t in upperNoOff) st.RemoveMixingTransform(t);
+            else st.RemoveMixingTransform(upperBody);
+            maskNoOff.Remove(c);
         }
 
         /// <summary>A shot: a short kick of the chest instead of a fire clip on the arms.</summary>
@@ -430,7 +457,7 @@ namespace DeadlockOfRain
             var c = Clip(logicalName);
             if (c == null) return;
             var st = anim[c];
-            if (upperBody) st.RemoveMixingTransform(upperBody);
+            Unmask(st, c);
             st.layer = 2;
             st.wrapMode = loop ? WrapMode.Loop : WrapMode.ClampForever;
             st.time = 0;

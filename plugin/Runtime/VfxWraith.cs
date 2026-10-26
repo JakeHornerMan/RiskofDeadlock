@@ -240,6 +240,60 @@ namespace DeadlockOfRain
                     Burst(at, "mat_spark", c, 8, 0.3f, 4f, 0.05f);
                     SymbolBurst(at, "wraith_suits_tex", frame, c, 3, 0.5f, 1.5f, 0.3f);
                     return null;
+                case "splash":
+                {
+                    // the trick bursting out over radius (7 m) where the card hit (creator, 2026-10-26: "very cool and fit the theme"):
+                    // a shockwave and Deadlock's ring in the trick's colour, a storm of its suit flung outward, purple smoke, then the
+                    // trick itself: a spray of blood (bleed), a gold starburst (crit), lightning forking out (stun), a ring of fire (burn)
+                    PurpleSmoke(at, 1.5f, 14, 1f, radius * 0.5f, 0.4f);
+                    Ring(at, c, 0.5f, radius, 0.45f, 0.35f);
+                    Ring(at, wraithViolet, 0.5f, radius * 0.7f, 0.35f, 0.2f, true);
+                    SymbolPulse(at + Vector3.up * 0.1f, "wraith_ring_tex", new Color(c.r, c.g, c.b, 0.8f), radius * 0.4f, radius * 2.1f, 0.5f);
+                    SymbolBurst(at, "wraith_suits_tex", frame, c, 18, 0.9f, radius * 0.9f, 0.55f, 0.3f);
+                    Flash(at, c, radius * 2f, 0.35f, 7f);
+                    Shake(at, radius * 2f, 1.2f, 0.2f);
+                    switch (Mathf.RoundToInt(suit))
+                    {
+                        case 0:
+                            Burst(at, "mat_glow", new Color(0.6f, 0.02f, 0.05f), 36, 0.9f, radius * 0.8f, 0.22f, shapeRadius: 0.3f, gravity: 2.5f);
+                            Burst(at, "mat_smoke", new Color(0.45f, 0.03f, 0.06f, 0.8f), 10, 1.1f, radius * 0.3f, 1.2f, shapeRadius: radius * 0.3f, flat: true);
+                            break;
+                        case 1:
+                            Burst(at, "mat_spark", new Color(1f, 0.92f, 0.6f), 60, 0.7f, radius * 1.6f, 0.1f, shapeRadius: 0.3f);
+                            Ring(at, cardColors[1], radius * 0.2f, radius * 1.1f, 0.6f, 0.2f);
+                            SymbolPulse(at + Vector3.up * 1.5f, "wraith_suits_tex", cardColors[1], 0.6f, 3.5f, 0.5f, true);
+                            break;
+                        case 2:
+                            for (int i = 0; i < 8; i++)
+                            {
+                                var d = Quaternion.Euler(0f, i * 45f + Random.Range(-15f, 15f), 0f) * Vector3.forward;
+                                Bolt(at + Vector3.up * 0.5f, at + Vector3.up * 0.5f + d * radius * Random.Range(0.7f, 1f), c, 0.14f, 0.35f, 8, 0.4f, true);
+                            }
+                            break;
+                        case 3:
+                            Burst(at, "mat_fire_puff", c, 28, 0.8f, radius * 0.5f, 1.1f, shapeRadius: radius * 0.4f, flat: true);
+                            Burst(at, "mat_spark", new Color(1f, 0.7f, 0.3f), 30, 0.8f, 5f, 0.06f, shapeRadius: radius * 0.6f, upward: true);
+                            break;
+                    }
+                    return null;
+                }
+                case "mark":
+                {
+                    // on each enemy the splash reaches: the trick's suit pops over it in its colour with a small flash and the trick's touch
+                    var root = Root(at, 1.4f, follow);
+                    Symbols(root, "wraith_suits_tex", frame, c, count: 4, life: 0.8f, speed: 1.5f, size: 0.45f, shapeRadius: 0.3f, world: true, upward: true);
+                    Particles(root, "mat_glow", c, count: 3, life: 0.3f, speed: 0f, size: 1.4f);
+                    Particles(root, "mat_spark", c, count: 12, life: 0.4f, speed: 4f, size: 0.05f, shapeRadius: 0.2f, world: true);
+                    SymbolPulse(at + Vector3.up * 1.2f, "wraith_suits_tex", c, 0.3f, 1.6f, 0.4f, true);
+                    switch (Mathf.RoundToInt(suit))
+                    {
+                        case 0: Burst(at, "mat_glow", new Color(0.6f, 0.02f, 0.05f), 8, 0.6f, 2.5f, 0.15f, shapeRadius: 0.2f, gravity: 2.5f); break;
+                        case 1: Particles(root, "mat_glow", cardColors[1], rate: 10, life: 0.4f, speed: 0.5f, size: 0.5f, shapeRadius: 0.3f, upward: true); break;
+                        case 2: for (int i = 0; i < 2; i++) Bolt(at, at + Random.onUnitSphere * 1.2f, c, 0.08f, 0.25f, 5, 0.2f, true); break;
+                        case 3: Burst(at, "mat_fire_puff", c, 5, 0.5f, 1.5f, 0.6f, shapeRadius: 0.3f, upward: true); break;
+                    }
+                    return root;
+                }
                 case "halo":
                 {
                     // behind each stored card over her head (Deadlock's cards are dark purple aces): a bright lilac glow so the

@@ -163,9 +163,9 @@ namespace DeadlockOfRain
             bool down = JumpDown;
             if (down && !m.isGrounded) held += Time.fixedDeltaTime;
             else { held = 0f; pressOpen = false; }
-            bool want = !m.isGrounded && (down && (held >= hero.FloatHold || pressOpen) || AutoFloat) && InMain() && body.healthComponent && body.healthComponent.alive;
-            // holding it while still rising: it opens the moment she starts to fall
-            bool open = want && (Floating || m.velocity.y <= 0.5f);
+            // one clear rule (creator, 2026-10-26): Jump held in the air opens it, after a jump or not, and it stays open as long
+            // as Jump is held (floatHold 0: at once); let go and it closes
+            bool open = !m.isGrounded && (down && (held >= hero.FloatHold || pressOpen) || AutoFloat) && InMain() && body.healthComponent && body.healthComponent.alive;
             if (open != Floating) SetFloat(open);
             if (Floating)
             {
@@ -181,7 +181,10 @@ namespace DeadlockOfRain
             var m = body.characterMotor;
             Floating = on;
             if (baseAir < 0f) baseAir = m.airControl;
-            m.airControl = on ? baseAir * Mathf.Max(1f, hero.FloatAirControl) : baseAir;
+            // floatAirControl: her air control while it is open (0.8: 80 % of her grip on the ground); floatMoveSpeedMult on her
+            // move speed meanwhile (StatsPatch reads Floating)
+            m.airControl = on && hero.FloatAirControl > 0f ? hero.FloatAirControl : baseAir;
+            body.MarkAllStatsDirty();
             // no fall damage while it is open (and on the landing it closes for)
             if (on && (body.bodyFlags & CharacterBody.BodyFlags.IgnoreFallDamage) == 0) { body.bodyFlags |= CharacterBody.BodyFlags.IgnoreFallDamage; noFallSet = true; }
             if (on) MeltyTest.Report("umbrella-float", true, body.baseNameToken);
