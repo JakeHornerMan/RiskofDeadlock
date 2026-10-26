@@ -22,7 +22,7 @@ namespace DeadlockExtract;
 
 public static class Program
 {
-    public const string Version = "1.8.0";
+    public const string Version = "1.8.1";
     static StreamWriter? log;
 
     public static int Main(string[] args)
@@ -375,7 +375,12 @@ public static class Program
 
         var model = ModelRoot.Load(glb);
         // heroes keep their look as approved (whole-material tints/glows would change them; Deadlock's glow is masked): props only
-        var stats = DlmWriter.Write(model, hero, dir, Log);
+        // heroes keep only the vertex colours of the materials their sheet lists (heroes.vertexColorMaterials: Wraith's face is
+        // painted in vertex colours on a white texture); tints and glows stay off heroes (doc 01 §7)
+        Func<string, VmatInfo?>? vc = hero.VertexColors.Count == 0 ? null : n =>
+            hero.VertexColors.Contains(n, StringComparer.OrdinalIgnoreCase) && Vmat(loader, n, hero.Vmdl) is { VertexColor: true }
+                ? new VmatInfo(Vector3.One, false, true, Vector3.Zero) : null;
+        var stats = DlmWriter.Write(model, hero, dir, Log, vc);
         Log($"  {hero.Id}: {stats}");
         Directory.Delete(tmp, true);
     }
@@ -661,4 +666,5 @@ public sealed class HeroEntry
     public List<string> Meshes { get; set; } = new();
     public List<string> Clips { get; set; } = new();
     public List<string> Split { get; set; } = new();    // 1.6.0: meshes kept as their own submesh (Rat King's ammo belt)
+    public List<string> VertexColors { get; set; } = new(); // 1.8.1: materials that keep Deadlock's vertex colours (Wraith's face), nothing else of their settings
 }

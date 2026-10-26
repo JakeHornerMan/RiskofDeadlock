@@ -28,7 +28,8 @@
         "weapon_run_w",
         "weapon_stand_idle"
       ],
-      "split": []
+      "split": [],
+      "vertexColors": []
     },
     {
       "id": "abrams",
@@ -58,7 +59,8 @@
         "weapon_run_w",
         "weapon_stand_idle"
       ],
-      "split": []
+      "split": [],
+      "vertexColors": []
     },
     {
       "id": "seven",
@@ -88,7 +90,8 @@
         "weapon_run_w",
         "weapon_stand_idle"
       ],
-      "split": []
+      "split": [],
+      "vertexColors": []
     },
     {
       "id": "infernus",
@@ -118,7 +121,8 @@
         "weapon_run_w",
         "weapon_stand_idle"
       ],
-      "split": []
+      "split": [],
+      "vertexColors": []
     },
     {
       "id": "mokrill",
@@ -149,7 +153,8 @@
         "weapon_run_w",
         "weapon_stand_idle"
       ],
-      "split": []
+      "split": [],
+      "vertexColors": []
     },
     {
       "id": "viscous",
@@ -175,7 +180,8 @@
         "weapon_run_w",
         "weapon_stand_idle"
       ],
-      "split": []
+      "split": [],
+      "vertexColors": []
     },
     {
       "id": "ratking",
@@ -242,7 +248,8 @@
         "ammo_03",
         "ammo_02",
         "ammo_01"
-      ]
+      ],
+      "vertexColors": []
     },
     {
       "id": "billy",
@@ -276,7 +283,8 @@
         "weapon_run_w",
         "weapon_stand_idle"
       ],
-      "split": []
+      "split": [],
+      "vertexColors": []
     },
     {
       "id": "wraith",
@@ -306,7 +314,10 @@
         "weapon_run_w",
         "weapon_stand_idle"
       ],
-      "split": []
+      "split": [],
+      "vertexColors": [
+        "wraith_head"
+      ]
     }
   ],
   "images": [
