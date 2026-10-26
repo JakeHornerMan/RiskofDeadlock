@@ -161,6 +161,7 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
 ---
 
 ## 7. Lessons from past sessions (things that cost time)
+- **`run_test.sh` / `run_bench.sh` can leave our game copy running** (2026-10-26, twice): before the next run, `tasklist`; if the PID is in `%LOCALAPPDATA%\DeadlockOfRain\lab-game-pids.txt` it is ours: `lab_restore.sh`. A skill longer than 7 s needs its kind in MeltyTest's long-window list.
 - **An aimed area move needs the DPS bench bot to aim it** (2026-10-26, Mina's Nox Nostra): the bot aims at the nearest enemy's chest, so a circle planted from the air landed behind the pack (or on a stray monster 28 m off); runs swung 429-1514. Plant on `DpsBench.PackCentre`, keep the bot from mashing a move into cutting itself short, and take three runs (`REPEAT=3`) before tuning.
 - **A flat white hero face can be vertex colours** (2026-10-26, Wraith): dump the vmat first (`F_VERTEX_COLOR`, a 1 × 1 white `g_tColor`); heroes keep vertex colours only for `heroes.vertexColorMaterials`.
 - **Other sessions in the repo:** check `git status`/`ListAgents` before building; work in a worktree and message them before using the game (2026-10-26: another session had switched the shared folder to `fix-1.0.2`).
@@ -273,6 +274,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 ---
 
 ## 9. Last work: Mina v1.1.0b, Nox Nostra stream and Mist Form (2026-10-26, branch `mina`)
+- **Since:** `main` (Wraith v1.0.1c) merged into `mina`, so this branch has both; `run_test.sh` Wraith and Mina every check pass (Mina after `MeltyTest` gave `ult_mist` its full duration as the test window); Mina's, Wraith's and the overview pages republished (Mina's and Wraith's still private: the creator shares them); the Steam copy has this branch's build, all ten heroes, cache 10/10, BepInEx on.
 - Creator's feedback: Nox Nostra without flight controls, 5 s, a movable target, a blood-red cone of bats streaming out of her, damage every 0.5 s in the cone, doubled damage (asked: 600 % every 0.5 s), R again cancels with a HUD hint; Mist Form 8 s, 60 s cooldown, far bigger effects.
 - New kind `nox_stream` (`NoxStream`, replaces `nox_flight`/`NoxPlant`/`NoxSwarm`), `Vfx.NoxStreamFx`, `FlightHint` cancel mode; sheets, test check `nox-stream`.
 - Preflight clean, plugin builds. **Not tested in game** (creator: code only): `run_test.sh mina` owed. Benched afterwards at the creator's request: all 3098 vs Huntress 1921 (**above, +1177**; Nox Nostra 2580 alone), Mist Form 100,500 % (29 hit); library (VERSION v1.1.0b) and `docs/ult-bench.txt` updated. Her page and the overview not republished yet.

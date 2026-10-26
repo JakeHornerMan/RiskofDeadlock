@@ -1402,3 +1402,11 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** Mina all 3098 vs Huntress 1921 (above, +1177), Nox Nostra 2580 alone, New Money 252; Mist Form 100,500 % (29 hit, boss 5700 %). Wraith (main): 937 vs Bandit 1919 (below), Telekinesis 78,000 %.
 **Not done / open:** `run_test.sh mina`; pages not republished; balance is the creator's call.
 **Lessons:** none new.
+
+### 2026-10-26 · Tests, pages and the merged build for Wraith and Mina · branch `mina`
+**Request (verbatim):** "do it for wraith and mina!" (the open items: in-game tests, the pages, both kits in the Steam copy)
+**Questions asked → answers:** none.
+**Done:** merged `main` into `mina` (conflicts only in docs, `ult-bench.txt`, `dps_library.py` VERSION, the sheet's about: both sides kept); `run_test.sh wraith,mina`; MeltyTest's skill window now covers `ult_mist`'s full duration; Mina, Wraith and overview pages rebuilt (`kit_pages.py` notes) and republished to their links; Steam copy left on this build (10 heroes, cache 10/10, BepInEx on, test mode off).
+**Results:** Wraith every check pass (Full Auto 104/104, Project Mind flight 1.02 s). Mina: first run failed only `mina-plays` ("no runtime or gun": the kit check began while the 8 s Mist Form still locked her skills); after the window fix `run_test.sh mina` 1/1 every check pass (Nox Nostra stream 9 ticks, Love Bites, umbrella, Mist Form on Commando).
+**Not done / open:** the creator shares Mina's and Wraith's pages ("Anyone with the link"); Mina sits above Huntress's band (3098 vs 1921), the creator's call; `mina` not merged back into `main` yet.
+**Lessons:** doc 00 §7 (our test copy can be left running; long skills need the long test window).
