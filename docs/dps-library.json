@@ -1603,31 +1603,31 @@
     "special": "Full Auto"
    },
    "hero": true,
-   "measuredOn": "v1.0.1a",
+   "measuredOn": "v1.0.1c",
    "dps": {
     "all": {
      "runs": [
-      944
+      937
      ],
-     "mean": 944,
-     "min": 944,
-     "max": 944
+     "mean": 937,
+     "min": 937,
+     "max": 937
     },
     "primary": {
      "runs": [
-      528
+      684
      ],
-     "mean": 528,
-     "min": 528,
-     "max": 528
+     "mean": 684,
+     "min": 684,
+     "max": 684
     },
     "secondary": {
      "runs": [
-      133
+      207
      ],
-     "mean": 133,
-     "min": 133,
-     "max": 133
+     "mean": 207,
+     "min": 207,
+     "max": 207
     },
     "utility": {
      "runs": [
@@ -1647,11 +1647,11 @@
     },
     "equipment": {
      "runs": [
-      900
+      1400
      ],
-     "mean": 900,
-     "min": 900,
-     "max": 900
+     "mean": 1400,
+     "min": 1400,
+     "max": 1400
     }
    }
   },

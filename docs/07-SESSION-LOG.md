@@ -1362,6 +1362,23 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** `run_test.sh mina` 1/1, every check pass (three runs; the last at the final numbers): Love Bites 20 on one enemy → Nox Nostra 10 s sooner and Rake back early, a jump back in the air, the umbrella 2.5 m/s with the glide clip and no fall damage, the recast, Nox Nostra planted and resumed after a blink, Mist Form on Mina and on Commando, ragdoll, voice and sounds. Bench (3 runs) **1632 / 1500 / 1292, mean 1475 vs Huntress 1921 (−446, inside)**; ult bench Mist Form 57,000 % (16 hit). Cache rebuilt 10/10 with extractor 1.9.0.
 **Not done / open:** the creator's first play (the umbrella feel, the bats, the skirt; Rake is weak on the bench's pack at 10-15 m); share Mina's page; co-op test (`run_coop_test.sh mina`) not run (memory: the other sessions' work); a release needs the `extractor-1.9.0` tag, `Net.CoopVersion` up and Mina in `thunderstore/release.json`; the other nine pages still lack Mina in their nav.
 **Lessons:** doc 08 §7e; doc 02 gotchas 33-36 (morph-target models, fall-speed clamp vs the motor's gravity, Commando's template material, white-blown lines).
+### 2026-10-25/26 · Melty freeze report, 1.0.2 · branch fix-1.0.2
+**Request (verbatim):** "there is a few issue on melty witha freeze can you pull this information and see if we need to fix something!" Later: "do not release wraith when you push this update to melty", "you wait until wraith is fixed", "before we publich can you sheck the melty page again for anymore issue and fix them".
+**Questions asked → answers:** release shape → "Fix alone as 1.0.2"; timing → "ship the fix with no wraith and no mina have them both greyed out".
+**Done:** read player_logs / install_outcomes / player_reports. One freeze on 1.0.1 (a player's game hung 66 s in; both logs stop just before our first build line). Loads on the loading screen now yield instead of `WaitForCompletion()` (Survivors.Build, Fx.Preload), with log lines `content load started` and the Commando template time. New sheet `design/teasers.json` (gen, preflight, package) so Mina shows as a greyed tile with no kit; release.json comingSoon wraith, mina. Plugin 1.0.2, CHANGELOG 1.0.2. Docs 00, 02 §12, 03, MODLOG.
+**Results:** release-cut test (8 heroes, both tiles in the lobby) every check pass; BREAK=infernus 21/21; Commando template 2.7 s on this PC. Second Melty check: a `never-started` Play with no logs (nothing to act on), no failed installs, 12/12 1.0.1 Plays worked, no player comments.
+**Melty:** release `9e57edb3-…`, test `f0a60961-…` passed 2/2 with footage reviews (graduates), the creator said "Publish 1.0.2", published (safety review); listing updated (coming soon: Wraith and Mina; built-with 1.0.2); `report_bug_fix` for the hang.
+**After:** live 2026-10-26 11:15 UTC; `discord_update.py 1.0.2` posted; `fix-1.0.2` merged into main (teasers.json empty there, Mina is a hero; gen reads the sheet's `types`); cache rebuilt 10/10 with main's manifest (local extractor 1.9.0); main's dev build with every hero on the Steam copy, BepInEx on.
+**Not done / open:** watch `player_logs` for the hang on 1.0.2 (the new log lines say where a start stalls).
+**Lessons:** the newest log line a frozen player sends tells you where it stopped: compare it with this PC's log order. Never block on Addressables while RoR2 loads.
+
+### 2026-10-26 · Wraith feedback: Project Mind 75 m, Full Auto double magazine · v1.0.1c (not released) · main
+**Request (verbatim):** "feedback on wraith! Project Mind increase range to 75 meteres, Full Auto let double the ammo in the clip". Then: "please do not run any tests just code changes!"
+**Questions asked → answers:** none.
+**Done:** `wraith_mind` range 75 (description too); `wraith_fullauto` `clipSize` 104, and `FullAuto` loads the row's `clipSize` (0 = the gun's) instead of the gun's; MeltyTest's full-auto check expects that magazine and times it against it. Docs 00, 02, 05 §0 (flag), 06, kit_pages.py.
+**Results:** preflight clean, plugin builds (0 errors). No game run.
+**Not done / open:** `run_test.sh wraith`, a Wraith bench, republishing the pages. The ammo counter reads `104/52` during Full Auto.
+**Lessons:** `main` is checked out in `../RiskofDeadlock-wraith`; the main folder was on the old `fix-1.0.2` branch: check the branch before editing.
 
 ### 2026-10-26 · Mina feedback: Nox Nostra stream, Mist Form 8 s / 60 s · v1.1.0b (not released) · branch `mina`
 **Request (verbatim):** "mina feedback Nox Nostra [...] ok let remove the flying controls so they are static i want the move to last 5 seconds and i want the are selcttion place to be moveable! i also want this move to be really imact ful and i want it to look like fed vfx and the bads are streaming out of mina toward the target location also let double the damage of this move. the vfx bat shoot out in a cone chape towaard the ground and anything caught withing this space of the cone form mina to the floor is damage every 0.5 sceonds ." and for Mist Form: "i want teh vfx of this to be way more impact ful! i also want it to last for 8 seconds and the cool down to be 60 seconds!"
@@ -1370,6 +1387,13 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** preflight clean, plugin builds (0 errors). No game run.
 **Not done / open:** `run_test.sh mina`, a Mina bench and Mist Form's ult bench; republish Mina's page and the overview; the creator's play of the new look.
 **Lessons:** none new.
+
+### 2026-10-26 · Benches for Wraith and Mina (and their ults) · main (Wraith), branch `mina` (Mina)
+**Request (verbatim):** "run dps test on both mina and wraith also run the test for thier Ultimate · Q equipment"
+**Questions asked → answers:** none.
+**Done:** `run_bench.sh 30 wraith` from `main` (the first try failed: no flat spot with a clear view on that stage; the retry ran), `ULTS=1 run_bench.sh 30 wraith`; Mina's from the `mina` folder (her entry is on that branch). Library merged (VERSION v1.0.1c here), Wraith's line in `docs/ult-bench.txt`, docs 00, 05, 06.
+**Results:** Wraith all 937 vs Bandit 1919 (below, −982; was 944), The Rake 684 alone, Card Trick 207; Telekinesis 78,000 % (13 hit, boss 6000 %). Mina (branch `mina`): all 3098 vs Huntress 1921 (above, +1177), Nox Nostra 2580 alone; Mist Form 100,500 % (29 hit).
+**Not done / open:** `run_test.sh` for both; pages not republished; Mina sits above Huntress's band (the creator's call).
 
 ### 2026-10-26 · Benches for Wraith and Mina (and their ults) · branch `mina` (Mina), main (Wraith)
 **Request (verbatim):** "run dps test on both mina and wraith also run the test for thier Ultimate · Q equipment"

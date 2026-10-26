@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.2, 2026-10-26).
+- Fixed a freeze on the loading screen: the mod no longer holds the game still while it waits for Risk of Rain 2's own files, so a slower drive can't make the game stop responding before the heroes are built.
+- The loading log now says when the hero loading starts and how long it waited, so a stuck start can be traced.
+- One more locked "coming soon" hero tile in character select.
+
 ## 1.0.1
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.0.1, 2026-10-25).
 - Setting up is about 15 times faster: all eight heroes are read from your Deadlock in about 2 minutes (it took up to half an hour). Abrams alone went from 9 minutes to 14 seconds (Deadlock reader 1.8.0).

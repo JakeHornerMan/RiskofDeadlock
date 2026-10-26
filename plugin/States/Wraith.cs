@@ -343,7 +343,8 @@ namespace DeadlockOfRain.States
     }
 
     // ---------------- Wraith: Full Auto (R) ----------------
-    /// <summary>The reload clip in a burst of purple smoke: the magazine is full, and buff (its attackSpeedAdd: the fire rate) stays on
+    /// <summary>The reload clip in a burst of purple smoke: the magazine is loaded with the row's clipSize rounds (more than the gun's
+    /// own magazine holds; 0 = the gun's), and buff (its attackSpeedAdd: the fire rate) stays on
     /// until that magazine is empty; GunState then reloads at the normal speed, and the server takes the buff off when the reload is
     /// relayed. The kick is 20% stronger meanwhile (GunState).</summary>
     [Kind("full_auto")]
@@ -368,7 +369,7 @@ namespace DeadlockOfRain.States
             if (isAuthority && rt != null && gun != null && gun.ClipSize > 0)
             {
                 rt.Reloading = false;
-                rt.Ammo = (int)gun.ClipSize;
+                rt.Ammo = (int)(row.ClipSize > 0 ? row.ClipSize : gun.ClipSize);
             }
             if (Server) Buffs.AddTimed(characterBody, row.Buff, Sheet.Buff(row.Buff)?.Duration ?? 30f);
             MeltyTest.Report("full-auto", true, characterBody.baseNameToken);
