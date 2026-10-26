@@ -209,15 +209,13 @@ namespace DeadlockOfRain.States
             gone = true;
             if (valid)
             {
+                // she flies there as purple smoke and cards (MindTravel, on every machine): up to interval s for a full-range trip
                 var from = characterBody.footPosition;
-                TeleportHelper.TeleportBody(characterBody, point, false);
-                if (characterMotor) characterMotor.velocity = Vector3.zero;
-                Relay.Vfx(row.Vfx, "end", from, row.Radius);
-                Relay.Vfx(row.Vfx, "hit", point, row.Radius);
-                Relay.Sound(row.Id, "end", from);
-                Relay.Sound(row.Id, "hit", point);
-                if (anim) anim.Gesture("utility", 1.5f);
+                float dist = Vector3.Distance(from, point);
+                float time = row.Interval > 0f ? Mathf.Clamp(dist / Mathf.Max(1f, row.Range) * row.Interval, MindTravel.MinTime, row.Interval) : MindTravel.MinTime;
                 MeltyTest.Report("project-mind", true, characterBody.baseNameToken);
+                outer.SetNextState(new MindTravel { RowOverride = row, From = from, To = point, Time = time });
+                return;
             }
             else
             {
@@ -244,6 +242,106 @@ namespace DeadlockOfRain.States
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Pain;
     }
 
+    /// <summary>Project Mind's flight (creator, 2026-10-25: "a moment she turn in to purple vfx and card and travel to the location"):
+    /// MindPort hands over From, To and Time; on every machine her model is hidden and a cloud of purple smoke and cards (the
+    /// "travel" visual) flies with her body; the owner carries the body along a low arc with gravity off, the server keeps her
+    /// untouchable (HiddenInvincibility). At the end she lands exactly on the spot and reappears in a burst ("hit").</summary>
+    public sealed class MindTravel : DlrState
+    {
+        public Vector3 From, To;
+        public float Time;
+        /// <summary>The shortest flight, for a spot right next to her (s).</summary>
+        public const float MinTime = 0.4f;
+        CharacterModel model;
+        GameObject cloud;
+        bool antiGravity, landed;
+
+        public override void OnEnter()
+        {
+            base.OnEnter();
+            if (row == null) return;
+            if (Time <= 0f) Time = MinTime;
+            model = characterBody.modelLocator && characterBody.modelLocator.modelTransform ? characterBody.modelLocator.modelTransform.GetComponent<CharacterModel>() : null;
+            if (model) model.invisibilityCount++;
+            // where she leaves: she bursts into smoke and cards
+            Vfx.Play(row.Vfx, "end", From, row.Radius);
+            Fx.Sound(row.Id, "end", From);
+            cloud = Vfx.Play(row.Vfx, "travel", characterBody.corePosition, row.Radius, transform);
+            if (Server) characterBody.AddTimedBuff(RoR2Content.Buffs.HiddenInvincibility, Time + 0.2f);
+            if (isAuthority && characterMotor)
+            {
+                var gp = characterMotor.gravityParameters; gp.channeledAntiGravityGranterCount++; characterMotor.gravityParameters = gp;
+                antiGravity = true;
+                characterMotor.velocity = Vector3.zero;
+            }
+        }
+
+        public override void FixedUpdate()
+        {
+            base.FixedUpdate();
+            if (row == null) { if (isAuthority) outer.SetNextStateToMain(); return; }
+            if (isAuthority && characterMotor)
+            {
+                float t = Mathf.Clamp01(fixedAge / Time);
+                // ease in and out, on a low arc (higher for a longer trip, at most 3 m)
+                float s = t * t * (3f - 2f * t);
+                float lift = Mathf.Min(3f, Vector3.Distance(From, To) * 0.08f) * Mathf.Sin(Mathf.PI * t);
+                var p = Vector3.Lerp(From, To, s) + Vector3.up * lift;
+                // the body's position is its centre, From/To are the feet
+                characterMotor.Motor.SetPosition(p + (characterBody.corePosition - characterBody.footPosition));
+                characterMotor.velocity = Vector3.zero;
+            }
+            if (fixedAge >= Time && isAuthority) outer.SetNextStateToMain();
+        }
+
+        void Land()
+        {
+            if (landed) return;
+            landed = true;
+            if (isAuthority)
+            {
+                TeleportHelper.TeleportBody(characterBody, To, false);
+                if (characterMotor)
+                {
+                    characterMotor.velocity = Vector3.zero;
+                    if (antiGravity) { var gp = characterMotor.gravityParameters; gp.channeledAntiGravityGranterCount--; characterMotor.gravityParameters = gp; antiGravity = false; }
+                }
+            }
+        }
+
+        public override void OnExit()
+        {
+            if (row != null)
+            {
+                Land();
+                if (model) model.invisibilityCount--;
+                Vfx.Stop(cloud, 0.6f);
+                // where she lands: she pulls back together out of the smoke
+                Vfx.Play(row.Vfx, "hit", To, row.Radius);
+                Fx.Sound(row.Id, "hit", To);
+                if (anim) { anim.Gesture("utility", 1.5f); if (anim.Springs) anim.Springs.Reset(); }
+                if (Server) characterBody.ClearTimedBuffs(RoR2Content.Buffs.HiddenInvincibility);
+                MeltyTest.Report("mind-travel", true, characterBody.baseNameToken);
+            }
+            base.OnExit();
+        }
+
+        // nothing cuts the flight short
+        public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Frozen;
+
+        public override void OnSerialize(NetworkWriter writer)
+        {
+            base.OnSerialize(writer);
+            writer.Write(From); writer.Write(To); writer.Write(Time);
+        }
+
+        public override void OnDeserialize(NetworkReader reader)
+        {
+            base.OnDeserialize(reader);
+            From = reader.ReadVector3(); To = reader.ReadVector3(); Time = reader.ReadSingle();
+        }
+    }
+
     // ---------------- Wraith: Full Auto (R) ----------------
     /// <summary>The reload clip in a burst of purple smoke: the magazine is full, and buff (its attackSpeedAdd: the fire rate) stays on
     /// until that magazine is empty; GunState then reloads at the normal speed, and the server takes the buff off when the reload is
@@ -257,7 +355,13 @@ namespace DeadlockOfRain.States
         {
             base.OnEnter();
             Sound("cast");
-            if (anim) anim.Gesture("reload", 1.6f);
+            // Deadlock's own Full Auto cast, fitted to the move: it ends as the magazine goes in (the 3 s reload clip at x1.6 ran
+            // on long after she could fire again; creator, 2026-10-25)
+            if (anim)
+            {
+                float len = anim.ClipLength("special");
+                anim.Gesture(len > 0f ? "special" : "reload", len > 0f ? len / Mathf.Max(0.1f, row.Duration) : 1.6f);
+            }
             Vfx.Play(row.Vfx, "cast", characterBody.corePosition, characterBody.radius, transform);
             WraithAura.Ensure(characterBody);
             var gun = Survivors.RowFor(skillLocator ? skillLocator.primary : null);

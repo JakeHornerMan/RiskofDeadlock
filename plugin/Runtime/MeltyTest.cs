@@ -1298,6 +1298,23 @@ namespace DeadlockOfRain
             var gunRow = body ? Survivors.RowFor(body.skillLocator.primary) : null;
             var fa = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "full_auto");
             if (!rt || gunRow == null) { why[0] = "wraith: no runtime or gun; "; yield break; }
+            // her face: Deadlock paints it in vertex colours (heroes.vertexColorMaterials), so the head's mesh carries colours
+            // that are not all white (an older cache, without them, drew a flat white face)
+            foreach (var listed in hero.VertexColorMaterials)
+            {
+                if (listed == "none") continue;
+                bool coloured = false;
+                var model = body.modelLocator ? body.modelLocator.modelTransform : null;
+                if (model)
+                    foreach (var smr in model.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                    {
+                        if (!smr.sharedMaterial || !smr.sharedMesh || smr.sharedMaterial.name.IndexOf(listed, System.StringComparison.OrdinalIgnoreCase) < 0) continue;
+                        foreach (var c in smr.sharedMesh.colors32) if (c.r < 250 || c.g < 250 || c.b < 250) { coloured = true; break; }
+                    }
+                Log.Info($"Melty test: {hero.Id} material {listed}: vertex colours {(coloured ? "kept" : "MISSING (all white)")}");
+                Report("vertex-colours", coloured, body.baseNameToken);
+                if (!coloured) why[0] += $"vertex-colours: {listed} has none; ";
+            }
             var fwd = arenaForward;
             var spot = arena != Vector3.zero ? arena : body.footPosition;
             string[] names = { "bleed", "crit", "stun", "burn" };
@@ -1384,7 +1401,17 @@ namespace DeadlockOfRain
                     yield return null;
                 }
                 fireBody = null;
-                yield return new WaitForSeconds(0.5f);
+                // the reload (normal speed once Full Auto's magazine is spent) lasts reloadTime: as long as her reload clip
+                float r0 = Time.time, reloaded = -1f;
+                while (Time.time - r0 < gunRow.ReloadTime + 2f)
+                {
+                    if (!rt.Reloading) { reloaded = Time.time - r0; break; }
+                    yield return null;
+                }
+                bool reloadOk = reloaded >= gunRow.ReloadTime - 0.15f && reloaded <= gunRow.ReloadTime + 0.3f;
+                Log.Info($"Melty test: {hero.Id} reload took {reloaded:F2} s (sheet {gunRow.ReloadTime:F1} s)");
+                Report("reload-time", reloadOk, body.baseNameToken);
+                if (!reloadOk) why[0] += $"reload-time: {reloaded:F2} s, sheet {gunRow.ReloadTime:F1} s; ";
                 bool off = !States.GunState.FullAutoOn(body);
                 float plain = gunRow.ClipSize * gunRow.Interval;
                 Log.Info($"Melty test: {hero.Id} full auto: magazine {filled}/{gunRow.ClipSize}, buff {on}, emptied in {spent:F2} s (plain gun {plain:F2} s), buff off after the reload {off}");
@@ -1534,17 +1561,36 @@ namespace DeadlockOfRain
             us.Reset();
             us.ExecuteIfReady();
             float peak = y0;
-            for (float w = 0f; w < 1.6f; w += Time.deltaTime)
+            // the flight (MindTravel): hidden, untouchable, and over in its time
+            var cm = body.modelLocator && body.modelLocator.modelTransform ? body.modelLocator.modelTransform.GetComponent<CharacterModel>() : null;
+            var weaponEsm = EntityStateMachine.FindByCustomName(body.gameObject, "Weapon");
+            bool sawTravel = false, hiddenAll = true, untouchable = true, shotTravel = false;
+            float travelStart = -1f, travelEnd = -1f, travelTime = 0f;
+            for (float w = 0f; w < 3.5f; w += Time.deltaTime)
             {
                 body.inputBank.aimDirection = up;
                 if (DevShots && w > 0.4f && w < 0.45f) Shot(hero.Id + "_mind_air");
                 peak = Mathf.Max(peak, body.footPosition.y);
+                var tr = weaponEsm ? weaponEsm.state as States.MindTravel : null;
+                if (tr != null)
+                {
+                    if (!sawTravel) { sawTravel = true; travelStart = Time.time; travelTime = tr.Time; }
+                    if (!(cm && cm.invisibilityCount > 0)) hiddenAll = false;
+                    if (!body.HasBuff(RoR2Content.Buffs.HiddenInvincibility)) untouchable = false;
+                    if (DevShots && !shotTravel && Time.time - travelStart > travelTime * 0.5f) { shotTravel = true; Shot(hero.Id + "_mind_travel"); }
+                }
+                else if (sawTravel && travelEnd < 0f) travelEnd = Time.time;
                 yield return null;
             }
             Log.Info($"Melty test: {hero.Id} project mind in the air: from {y0:F1} up to {peak:F1} m");
             bool airOk = peak - y0 > 4f;
             Report("mind-air", airOk, body.baseNameToken);
             if (!airOk) why[0] += $"mind-air: rose only {peak - y0:F1} m; ";
+            float took = travelEnd > 0f ? travelEnd - travelStart : -1f;
+            bool travelOk = sawTravel && hiddenAll && untouchable && took > 0f && Mathf.Abs(took - travelTime) < 0.25f && cm && cm.invisibilityCount == 0;
+            Log.Info($"Melty test: {hero.Id} project mind flight: seen {sawTravel}, hidden {hiddenAll}, untouchable {untouchable}, took {took:F2} s (planned {travelTime:F2}), shown again {(cm ? cm.invisibilityCount == 0 : false)}");
+            Report("mind-travel", travelOk, body.baseNameToken);
+            if (!travelOk) why[0] += $"mind-travel: seen {sawTravel}, hidden {hiddenAll}, untouchable {untouchable}, took {took:F2}/{travelTime:F2} s; ";
             // back down to the test spot
             TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
             if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;

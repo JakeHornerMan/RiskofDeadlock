@@ -29,7 +29,7 @@ namespace DeadlockOfRain
             {
                 case "wraith_gun": return WraithGun(moment, at);
                 case "wraith_card": return WraithCard(moment, at, radius, follow, angle);
-                case "wraith_mind": return WraithMind(moment, at, radius, to);
+                case "wraith_mind": return WraithMind(moment, at, radius, to, follow);
                 case "wraith_fullauto": return WraithFullAuto(moment, at, radius, follow);
                 case "wraith_tk": return WraithTk(moment, at, radius, follow, to);
             }
@@ -255,7 +255,7 @@ namespace DeadlockOfRain
         }
 
         // ------------------------------------------------------------------ Project Mind
-        static GameObject WraithMind(string moment, Vector3 at, float radius, Vector3? to)
+        static GameObject WraithMind(string moment, Vector3 at, float radius, Vector3? to, Transform follow)
         {
             switch (moment)
             {
@@ -282,6 +282,38 @@ namespace DeadlockOfRain
                     Particles(bad, "mat_smoke", new Color(0.9f, 0.3f, 0.35f, 0.6f), rate: 12, life: 0.8f, speed: 0.3f, size: 0.8f, shapeRadius: radius, ring: true);
                     bad.SetActive(false);
                     root.AddComponent<MindMarker>();
+                    return root;
+                }
+                case "travel":
+                {
+                    // her flight (MindTravel, every machine, riding her hidden body): a dense cloud of purple smoke with a lilac
+                    // core, cards whirling round it, suits and sparks shedding behind, a ribbon trail and a light
+                    var root = Root(at, 0f, follow);
+                    Particles(root, "mat_smoke", wraithSmoke, rate: 90, life: 0.7f, speed: 0.6f, size: 1.4f, shapeRadius: 0.5f, world: true);
+                    Particles(root, "mat_smoke", wraithSmokeDark, rate: 40, life: 0.9f, speed: 0.4f, size: 1.8f, shapeRadius: 0.4f, world: true);
+                    Particles(root, "mat_glow", wraithLilac, rate: 40, life: 0.25f, speed: 0f, size: 1.6f);
+                    Particles(root, "mat_glow", wraithViolet, rate: 50, life: 0.5f, speed: 0.4f, size: 1f, shapeRadius: 0.4f, world: true);
+                    Particles(root, "mat_spark", wraithMagenta, rate: 50, life: 0.4f, speed: 2f, size: 0.05f, shapeRadius: 0.4f, world: true);
+                    for (int f = 0; f < 4; f++)
+                        Symbols(root, "wraith_suits_tex", f, f % 2 == 0 ? wraithLilac : wraithMagenta, rate: 10, life: 0.6f, speed: 1f, size: 0.35f, shapeRadius: 0.5f, world: true);
+                    var whirl = new GameObject("whirl"); whirl.transform.SetParent(root.transform, false);
+                    whirl.AddComponent<Spin>().DegPerSec = 540f;
+                    for (int i = 0; i < 5; i++)
+                    {
+                        var holder = new GameObject("card"); holder.transform.SetParent(whirl.transform, false);
+                        float a = i * Mathf.PI * 2f / 5f;
+                        holder.transform.localPosition = new Vector3(Mathf.Cos(a) * 0.8f, (i % 2 == 0 ? 0.3f : -0.3f), Mathf.Sin(a) * 0.8f);
+                        var card = PropModels.Build("wraith_card_prop");
+                        if (card != null)
+                        {
+                            card.Root.transform.SetParent(holder.transform, false);
+                            card.Root.transform.localScale = Vector3.one * ModelBuilder.GlobalScale * 3.5f;
+                        }
+                        holder.AddComponent<Tumble>().DegPerSec = 600f + i * 60f;
+                    }
+                    Trail(root, wraithViolet, 0.9f, 0.4f);
+                    Trail(whirl, wraithLilac, 0.12f, 0.25f);
+                    Light(root, wraithViolet, 6f, 2f, Vector3.zero).gameObject.AddComponent<Flicker>();
                     return root;
                 }
                 case "end":

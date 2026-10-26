@@ -421,6 +421,13 @@ namespace DeadlockOfRain
 
         public bool HasClip(string logicalName) => Clip(logicalName) != null;
 
+        /// <summary>The clip's length in seconds at speed 1 (0 when the hero has none): a move fits its clip to its own time.</summary>
+        public float ClipLength(string logicalName)
+        {
+            var c = Clip(logicalName);
+            return c != null && anim && anim[c] != null ? anim[c].length : 0f;
+        }
+
         /// <summary>Test mode: how the pose stands (the spin, the skeleton's tilt, the head's height above the feet, the spine).</summary>
         public string Describe()
         {
