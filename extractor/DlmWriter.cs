@@ -59,7 +59,9 @@ public static class DlmWriter
         return m;
     }
 
-    public static string Write(ModelRoot model, HeroEntry hero, string dir, Action<string> log, Func<string, VmatInfo?>? vmat = null)
+    /// <param name="morph">a morph target to bake into the vertices (1.9.0: Mina's bat flaps its wings with morph targets, not bones;
+    /// each pose is written as its own DLM by ExportProp), -1 for the mesh as it is</param>
+    public static string Write(ModelRoot model, HeroEntry hero, string dir, Action<string> log, Func<string, VmatInfo?>? vmat = null, int morph = -1)
     {
         // ---- skeleton: union of the joints of every skin used by an included mesh
         var meshNodes = model.LogicalNodes.Where(n => n.Mesh != null).ToList();
@@ -138,6 +140,14 @@ public static class DlmWriter
                 var ja = prim.GetVertexAccessor("JOINTS_0")?.AsVector4Array();
                 var wa = prim.GetVertexAccessor("WEIGHTS_0")?.AsVector4Array();
                 var ca = prim.GetVertexAccessor("COLOR_0")?.AsColorArray(1f);
+                // the morph target's offsets on top of the rest pose (glTF stores them as deltas)
+                IList<Vector3>? dp = null, dn = null;
+                if (morph >= 0 && morph < prim.MorphTargetsCount)
+                {
+                    var mt = prim.GetMorphTargetAccessors(morph);
+                    if (mt.TryGetValue("POSITION", out var mp)) dp = mp.AsVector3Array();
+                    if (mt.TryGetValue("NORMAL", out var mn2)) dn = mn2.AsVector3Array();
+                }
                 // primitives of one VRF mesh share one vertex buffer: add it once
                 int posAccessor = prim.GetVertexAccessor("POSITION").LogicalIndex;
                 if (!sharedBase.TryGetValue(posAccessor, out int baseV))
@@ -146,8 +156,10 @@ public static class DlmWriter
                 sharedBase[posAccessor] = baseV;
                 for (int v = 0; v < pa.Count; v++)
                 {
-                    pos.Add(P(pa[v]));
-                    nrm.Add(na != null ? P(na[v]) : Vector3.UnitY);
+                    pos.Add(P(dp != null ? pa[v] + dp[v] : pa[v]));
+                    var nv = na != null ? na[v] : Vector3.UnitY;
+                    if (dn != null) nv = Vector3.Normalize(nv + dn[v]);
+                    nrm.Add(P(nv));
                     var t = ta != null ? ta[v] : Vector2.Zero;
                     uv.Add(new Vector2(t.X, 1f - t.Y));
                     colors.Add(ca != null ? ca[v] : Vector4.One);

@@ -21,6 +21,7 @@
     "springGravity",
     "propBones",
     "steadyClips",
+    "holdBones",
     "aimPose",
     "idle",
     "run_n",
@@ -50,7 +51,8 @@
     "melee_heavy",
     "melee_air",
     "dash_air",
-    "slam"
+    "slam",
+    "float"
   ],
   "rows": [
     {
@@ -123,7 +125,11 @@
       "melee_heavy": "none",
       "melee_air": "none",
       "dash_air": "none",
-      "slam": "none"
+      "slam": "none",
+      "holdBones": [
+        "none"
+      ],
+      "float": "none"
     },
     {
       "hero": "abrams",
@@ -199,7 +205,11 @@
       "melee_heavy": "none",
       "melee_air": "none",
       "dash_air": "none",
-      "slam": "none"
+      "slam": "none",
+      "holdBones": [
+        "none"
+      ],
+      "float": "none"
     },
     {
       "hero": "seven",
@@ -272,7 +282,11 @@
       "melee_heavy": "none",
       "melee_air": "none",
       "dash_air": "none",
-      "slam": "none"
+      "slam": "none",
+      "holdBones": [
+        "none"
+      ],
+      "float": "none"
     },
     {
       "hero": "infernus",
@@ -344,7 +358,11 @@
       "melee_heavy": "none",
       "melee_air": "none",
       "dash_air": "none",
-      "slam": "none"
+      "slam": "none",
+      "holdBones": [
+        "none"
+      ],
+      "float": "none"
     },
     {
       "hero": "mokrill",
@@ -416,7 +434,11 @@
       "melee_heavy": "none",
       "melee_air": "none",
       "dash_air": "none",
-      "slam": "none"
+      "slam": "none",
+      "holdBones": [
+        "none"
+      ],
+      "float": "none"
     },
     {
       "hero": "viscous",
@@ -488,7 +510,11 @@
       "melee_heavy": "none",
       "melee_air": "none",
       "dash_air": "none",
-      "slam": "none"
+      "slam": "none",
+      "holdBones": [
+        "none"
+      ],
+      "float": "none"
     },
     {
       "hero": "ratking",
@@ -565,7 +591,11 @@
       "melee_heavy": "none",
       "melee_air": "none",
       "dash_air": "none",
-      "slam": "none"
+      "slam": "none",
+      "holdBones": [
+        "none"
+      ],
+      "float": "none"
     },
     {
       "hero": "billy",
@@ -637,7 +667,11 @@
       "melee_heavy": "melee_quick_overhand_1",
       "melee_air": "melee_in_air_hit",
       "dash_air": "dash_air_forward",
-      "slam": "melee_in_air_dash_down"
+      "slam": "melee_in_air_dash_down",
+      "holdBones": [
+        "none"
+      ],
+      "float": "none"
     },
     {
       "hero": "wraith",
@@ -716,7 +750,95 @@
       "melee_heavy": "none",
       "melee_air": "none",
       "dash_air": "none",
-      "slam": "none"
+      "slam": "none",
+      "holdBones": [
+        "none"
+      ],
+      "float": "none"
+    },
+    {
+      "hero": "mina",
+      "upperBodyBone": "spine_1",
+      "gunArms": "LR",
+      "gunBone": "weaponPivot",
+      "gunHand": "hand_L",
+      "muzzle": "muzzle_fx",
+      "muzzleLeft": "none",
+      "muzzleForward": 0.0,
+      "clothParents": [
+        "none"
+      ],
+      "ragdollBones": [
+        "pelvis",
+        "spine_1",
+        "spine_3",
+        "head",
+        "arm_upper_L",
+        "arm_lower_L",
+        "arm_upper_R",
+        "arm_lower_R",
+        "leg_upper_L",
+        "leg_lower_L",
+        "leg_upper_R",
+        "leg_lower_R"
+      ],
+      "ragdollThickness": 0.28,
+      "rigPrefix": "none",
+      "loopSecondary": false,
+      "springRoots": [
+        "skirt_0",
+        "skirt_a_0_L",
+        "skirt_b_0_L",
+        "skirt_b_0_R",
+        "skirt_a_0_R",
+        "hair_0",
+        "hair_0_L",
+        "hair_0_R",
+        "purse_charm_0"
+      ],
+      "springStiffness": 0.12,
+      "springDamping": 0.1,
+      "springGravity": 9.0,
+      "propBones": [
+        "none"
+      ],
+      "steadyClips": [
+        "none"
+      ],
+      "aimPose": "vampirebat_weapon_stand_idle",
+      "idle": "vampirebat_weapon_stand_idle",
+      "run_n": "vampirebat_weapon_run_n",
+      "run_s": "vampirebat_weapon_run_s",
+      "run_e": "vampirebat_weapon_run_e",
+      "run_w": "vampirebat_weapon_run_w",
+      "sprint": "vampirebat_outofcombat_run_n",
+      "jump_start": "none",
+      "jump_air": "vampirebat_in_air_loop_down",
+      "land": "none",
+      "fire": "none",
+      "fire_alt": "none",
+      "reload": "vampirebat_reload_idle",
+      "secondary": "vampirebat_ability_rake",
+      "secondary_air": "none",
+      "utility": "none",
+      "utility_loop": "none",
+      "special_start": "vampirebat_ability_ult_start",
+      "special": "none",
+      "ult_start": "none",
+      "ult_loop": "none",
+      "ult_end": "none",
+      "special_loop": "vampirebat_ability_ult_loop",
+      "melee": "none",
+      "melee_alt": "none",
+      "death": "none",
+      "melee_heavy": "none",
+      "melee_air": "none",
+      "dash_air": "none",
+      "slam": "none",
+      "holdBones": [
+        "umbrella>hand_R"
+      ],
+      "float": "vampirebat_in_air_loop_glide"
     }
   ]
 }

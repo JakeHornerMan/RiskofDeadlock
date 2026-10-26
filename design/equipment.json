@@ -111,6 +111,17 @@
       "enigmaCompatible": true,
       "randomTrigger": true,
       "figure": "all"
+    },
+    {
+      "id": "eq_mina_mist",
+      "hero": "mina",
+      "skill": "mina_mist",
+      "pickupText": "Become a flock of bats for 5s, biting everything you fly through, then reform in a 3000% burst.",
+      "lore": "Every party ends. Hers end with the guests running for the doors and something with wings between them and it.",
+      "canDrop": true,
+      "enigmaCompatible": true,
+      "randomTrigger": true,
+      "figure": "all"
     }
   ]
 }

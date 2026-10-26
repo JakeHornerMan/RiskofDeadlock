@@ -581,6 +581,13 @@ namespace DeadlockOfRain
                     yield return TestWraith(master, hero, why);
                     kitWhy += why[0];
                 }
+                // Mina: Love Bites' rewards, the extra jump, the umbrella float, Sanguine Retreat's recast
+                if (hero.FloatFallSpeed > 0f)
+                {
+                    var why = new string[1];
+                    yield return TestMina(master, hero, why);
+                    kitWhy += why[0];
+                }
                 if (anim)
                 {
                     Log.Info($"Melty test: {hero.Id} gun drift from the hand over all skills: {anim.GunDrift * 100f:F1} cm");
@@ -637,7 +644,7 @@ namespace DeadlockOfRain
             // Commando holding Dust Devil spins in the same tornado
             string anyWhy = ""; bool anyTested = false;
             // (only when its hero is among the tested ones)
-            foreach (var bomb in SkillRow.All.Where(r => (r.Kind == "ult_selfbomb" || r.Kind == "ult_devil" || r.Kind == "ult_gooball" || r.Kind == "ult_swarm" || r.Kind == "ult_chains") && tested.Any(h => h.Id == r.Hero)).ToList())
+            foreach (var bomb in SkillRow.All.Where(r => (r.Kind == "ult_selfbomb" || r.Kind == "ult_devil" || r.Kind == "ult_gooball" || r.Kind == "ult_swarm" || r.Kind == "ult_chains" || r.Kind == "ult_mist") && tested.Any(h => h.Id == r.Hero)).ToList())
             {
                 master.TransformBody("CommandoBody");
                 yield return new WaitForSeconds(1.5f);
@@ -1159,7 +1166,7 @@ namespace DeadlockOfRain
                 }
 
                 // Storm Cloud can't be cut short (skills locked, he flies the whole time): wait it out before the next skill
-                float window = row.Slot == "primary" ? 6f : row.Kind == "storm_flight" ? row.Duration + 1.5f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
+                float window = row.Slot == "primary" ? 6f : row.Kind == "storm_flight" || row.Kind == "nox_flight" ? row.Duration + 1.5f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
                 float t0 = Time.time;
                 int shots = 0;
                 while (Time.time - t0 < window)
@@ -1597,6 +1604,111 @@ namespace DeadlockOfRain
             yield return new WaitForSeconds(0.5f);
         }
 
+        /// <summary>Mina (spec, 2026-10-22): twenty New Money bullets on one enemy put Love Bites on it (the debuff), take 10 s off
+        /// Nox Nostra and bring Rake back early; five more bites in the air with every jump spent give a jump back; high up with
+        /// Jump held the umbrella opens (about floatFallSpeed, the glide clip, no fall damage) and letting go closes it; Sanguine
+        /// Retreat's recast, Nox Nostra's planted swarm and Rake's hits were seen in their skill tests. why[0] = "" on success.</summary>
+        IEnumerator TestMina(CharacterMaster master, HeroRow hero, string[] why)
+        {
+            why[0] = "";
+            var body = master.GetBody();
+            var mr = body ? body.GetComponent<MinaRuntime>() : null;
+            var rt = body ? body.GetComponent<HeroRuntime>() : null;
+            var gunRow = body ? Survivors.RowFor(body.skillLocator.primary) : null;
+            if (!mr || !rt || gunRow == null) { why[0] = "mina: no runtime or gun; "; yield break; }
+            var fwd = arenaForward;
+            var spot = arena != Vector3.zero ? arena : body.footPosition;
+            KillTargets();
+            foreach (var n in new[] { "Weapon", "Body" }) { var esm = EntityStateMachine.FindByCustomName(body.gameObject, n); if (esm) esm.SetNextStateToMain(); }
+            TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+            if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+            var t = Summon(body, spot + fwd * 8f + Vector3.up * 0.5f);
+            if (!t) { why[0] += "love bites: no target; "; yield break; }
+            if (t.master && t.master.inventory) t.master.inventory.GiveItem(RoR2Content.Items.BoostHp, 400);
+            targets.Add(t);
+            yield return new WaitForSeconds(0.8f);
+
+            // 1. Love Bites: Rake and Nox Nostra on cooldown, then the gun held on one enemy until it carries 20 bites
+            var rake = body.skillLocator.secondary; var nox = body.skillLocator.special;
+            var rakeRow = Survivors.RowFor(rake); var noxRow = Survivors.RowFor(nox);
+            rake.Reset(); nox.Reset(); rake.DeductStock(1); nox.DeductStock(1);
+            rake.rechargeStopwatch = 0f; nox.rechargeStopwatch = 0f;
+            float n0 = nox.cooldownRemaining, t0 = Time.time;
+            rt.Reloading = false; rt.Ammo = (int)gunRow.ClipSize;
+            int bites = 0;
+            fireBody = body; fireUntil = Time.time + 14f;
+            body.skillLocator.primary.ExecuteIfReady();
+            while (Time.time - t0 < 14f)
+            {
+                if (!t || !t.healthComponent || !t.healthComponent.alive) break;
+                body.inputBank.aimDirection = (t.corePosition - body.inputBank.aimOrigin).normalized;
+                bites = mr.BitesOn(t.healthComponent);
+                if (bites >= 20) break;
+                yield return null;
+            }
+            fireBody = null;
+            float el = Time.time - t0;
+            yield return new WaitForSeconds(0.3f);
+            int stacks = t ? Buffs.Count(t, gunRow.Buff) : 0;
+            bool noxCut = nox.stock > 0 || nox.cooldownRemaining <= n0 - el - (noxRow != null ? noxRow.RefundSeconds : 10f) + 0.6f;
+            bool rakeCut = rake.stock > 0 && el < (rakeRow != null ? rakeRow.Cooldown : 8f) - 0.3f;
+            Log.Info($"Melty test: {hero.Id} love bites: {bites} on the target in {el:F1} s, debuff {stacks} stacks, Nox Nostra {nox.cooldownRemaining:F1} s left (from {n0:F1}), Rake ready {rake.stock > 0}");
+            Report("love-bites-work", bites >= 20 && stacks >= 15 && noxCut && rakeCut, body.baseNameToken);
+            if (bites < 20) why[0] += $"love bites: only {bites} counted; ";
+            if (stacks < 15) why[0] += $"love bites: the enemy shows {stacks} stacks; ";
+            if (!noxCut) why[0] += $"love bites: Nox Nostra not cut ({nox.cooldownRemaining:F1} s left after {el:F1} s); ";
+            if (!rakeCut) why[0] += $"love bites: Rake not back early (ready {rake.stock > 0}, {el:F1} s); ";
+
+            // 2. the extra jump: in the air with every jump spent, the next fifth bite gives one back
+            var m = body.characterMotor;
+            if (m && t && t.healthComponent && t.healthComponent.alive)
+            {
+                TeleportHelper.TeleportBody(body, spot + Vector3.up * 12f, false);
+                m.velocity = Vector3.zero;
+                yield return new WaitForFixedUpdate(); yield return new WaitForFixedUpdate();
+                m.jumpCount = body.maxJumpCount;
+                int j0 = m.jumpCount, before = mr.BitesOn(t.healthComponent);
+                int need = 5 - before % 5;
+                for (int i = 0; i < need; i++) mr.Bite(t.healthComponent);
+                bool jumpOk = m.jumpCount == j0 - 1 || mr.Bonus > 0;
+                Log.Info($"Melty test: {hero.Id} love bites jump: {need} bites in the air, jumps used {j0} -> {m.jumpCount}, stored {mr.Bonus}");
+                if (!jumpOk) why[0] += $"love bites: no jump back in the air ({j0} -> {m.jumpCount}); ";
+            }
+
+            // 3. the umbrella: 30 m up with Jump held, she drifts down slowly under it; letting go she falls
+            KillTargets();
+            TeleportHelper.TeleportBody(body, spot + Vector3.up * 30f, false);
+            if (m) { m.velocity = Vector3.zero; m.jumpCount = body.maxJumpCount; }
+            mr.TestHold = true;
+            yield return new WaitForSeconds(0.8f);
+            float y0 = body.transform.position.y;
+            yield return new WaitForSeconds(1f);
+            float fall = y0 - body.transform.position.y;
+            var anim = DeadlockAnimator.Of(body);
+            bool noFall = (body.bodyFlags & CharacterBody.BodyFlags.IgnoreFallDamage) != 0;
+            bool floatOk = mr.Floating && mr.Shown && Mathf.Abs(fall - hero.FloatFallSpeed) < 0.8f && anim && anim.Holding == "float" && noFall;
+            if (DevShots) Shot(hero.Id + "_umbrella");
+            mr.TestHold = false;
+            yield return new WaitForSeconds(0.6f);
+            float y1 = body.transform.position.y;
+            yield return new WaitForSeconds(0.3f);
+            float fast = (y1 - body.transform.position.y) / 0.3f;
+            bool closedOk = !mr.Floating && fast > hero.FloatFallSpeed * 2f;
+            Log.Info($"Melty test: {hero.Id} umbrella: fell {fall:F2} m in 1 s (want {hero.FloatFallSpeed:F1}), open {mr.Floating}, clip {(anim ? anim.Holding ?? "-" : "-")}, no fall damage {noFall}; let go: falling {fast:F1} m/s, open {mr.Floating}");
+            Report("umbrella-works", floatOk && closedOk, body.baseNameToken);
+            if (!floatOk) why[0] += $"umbrella: fell {fall:F2} m/s, open {mr.Floating}, clip {(anim ? anim.Holding ?? "-" : "-")}, no fall damage {noFall}; ";
+            if (!closedOk) why[0] += $"umbrella: let go but falls {fast:F1} m/s, open {mr.Floating}; ";
+            TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+            if (m) m.velocity = Vector3.zero;
+            yield return new WaitForSeconds(0.5f);
+
+            // 4. seen in the skill tests: Sanguine Retreat's recast (test mode recasts by itself inside its window), Nox Nostra's
+            // swarm planted, Rake's sweep landing
+            if (!seen.Contains("bat-blink-recast")) why[0] += "sanguine retreat: no recast seen; ";
+            if (!seen.Contains("nox-planted")) why[0] += "nox nostra: the swarm was never planted; ";
+            if (!seen.Contains("rake-hits")) why[0] += "rake: hit nothing; ";
+        }
+
         /// <summary>Telekinesis off a cliff: an enemy thrown into a kill zone dies as Wraith's kill and pays her its gold.</summary>
         IEnumerator TestWraithThrowCredit(CharacterBody body, HeroRow hero, Vector3 fwd, Vector3 spot, string[] why)
         {
@@ -1877,7 +1989,9 @@ namespace DeadlockOfRain
         internal static float TargetDistance(SkillRow row) =>
             row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "krill_hop" || row.Kind == "banner_leap" || row.Kind == "mind_port" ? 10f :
             // Billy's bat and Bashdown reach a few metres (Bashdown locks on within 5 m)
-            row.Kind == "bat_combo" || row.Kind == "bashdown" ? 3.5f : 6f;
+            row.Kind == "bat_combo" || row.Kind == "bashdown" ? 3.5f :
+            // Rake's arc reaches 10 m
+            row.Kind == "rake_arc" ? 5f : 6f;
 
         /// <summary>Hold M1 for 1.5 s against the targets still standing (Tag Team's Krill is away: Mo punches), measuring damage.</summary>
         IEnumerator Punches(CharacterBody body, Effects fx)

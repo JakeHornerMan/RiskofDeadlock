@@ -1530,6 +1530,174 @@
       ],
       "tint": "none",
       "notes": "Happiest Mask's ghost, its ramp recoloured: Project Mind's see-through purple projection of Wraith"
+    },
+    {
+      "id": "tracer_mina",
+      "kind": "tracer",
+      "addressable": "RoR2/Base/Commando/TracerCommandoDefault.prefab",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "#FF4A66",
+      "notes": "New Money's tracer: a faint crimson line, Commando's tracer tinted"
+    },
+    {
+      "id": "mina_gun",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "New Money: a bright crimson muzzle flash with a quick light on every shot; a crimson spark burst and a bite mark on an enemy hit, sparks, a dust puff and a fading bullet mark on the world"
+    },
+    {
+      "id": "mina_bites",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Love Bites: Deadlock's bite mark (heart and fangs) popping over an enemy at every 5 stacks, red motes flying from it to Mina for the jump and cooldown cuts"
+    },
+    {
+      "id": "mina_umbrella",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "The umbrella float: a soft crimson glow under the open umbrella and a few dark petals and motes drifting off its rim"
+    },
+    {
+      "id": "mina_rake",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Rake: a crimson crescent trailing the umbrella's tip across the arc, Deadlock's Rake cone on the ground, blood-red sparks on each enemy hit and small red motes flying back into Mina for each heal"
+    },
+    {
+      "id": "mina_bats",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Sanguine Retreat: Mina bursts into Deadlock's bats (flapping) in a red flash, the swarm streams to the aim point with a dark-red trail, and reforms her in a ring of bats; Deadlock's marker where she will reform"
+    },
+    {
+      "id": "mina_nox",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Nox Nostra: bats lifting her into the sky, the aim circle on the ground with Deadlock's marker and a dark-red edge, then dozens of bats pouring down into the circle and swirling low over it for 6 s, biting what's inside"
+    },
+    {
+      "id": "mina_mist",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Mist Form: a dense, angry flock of dark-red bats with glowing eyes churning round the flier, lunging at enemies nearby, a red streak behind, clinging bats and a red spark burst on each hit; it spirals in, then blasts out in a 15 m ring of bats as the user reforms"
+    },
+    {
+      "id": "mina_bat_prop",
+      "kind": "prop",
+      "addressable": "models/particle/vampirebat_bat.vmdl",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Deadlock's bat (its wing poses are morph targets: extractor 1.9.0 writes each as its own frame), for every bat effect"
+    },
+    {
+      "id": "mina_bite_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/vampirebat/vampirebat_lovebites_icon.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Deadlock's Love Bites mark (a mask: heart in red, fangs in yellow, jaw in blue), recoloured at runtime"
+    },
+    {
+      "id": "mina_marker_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/vampirebat/vampirebat_blink_preview_marker_symbol_psd_7dd7528f.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Deadlock's Sanguine Retreat marker symbol, where she reforms and under Nox Nostra's circle"
+    },
+    {
+      "id": "mina_cone_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/projected/vampirebat_steallife_preview_cone_projected_psd_4f7edd39.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Deadlock's Rake cone, laid on the ground in front of her as she swings"
     }
   ]
 }

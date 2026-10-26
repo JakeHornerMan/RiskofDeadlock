@@ -1165,6 +1165,126 @@
       "gap": 0,
       "chain": 0,
       "skipTakes": "none"
+    },
+    {
+      "id": "mina_select",
+      "hero": "mina",
+      "trigger": "select",
+      "skill": "none",
+      "kills": 0,
+      "group": "vampirebat/vampirebat_select",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "mina_unselect",
+      "hero": "mina",
+      "trigger": "unselect",
+      "skill": "none",
+      "kills": 0,
+      "group": "vampirebat/vampirebat_unselect",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "mina_rake_vo",
+      "hero": "mina",
+      "trigger": "skill",
+      "skill": "mina_rake",
+      "kills": 0,
+      "group": "vampirebat/vampirebat_use_power1",
+      "chance": 0.3,
+      "gap": 10,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "mina_retreat_vo",
+      "hero": "mina",
+      "trigger": "skill",
+      "skill": "mina_retreat",
+      "kills": 0,
+      "group": "vampirebat/vampirebat_use_power2",
+      "chance": 0.4,
+      "gap": 10,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "mina_nox_vo",
+      "hero": "mina",
+      "trigger": "skill",
+      "skill": "mina_nox",
+      "kills": 0,
+      "group": "vampirebat/vampirebat_use_power4",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "mina_mist_vo",
+      "hero": "mina",
+      "trigger": "skill",
+      "skill": "mina_mist",
+      "kills": 0,
+      "group": "vampirebat/vampirebat_use_power3",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "mina_streak4",
+      "hero": "mina",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 4,
+      "group": "vampirebat/vampirebat_killstreak_start",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "mina_streak7",
+      "hero": "mina",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 7,
+      "group": "vampirebat/vampirebat_killstreak_mid",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "mina_streak10",
+      "hero": "mina",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 10,
+      "group": "vampirebat/vampirebat_killstreak_high",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "mina_happy",
+      "hero": "mina",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "vampirebat/vampirebat_happy",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     }
   ]
 }

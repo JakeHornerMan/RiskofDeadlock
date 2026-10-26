@@ -1,0 +1,466 @@
+using System.Collections.Generic;
+using DeadlockOfRain.Sheets;
+using RoR2;
+using UnityEngine;
+
+namespace DeadlockOfRain
+{
+    /// <summary>Mina's visuals (creator, 2026-10-25: "the bat and red vfx just like deadlock"): built like the others from RoR2's
+    /// glow, spark, smoke and tracer materials tinted crimson and blood red, with Deadlock's own bat model (flapping, through
+    /// <see cref="BatFlock"/>) and her Deadlock textures read from the player's install (effects kind texture): the Love Bites
+    /// mark (heart and fangs) popping over enemies, Sanguine Retreat's marker where she reforms and under Nox Nostra's circle, and
+    /// Rake's cone on the ground. Bats everywhere: a stream of them is Sanguine Retreat, dozens swirling low are Nox Nostra, a
+    /// dense furious flock with glowing eyes is Mist Form, which blasts out in a ring of bats when it reforms.</summary>
+    public static partial class Vfx
+    {
+        static readonly Color minaCrimson = new Color(0.88f, 0.07f, 0.2f), minaBlood = new Color(0.55f, 0.02f, 0.07f),
+                              minaRose = new Color(1f, 0.32f, 0.42f), minaDark = new Color(0.22f, 0.02f, 0.05f, 0.9f),
+                              minaSmoke = new Color(0.45f, 0.06f, 0.1f, 0.85f), minaGlow = new Color(1f, 0.12f, 0.2f);
+
+        static GameObject Mina(string id, string moment, Vector3 at, float radius, Transform follow, Vector3? to, float life)
+        {
+            switch (id)
+            {
+                case "mina_gun": return MinaGun(moment, at, follow, to);
+                case "mina_bites": return MinaBites(moment, at, follow, to);
+                case "mina_umbrella": return MinaUmbrella(moment, at, follow);
+                case "mina_rake": return MinaRake(moment, at, radius, follow, to);
+                case "mina_bats": return MinaBats(moment, at, radius, follow);
+                case "mina_nox": return MinaNox(moment, at, radius, follow, life);
+                case "mina_mist": return MinaMist(moment, at, radius, follow);
+            }
+            return null;
+        }
+
+        /// <summary>A bat swarm hung under a visual's root (so finding it and stopping the root take it too).</summary>
+        static BatSwarm Swarm(GameObject root, int count, Vector3 at, Transform follow, float radius, bool furious = false, float size = 1f)
+        {
+            var s = BatSwarm.Make(count, at, follow, radius, furious, size);
+            s.transform.SetParent(root.transform, true);
+            return s;
+        }
+
+        /// <summary>A few glowing motes arcing from a point into a body (Rake's heal, a Love Bites reward).</summary>
+        static void Motes(Vector3 from, Vector3 to, Color c, int count, float time)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var root = Root(from, time + 0.3f, null);
+                Particles(root, "mat_glow", c, rate: 70, life: 0.18f, speed: 0f, size: 0.2f, world: true);
+                var m = root.AddComponent<ArcMover>();
+                m.From = from + Random.insideUnitSphere * 0.4f; m.To = to + Random.insideUnitSphere * 0.2f; m.Time = time * Random.Range(0.8f, 1.2f); m.Height = Random.Range(0.6f, 1.6f);
+            }
+        }
+
+        // ------------------------------------------------------------------ New Money
+
+        static GameObject MinaGun(string moment, Vector3 at, Transform follow, Vector3? to)
+        {
+            switch (moment)
+            {
+                case "muzzle":
+                {
+                    // a bright crimson flash at the pistol's muzzle with a quick light (about 0.05 s)
+                    var root = Root(at, 0.25f, follow);
+                    Particles(root, "mat_glow", minaRose, count: 3, life: 0.06f, speed: 0f, size: 0.55f);
+                    Particles(root, "mat_spark", minaCrimson, count: 6, life: 0.12f, speed: 6f, size: 0.05f, shapeRadius: 0.03f, stretch: 3f);
+                    var l = Light(root, minaGlow, 5f, 6f, Vector3.zero);
+                    var f = l.gameObject.AddComponent<FadeLight>(); f.Life = 0.06f; f.From = 6f;
+                    return root;
+                }
+                case "hit":
+                {
+                    // on an enemy: a crimson spark burst and a puff of red
+                    Burst(at, "mat_spark", minaCrimson, 10, 0.25f, 7f, 0.07f, 0.05f);
+                    Burst(at, "mat_glow", minaRose, 2, 0.12f, 0f, 0.6f);
+                    Burst(at, "mat_smoke", minaSmoke, 2, 0.4f, 0.8f, 0.35f, 0.1f);
+                    return null;
+                }
+                case "impact":
+                {
+                    // on the world: sparks, a dust puff and a bullet mark that fades
+                    var normal = to.HasValue ? (to.Value - at).normalized : Vector3.up;
+                    Burst(at, "mat_spark", new Color(1f, 0.75f, 0.55f), 7, 0.2f, 6f, 0.05f, 0.03f);
+                    Burst(at + normal * 0.05f, "mat_dust", new Color(0.6f, 0.55f, 0.5f, 0.7f), 2, 0.5f, 0.6f, 0.3f, 0.05f);
+                    BulletMark(at, normal);
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        static Material markMat;
+        /// <summary>A small dark scorch where a bullet hit the world, fading over a few seconds.</summary>
+        static void BulletMark(Vector3 at, Vector3 normal)
+        {
+            if (!markMat)
+            {
+                var tex = new Texture2D(32, 32, TextureFormat.RGBA32, false);
+                for (int y = 0; y < 32; y++)
+                    for (int x = 0; x < 32; x++)
+                    {
+                        float d = Vector2.Distance(new Vector2(x, y), new Vector2(15.5f, 15.5f)) / 16f;
+                        tex.SetPixel(x, y, new Color(0.05f, 0.03f, 0.03f, Mathf.Clamp01(1f - d * d) * 0.85f));
+                    }
+                tex.Apply();
+                markMat = new Material(Shader.Find("Sprites/Default")) { mainTexture = tex, renderQueue = 2990 };
+            }
+            var root = Root(at + normal * 0.02f, 4f, null);
+            var q = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            Object.Destroy(q.GetComponent<Collider>());
+            q.transform.SetParent(root.transform, false);
+            q.transform.rotation = Quaternion.LookRotation(-normal);
+            q.transform.localScale = Vector3.one * 0.18f;
+            var mr = q.GetComponent<MeshRenderer>();
+            mr.sharedMaterial = markMat;
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var p = q.AddComponent<QuadPulse>(); p.From = 0.18f; p.To = 0.2f; p.Life = 4f; p.Tint = Color.white;
+        }
+
+        // ------------------------------------------------------------------ Love Bites
+
+        static Material biteMat;
+        /// <summary>Deadlock's Love Bites mark is a mask (the heart in red, the fangs in yellow and magenta, the jaw in blue): it is
+        /// painted here as Deadlock shows it, a crimson heart with white fangs on a dark jaw. Null without the texture.</summary>
+        static Material BiteMat()
+        {
+            if (biteMat) return biteMat;
+            var row = Sheet.Effect("mina_bite_tex");
+            var src = row != null ? DeadlockCache.Image(row.Addressable) : null;
+            if (!src) return null;
+            Color[] px;
+            try { px = src.GetPixels(); }
+            catch { return null; }
+            var outPx = new Color[px.Length];
+            for (int i = 0; i < px.Length; i++)
+            {
+                var c = px[i];
+                float a = Mathf.Max(c.r, Mathf.Max(c.g, c.b));
+                Color col;
+                if (c.g > 0.5f && c.r > 0.5f || c.r > 0.5f && c.b > 0.5f) col = new Color(1f, 0.96f, 0.94f);      // fangs
+                else if (c.b > 0.5f) col = new Color(0.3f, 0.02f, 0.06f);                                           // the jaw
+                else if (c.g > 0.5f) col = new Color(0.6f, 0.04f, 0.1f);                                            // the edge
+                else col = new Color(0.9f, 0.08f, 0.2f);                                                            // the heart
+                col.a = a;
+                outPx[i] = col;
+            }
+            var tex = new Texture2D(src.width, src.height, TextureFormat.RGBA32, true);
+            tex.SetPixels(outPx); tex.Apply();
+            tex.wrapMode = TextureWrapMode.Clamp;
+            biteMat = new Material(Shader.Find("Sprites/Default")) { mainTexture = tex, renderQueue = 3100 };
+            return biteMat;
+        }
+
+        static GameObject MinaBites(string moment, Vector3 at, Transform follow, Vector3? to)
+        {
+            switch (moment)
+            {
+                case "trigger":
+                {
+                    // the bite mark pops over the enemy, and red motes fly from it to Mina
+                    var root = Root(at + Vector3.up * 1.2f, 0.9f, null);
+                    var mat = BiteMat();
+                    if (mat)
+                    {
+                        var q = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                        Object.Destroy(q.GetComponent<Collider>());
+                        q.transform.SetParent(root.transform, false);
+                        q.AddComponent<FaceCamera>();
+                        var mr = q.GetComponent<MeshRenderer>(); mr.sharedMaterial = mat; mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                        var p = q.AddComponent<QuadPulse>(); p.From = 0.5f; p.To = 1.1f; p.Life = 0.8f; p.Tint = Color.white;
+                    }
+                    Particles(root, "mat_glow", minaCrimson, count: 4, life: 0.25f, speed: 0f, size: 0.9f);
+                    if (to.HasValue) Motes(at, to.Value, minaRose, 3, 0.4f);
+                    return root;
+                }
+                case "jump":
+                {
+                    // a jump back: a ring of red at her feet and a few bats fluttering up
+                    Ring(at + Vector3.up * 0.1f, minaCrimson, 0.3f, 1.6f, 0.35f, 0.08f);
+                    var root = Root(at, 1.2f, null);
+                    var s = Swarm(root, 4, at + Vector3.up * 0.5f, null, 0.5f, false, 0.6f);
+                    s.Burst(4f, 0.9f);
+                    return root;
+                }
+            }
+            return null;
+        }
+
+        // ------------------------------------------------------------------ the umbrella
+
+        static GameObject MinaUmbrella(string moment, Vector3 at, Transform follow)
+        {
+            if (moment != "loop") return null;
+            // a soft crimson glow under the open umbrella, dark petals and motes drifting off its rim
+            var root = Root(at, 0f, follow);
+            Light(root, minaGlow, 3.5f, 1.4f, Vector3.down * 0.3f);
+            Particles(root, "mat_glow", minaCrimson, rate: 6, life: 0.6f, speed: 0f, size: 0.8f);
+            Particles(root, "mat_glow", minaRose, rate: 14, life: 1.1f, speed: 0.3f, size: 0.08f, shapeRadius: 0.6f, ring: true, world: true, gravity: 0.05f);
+            Particles(root, "mat_smoke", minaDark, rate: 5, life: 1.2f, speed: 0.2f, size: 0.18f, shapeRadius: 0.65f, ring: true, world: true, gravity: 0.08f);
+            return root;
+        }
+
+        // ------------------------------------------------------------------ Rake
+
+        static GameObject MinaRake(string moment, Vector3 at, float radius, Transform follow, Vector3? to)
+        {
+            var dir = to.HasValue ? to.Value - at : Vector3.forward;
+            var flat = dir; flat.y = 0; flat = flat.sqrMagnitude > 1e-4f ? flat.normalized : Vector3.forward;
+            switch (moment)
+            {
+                case "cast":
+                {
+                    // Deadlock's Rake cone laid on the ground in front of her for the swing
+                    var foot = follow ? follow.position : at;
+                    if (Physics.Raycast(foot + Vector3.up, Vector3.down, out var g, 20f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) foot = g.point;
+                    var root = Root(foot + Vector3.up * 0.08f, 0.6f, null);
+                    root.transform.rotation = Quaternion.LookRotation(flat);
+                    var q = SymbolQuad(root, "mina_cone_tex", new Color(minaCrimson.r, minaCrimson.g, minaCrimson.b, 0.55f), radius * 2f, false);
+                    if (q)
+                    {
+                        // the cone's tip at her feet, pointing along the swing
+                        q.transform.localPosition = Vector3.forward * radius * 0.5f;
+                        var p = q.AddComponent<QuadPulse>(); p.From = radius * 1.6f; p.To = radius * 2f; p.Life = 0.55f; p.Tint = new Color(minaCrimson.r, minaCrimson.g, minaCrimson.b, 0.55f);
+                    }
+                    return root;
+                }
+                case "swing":
+                {
+                    // a crimson crescent trailing the umbrella's tip across the 180 deg arc, a wider faint one out to the reach
+                    var root = Root(at, 0.6f, null);
+                    root.transform.rotation = Quaternion.LookRotation(flat);
+                    AddArc(root, minaCrimson, 2.4f, 0.35f, 0.16f);
+                    AddArc(root, new Color(minaRose.r, minaRose.g, minaRose.b, 0.5f), 3.2f, 0.18f, 0.2f);
+                    AddArc(root, new Color(minaBlood.r, minaBlood.g, minaBlood.b, 0.35f), radius * 0.8f, 0.12f, 0.26f);
+                    Particles(root, "mat_spark", minaCrimson, count: 24, life: 0.3f, speed: 8f, size: 0.06f, shapeRadius: 1.5f, stretch: 2f);
+                    var fl = Light(root, minaGlow, 6f, 2.5f, Vector3.forward * 1.5f).gameObject.AddComponent<FadeLight>(); fl.Life = 0.3f; fl.From = 2.5f;
+                    return root;
+                }
+                case "hit":
+                {
+                    // blood-red sparks on the enemy, small red motes flying back into Mina for the heal
+                    Burst(at, "mat_spark", minaCrimson, 14, 0.3f, 8f, 0.07f, 0.1f);
+                    Burst(at, "mat_glow", minaBlood, 3, 0.2f, 0f, 1.0f);
+                    if (to.HasValue) Motes(at, to.Value, minaRose, 3, 0.35f);
+                    return null;
+                }
+                case "execute":
+                {
+                    Burst(at, "mat_spark", minaCrimson, 30, 0.45f, 11f, 0.09f, 0.2f);
+                    Burst(at, "mat_smoke", minaSmoke, 6, 0.7f, 2f, 0.6f, 0.3f);
+                    Flash(at, minaGlow, 6f, 0.25f, 5f);
+                    if (to.HasValue) Motes(at, to.Value, minaRose, 6, 0.45f);
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>A crescent of radius r swept from one side to the other over sweep seconds (180 deg in front of the root), then fading.</summary>
+        static void AddArc(GameObject root, Color c, float r, float width, float sweep)
+        {
+            var go = new GameObject("arc");
+            go.transform.SetParent(root.transform, false);
+            var lr = go.AddComponent<LineRenderer>();
+            lr.sharedMaterial = Mat("mat_tracer", c);
+            lr.useWorldSpace = false;
+            lr.positionCount = 0;
+            lr.widthCurve = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(0.7f, width), new Keyframe(1f, width * 0.5f));
+            lr.startColor = c; lr.endColor = c;
+            var a = go.AddComponent<ArcSweep>(); a.Radius = r; a.Sweep = sweep; a.Line = lr; a.Tint = c;
+        }
+
+        sealed class ArcSweep : MonoBehaviour
+        {
+            public float Radius, Sweep; public LineRenderer Line; public Color Tint;
+            float age;
+            void Update()
+            {
+                age += Time.deltaTime;
+                float t = Mathf.Clamp01(age / Mathf.Max(0.01f, Sweep));
+                int n = Mathf.Max(2, (int)(24 * t));
+                Line.positionCount = n;
+                // from her right to her left, a little rising as it goes (the umbrella swung up through the arc)
+                for (int i = 0; i < n; i++)
+                {
+                    float a = Mathf.Lerp(90f, 90f - 180f * t, (float)i / (n - 1));
+                    var p = Quaternion.Euler(0f, a, 0f) * Vector3.forward * Radius;
+                    Line.SetPosition(i, p + Vector3.up * (0.25f * i / n - 0.1f));
+                }
+                float fade = Mathf.Clamp01(1f - (age - Sweep) / 0.3f);
+                var c = new Color(Tint.r, Tint.g, Tint.b, Tint.a * fade);
+                Line.startColor = c; Line.endColor = c;
+            }
+        }
+
+        // ------------------------------------------------------------------ Sanguine Retreat
+
+        static GameObject MinaBats(string moment, Vector3 at, float radius, Transform follow)
+        {
+            switch (moment)
+            {
+                case "cast":
+                {
+                    // she bursts apart: a red flash, smoke and bats flying off in every direction
+                    Flash(at, minaGlow, 7f, 0.3f, 5f);
+                    Burst(at, "mat_smoke", minaSmoke, 8, 0.6f, 2.5f, 0.7f, 0.4f);
+                    Burst(at, "mat_glow", minaCrimson, 4, 0.2f, 0f, 1.6f);
+                    Ring(at, minaCrimson, 0.4f, 2.4f, 0.3f, 0.07f, true);
+                    var root = Root(at, 1.3f, null);
+                    Swarm(root, 8, at, null, 0.6f).Burst(7f, 1f);
+                    return root;
+                }
+                case "loop":
+                {
+                    // the swarm she is now: bats churning tight round where she flies, a dark-red streak behind them
+                    var root = Root(at, 0f, follow);
+                    var s = Swarm(root, 18, at, follow, Mathf.Max(0.7f, radius), false, 0.85f);
+                    s.Spread = 0.5f; s.Turns = 1.2f; s.Tightness = 9f;
+                    Particles(root, "mat_smoke", minaSmoke, rate: 40, life: 0.45f, speed: 0.3f, size: 0.5f, shapeRadius: 0.5f, world: true);
+                    Particles(root, "mat_glow", minaCrimson, rate: 30, life: 0.25f, speed: 0f, size: 0.35f, shapeRadius: 0.5f, world: true);
+                    Light(root, minaGlow, 5f, 2f, Vector3.zero);
+                    var trail = new GameObject("trail"); trail.transform.SetParent(root.transform, false);
+                    Trail(trail, minaCrimson, 0.45f, 0.3f);
+                    return root;
+                }
+                case "aim":
+                {
+                    // Deadlock's marker where she will reform
+                    var root = Root(at, 0f, null);
+                    SymbolQuad(root, "mina_marker_tex", new Color(minaRose.r, minaRose.g, minaRose.b, 0.85f), 1.1f, true);
+                    Particles(root, "mat_glow", minaCrimson, rate: 10, life: 0.4f, speed: 0f, size: 0.6f);
+                    return root;
+                }
+                case "end":
+                {
+                    // the bats pull back together into her
+                    var root = Root(at, 1.2f, follow);
+                    Ring(at, minaCrimson, 2.2f, 0.3f, 0.25f, 0.06f, true);
+                    Burst(at, "mat_smoke", minaSmoke, 6, 0.5f, 1.5f, 0.6f, 0.5f);
+                    Particles(root, "mat_glow", minaRose, count: 3, life: 0.2f, speed: 0f, size: 1.2f);
+                    Flash(at, minaGlow, 5f, 0.25f, 3f);
+                    return root;
+                }
+            }
+            return null;
+        }
+
+        // ------------------------------------------------------------------ Nox Nostra
+
+        static GameObject MinaNox(string moment, Vector3 at, float radius, Transform follow, float life)
+        {
+            switch (moment)
+            {
+                case "cast":
+                {
+                    // bats lift her into the air under the open umbrella
+                    var root = Root(at, 1.4f, null);
+                    var s = Swarm(root, 14, at, follow, 1.2f, false, 0.8f);
+                    s.Offset = Vector3.up * 1.5f; s.Turns = 1f;
+                    s.Burst(5f, 1.3f);
+                    Ring(at + Vector3.up * 0.1f, minaCrimson, 0.5f, 3f, 0.4f, 0.1f);
+                    Burst(at, "mat_smoke", minaSmoke, 8, 0.7f, 1.5f, 0.8f, 0.6f);
+                    return root;
+                }
+                case "loop":
+                {
+                    // a few bats circle under her the whole flight
+                    var root = Root(at, 0f, follow);
+                    var s = Swarm(root, 8, at, follow, 1.1f, false, 0.7f);
+                    s.Offset = Vector3.down * 0.4f; s.Turns = 0.7f; s.Spread = 0.4f;
+                    Light(root, minaGlow, 4f, 1f, Vector3.zero);
+                    return root;
+                }
+                case "aim":
+                {
+                    // the circle where the bats will land: Deadlock's marker in the middle, a dark-red glowing edge and a faint dome
+                    var root = Root(at, 0f, null);
+                    var mark = SymbolQuad(root, "mina_marker_tex", new Color(minaCrimson.r, minaCrimson.g, minaCrimson.b, 0.8f), 2.2f, false);
+                    if (mark) mark.transform.localPosition = Vector3.up * 0.1f;
+                    var edge = Particles(root, "mat_glow", minaCrimson, rate: 9f * radius, life: 0.5f, speed: 0f, size: 0.6f, shapeRadius: radius, ring: true);
+                    var sh = edge.shape; sh.radiusThickness = 0f;
+                    Particles(root, "mat_smoke", minaDark, rate: 3f * radius, life: 0.9f, speed: 0.2f, size: 0.5f, shapeRadius: radius, ring: true, upward: false);
+                    var dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    Object.Destroy(dome.GetComponent<Collider>());
+                    dome.transform.SetParent(root.transform, false);
+                    dome.transform.localScale = new Vector3(radius * 2f, radius * 0.5f, radius * 2f);
+                    dome.GetComponent<MeshRenderer>().sharedMaterial = Mat("mat_area", new Color(minaBlood.r, minaBlood.g, minaBlood.b, 0.5f));
+                    return root;
+                }
+                case "swarm":
+                {
+                    // dozens of bats pour down into the circle and swirl low over it, a red glow round its edge, for life seconds
+                    var root = Root(at, life > 0f ? life + 0.8f : 0f, null);
+                    var s = Swarm(root, 36, at + Vector3.up * 14f, null, radius * 0.85f);
+                    s.Center = at; s.Offset = Vector3.up * 1.4f; s.Spread = 1.2f; s.Turns = 0.35f; s.Tightness = 2.5f;
+                    var edge = Particles(root, "mat_glow", minaCrimson, rate: 10f * radius, life: 0.6f, speed: 0f, size: 0.7f, shapeRadius: radius, ring: true);
+                    var sh = edge.shape; sh.radiusThickness = 0f;
+                    Particles(root, "mat_smoke", minaSmoke, rate: 4f * radius, life: 1.2f, speed: 0.4f, size: 0.8f, shapeRadius: radius * 0.9f, flat: true, world: true);
+                    var mark = SymbolQuad(root, "mina_marker_tex", new Color(minaCrimson.r, minaCrimson.g, minaCrimson.b, 0.6f), radius * 0.9f, false);
+                    if (mark) mark.transform.localPosition = Vector3.up * 0.1f;
+                    Light(root, minaGlow, radius * 1.2f, 1.6f, Vector3.up * 1.5f);
+                    Ring(at + Vector3.up * 0.1f, minaCrimson, radius * 0.2f, radius, 0.5f, 0.15f);
+                    return root;
+                }
+                case "hit":
+                    Burst(at, "mat_spark", minaCrimson, 6, 0.25f, 5f, 0.06f, 0.1f);
+                    return null;
+            }
+            return null;
+        }
+
+        // ------------------------------------------------------------------ Mist Form
+
+        static GameObject MinaMist(string moment, Vector3 at, float radius, Transform follow)
+        {
+            switch (moment)
+            {
+                case "cast":
+                    Flash(at, minaGlow, 9f, 0.35f, 6f);
+                    Burst(at, "mat_smoke", minaSmoke, 12, 0.7f, 3f, 0.9f, 0.5f);
+                    Ring(at, minaCrimson, 0.5f, 3.5f, 0.35f, 0.12f, true);
+                    Shake(at, 10f, 1.5f, 0.25f);
+                    return null;
+                case "loop":
+                {
+                    // a dense, furious flock churning tight round the flier: darker red bats with glowing eyes, beating fast;
+                    // a red streak behind it. radius is the body's size: a big survivor makes a bigger cloud
+                    var root = Root(at, 0f, follow);
+                    int n = Mathf.Clamp(Mathf.RoundToInt(26 * radius), 26, 60);
+                    var s = Swarm(root, n, at, follow, radius, true, 0.9f);
+                    s.Spread = radius * 0.6f; s.Turns = 1.5f; s.Tightness = 11f;
+                    Particles(root, "mat_smoke", minaSmoke, rate: 30, life: 0.5f, speed: 0.4f, size: 0.6f * radius, shapeRadius: radius * 0.6f, world: true);
+                    Particles(root, "mat_glow", minaGlow, rate: 25, life: 0.2f, speed: 0f, size: 0.4f, shapeRadius: radius * 0.7f);
+                    Light(root, minaGlow, 6f * radius, 2.5f, Vector3.zero).gameObject.AddComponent<Flicker>();
+                    var trail = new GameObject("trail"); trail.transform.SetParent(root.transform, false);
+                    Trail(trail, minaCrimson, 0.5f * radius, 0.35f);
+                    return root;
+                }
+                case "hit":
+                {
+                    // a red spark burst, and a few bats cling to the enemy for a moment
+                    Burst(at, "mat_spark", minaCrimson, 16, 0.3f, 8f, 0.08f, 0.15f);
+                    Burst(at, "mat_glow", minaBlood, 3, 0.2f, 0f, 1.2f);
+                    var root = Root(at, 1.6f, follow);
+                    var s = Swarm(root, 3, at, follow, 0.5f, true, 0.7f);
+                    s.Tightness = 14f; s.Turns = 2f; s.AutoStop = 0.6f;
+                    return root;
+                }
+                case "end":
+                {
+                    // the flock spirals in, then blasts out in a ring of bats across the burst as the user reappears
+                    Flash(at, minaGlow, radius, 0.45f, 8f);
+                    Ring(at, minaCrimson, 0.5f, radius, 0.45f, 0.35f);
+                    Ring(at, minaRose, 0.5f, radius * 0.7f, 0.35f, 0.2f, true);
+                    Burst(at, "mat_smoke", minaSmoke, 24, 0.9f, radius * 0.6f, 1.4f, 1f);
+                    Burst(at, "mat_spark", minaCrimson, 50, 0.6f, radius, 0.12f, 0.5f);
+                    Shake(at, radius * 2f, 3f, 0.4f);
+                    var root = Root(at, 1.4f, null);
+                    Swarm(root, 40, at, null, 0.8f, true).Burst(radius * 1.3f, 1.2f);
+                    return root;
+                }
+            }
+            return null;
+        }
+    }
+}

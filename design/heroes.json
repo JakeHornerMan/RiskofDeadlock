@@ -47,7 +47,10 @@
     "dodgeTime",
     "dodgePct",
     "readSeconds",
-    "vertexColorMaterials"
+    "vertexColorMaterials",
+    "floatFallSpeed",
+    "floatHold",
+    "floatAirControl"
   ],
   "rows": [
     {
@@ -105,7 +108,10 @@
       "readSeconds": 14,
       "vertexColorMaterials": [
         "none"
-      ]
+      ],
+      "floatFallSpeed": 0,
+      "floatHold": 0,
+      "floatAirControl": 0
     },
     {
       "id": "abrams",
@@ -162,7 +168,10 @@
       "readSeconds": 21,
       "vertexColorMaterials": [
         "none"
-      ]
+      ],
+      "floatFallSpeed": 0,
+      "floatHold": 0,
+      "floatAirControl": 0
     },
     {
       "id": "seven",
@@ -220,7 +229,10 @@
       "readSeconds": 8,
       "vertexColorMaterials": [
         "none"
-      ]
+      ],
+      "floatFallSpeed": 0,
+      "floatHold": 0,
+      "floatAirControl": 0
     },
     {
       "id": "infernus",
@@ -279,7 +291,10 @@
       "readSeconds": 6,
       "vertexColorMaterials": [
         "none"
-      ]
+      ],
+      "floatFallSpeed": 0,
+      "floatHold": 0,
+      "floatAirControl": 0
     },
     {
       "id": "mokrill",
@@ -336,7 +351,10 @@
       "readSeconds": 6,
       "vertexColorMaterials": [
         "none"
-      ]
+      ],
+      "floatFallSpeed": 0,
+      "floatHold": 0,
+      "floatAirControl": 0
     },
     {
       "id": "viscous",
@@ -392,7 +410,10 @@
       "readSeconds": 5,
       "vertexColorMaterials": [
         "none"
-      ]
+      ],
+      "floatFallSpeed": 0,
+      "floatHold": 0,
+      "floatAirControl": 0
     },
     {
       "id": "ratking",
@@ -486,7 +507,10 @@
       "readSeconds": 26,
       "vertexColorMaterials": [
         "none"
-      ]
+      ],
+      "floatFallSpeed": 0,
+      "floatHold": 0,
+      "floatAirControl": 0
     },
     {
       "id": "billy",
@@ -542,7 +566,10 @@
       "readSeconds": 15,
       "vertexColorMaterials": [
         "none"
-      ]
+      ],
+      "floatFallSpeed": 0,
+      "floatHold": 0,
+      "floatAirControl": 0
     },
     {
       "id": "wraith",
@@ -599,7 +626,70 @@
       "readSeconds": 17,
       "vertexColorMaterials": [
         "wraith_head"
-      ]
+      ],
+      "floatFallSpeed": 0,
+      "floatHold": 0,
+      "floatAirControl": 0
+    },
+    {
+      "id": "mina",
+      "displayName": "Mina",
+      "deadlockKey": "hero_vampirebat",
+      "vmdl": "models/heroes_wip/vampirebat/vampirebat.vmdl",
+      "meshInclude": [
+        "body",
+        "head",
+        "umbrella"
+      ],
+      "splitMeshes": [
+        "none"
+      ],
+      "imageSmall": "panorama/images/heroes/vampirebat_sm_psd.vtex",
+      "imageCard": "panorama/images/heroes/vampirebat_card_psd.vtex",
+      "soundevents": "soundevents/hero/vampirebat.vsndevts",
+      "sourceHeight": 2.39,
+      "heightScale": 0.99,
+      "modelScale": 1.0,
+      "widthScale": 1.0,
+      "capsuleFrom": "none",
+      "cameraFrom": "none",
+      "cameraScale": 1.0,
+      "cameraRight": 0.0,
+      "interactRange": 1.0,
+      "immuneToForce": false,
+      "noFallDamage": false,
+      "airJumpMult": 1.0,
+      "landShake": 0.0,
+      "voiceGain": 1.0,
+      "gooMaterials": [
+        "none"
+      ],
+      "glassMaterials": [
+        "none"
+      ],
+      "riderBone": "none",
+      "primaryColor": "#C21A3A",
+      "sortPosition": 101.0,
+      "roR2Analog": "HuntressBody",
+      "subtitle": "The Vampire Socialite",
+      "passiveName": "Love Bites",
+      "passiveDescription": "Every New Money bullet that hits leaves a <style=cIsDamage>Love Bite</style> on that enemy (they fade 6s after your last hit). Every <style=cIsUtility>5</style> on one enemy: <style=cIsUtility>+1 jump</style> (2 at most, 1 per trip in the air); every <style=cIsUtility>10</style>: Rake <style=cIsUtility>3s</style> sooner; every <style=cIsUtility>20</style>: Nox Nostra <style=cIsUtility>10s</style> sooner. <style=cIsUtility>Umbrella:</style> hold Jump in the air to float down under your umbrella (no fall damage).",
+      "passiveIcon": "panorama/images/hud/abilities/vampirebat/vampirebat_love_bites_psd.vtex",
+      "damageHealBack": 0,
+      "damageHealBackTime": 0,
+      "debuffResist": 0,
+      "lore": "Deadlock's vampire socialite, a hit-and-run duellist with a pistol and a parasol. New Money's bullets leave Love Bites that buy her extra jumps and faster moves; Rake sweeps her umbrella through everything in front and drinks a little from each; Sanguine Retreat scatters her into bats and puts her back together where she looks; Nox Nostra lifts her into the sky to drop a swarm of bats on the ground below; Mist Form turns whoever holds it into a flock of furious bats.",
+      "airDodges": 0,
+      "dodgeDistance": 0,
+      "dodgeTime": 0,
+      "dodgePct": 0,
+      "readSeconds": 17,
+      "vertexColorMaterials": [
+        "none"
+      ],
+      "floatFallSpeed": 2.5,
+      "floatHold": 0.2,
+      "floatAirControl": 1.5
     }
   ]
 }

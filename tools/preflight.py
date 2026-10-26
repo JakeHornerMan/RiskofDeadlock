@@ -165,6 +165,7 @@ for r in skills.values():
         elif r['kind'] == 'ult_devil': total = r['duration'] / r['interval'] * r['damagePct']  # every interval, everything within radius
         elif r['kind'] == 'ult_gooball': total = r['duration'] / r['interval'] * r['damageMinPct']  # a smash every re-hit interval, at the slowest speed
         elif r['kind'] == 'ult_chains': total = r['chainCount'] * r['damagePct']  # chainCount chains of damagePct, one per enemy (bosses up to bossMult)
+        elif r['kind'] == 'ult_mist': total = r['splashPct'] + r['duration'] / r['interval'] * r['damagePct']  # the reform burst, plus a pass through the same enemy every re-hit interval for the whole flight
         elif r['kind'] == 'ult_swarm': total = r['chainCount'] * 15 / r['interval'] * r['damagePct']  # chainCount rats on one enemy biting until it dies (no time limit): counted over 15 s
         else: total = r['damagePct']
         if total < 6000:
@@ -227,7 +228,7 @@ if ev:
             if r[c] != 'none' and r[c] not in events: bad(f'sounds[{r["skill"]}].{c}: event "{r[c]}" not in Deadlock soundevents')
 else:
     bad('dev listing tools/dev/sound_events.txt missing: sound events unverified')
-ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'muzzleForward', 'clothParents', 'ragdollBones', 'ragdollThickness', 'rigPrefix', 'loopSecondary', 'springRoots', 'springStiffness', 'springDamping', 'springGravity', 'propBones', 'steadyClips'}  # animations columns that are not clip names
+ANIM_RIG_COLUMNS = {'hero', 'upperBodyBone', 'gunArms', 'gunBone', 'gunHand', 'muzzle', 'muzzleLeft', 'muzzleForward', 'clothParents', 'ragdollBones', 'ragdollThickness', 'rigPrefix', 'loopSecondary', 'springRoots', 'springStiffness', 'springDamping', 'springGravity', 'propBones', 'steadyClips', 'holdBones'}  # animations columns that are not clip names
 for r in sheets['animations']['rows']:
     if r['gunArms'] not in ('R', 'LR'): bad(f'animations[{r["hero"]}].gunArms: "{r["gunArms"]}" must be R or LR')
     if r['aimPose'] == 'none': bad(f'animations[{r["hero"]}].aimPose: the gun rig needs a holding pose clip')

@@ -425,6 +425,30 @@
       "purpose": "Card Trick's stored cards fanned above her head; the owner relays its charge count (Relay.Cards) when it changes",
       "reads": "skills.stocks (and the slot's maxStock: Backup Magazine)",
       "side": "all"
+    },
+    {
+      "id": "mina_lovebites_owner",
+      "method": "BulletAttack.hitCallback",
+      "target": "GunState.LoveBitesHit (States/Guns.cs) -> MinaRuntime.Bite (Runtime/MinaParts.cs), owner",
+      "purpose": "Each New Money bullet that lands counts a Love Bite on that enemy on Mina's own game (reset 6 s after her last hit): every jumpEvery a jump back, every hitsPerRefund the row's refundSeconds off Rake / Nox Nostra; also the damage falloff and the hit visuals",
+      "reads": "buffs.lovebites (duration, jumpEvery), skills.hitsPerRefund/refundSeconds, skills.falloff*",
+      "side": "owner"
+    },
+    {
+      "id": "mina_lovebites_server",
+      "method": "GlobalEventManager.onServerDamageDealt",
+      "target": "GunHits.OnDamage -> Buffs.Stack (refreshAll), server",
+      "purpose": "The Love Bites debuff on the enemy (its stack count on the health bar): one more stack per hit, every stack started over",
+      "reads": "buffs.lovebites",
+      "side": "server"
+    },
+    {
+      "id": "mina_umbrella",
+      "method": "component",
+      "target": "MinaUmbrella on the hero body (Runtime/MinaParts.cs), every machine",
+      "purpose": "The umbrella float: on the owner, held Jump in the air (or Jump with none left) slows the fall to 2.5 m/s with more air control and no fall damage; every machine plays the glide clip, the umbrella sounds and glow (others read it from the slow fall)",
+      "reads": "skills (none), animations.float, sounds mina_gun/umbrella",
+      "side": "all"
     }
   ]
 }

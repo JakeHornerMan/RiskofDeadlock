@@ -102,7 +102,8 @@ namespace DeadlockOfRain
 
         /// <summary>Movement skills run on the Body machine (they steer the character), everything else on Weapon.</summary>
         public static string MachineFor(string kind) =>
-            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "ult_devil" || kind == "goo_cube" || kind == "banner_leap" || kind == "storm_flight" || kind == "bashdown" || kind == "rising_ram" || kind == "ult_chains" ? "Body" : "Weapon";
+            kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "ult_devil" || kind == "goo_cube" || kind == "banner_leap" || kind == "storm_flight" || kind == "bashdown" || kind == "rising_ram" || kind == "ult_chains" ||
+            kind == "bat_blink" || kind == "nox_flight" || kind == "ult_mist" ? "Body" : "Weapon";
 
         /// <summary>The hero never takes fall damage (heroes.json noFallDamage: Viscous). Moves that switch fall damage off for a while
         /// (Seismic Impact, Goo Ball) leave it off for such a hero when they end.</summary>
@@ -410,6 +411,8 @@ namespace DeadlockOfRain
             var gun = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Slot == "primary");
             // Card Trick's stored cards float over her head (every machine)
             if (Sheet.SkillsOf(hero.Id).Any(s => s.Kind == "card_trick") && !GetComponent<WraithCardHalo>()) gameObject.AddComponent<WraithCardHalo>();
+            // Mina: Love Bites and the umbrella (every machine; the owner counts and floats)
+            if (MinaRuntime.Wanted(hero) && !GetComponent<MinaRuntime>()) gameObject.AddComponent<MinaRuntime>();
             steps = gun != null ? Sheet.Sound(gun.Id + "/step") : null;
             lands = gun != null ? Sheet.Sound(gun.Id + "/land") ?? steps : null;
             var model = body.modelLocator ? body.modelLocator.modelTransform : null;

@@ -132,6 +132,17 @@ namespace DeadlockOfRain
             return m;
         }
 
+        /// <summary>One morph pose of an effect model (extractor 1.9.0: props/&lt;id&gt;/&lt;id&gt;@m&lt;k&gt;.dlm, Mina's bat's wing poses): its
+        /// vertices only, in the rest pose's order, or null when the cache has no such pose (an older cache: the bat doesn't flap).</summary>
+        public static Vector3[] PropPose(string id, int k)
+        {
+            if (string.IsNullOrEmpty(id) || id == "none" || Dir == null) return null;
+            var dir = Path.Combine(Dir, "props", id);
+            var file = Path.Combine(dir, id + "@m" + k + ".dlm");
+            try { return File.Exists(file) ? HeroAsset.Read(file, dir).Positions : null; }
+            catch (Exception e) { Log.Warn($"effect model {id} pose {k}: {e.Message}"); return null; }
+        }
+
         static readonly Dictionary<string, HeroAsset> propAssets = new Dictionary<string, HeroAsset>();
 
         /// <summary>An effect model read whole: skeleton, clips and textures (extractor 1.6.0+: Rat King's rat and banner, drawn by

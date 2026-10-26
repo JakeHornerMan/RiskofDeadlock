@@ -56,6 +56,8 @@ namespace DeadlockOfRain
                         return Billy(id, moment, at, radius, follow, to, angle);
                     case "wraith_gun": case "wraith_card": case "wraith_mind": case "wraith_fullauto": case "wraith_tk":
                         return Wraith(id, moment, at, radius, follow, to, angle);
+                    case "mina_gun": case "mina_bites": case "mina_umbrella": case "mina_rake": case "mina_bats": case "mina_nox": case "mina_mist":
+                        return Mina(id, moment, at, radius, follow, to, life);
                 }
             }
             catch (System.Exception e) { Log.Warn($"vfx {id}/{moment}: {e.Message}"); }

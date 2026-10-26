@@ -109,7 +109,16 @@ namespace DeadlockOfRain
             int max = row.CanStack ? (int)row.MaxStacks : 1;
             int before = Count(victim, id);
             int add = crit && row.CritStacks > 0 ? (int)row.CritStacks : 1;
-            for (int i = 0; i < add; i++) AddTimed(victim, id, row.Duration, max);
+            // refreshAll (Mina's Love Bites): every new stack starts all of them over, so they fade together duration after the last hit
+            if (row.RefreshAll && row.Duration > 0f)
+            {
+                var d = Get(id);
+                int all = Mathf.Min(max, before + add);
+                victim.ClearTimedBuffs(d);
+                while (victim.HasBuff(d)) victim.RemoveBuff(d);
+                for (int i = 0; i < all; i++) victim.AddTimedBuff(d, row.Duration);
+            }
+            else for (int i = 0; i < add; i++) AddTimed(victim, id, row.Duration, max);
             SetOwner(owner, victim, id);
             if (row.WithBuff != "none") Apply(owner, victim, row.WithBuff);
             int n = (int)row.TriggerStacks;

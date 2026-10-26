@@ -318,13 +318,43 @@
       "vertexColors": [
         "wraith_head"
       ]
+    },
+    {
+      "id": "mina",
+      "name": "Mina",
+      "key": "hero_vampirebat",
+      "vmdl": "models/heroes_wip/vampirebat/vampirebat.vmdl",
+      "meshes": [
+        "body",
+        "head",
+        "umbrella"
+      ],
+      "clips": [
+        "vampirebat_ability_rake",
+        "vampirebat_ability_ult_loop",
+        "vampirebat_ability_ult_start",
+        "vampirebat_in_air_loop_down",
+        "vampirebat_in_air_loop_glide",
+        "vampirebat_outofcombat_run_n",
+        "vampirebat_reload_idle",
+        "vampirebat_weapon_run_e",
+        "vampirebat_weapon_run_n",
+        "vampirebat_weapon_run_s",
+        "vampirebat_weapon_run_w",
+        "vampirebat_weapon_stand_idle"
+      ],
+      "split": [],
+      "vertexColors": []
     }
   ],
   "images": [
+    "materials/particle/abilities/vampirebat/vampirebat_blink_preview_marker_symbol_psd_7dd7528f.vtex",
+    "materials/particle/abilities/vampirebat/vampirebat_lovebites_icon.vtex",
     "materials/particle/abilities/wraith/wraith_card_suit.vtex",
     "materials/particle/abilities/wraith/wraith_crosshair.vtex",
     "materials/particle/abilities/wraith/wraith_rapid_fire_ring_trans_psd_c28add01.vtex",
     "materials/particle/abilities/wraith/wraith_symbols.vtex",
+    "materials/particle/projected/vampirebat_steallife_preview_cone_projected_psd_4f7edd39.vtex",
     "panorama/images/heroes/bull_card_psd.vtex",
     "panorama/images/heroes/bull_sm_psd.vtex",
     "panorama/images/heroes/digger_card_psd.vtex",
@@ -338,6 +368,7 @@
     "panorama/images/heroes/guns/inferno_gun_psd.vtex",
     "panorama/images/heroes/guns/punkgoat_gun_psd.vtex",
     "panorama/images/heroes/guns/ratking_gun_psd.vtex",
+    "panorama/images/heroes/guns/vampirebat_gun_psd.vtex",
     "panorama/images/heroes/guns/viscous_gun_psd.vtex",
     "panorama/images/heroes/guns/wraith_gun_psd.vtex",
     "panorama/images/heroes/haze_card_psd.vtex",
@@ -348,6 +379,8 @@
     "panorama/images/heroes/punkgoat_sm_psd.vtex",
     "panorama/images/heroes/ratking_card_psd.vtex",
     "panorama/images/heroes/ratking_sm_psd.vtex",
+    "panorama/images/heroes/vampirebat_card_psd.vtex",
+    "panorama/images/heroes/vampirebat_sm_psd.vtex",
     "panorama/images/heroes/viscous_card_psd.vtex",
     "panorama/images/heroes/viscous_sm_psd.vtex",
     "panorama/images/heroes/wraith_card_psd.vtex",
@@ -381,6 +414,10 @@
     "panorama/images/hud/abilities/ratking/ratking_grenade_psd.vtex",
     "panorama/images/hud/abilities/ratking/ratking_shield_psd.vtex",
     "panorama/images/hud/abilities/ratking/ratking_swarm_psd.vtex",
+    "panorama/images/hud/abilities/vampirebat/vampirebat_love_bites_psd.vtex",
+    "panorama/images/hud/abilities/vampirebat/vampirebat_nox_nostra_psd.vtex",
+    "panorama/images/hud/abilities/vampirebat/vampirebat_rake_psd.vtex",
+    "panorama/images/hud/abilities/vampirebat/vampirebat_sanguine_retreat_psd.vtex",
     "panorama/images/hud/abilities/viscous/viscous_goo_ball_psd.vtex",
     "panorama/images/hud/abilities/viscous/viscous_goo_puddle_psd.vtex",
     "panorama/images/hud/abilities/viscous/viscous_goo_punch_psd.vtex",
@@ -390,6 +427,7 @@
     "panorama/images/hud/abilities/wraith_card_trick_psd.vtex",
     "panorama/images/hud/abilities/wraith_lift_psd.vtex",
     "panorama/images/hud/abilities/wraith_teleport_psd.vtex",
+    "panorama/images/items/spirit/ethereal_shift_psd.vtex",
     "panorama/images/items/spirit/surge_of_power_psd.vtex",
     "panorama/images/items/spirit/torment_pulse_psd.vtex",
     "panorama/images/items/vitality/phantom_strike_psd.vtex",
@@ -463,6 +501,8 @@
     "MoKrill.Wpn.Reload.Start",
     "Mods.Armor.Phantom.Strike.Cast",
     "Mods.Armor.Phantom.Strike.Hit",
+    "Mods.Tech.Stasis.Active",
+    "Mods.Tech.Stasis.End",
     "Mods.Tech.TormentPulse.Proc",
     "PunkGoat.Wpn.Fire.Main",
     "PunkGoat.Wpn.Impact",
@@ -515,6 +555,33 @@
     "Seven.Wpn.Fire",
     "Seven.Wpn.Impact",
     "Seven.Wpn.Reload.Start",
+    "VampireBat.Blink.Begin",
+    "VampireBat.Blink.End",
+    "VampireBat.Blink.End.Final",
+    "VampireBat.Blink.Travel.Lp",
+    "VampireBat.Blink.Whizby",
+    "VampireBat.Footstep",
+    "VampireBat.JumpLand",
+    "VampireBat.LoveBites.Bats.Gained",
+    "VampireBat.LoveBites.Buildup",
+    "VampireBat.LoveBites.Modifier.Proc",
+    "VampireBat.Nox.Nostra.Cast.Delay",
+    "VampireBat.Nox.Nostra.Channel.End",
+    "VampireBat.Nox.Nostra.Channel.Lp",
+    "VampireBat.Nox.Nostra.Impact",
+    "VampireBat.Nox.Nostra.Whizby",
+    "VampireBat.Rake.Cast",
+    "VampireBat.Rake.Hit.Confirm",
+    "VampireBat.Rake.Kill.Confirm.Heal",
+    "VampireBat.Umbrella.Close",
+    "VampireBat.Umbrella.Flight.End",
+    "VampireBat.Umbrella.Flight.Lp",
+    "VampireBat.Umbrella.Flight.Start",
+    "VampireBat.Umbrella.Open",
+    "VampireBat.Umbrella.Swing",
+    "Vampirebat.Wpn.Fire.Main",
+    "Vampirebat.Wpn.Impact",
+    "Vampirebat.Wpn.Reload.Start",
     "Viscous.Cube.Cast",
     "Viscous.Cube.Dur.End",
     "Viscous.Cube.Dur.Target.Lp",
@@ -567,6 +634,7 @@
     "soundevents/hero/krill.vsndevts",
     "soundevents/hero/punkgoat.vsndevts",
     "soundevents/hero/ratking.vsndevts",
+    "soundevents/hero/vampirebat.vsndevts",
     "soundevents/hero/viscous.vsndevts",
     "soundevents/hero/wraith.vsndevts"
   ],
@@ -645,6 +713,16 @@
     "ratking/ratking_use_power1",
     "ratking/ratking_use_power2",
     "ratking/ratking_use_power4",
+    "vampirebat/vampirebat_happy",
+    "vampirebat/vampirebat_killstreak_high",
+    "vampirebat/vampirebat_killstreak_mid",
+    "vampirebat/vampirebat_killstreak_start",
+    "vampirebat/vampirebat_select",
+    "vampirebat/vampirebat_unselect",
+    "vampirebat/vampirebat_use_power1",
+    "vampirebat/vampirebat_use_power2",
+    "vampirebat/vampirebat_use_power3",
+    "vampirebat/vampirebat_use_power4",
     "viscous/viscous_happy",
     "viscous/viscous_hunt",
     "viscous/viscous_killstreak_high",
@@ -737,6 +815,12 @@
     {
       "id": "wraith_card_prop",
       "vmdl": "models/heroes_wip/wraith/wraith_card_fx_model.vmdl",
+      "meshes": [],
+      "clips": []
+    },
+    {
+      "id": "mina_bat_prop",
+      "vmdl": "models/particle/vampirebat_bat.vmdl",
       "meshes": [],
       "clips": []
     }
@@ -939,6 +1023,12 @@
     "Mods.Armor.Phantom.Strike.Hit": [
       "haze"
     ],
+    "Mods.Tech.Stasis.Active": [
+      "mina"
+    ],
+    "Mods.Tech.Stasis.End": [
+      "mina"
+    ],
     "Mods.Tech.TormentPulse.Proc": [
       "infernus"
     ],
@@ -1096,6 +1186,87 @@
     ],
     "Seven.Wpn.Reload.Start": [
       "seven"
+    ],
+    "VampireBat.Blink.Begin": [
+      "mina"
+    ],
+    "VampireBat.Blink.End": [
+      "mina"
+    ],
+    "VampireBat.Blink.End.Final": [
+      "mina"
+    ],
+    "VampireBat.Blink.Travel.Lp": [
+      "mina"
+    ],
+    "VampireBat.Blink.Whizby": [
+      "mina"
+    ],
+    "VampireBat.Footstep": [
+      "mina"
+    ],
+    "VampireBat.JumpLand": [
+      "mina"
+    ],
+    "VampireBat.LoveBites.Bats.Gained": [
+      "mina"
+    ],
+    "VampireBat.LoveBites.Buildup": [
+      "mina"
+    ],
+    "VampireBat.LoveBites.Modifier.Proc": [
+      "mina"
+    ],
+    "VampireBat.Nox.Nostra.Cast.Delay": [
+      "mina"
+    ],
+    "VampireBat.Nox.Nostra.Channel.End": [
+      "mina"
+    ],
+    "VampireBat.Nox.Nostra.Channel.Lp": [
+      "mina"
+    ],
+    "VampireBat.Nox.Nostra.Impact": [
+      "mina"
+    ],
+    "VampireBat.Nox.Nostra.Whizby": [
+      "mina"
+    ],
+    "VampireBat.Rake.Cast": [
+      "mina"
+    ],
+    "VampireBat.Rake.Hit.Confirm": [
+      "mina"
+    ],
+    "VampireBat.Rake.Kill.Confirm.Heal": [
+      "mina"
+    ],
+    "VampireBat.Umbrella.Close": [
+      "mina"
+    ],
+    "VampireBat.Umbrella.Flight.End": [
+      "mina"
+    ],
+    "VampireBat.Umbrella.Flight.Lp": [
+      "mina"
+    ],
+    "VampireBat.Umbrella.Flight.Start": [
+      "mina"
+    ],
+    "VampireBat.Umbrella.Open": [
+      "mina"
+    ],
+    "VampireBat.Umbrella.Swing": [
+      "mina"
+    ],
+    "Vampirebat.Wpn.Fire.Main": [
+      "mina"
+    ],
+    "Vampirebat.Wpn.Impact": [
+      "mina"
+    ],
+    "Vampirebat.Wpn.Reload.Start": [
+      "mina"
     ],
     "Viscous.Cube.Cast": [
       "viscous"
@@ -1394,6 +1565,12 @@
     "krill/krill_use_power4": [
       "mokrill"
     ],
+    "materials/particle/abilities/vampirebat/vampirebat_blink_preview_marker_symbol_psd_7dd7528f.vtex": [
+      "mina"
+    ],
+    "materials/particle/abilities/vampirebat/vampirebat_lovebites_icon.vtex": [
+      "mina"
+    ],
     "materials/particle/abilities/wraith/wraith_card_suit.vtex": [
       "wraith"
     ],
@@ -1405,6 +1582,12 @@
     ],
     "materials/particle/abilities/wraith/wraith_symbols.vtex": [
       "wraith"
+    ],
+    "materials/particle/projected/vampirebat_steallife_preview_cone_projected_psd_4f7edd39.vtex": [
+      "mina"
+    ],
+    "mina_bat_prop": [
+      "mina"
     ],
     "panorama/images/heroes/bull_card_psd.vtex": [
       "abrams"
@@ -1445,6 +1628,9 @@
     "panorama/images/heroes/guns/ratking_gun_psd.vtex": [
       "ratking"
     ],
+    "panorama/images/heroes/guns/vampirebat_gun_psd.vtex": [
+      "mina"
+    ],
     "panorama/images/heroes/guns/viscous_gun_psd.vtex": [
       "viscous"
     ],
@@ -1474,6 +1660,12 @@
     ],
     "panorama/images/heroes/ratking_sm_psd.vtex": [
       "ratking"
+    ],
+    "panorama/images/heroes/vampirebat_card_psd.vtex": [
+      "mina"
+    ],
+    "panorama/images/heroes/vampirebat_sm_psd.vtex": [
+      "mina"
     ],
     "panorama/images/heroes/viscous_card_psd.vtex": [
       "viscous"
@@ -1571,6 +1763,18 @@
     "panorama/images/hud/abilities/ratking/ratking_swarm_psd.vtex": [
       "ratking"
     ],
+    "panorama/images/hud/abilities/vampirebat/vampirebat_love_bites_psd.vtex": [
+      "mina"
+    ],
+    "panorama/images/hud/abilities/vampirebat/vampirebat_nox_nostra_psd.vtex": [
+      "mina"
+    ],
+    "panorama/images/hud/abilities/vampirebat/vampirebat_rake_psd.vtex": [
+      "mina"
+    ],
+    "panorama/images/hud/abilities/vampirebat/vampirebat_sanguine_retreat_psd.vtex": [
+      "mina"
+    ],
     "panorama/images/hud/abilities/viscous/viscous_goo_ball_psd.vtex": [
       "viscous"
     ],
@@ -1597,6 +1801,9 @@
     ],
     "panorama/images/hud/abilities/wraith_teleport_psd.vtex": [
       "wraith"
+    ],
+    "panorama/images/items/spirit/ethereal_shift_psd.vtex": [
+      "mina"
     ],
     "panorama/images/items/spirit/surge_of_power_psd.vtex": [
       "seven"
@@ -1706,11 +1913,44 @@
     "soundevents/hero/ratking.vsndevts": [
       "ratking"
     ],
+    "soundevents/hero/vampirebat.vsndevts": [
+      "mina"
+    ],
     "soundevents/hero/viscous.vsndevts": [
       "viscous"
     ],
     "soundevents/hero/wraith.vsndevts": [
       "wraith"
+    ],
+    "vampirebat/vampirebat_happy": [
+      "mina"
+    ],
+    "vampirebat/vampirebat_killstreak_high": [
+      "mina"
+    ],
+    "vampirebat/vampirebat_killstreak_mid": [
+      "mina"
+    ],
+    "vampirebat/vampirebat_killstreak_start": [
+      "mina"
+    ],
+    "vampirebat/vampirebat_select": [
+      "mina"
+    ],
+    "vampirebat/vampirebat_unselect": [
+      "mina"
+    ],
+    "vampirebat/vampirebat_use_power1": [
+      "mina"
+    ],
+    "vampirebat/vampirebat_use_power2": [
+      "mina"
+    ],
+    "vampirebat/vampirebat_use_power3": [
+      "mina"
+    ],
+    "vampirebat/vampirebat_use_power4": [
+      "mina"
     ],
     "viscous/viscous_happy": [
       "viscous"

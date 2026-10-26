@@ -302,7 +302,13 @@ namespace DeadlockOfRain.States
                     damageType = new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Primary },
                 };
                 var sec = skillLocator ? Survivors.RowFor(skillLocator.secondary) : null;
-                if (sec != null && sec.HitsPerRefund > 0) ba.hitCallback = RefundHit;
+                // Mina's New Money: Love Bites counted per enemy (its buff starts every stack over: refreshAll) and the damage falling off
+                if (MinaRuntime.Bites(row) || row.FalloffEnd > row.FalloffStart)
+                {
+                    ba.hitCallback = BiteHit;
+                    ba.falloffModel = BulletAttack.FalloffModel.None;
+                }
+                else if (sec != null && sec.HitsPerRefund > 0) ba.hitCallback = RefundHit;
                 ba.Fire();
             }
             MeltyTest.Report("gun-fires", true, characterBody.baseNameToken);
@@ -340,6 +346,30 @@ namespace DeadlockOfRain.States
                 k = Mathf.Lerp(1f, row.FalloffMinPct / 100f, Mathf.InverseLerp(row.FalloffStart, row.FalloffEnd, hit.distance));
             attack.damage = full * k;
             if (row != null) Vfx.Play(row.Vfx, "hit", hit.point);
+            bool r = BulletAttack.defaultHitCallback(attack, ref hit);
+            attack.damage = full;
+            return r;
+        }
+
+        /// <summary>A New Money bullet landed (owner side): full damage to falloffStart metres, down in a line to falloffMinPct % at
+        /// falloffEnd; the hit's look (an enemy: a crimson spark burst; the world: sparks, dust and a bullet mark); and on an enemy one
+        /// Love Bite counted on Mina's own game, where her jumps and cooldowns live (<see cref="MinaRuntime.Bite"/>).</summary>
+        bool BiteHit(BulletAttack attack, ref BulletAttack.BulletHit hit)
+        {
+            float full = attack.damage;
+            float k = 1f;
+            if (row != null && row.FalloffEnd > row.FalloffStart)
+                k = Mathf.Lerp(1f, row.FalloffMinPct / 100f, Mathf.InverseLerp(row.FalloffStart, row.FalloffEnd, hit.distance));
+            attack.damage = full * k;
+            var hc = hit.hitHurtBox ? hit.hitHurtBox.healthComponent : null;
+            bool enemy = hc && hc.alive && hc.body && hc.body.teamComponent.teamIndex != characterBody.teamComponent.teamIndex;
+            if (row != null) Vfx.Play(row.Vfx, enemy ? "hit" : "impact", hit.point, 1f, null, hit.point + hit.surfaceNormal);
+            if (enemy)
+            {
+                if (row != null) Fx.Sound(row.Id, "hit", hit.point);
+                var mr = GetComponent<MinaRuntime>();
+                if (mr) mr.Bite(hc);
+            }
             bool r = BulletAttack.defaultHitCallback(attack, ref hit);
             attack.damage = full;
             return r;

@@ -22,7 +22,7 @@ namespace DeadlockExtract;
 
 public static class Program
 {
-    public const string Version = "1.8.1";
+    public const string Version = "1.9.0";
     static StreamWriter? log;
 
     public static int Main(string[] args)
@@ -411,6 +411,12 @@ public static class Program
         var model = ModelRoot.Load(glb);
         var stats = DlmWriter.Write(model, new HeroEntry { Id = prop.Id, Vmdl = prop.Vmdl, Meshes = prop.Meshes, Clips = prop.Clips }, dir, Log, n => Vmat(loader, n, prop.Vmdl));
         Log($"  prop {prop.Id}: {stats}");
+        // 1.9.0: a model animated by morph targets instead of bones (Mina's bat flaps its wings that way) gets each target as its own
+        // pose, <id>@m<k>.dlm beside the rest pose; the plugin flips between them
+        int morphs = model.LogicalMeshes.SelectMany(m => m.Primitives).Select(p => p.MorphTargetsCount).DefaultIfEmpty(0).Max();
+        for (int k = 0; k < morphs; k++)
+            DlmWriter.Write(model, new HeroEntry { Id = prop.Id + "@m" + k, Vmdl = prop.Vmdl, Meshes = prop.Meshes, Clips = prop.Clips }, dir, Log, n => Vmat(loader, n, prop.Vmdl), k);
+        if (morphs > 0) Log($"  prop {prop.Id}: {morphs} morph poses");
         Directory.Delete(tmp, true);
     }
 

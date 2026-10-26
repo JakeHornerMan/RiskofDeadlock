@@ -66,6 +66,16 @@ namespace DeadlockOfRain
         // King's Leap (heroes airJumpMult): a tucked forward spin of the whole skeleton on a jump in the air
         Transform armature;
         float flipStart = -1f, flipTime, lastY, lastVy, airSince;
+        // a held pose played as the locomotion (animations float: Mina's umbrella glide; her Nox Nostra flight), the arm without the
+        // gun let go of the rig meanwhile so the clip can hold the umbrella up
+        string holdLogical;
+        bool[] rigOff;
+        float offWeight = 1f;
+        // animations holdBones: a prop on the root (Mina's umbrella) kept in its hand the way each clip holds it, whatever the gun
+        // rig does to that arm
+        Transform[] weldBone, weldHand;
+        Vector3[] weldPos;
+        Quaternion[] weldRot;
         int lastJumpCount;
         Vector3 flipMid = Vector3.up;
         bool airLeap;
@@ -95,6 +105,7 @@ namespace DeadlockOfRain
             logical["special_start"] = rows.SpecialStart; logical["special"] = rows.Special;
             logical["ult_start"] = rows.UltStart; logical["ult_loop"] = rows.UltLoop; logical["ult_end"] = rows.UltEnd; logical["death"] = rows.Death;
             logical["special_loop"] = rows.SpecialLoop; logical["melee"] = rows.Melee; logical["melee_alt"] = rows.MeleeAlt;
+            logical["float"] = rows.Float;
             logical["melee_heavy"] = rows.MeleeHeavy; logical["melee_air"] = rows.MeleeAir; logical["dash_air"] = rows.DashAir; logical["slam"] = rows.Slam;
             rig = rows.RigPrefix == "none" ? "" : rows.RigPrefix;
             var all = GetComponentsInChildren<Transform>(true);
@@ -128,6 +139,17 @@ namespace DeadlockOfRain
                 propBones[i].localScale = Vector3.zero;
             }
             propsShown = false;
+            var wb = new List<Transform>(); var wh = new List<Transform>();
+            foreach (var pair in rows.HoldBones)
+            {
+                var parts = pair.Split('>');
+                if (parts.Length != 2) continue;
+                var b = Bone(parts[0].Trim()); var h = Bone(parts[1].Trim());
+                if (b && h) { wb.Add(b); wh.Add(h); }
+            }
+            weldBone = wb.ToArray(); weldHand = wh.ToArray();
+            weldPos = new Vector3[weldBone.Length]; weldRot = new Quaternion[weldBone.Length];
+            holdLogical = null;
             loco = null;
             Play(rows.Idle, 0f);
             loco = rows.Idle;
@@ -155,12 +177,17 @@ namespace DeadlockOfRain
             }
             // the gun arms hold the pose while the hero shoots, moves and jumps (abilities and reloads may move them)
             var arms = new List<Transform>();
+            var off = new List<bool>();
             foreach (var side in rows.GunArms == "LR" ? new[] { "R", "L" } : new[] { "R" })
             {
                 var clav = Bone(rig + "clavicle_" + side);
-                if (clav) foreach (var t in clav.GetComponentsInChildren<Transform>(true)) if (!gun.Contains(t)) arms.Add(t);
+                if (!clav) continue;
+                // the arm whose hand doesn't hold the gun (Mina's umbrella arm) is let go while a held pose plays
+                bool isOff = mainHand && !mainHand.IsChildOf(clav);
+                foreach (var t in clav.GetComponentsInChildren<Transform>(true)) if (!gun.Contains(t)) { arms.Add(t); off.Add(isOff); }
             }
             Snapshot(arms, out rigBones, out rigPos, out rigRot);
+            rigOff = off.ToArray();
             Snapshot(gun, out gunParts, out gunPartPos, out gunPartRot);
             gunRoot = gunBone ? gunBone : Bone(rig + "weapon_hand_R");
             if (gunRoot && mainHand) gunRootInHand = mainHand.InverseTransformPoint(gunRoot.position);
@@ -445,6 +472,16 @@ namespace DeadlockOfRain
                    $", root {(B("root_motion") ? B("root_motion").localPosition.ToString("F2") + " " + B("root_motion").localEulerAngles.ToString("F0") : "-")}, enabled {(anim ? anim.enabled.ToString() : "-")}, playing {(anim ? anim.isPlaying.ToString() : "-")}";
         }
 
+        /// <summary>Plays a held pose as the locomotion until Hold(null) (Mina: "float" while her umbrella is open, "special_loop" in
+        /// Nox Nostra's flight): the gun arm keeps aiming, the other arm follows the clip.</summary>
+        public void Hold(string logicalName)
+        {
+            holdLogical = logicalName != null && Clip(logicalName) != null ? logicalName : null;
+        }
+
+        /// <summary>A held pose is playing (the test asks).</summary>
+        public string Holding => holdLogical;
+
         /// <summary>Shows or hides the props the hero only holds during a move (propBones: Rat King's banner while he leaps).</summary>
         public void ShowProps(bool on)
         {
@@ -478,6 +515,17 @@ namespace DeadlockOfRain
             }
             string next = rows.Idle;
             float speed = 1f;
+            var held = Clip(holdLogical);
+            if (held != null)
+            {
+                // a held pose: loops on the locomotion layer, whatever the body does
+                var hs = anim[held];
+                hs.layer = 0; hs.wrapMode = WrapMode.Loop;
+                if (held != loco) { anim.CrossFade(held, 0.2f, PlayMode.StopSameLayer); loco = held; }
+                anim[held].speed = 1f;
+                if (motor) wasGrounded = motor.isGrounded;
+                return;
+            }
             if (motor)
             {
                 var v = motor.velocity; v.y = 0;
@@ -542,8 +590,10 @@ namespace DeadlockOfRain
 
         void LateUpdate()
         {
+            CaptureWelds();
             ModelSpaceGesture();
             Rig();
+            ApplyWelds();
             FlipPose();
             if (springs) springs.Step(Time.deltaTime);
         }
@@ -585,15 +635,18 @@ namespace DeadlockOfRain
             if (anim == null || rigBones == null || frozen) return;
             bool free = dead || overrideClip != null || Time.time < armFreeUntil;
             armWeight = Mathf.MoveTowards(armWeight, free ? 0f : 1f, Time.deltaTime / 0.15f);
+            offWeight = Mathf.MoveTowards(offWeight, holdLogical != null ? 0f : 1f, Time.deltaTime / 0.2f);
 
-            // 1. gun arms rigid in the holding pose (no animation on them)
+            // 1. gun arms rigid in the holding pose (no animation on them); the off arm let go while a held pose plays
             if (armWeight > 0f)
                 for (int i = 0; i < rigBones.Length; i++)
                 {
                     var t = rigBones[i];
                     if (!t) continue;
-                    t.localPosition = Vector3.Lerp(t.localPosition, rigPos[i], armWeight);
-                    t.localRotation = Quaternion.Slerp(t.localRotation, rigRot[i], armWeight);
+                    float w = rigOff != null && i < rigOff.Length && rigOff[i] ? Mathf.Min(armWeight, offWeight) : armWeight;
+                    if (w <= 0f) continue;
+                    t.localPosition = Vector3.Lerp(t.localPosition, rigPos[i], w);
+                    t.localRotation = Quaternion.Slerp(t.localRotation, rigRot[i], w);
                 }
 
             for (int i = 0; i < gunParts.Length; i++)
@@ -642,6 +695,30 @@ namespace DeadlockOfRain
             // (not while the gun's holder is hidden: Krill scaled to 0 while he is away on Tag Team)
             if (gunRoot && mainHand && mainHand.lossyScale.x > 1e-3f)
                 GunDrift = Mathf.Max(GunDrift, Vector3.Distance(mainHand.InverseTransformPoint(gunRoot.position), gunRootInHand) * transform.lossyScale.x);
+        }
+
+        /// <summary>holdBones: where each clip puts the prop in its hand, read before the gesture and gun rig move that hand.</summary>
+        void CaptureWelds()
+        {
+            if (weldBone == null || frozen || dead) return;
+            for (int i = 0; i < weldBone.Length; i++)
+            {
+                if (!weldBone[i] || !weldHand[i]) continue;
+                weldPos[i] = weldHand[i].InverseTransformPoint(weldBone[i].position);
+                weldRot[i] = Quaternion.Inverse(weldHand[i].rotation) * weldBone[i].rotation;
+            }
+        }
+
+        /// <summary>holdBones: the prop put back in its hand after the hand moved.</summary>
+        void ApplyWelds()
+        {
+            if (weldBone == null || frozen || dead) return;
+            for (int i = 0; i < weldBone.Length; i++)
+            {
+                if (!weldBone[i] || !weldHand[i]) continue;
+                weldBone[i].position = weldHand[i].TransformPoint(weldPos[i]);
+                weldBone[i].rotation = weldHand[i].rotation * weldRot[i];
+            }
         }
 
         /// <summary>Limits how far the chest twists: pitch within 80 degrees and yaw within 70 degrees of where the body faces.</summary>
