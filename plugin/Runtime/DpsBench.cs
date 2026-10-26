@@ -81,6 +81,21 @@ namespace DeadlockOfRain
 
         // ---------------------------------------------------------------- the pack
         readonly List<CharacterBody> pack = new List<CharacterBody>();
+        /// <summary>The pack enemy the bench aims at now.</summary>
+        public static CharacterBody Aimed;
+        static DpsBench current;
+        /// <summary>Where a bot puts an area move it aims (Nox Nostra's circle): the middle of the live pack, on the ground, as a
+        /// player centres a circle on a pack; null when no bench runs.</summary>
+        public static Vector3? PackCentre
+        {
+            get
+            {
+                if (!Active || !current) return null;
+                Vector3 sum = Vector3.zero; int n = 0;
+                foreach (var b in current.pack) if (b && b.healthComponent && b.healthComponent.alive) { sum += b.footPosition; n++; }
+                return n > 0 ? sum / n : (Vector3?)null;
+            }
+        }
         readonly List<Vector3> packSpots = new List<Vector3>();
         readonly List<string> packMasters = new List<string>();
         Vector3 arena, forward;
@@ -151,6 +166,7 @@ namespace DeadlockOfRain
         // ---------------------------------------------------------------- the run
         IEnumerator Start()
         {
+            current = this;
             while (!RoR2Application.loadFinished) yield return null;
             try { File.WriteAllText(outFile, ""); } catch { }
             yield return new WaitForSeconds(3f);
@@ -482,6 +498,7 @@ namespace DeadlockOfRain
                     float d = (p.corePosition - body.corePosition).sqrMagnitude;
                     if (d < best) { best = d; aimAt = p; }
                 }
+                Aimed = aimAt;
                 if (aimAt && ib)
                 {
                     ib.aimDirection = (aimAt.corePosition - ib.aimOrigin).normalized;

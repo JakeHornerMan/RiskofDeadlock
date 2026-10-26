@@ -14,6 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
+| Mina | all (new hero, v1.1.0a): New Money 90 % (spec 75), Rake 400 % / 180° / 10 m / heal 10 per hit / execute under 10 %, Sanguine Retreat 15 m + one recast, Nox Nostra 8 s flight + 150 % × 4/s for 6 s in 10 m (spec 60 %), 15 s (spec 20); Love Bites (5: a jump, 10: Rake −3 s, 20: Nox −10 s); Mist Form 300 % passes + 3000 % burst | new hero (the creator's spec of 2026-10-22; "fixed dps test when this doesnt come in range") | this one | **benched** (3 runs at the final numbers): 1632 / 1500 / 1292, **mean 1475** vs Huntress 1921 (−446, **inside**), §3.19; ult bench 57,000 % (16 hit); `run_test.sh mina` 1/1 every check pass | **done** |
 | Wraith | 2026-10-26 (v1.0.1b): The Rake reload 2 → 3 s (as long as her reload clip; `targetDps` 542 → 473); Project Mind flies her there in up to 1 s (untouchable) instead of at once; Full Auto's clip | the creator: "she also seem to be able to shoot before the relaod animation is done" (answer: make the reload longer) | this one | **open**: not tested in game or benched (both runs were stopped by Claude Code for low memory); the gun should lose about 12 % | **open** |
 | Wraith | 2026-10-25 (v1.0.1a): The Rake 60 → 72 % a bullet; Card Trick 5 s / 1 card → 10 s / 4 cards, a card steered by the crosshair (arcs out of the hand, swings back on a miss), 5 Rake hits = 1 s off the next card; Telekinesis (Q) 120 → 100 s, thrown at full rise (0.6 s, was 1.25 s) along the aim then, kill-zone deaths credited to her | the creator's Wraith feedback ("increase base gun damage by 20%", "store up to 4", "every 5 shot landed ... lower the wait time") | this one | `run_test.sh wraith` 1/1 pass (every new check); **benched** (one run): all **944** vs Bandit 1919 (−975, **below**), §3.18; ult bench 60,000 % (10 hit) | **open** (below the band, the creator's call) |
 | Billy | 2026-10-24 (Chain Gang): up to 20 chains of 1500 %, one per enemy, leftovers to bosses up to 5 each (was 6000 % per enemy) | the creator: "up to 20 chains ... only 5 of they can connect to 1 boss" | this one | ult only (left out of balance); ult bench 10,500 % (7 hit), §3.17 | **done** |
@@ -292,6 +293,32 @@ New hero, matched to REX (`TreebotBody`, library 1738 %/s). Three runs after the
 - **%/s hides base damage**: it is a share of the survivor's own damage stat. Viscous's 15 against REX's 12 means 25 % more
   real damage than the %/s says (≈336 dmg/s at level 1 against ≈209). Mo & Krill (11) are the only other hero off 12.
 - Levers if he needs pulling back: Splatter 200 → 150 % first (it is two thirds of the total), then the punch.
+
+### 3.19 v1.1.0a Mina, the tenth hero (Mina-only runs, 2026-10-26)
+`VERSION` v1.1.0a, `REPEAT=3 run_bench.sh 30 mina` at the final numbers (New Money 90 %, Nox Nostra 150 % a tick and 15 s).
+
+| Pass | Mina (%/s, runs → mean) | Huntress (library) |
+|---|---|---|
+| All main moves | 1632 / 1500 / 1292 → **1475** | 1921 |
+| M1 New Money | 252 (×3) | 186 (Flurry) |
+| M2 Rake | 27 / 53 / 27 → 36 | 369 (Laser Glaive) |
+| Shift Sanguine Retreat | 0 | 0 (Blink) |
+| R Nox Nostra | 1405 / 1630 / 1280 → **1438** | 1616 (Arrow Rain) |
+| Q Mist Form (not balanced) | ult bench: 57,000 % in one use, 16 of 31 hit | – |
+
+- **−446 against Huntress: inside the ±500 band**, near its low edge. Nox Nostra carries her, as Arrow Rain carries Huntress.
+- How she got there (the creator asked for the bench to be fixed until she is in range): the spec's numbers measured **849** and **1022**.
+  New Money 75 → 90 % (the spec's own lever below the band; 85 % first so the gun clears preflight's 240 %/s floor), then the swarm
+  60 → 90 → 110 → 140 → 90 → 150 % a tick while the bench bot was fixed, then Nox Nostra 20 → 15 s. Runs on the way: 1174 / 810 (90 %),
+  1419 / 429 and 1477 / 1096 / 1514 (110 %), 969 / 1216 (140 %), 1151 / 920 (90 %, pack centre), 1586 / 1162 / 1172 (150 %, 20 s).
+- **Bench bot fixes for an aimed area move** (`DpsBench.PackCentre`, `NoxFlight`): the bot plants the swarm on the middle of the pack as soon as
+  she has risen (aiming at the nearest enemy's chest from 6 m up put the circle behind the pack; "nearest enemy" was once a stray monster 28 m
+  away), and no longer blinks by itself mid-flight (test mode still does, to check the flight carries on). The bench's own Q presses no longer end
+  Mist Form early (the first ult bench: 33,300 %, burst only).
+- **Bench limits seen** (not Mina's): the first swarm of each pass finds only 6-8 of the 12 pack enemies targetable near the pack (the pack is
+  still spawning), and in the all pass the bot shoots whatever enemy is nearest, so 20 bites rarely land on one enemy and Love Bites' cuts seldom
+  fire: in play, holding the gun on one target brings Nox Nostra back much sooner. The all pass casts Nox Nostra twice in 30 s.
+- Levers if she should move: above → the swarm 150 → 120 %, or the Love Bites cut 10 → 6 s; below → Nox Nostra 15 → 12 s, or the swarm 6 → 8 s.
 
 ### 3.18 v1.0.1a Wraith after the creator's feedback (Wraith-only run, 2026-10-25)
 `VERSION` v1.0.1a, `run_bench.sh 30 wraith` (one run): The Rake 72 %, Card Trick 4 cards / 10 s steered by the crosshair with

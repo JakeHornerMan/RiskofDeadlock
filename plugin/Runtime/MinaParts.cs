@@ -170,7 +170,9 @@ namespace DeadlockOfRain
             if (Floating)
             {
                 var v = m.velocity;
-                if (v.y < -hero.FloatFallSpeed) { v.y = -hero.FloatFallSpeed; m.velocity = v; }
+                // the motor adds this step's gravity after us: start from that much above, so she really falls at floatFallSpeed
+                float floor = -hero.FloatFallSpeed - Physics.gravity.y * Time.fixedDeltaTime;
+                if (v.y < floor) { v.y = floor; m.velocity = v; }
             }
         }
 

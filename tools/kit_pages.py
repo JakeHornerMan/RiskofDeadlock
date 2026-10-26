@@ -16,7 +16,7 @@ OUT = os.path.join(ROOT, 'build', 'pages')
 IMG = os.path.join(OUT, 'img')
 os.makedirs(OUT, exist_ok=True)
 E = html.escape
-VERSION = 'v1.0.1b'
+VERSION = 'v1.1.0a'
 BAND = 500  # balanced = within ±500 %/s of the RoR2 match (creator, 2026-10-16)
 
 def sheet(name):
@@ -27,7 +27,7 @@ SKILLS = sheet('skills'); BUFFS = {r['id']: r for r in sheet('buffs')}
 EQUIP = {r['hero']: r for r in sheet('equipment')}
 LINKS = {'haze': 'https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p', 'abrams': 'https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG',
          'seven': 'https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m', 'infernus': 'https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF',
-         'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'viscous': 'https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC', 'ratking': 'https://claude.ai/artifact/Kw4rTyRrvXTb2eEyT9oTYa', 'billy': 'https://claude.ai/artifact/7m271DJLqzAvMZDrqU6QjL', 'wraith': 'https://claude.ai/artifact/2Bdxqd6iUwp89iEEPELgBb', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
+         'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'viscous': 'https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC', 'ratking': 'https://claude.ai/artifact/Kw4rTyRrvXTb2eEyT9oTYa', 'billy': 'https://claude.ai/artifact/7m271DJLqzAvMZDrqU6QjL', 'wraith': 'https://claude.ai/artifact/2Bdxqd6iUwp89iEEPELgBb', 'mina': 'https://claude.ai/artifact/NWZWgZoK8DRusJpTVzbYoe', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
 SLOTS = ['primary', 'secondary', 'utility', 'special']
 KEY = {'primary': 'M1', 'secondary': 'M2', 'utility': 'Shift', 'special': 'R', 'equipment': 'Q'}
 KIND_LABEL = {'primary': 'Weapon', 'secondary': 'Ability', 'utility': 'Ability', 'special': 'Ability · new in 0.4'}
@@ -74,6 +74,11 @@ VANILLA = {
         'secondary': ('Serrated Dagger', 'Lunge and slash for 360%; critical strikes cause hemorrhage.'),
         'utility': ('Smoke Bomb', 'Turn invisible and stun around you for 200%.'),
         'special': ('Lights Out', 'Fire a revolver shot for 600%; kills reset all your cooldowns.')}),
+ 'HuntressBody': dict(name='Huntress', who='Huntress',
+   kit={'primary': ('Flurry', 'Fire 3 seeking arrows for 100% each (6 on a critical strike).'),
+        'secondary': ('Laser Glaive', 'Throw a glaive for 250% that bounces between up to 6 enemies, 10% stronger each bounce.'),
+        'utility': ('Blink', 'Disappear and teleport forward; no damage.'),
+        'special': ('Arrow Rain', 'Teleport into the sky and rain arrows on an area for 225% a second.')}),
  'ToolbotBody': dict(name='MUL-T', who='Toolbot',
    kit={'primary': ('Auto-Nailgun', 'Fire nails for 70% each, faster the longer you hold.'),
         'secondary': ('Blast Canister', 'Launch a canister for 220% that bursts into bomblets, stunning.'),
@@ -83,6 +88,11 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
+ 'mina': [('v1.1.0a', ['New hero: Mina, matched to Huntress (Huntress’s stats exactly: the smallest health in Deadlock, the glass cannon of Risk of Rain)',
+                        'Love Bites: every bullet bites the enemy; 5 bites on one enemy give a jump back, 10 bring Rake 3 s sooner, 20 bring Nox Nostra 10 s sooner',
+                        'The umbrella: hold Jump in the air to float down under it, no fall damage; her skirt and hair flutter as she drifts',
+                        'Deadlock’s own bats (flapping) for Sanguine Retreat, Nox Nostra’s swarm and Mist Form; her bite mark, marker and Rake cone from Deadlock',
+                        'Mist Form (Q): Deadlock’s Ethereal Shift as a flock of furious bats, for any survivor'])],
  'wraith': [('v1.0.1b', ['Her face in Deadlock’s own colours (it was flat white)', 'The Rake reloads in 3 s, as long as her reload animation (it fired again before the animation ended)', 'Project Mind: she bursts into purple smoke and cards and flies there in up to 1 s, untouchable', 'Full Auto plays Deadlock’s own Full Auto cast']),
             ('v1.0.1a', ['The Rake 72 % a bullet (was 60, +20 %)',
                           'Card Trick: the card follows your crosshair while it flies, leaves the hand on a curve and swings round to try again if it misses',
@@ -207,6 +217,10 @@ PAPER = {
 }
 
 ANALYSIS = {
+ 'mina': ['Three runs at the final numbers: 1,632, 1,500 and 1,292 %/s with every main move, mean 1,475, against Huntress’s 1,921 (library). That is −446: inside the ±500 band, near its low edge.',
+          'Nox Nostra carries her (1,438 %/s alone: 150 % to everything in the circle four times a second for 6 s, every 15 s), as Arrow Rain carries Huntress (1,616 alone). New Money 252, Rake 36 (the bench’s pack stands 10–15 m out, at the edge of its 10 m reach).',
+          'Tuning on the way (her first runs measured 849 and 1,022): New Money 75 → 90 % a bullet (the spec’s lever), the swarm 60 → 150 % a tick, Nox Nostra 20 → 15 s. In the bench the bot shoots whatever enemy is nearest, so 20 bites rarely land on one enemy and the Love Bites cuts seldom fire; a player holding the gun on one target gets Nox Nostra back much sooner.',
+          'Mist Form (Q, the ult): one use on the ult bench (30 enemies and a Beetle Queen) did 57,000 % to 16 of them: 300 % for every pass through an enemy, then the 3,000 % burst. It isn’t in the all-together number.'],
  'wraith': ['One run after the 2026-10-25 rework: 944 %/s with every main move (517 before), against Bandit’s 1,919. That is −975: below the ±500 band, but nearly double.',
             'The Rake carries her (528 %/s alone, 72 % a bullet now), and every 5 hits bring the next card a second sooner, so the 4 stored cards keep coming while she shoots. Card Trick alone measured 133: the test’s bot aims at the middle of the pack and the card now follows its crosshair.',
             'Bandit’s damage is his knife (1,478 alone) and his Smoke Bomb (709). Levers if she should catch up: Card Trick 400 → 800 %, The Rake 72 → 85 %, or a smoke blast where Project Mind lands.',

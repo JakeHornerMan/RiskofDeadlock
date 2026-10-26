@@ -155,6 +155,16 @@ Tell the creator the count first: normally **3 launches** (test, bench, portrait
 - A stun put on in the same tick as a lift may not show (gotcha 31): stun again once the enemy is up.
 - Launches used: 3 test runs (one stopped for memory, then 2), 1 bench + portraits, 1 co-op run.
 
+## 7e. Lessons from Mina (the tenth hero, 2026-10-26)
+- A Deadlock prop can animate by **morph targets** (her bat): check the glb's `targets` before assuming bones (extractor 1.9.0 writes the poses).
+- A prop held by IK on `root_motion` (her umbrella): weld it to its hand per frame with `holdBones`, or the gun rig moves the hand away from it.
+- A pose that holds a prop up (the glide) wants the off-hand arm free of the gun rig: `DeadlockAnimator.Hold`.
+- Clamp a fall speed allowing for the gravity the motor adds afterwards (gotcha 34); a material made from `ModelBuilder.Template` keeps Commando's texture (gotcha 35).
+- **An aimed area move needs the bench bot to aim it**: plant on the pack's centre (`DpsBench.PackCentre`); and a move the bot mashes (Q again, Shift) must not cut itself short in the bench.
+- Bench noise: take three runs (`REPEAT=3`) before tuning; single runs of a swarm move swung 429-1514.
+- Two other Claude sessions shared the PC: work in a git worktree, message them (`ListAgents`, `SendMessage`) before a cache rebuild or a game run.
+- Launches used: 3 test runs, 1 bench + portraits, 9 bench launches while tuning (17 runs), 2 ult benches.
+
 ## 8. Definition of done
 - [ ] `PREFLIGHT CLEAN`, build clean, cache rebuilt with the new content.
 - [ ] `run_test.sh <hero>`: every check passes (including `ragdoll`, `sound-events`, `voice-lines`), `1/1 heroes`.

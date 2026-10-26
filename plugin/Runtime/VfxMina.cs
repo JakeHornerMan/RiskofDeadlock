@@ -15,7 +15,7 @@ namespace DeadlockOfRain
     {
         static readonly Color minaCrimson = new Color(0.88f, 0.07f, 0.2f), minaBlood = new Color(0.55f, 0.02f, 0.07f),
                               minaRose = new Color(1f, 0.32f, 0.42f), minaDark = new Color(0.22f, 0.02f, 0.05f, 0.9f),
-                              minaSmoke = new Color(0.45f, 0.06f, 0.1f, 0.85f), minaGlow = new Color(1f, 0.12f, 0.2f);
+                              minaSmoke = new Color(0.45f, 0.06f, 0.1f, 0.85f), minaGlow = new Color(1f, 0.12f, 0.2f), minaRing = new Color(0.5f, 0.02f, 0.06f, 0.7f);
 
         static GameObject Mina(string id, string moment, Vector3 at, float radius, Transform follow, Vector3? to, float life)
         {
@@ -176,7 +176,7 @@ namespace DeadlockOfRain
                 case "jump":
                 {
                     // a jump back: a ring of red at her feet and a few bats fluttering up
-                    Ring(at + Vector3.up * 0.1f, minaCrimson, 0.3f, 1.6f, 0.35f, 0.08f);
+                    Ring(at + Vector3.up * 0.1f, minaRing, 0.3f, 1.6f, 0.35f, 0.08f);
                     var root = Root(at, 1.2f, null);
                     var s = Swarm(root, 4, at + Vector3.up * 0.5f, null, 0.5f, false, 0.6f);
                     s.Burst(4f, 0.9f);
@@ -305,7 +305,7 @@ namespace DeadlockOfRain
                     Flash(at, minaGlow, 7f, 0.3f, 5f);
                     Burst(at, "mat_smoke", minaSmoke, 8, 0.6f, 2.5f, 0.7f, 0.4f);
                     Burst(at, "mat_glow", minaCrimson, 4, 0.2f, 0f, 1.6f);
-                    Ring(at, minaCrimson, 0.4f, 2.4f, 0.3f, 0.07f, true);
+                    Ring(at, minaRing, 0.4f, 2.4f, 0.3f, 0.07f, true);
                     var root = Root(at, 1.3f, null);
                     Swarm(root, 8, at, null, 0.6f).Burst(7f, 1f);
                     return root;
@@ -335,7 +335,7 @@ namespace DeadlockOfRain
                 {
                     // the bats pull back together into her
                     var root = Root(at, 1.2f, follow);
-                    Ring(at, minaCrimson, 2.2f, 0.3f, 0.25f, 0.06f, true);
+                    Ring(at, minaRing, 2.2f, 0.3f, 0.25f, 0.06f, true);
                     Burst(at, "mat_smoke", minaSmoke, 6, 0.5f, 1.5f, 0.6f, 0.5f);
                     Particles(root, "mat_glow", minaRose, count: 3, life: 0.2f, speed: 0f, size: 1.2f);
                     Flash(at, minaGlow, 5f, 0.25f, 3f);
@@ -358,7 +358,7 @@ namespace DeadlockOfRain
                     var s = Swarm(root, 14, at, follow, 1.2f, false, 0.8f);
                     s.Offset = Vector3.up * 1.5f; s.Turns = 1f;
                     s.Burst(5f, 1.3f);
-                    Ring(at + Vector3.up * 0.1f, minaCrimson, 0.5f, 3f, 0.4f, 0.1f);
+                    Ring(at + Vector3.up * 0.1f, minaRing, 0.5f, 3f, 0.4f, 0.1f);
                     Burst(at, "mat_smoke", minaSmoke, 8, 0.7f, 1.5f, 0.8f, 0.6f);
                     return root;
                 }
@@ -399,7 +399,7 @@ namespace DeadlockOfRain
                     var mark = SymbolQuad(root, "mina_marker_tex", new Color(minaCrimson.r, minaCrimson.g, minaCrimson.b, 0.6f), radius * 0.9f, false);
                     if (mark) mark.transform.localPosition = Vector3.up * 0.1f;
                     Light(root, minaGlow, radius * 1.2f, 1.6f, Vector3.up * 1.5f);
-                    Ring(at + Vector3.up * 0.1f, minaCrimson, radius * 0.2f, radius, 0.5f, 0.15f);
+                    Ring(at + Vector3.up * 0.1f, minaRing, radius * 0.2f, radius, 0.5f, 0.15f);
                     return root;
                 }
                 case "hit":
@@ -418,7 +418,7 @@ namespace DeadlockOfRain
                 case "cast":
                     Flash(at, minaGlow, 9f, 0.35f, 6f);
                     Burst(at, "mat_smoke", minaSmoke, 12, 0.7f, 3f, 0.9f, 0.5f);
-                    Ring(at, minaCrimson, 0.5f, 3.5f, 0.35f, 0.12f, true);
+                    Ring(at, minaRing, 0.5f, 3.5f, 0.35f, 0.12f, true);
                     Shake(at, 10f, 1.5f, 0.25f);
                     return null;
                 case "loop":
@@ -427,7 +427,7 @@ namespace DeadlockOfRain
                     // a red streak behind it. radius is the body's size: a big survivor makes a bigger cloud
                     var root = Root(at, 0f, follow);
                     int n = Mathf.Clamp(Mathf.RoundToInt(26 * radius), 26, 60);
-                    var s = Swarm(root, n, at, follow, radius, true, 0.9f);
+                    var s = Swarm(root, n, at, follow, radius, true, 0.7f);
                     s.Spread = radius * 0.6f; s.Turns = 1.5f; s.Tightness = 11f;
                     Particles(root, "mat_smoke", minaSmoke, rate: 30, life: 0.5f, speed: 0.4f, size: 0.6f * radius, shapeRadius: radius * 0.6f, world: true);
                     Particles(root, "mat_glow", minaGlow, rate: 25, life: 0.2f, speed: 0f, size: 0.4f, shapeRadius: radius * 0.7f);
@@ -450,8 +450,8 @@ namespace DeadlockOfRain
                 {
                     // the flock spirals in, then blasts out in a ring of bats across the burst as the user reappears
                     Flash(at, minaGlow, radius, 0.45f, 8f);
-                    Ring(at, minaCrimson, 0.5f, radius, 0.45f, 0.35f);
-                    Ring(at, minaRose, 0.5f, radius * 0.7f, 0.35f, 0.2f, true);
+                    Ring(at, minaRing, 0.5f, radius, 0.45f, 0.35f);
+                    Ring(at, minaRing, 0.5f, radius * 0.7f, 0.35f, 0.2f, true);
                     Burst(at, "mat_smoke", minaSmoke, 24, 0.9f, radius * 0.6f, 1.4f, 1f);
                     Burst(at, "mat_spark", minaCrimson, 50, 0.6f, radius, 0.12f, 0.5f);
                     Shake(at, radius * 2f, 3f, 0.4f);

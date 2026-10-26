@@ -36,7 +36,7 @@ Related documents:
 | NLayer (MP3 decoder) | 1.16.0 | `extractor/DeadlockExtract.csproj` |
 | .NET SDK for the extractor | **net10.0**. VRF 20 needs it; net8 does not compile against it. | csproj `TargetFramework` |
 | SharpGLTF, SkiaSharp, ValvePak, ValveKeyValue | transitive deps of VRF | `THIRD-PARTY-NOTICES.txt` |
-| Extractor version | `1.8.1` (1.8.1: a hero's `vertexColors` materials keep Deadlock's vertex colours (Wraith's face; local build only, the GitHub tag comes with the next release); 1.8.0: `--heroes a,b` reads only those heroes and what they own (manifest `owners`, from `gen.py`), keeps heroes already read with the same stamp, and is about 15x faster: `anim.Duration` was read per frame per bone, and SharpGLTF works it out from every channel's keys on each read (Abrams 9.5 min → 14 s, all nine heroes 2 min; output byte-identical); the glTF exporter's progress lines go to the log; 1.7.0: plain-words progress lines for Melty's setup screen, the hero's display name from the manifest; 1.6.2: voice takes named by Deadlock's take number, every take for `voiceAllTakes` groups; 1.6.1: DLM2, each material's Deadlock tint, cut-out, glow and vertex colours; `Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1, 1.4.0 the heroes.vdata model lookup, 1.5.0 effect models (props), 1.6.0 props with meshes, skeleton and clips, and split hero meshes) | `extractor/Program.cs`; also part of the cache stamp |
+| Extractor version | `1.9.0` (1.9.0: a prop animated by morph targets gets each target as its own pose, `<id>@m<k>.dlm` (Mina's bat flaps that way; local build only, the GitHub tag comes with the release that ships her); 1.8.1: a hero's `vertexColors` materials keep Deadlock's vertex colours (Wraith's face; local build only, the GitHub tag comes with the next release); 1.8.0: `--heroes a,b` reads only those heroes and what they own (manifest `owners`, from `gen.py`), keeps heroes already read with the same stamp, and is about 15x faster: `anim.Duration` was read per frame per bone, and SharpGLTF works it out from every channel's keys on each read (Abrams 9.5 min → 14 s, all nine heroes 2 min; output byte-identical); the glTF exporter's progress lines go to the log; 1.7.0: plain-words progress lines for Melty's setup screen, the hero's display name from the manifest; 1.6.2: voice takes named by Deadlock's take number, every take for `voiceAllTakes` groups; 1.6.1: DLM2, each material's Deadlock tint, cut-out, glow and vertex colours; `Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1, 1.4.0 the heroes.vdata model lookup, 1.5.0 effect models (props), 1.6.0 props with meshes, skeleton and clips, and split hero meshes) | `extractor/Program.cs`; also part of the cache stamp |
 
 A Deadlock update can change asset paths, clip names, mesh names or sound event names. **Section 9** explains how to
 re-validate everything after an update.
@@ -67,6 +67,7 @@ Other codenames you will meet in asset paths and sound events:
 - Abrams = **bull**/**atlas** (`bull_sm_psd`, `citadel_ability_bull_charge`).
 - Seven = **gigawatt** (`gigawatt_sm_psd`, `Gigawatt.StormCloud.Cast`).
 - Infernus = **inferno** (`Inferno.FireBomb.Explode`).
+- Mina = **vampirebat** (`hero_vampirebat`, `VampireBat.Rake.Cast`; her gun's events are spelled `Vampirebat.Wpn.*`).
 
 Some events use the display name instead (`Haze.Wpn.Fire.Main`, `Abrams.A1.SiphonLife.Cast`, `Seven.Wpn.Fire`,
 `Infernus.Wpn.Fire`). **Always look the exact name up; do not guess** (section 8).
@@ -248,7 +249,10 @@ glTF → `DlmWriter.Write` → `props/<id>/<id>.dlm`. A still prop (Viscous' cub
 plain mesh (`DeadlockCache.Prop`). **1.6.0:** a prop's `meshes` are passed to VRF's MeshFilter and its `clips` to the AnimationFilter
 (with `ComposeAdditiveAnimations`), and the DLM keeps the skeleton and those clips, so the plugin can animate it
 (`DeadlockCache.PropAsset` + `PropModels.Build`: Rat King's rat runs and leaps, his banner's sewer rises). A prop that fails is logged `prop <id> (...) SKIPPED` and listed in `ready.json` `failedProps`; it never costs a hero,
-and the plugin draws a simple shape instead. `ready.json` `props` lists the ones read. `props/` is wiped on each run.
+and the plugin draws a simple shape instead. `ready.json` `props` lists the ones read. **1.9.0:** a prop whose mesh carries **morph
+targets** (Mina's bat has no bones; its wings move by five targets) gets each target written as its own DLM beside the rest pose,
+`props/<id>/<id>@m<k>.dlm`: `DlmWriter.Write(..., morph: k)` adds the target's position and normal deltas to the vertices. The
+plugin reads them with `DeadlockCache.PropPose` (vertices only, same order) and blends them into frames. `props/` is wiped on each run.
 Progress has one more step ("props"). `tools/package.py` keeps a release's props by the hero their id starts with (`manifest_owners.json`).
 
 ### 6.4 Images (`ExportImage`)
@@ -652,6 +656,44 @@ the source values. The RoR2-scale numbers next to them are our own balance (doc 
   (`.Slam` is Lash's death-slam impact), `Wraith.Footstep`, `Wraith.JumpLand`.
 - **Voice:** `sounds/vo/wraith/wraith_<group>`: `select`, `unselect`, `use_power1..4`, `killstreak_start/_mid/_high`, `happy`, `hunt`.
 - **Particles** (looked at for names only, nothing exported): `particles/abilities/wraith/wraith_card_trick_<suit>*`, `wraith_ambient_*`.
+
+**Mina (added 2026-10-26, v1.1.0a; Deadlock build 6819):**
+- **Codename** `vampirebat` (`hero_vampirebat`, hero id 63); model `models/heroes_wip/vampirebat/vampirebat.vmdl` (`m_strModelName`), images
+  `panorama/images/heroes/vampirebat_sm_psd` / `vampirebat_card_psd`, gun icon `heroes/guns/vampirebat_gun_psd`, ability icons in
+  `hud/abilities/vampirebat/`: `vampirebat_rake_psd` (Rake, `ability_vampirebat_steallife`), `vampirebat_sanguine_retreat_psd`
+  (`ability_vampirebat_batblink`), `vampirebat_love_bites_psd` (`ability_vampirebat_lovebites`: the passive, also the debuff icon),
+  `vampirebat_nox_nostra_psd` (her ult `ability_vampirebat_batswarm`, our R). Mist Form's icon is Ethereal Shift's (`items/spirit/ethereal_shift_psd`).
+- **Meshes** `body` (the pistol is in it), `head`, `umbrella` (kept), `head_ui` (dropped). 2.39 m from the soles to the top of the head
+  (`sourceHeight`; the extractor's own figure, 2.56, counts the umbrella and gun sitting at the origin in the bind pose).
+- **Skeleton:** the standard chain (`pelvis` under `root_motion`; the 12 ragdoll bones exist). **The pistol and the umbrella both hang
+  off `root_motion`** and Deadlock holds them by IK: `weaponPivot` → `weapon` → `muzzle_fx` (+ `weaponHand_L/R`, `weaponTip/End`) is in
+  her **left** hand in every clip (`gunHand hand_L`, welded), `umbrella` → `rib_inner_slide`, `rib_inner_a..h_0..1`, `rib_a..h_0..2` (the
+  ribs open and close it) is in her right hand (`holdBones umbrella>hand_R`). Cloth-like chains: `skirt_offset` (under `spine_0`) →
+  `skirt_0..2`, `skirt_a_0..2_L/R`, `skirt_b_0..2_L/R`; `hair_0..1`, `hair_0..1_L/R`; a shoulder bag `purse_0..3` with a charm `purse_charm_0..3`.
+- **Clips** (glb names carry the `vampirebat_` prefix; 130 in the glb, `ui_hero_reveal` fails to load): `vampirebat_weapon_stand_idle`
+  (the aim pose: the pistol about level, the umbrella closed on her shoulder), `vampirebat_weapon_run_n/s/e/w`, `vampirebat_outofcombat_run_n`,
+  `vampirebat_in_air_loop_down/apex/glide` (**glide: hanging under the open umbrella**, legs swaying), `vampirebat_jump_ground/landing`,
+  `vampirebat_reload_idle`, `vampirebat_ability_rake` (0.93 s, the closed umbrella swung), `vampirebat_ability_ult_start/loop`
+  (Nox Nostra: rising and hanging under the open umbrella, gun out), `vampirebat_dash_air_*`, melee clips. No death clip (ragdoll).
+- **Gun** (`citadel_weapon_vampirebat_set`): one bullet per shot (no burst), 7.31 damage, cycle 0.252 s, clip 12, reload 1.7 s, falloff
+  787 → 1811 units (20 → 46 m) down to 0.1.
+- **Abilities** (`abilities.vdata`): Rake 16 s, 10 m cast range, 60° cone, 60 damage, 6 targets, execute troopers under 60, float after it
+  (`FallSpeedMax` 3, `MaxFloatTime` 4); Sanguine Retreat 32 s, 0.65 s, 9 m, `MaxRecasts` 1, `RecastWindow` 4; Love Bites `BuildUpPerShot`
+  18.4, `BonusDamage` 45; Nox Nostra 150 s, 40 m cast range, 75 bats, 4.6 damage each.
+- **Bat model** `models/particle/vampirebat_bat.vmdl`: one mesh (191 vertices, about 2.1 m across in the glb), **no bones, five morph targets**
+  (0 wings up, 2 wings down, 1 and 3 between, 4 nearly none): extractor 1.9.0's morph poses (§6.3b). Its colour texture is a flat swatch:
+  the plugin colours the bats itself. (`bat_ui_a/b/c` are still UI bats.)
+- **Particle textures** (effects kind `texture`): `materials/particle/abilities/vampirebat/vampirebat_lovebites_icon` (a mask: the heart
+  in red, the fangs in yellow/magenta, the jaw in blue; recoloured in the plugin), `vampirebat_blink_preview_marker_symbol_psd_7dd7528f`
+  (Sanguine Retreat's marker), `materials/particle/projected/vampirebat_steallife_preview_cone_projected_psd_4f7edd39` (Rake's cone).
+- **Sounds** (`soundevents/hero/vampirebat.vsndevts`): `Vampirebat.Wpn.Fire.Main/.First/.Whizby/.Impact/.Reload.Start/.Mid/.End`,
+  `VampireBat.Footstep/.JumpLand`, `VampireBat.Umbrella.Open/.Close/.Swing/.Flight.Start/.Flight.Lp/.Flight.End`,
+  `VampireBat.Rake.Cast/.Hit.Confirm/.Kill.Confirm.Heal`, `VampireBat.Blink.Begin/.End/.End.Final/.Travel.Lp/.Mod.End/.Whizby`,
+  `VampireBat.LoveBites.Buildup/.Modifier.Proc/.Bats.Gained`, `VampireBat.Nox.Nostra.Cast.Delay/.Whizby/.Impact/.Channel.Lp/.Channel.End`.
+  Mist Form adds Ethereal Shift's `Mods.Tech.Stasis.Active/.End`.
+- **Voice:** `sounds/vo/vampirebat/vampirebat_<group>`: `select`, `unselect`, `use_power1..4` (power 3 has 20 takes), `killstreak_start/_mid/_high`, `happy`.
+- **Particles** (looked at for names only, nothing exported): `particles/abilities/vampirebat/vampirebat_blink*`, `_batswarm_*`,
+  `_steallife_*`, `_lovebites_damage*`, `particles/weapon_fx/vampirebat/vampirebat_muzzle_flash*` / `_tracer*`.
 
 ---
 

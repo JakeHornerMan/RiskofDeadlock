@@ -1688,15 +1688,16 @@ namespace DeadlockOfRain
             bool noFall = (body.bodyFlags & CharacterBody.BodyFlags.IgnoreFallDamage) != 0;
             bool floatOk = mr.Floating && mr.Shown && Mathf.Abs(fall - hero.FloatFallSpeed) < 0.8f && anim && anim.Holding == "float" && noFall;
             if (DevShots) Shot(hero.Id + "_umbrella");
+            bool wasOpen = mr.Floating; string clip = anim ? anim.Holding ?? "-" : "-";
             mr.TestHold = false;
             yield return new WaitForSeconds(0.6f);
             float y1 = body.transform.position.y;
             yield return new WaitForSeconds(0.3f);
             float fast = (y1 - body.transform.position.y) / 0.3f;
             bool closedOk = !mr.Floating && fast > hero.FloatFallSpeed * 2f;
-            Log.Info($"Melty test: {hero.Id} umbrella: fell {fall:F2} m in 1 s (want {hero.FloatFallSpeed:F1}), open {mr.Floating}, clip {(anim ? anim.Holding ?? "-" : "-")}, no fall damage {noFall}; let go: falling {fast:F1} m/s, open {mr.Floating}");
+            Log.Info($"Melty test: {hero.Id} umbrella: fell {fall:F2} m in 1 s (want {hero.FloatFallSpeed:F1}), open {wasOpen}, clip {clip}, no fall damage {noFall}; let go: falling {fast:F1} m/s, open {mr.Floating}");
             Report("umbrella-works", floatOk && closedOk, body.baseNameToken);
-            if (!floatOk) why[0] += $"umbrella: fell {fall:F2} m/s, open {mr.Floating}, clip {(anim ? anim.Holding ?? "-" : "-")}, no fall damage {noFall}; ";
+            if (!floatOk) why[0] += $"umbrella: fell {fall:F2} m/s, open {wasOpen}, clip {clip}, no fall damage {noFall}; ";
             if (!closedOk) why[0] += $"umbrella: let go but falls {fast:F1} m/s, open {mr.Floating}; ";
             TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
             if (m) m.velocity = Vector3.zero;

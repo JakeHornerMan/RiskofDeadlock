@@ -352,19 +352,24 @@ namespace DeadlockOfRain.States
                 if (characterDirection) characterDirection.moveVector = aim.sqrMagnitude > 0.09f ? aim.normalized : characterDirection.forward;
 
                 target = AimPoint();
+                // the bench's bot centres the circle on its pack, as a player puts it on a pack (aiming at the nearest enemy's chest
+                // from up here put the circle behind the pack, or on whatever enemy floated nearest)
+                if (DpsBench.PackCentre is Vector3 pc) target = pc;
                 if (reticle) reticle.transform.position = target;
                 if (!Planted)
                 {
                     // the gun waits until the swarm is down: until then Left Click plants
                     if (rt != null) rt.GunBlockedUntil = Time.time + 0.15f;
                     bool click = inputBank && inputBank.skill1.justPressed && fixedAge >= row.MinDuration;
-                    if (click || Bot && fixedAge >= 1.2f) Plant();
+                    // test mode plants after a moment; the bench's bot plants as soon as she is up (a player plants before flying off)
+                    if (click || MeltyTest.Active && fixedAge >= 1.2f || DpsBench.Active && (resumed || fixedAge >= RiseTime)) Plant();
                 }
                 // Shift: a Sanguine Retreat, and the flight carries on after it
                 var util = skillLocator ? skillLocator.utility : null;
                 var urow = Survivors.RowFor(util);
-                bool shift = inputBank && inputBank.skill3.justPressed || Bot && fixedAge >= 2.5f && fixedAge < 2.6f;
-                if (shift && urow != null && urow.Kind == "bat_blink" && util.stock > 0 && fixedAge < length - 0.3f)
+                // (test mode blinks once by itself, to check the flight carries on after it; the bench presses keys like a player)
+                bool shift = inputBank && inputBank.skill3.justPressed || MeltyTest.Active && fixedAge >= 2.5f && fixedAge < 2.6f;
+                if (shift && (resumed || fixedAge >= RiseTime) && urow != null && urow.Kind == "bat_blink" && util.stock > 0 && fixedAge < length - 0.3f)
                 {
                     util.DeductStock(1);
                     toBlink = true;
@@ -445,8 +450,16 @@ namespace DeadlockOfRain.States
         {
             base.OnEnter();
             Fx.Sound(row.Id, "reload", characterBody.corePosition);
-            NoxSwarm.Make(characterBody, row, Point);
+            var swarm = NoxSwarm.Make(characterBody, row, Point);
             MeltyTest.Report("nox-planted", true, characterBody.baseNameToken);
+            if (MeltyTest.Active || DpsBench.Active)
+                Log.Info($"nox nostra: planted {Vector3.Distance(characterBody.footPosition, Point):F1} m from her ({characterBody.footPosition.y - Point.y:F1} m above it), {swarm.Count} enemies inside");
+            if (MeltyTest.Active || DpsBench.Active)
+                Log.Info("nox nostra: enemies near the circle (flat m, height m): " + string.Join(" ", Fx.Enemies(characterBody, Point, 25f).Select(h =>
+                {
+                    var b = h.healthComponent.body; var f = (b ? b.footPosition : h.transform.position) - Point;
+                    return $"{new Vector2(f.x, f.z).magnitude:F1}/{f.y:F1}";
+                })));
         }
 
         public override void FixedUpdate()
@@ -484,6 +497,10 @@ namespace DeadlockOfRain.States
             return s;
         }
 
+        int bites, ticks;
+        /// <summary>Enemies inside the circle now (the bench and test log it).</summary>
+        public int Count => Inside().Count;
+
         List<HurtBox> Inside()
         {
             var p = transform.position;
@@ -508,6 +525,7 @@ namespace DeadlockOfRain.States
             {
                 next += row.Interval;
                 var inside = Inside();
+                ticks++; bites += inside.Count;
                 if (NetworkServer.active)
                     foreach (var hb in inside)
                         Fx.Hit(owner, hb, row.DamagePct / 100f, row.ProcCoefficient, hb.transform.position,
@@ -528,6 +546,7 @@ namespace DeadlockOfRain.States
 
         void OnDestroy()
         {
+            if (MeltyTest.Active || DpsBench.Active) Log.Info($"nox nostra: swarm done, {ticks} ticks, {bites} bites ({(ticks > 0 ? bites / (float)ticks : 0f):F1} enemies a tick)");
             DeadlockAudio.Stop(loop);
             if (bats) bats.Stop(5f);
             Vfx.Stop(fx, 0.6f);
@@ -550,7 +569,7 @@ namespace DeadlockOfRain.States
         CharacterModel model;
         readonly Dictionary<HealthComponent, float> nextHit = new Dictionary<HealthComponent, float>();
 
-        float Size => Mathf.Max(0.8f, characterBody.radius * 1.6f);
+        float Size => Mathf.Max(1.4f, characterBody.radius * 2.6f);
 
         public override void OnEnter()
         {
@@ -607,7 +626,8 @@ namespace DeadlockOfRain.States
                 characterMotor.velocity = v;
                 var aim = GetAimRay().direction; aim.y = 0f;
                 if (characterDirection) characterDirection.moveVector = aim.sqrMagnitude > 0.09f ? aim.normalized : characterDirection.forward;
-                bool again = inputBank && inputBank.activateEquipment.justPressed && fixedAge >= row.MinDuration;
+                // (the bench presses Q over and over: for it, the flight runs its full time)
+                bool again = !DpsBench.Active && inputBank && inputBank.activateEquipment.justPressed && fixedAge >= row.MinDuration;
                 if (fixedAge >= row.Duration || again) { outer.SetNextStateToMain(); return; }
             }
 
@@ -623,7 +643,6 @@ namespace DeadlockOfRain.States
                     nextHit[hc] = now + row.Interval;
                     var at = hc.body ? hc.body.corePosition : hb.transform.position;
                     Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, at, new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Equipment });
-                    Fx.Stun(hc, 0.15f);
                     Relay.Vfx(row.Vfx, "hit", at, Size, hc.gameObject);
                     Relay.Sound(row.Id, "hit", at);
                 }

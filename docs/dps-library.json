@@ -1654,9 +1654,94 @@
      "max": 900
     }
    }
+  },
+  "DeadlockMina": {
+   "name": "Mina",
+   "stats": {
+    "health": 90.0,
+    "healthPerLevel": 27.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "New Money",
+    "secondary": "Rake",
+    "utility": "Sanguine Retreat",
+    "special": "Nox Nostra"
+   },
+   "hero": true,
+   "measuredOn": "v1.1.0a",
+   "dps": {
+    "all": {
+     "runs": [
+      1632,
+      1500,
+      1292
+     ],
+     "mean": 1475,
+     "min": 1292,
+     "max": 1632
+    },
+    "primary": {
+     "runs": [
+      252,
+      252,
+      252
+     ],
+     "mean": 252,
+     "min": 252,
+     "max": 252
+    },
+    "secondary": {
+     "runs": [
+      27,
+      53,
+      27
+     ],
+     "mean": 36,
+     "min": 27,
+     "max": 53
+    },
+    "utility": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "special": {
+     "runs": [
+      1405,
+      1630,
+      1280
+     ],
+     "mean": 1438,
+     "min": 1280,
+     "max": 1630
+    },
+    "equipment": {
+     "runs": [
+      1200,
+      1200,
+      1200
+     ],
+     "mean": 1200,
+     "min": 1200,
+     "max": 1200
+    }
+   }
   }
  },
  "about": "Stored DPS library (Deadlock of Rain). Main moves and each move alone, % of damage stat per second, measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, 30 s per pass, perfect aim, every move used when ready, no equipment except the \"equipment\" pass). \"all\" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are tagged with the build they were measured on. Built by tools/dps_library.py.",
- "updated": "2026-10-25",
+ "updated": "2026-10-26",
  "runsPerSurvivor": 3
 }

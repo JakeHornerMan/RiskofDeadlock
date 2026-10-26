@@ -40,7 +40,7 @@ namespace DeadlockOfRain
         const float FlapTime = 0.28f;
         const int FramesPerFlap = 14;
         /// <summary>A bat's wingspan in the world (m) at Size 1: Deadlock's are drawn about this big by its particles.</summary>
-        const float Wingspan = 0.55f;
+        const float Wingspan = 0.42f;
         const string PropId = "mina_bat_prop";
 
         static BatFlock instance;
@@ -70,10 +70,8 @@ namespace DeadlockOfRain
             baked = true;
             // the bats are drawn in the game's own material in Mina's colours (Deadlock's bat texture is only a flat swatch):
             // near-black with a faint red glow; Mist Form's furious ones darker red, glowing hard
-            dark = new Material(ModelBuilder.Template) { name = "matDeadlockBat", color = new Color(0.07f, 0.02f, 0.03f) };
-            SetGlow(dark, new Color(0.45f, 0.02f, 0.06f), 0.6f);
-            angry = new Material(ModelBuilder.Template) { name = "matDeadlockBatAngry", color = new Color(0.32f, 0.02f, 0.05f) };
-            SetGlow(angry, new Color(1f, 0.08f, 0.12f), 2.2f);
+            dark = BatMaterial("matDeadlockBat", new Color(0.16f, 0.03f, 0.05f), new Color(0.7f, 0.04f, 0.1f), 1.2f);
+            angry = BatMaterial("matDeadlockBatAngry", new Color(0.4f, 0.03f, 0.06f), new Color(1f, 0.1f, 0.14f), 3f);
 
             var asset = DeadlockCache.PropAsset(PropId);
             var keys = new List<Vector3[]>();
@@ -117,10 +115,24 @@ namespace DeadlockOfRain
             Log.Info($"bat flock: {keys.Count} wing poses, {FramesPerFlap} frames, {asset.Positions.Length} verts, span {meshSpan:F2} m");
         }
 
-        static void SetGlow(Material m, Color c, float power)
+        /// <summary>The game's own material, cleaned of Commando's textures: a plain colour, a glow over the whole bat, both sides of
+        /// the wings drawn.</summary>
+        static Material BatMaterial(string name, Color c, Color glow, float power)
         {
-            if (m.HasProperty("_EmColor")) m.SetColor("_EmColor", c);
+            var m = new Material(ModelBuilder.Template) { name = name };
+            foreach (var k in m.shaderKeywords) m.DisableKeyword(k);
+            m.mainTexture = Texture2D.whiteTexture;
+            if (m.HasProperty("_MainTex")) m.SetTexture("_MainTex", Texture2D.whiteTexture);
+            if (m.HasProperty("_Color")) m.SetColor("_Color", c);
+            if (m.HasProperty("_NormalTex")) m.SetTexture("_NormalTex", null);
+            if (m.HasProperty("_FresnelMask")) m.SetTexture("_FresnelMask", null);
+            if (m.HasProperty("_EmTex")) m.SetTexture("_EmTex", Texture2D.whiteTexture);
+            if (m.HasProperty("_EmColor")) m.SetColor("_EmColor", glow);
             if (m.HasProperty("_EmPower")) m.SetFloat("_EmPower", power);
+            if (m.HasProperty("_Cull")) m.SetFloat("_Cull", 0f);
+            if (m.HasProperty("_LimbRemovalOn")) m.SetFloat("_LimbRemovalOn", 0f);
+            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.1f);
+            return m;
         }
 
         static bool Differs(Vector3[] a, Vector3[] b)
