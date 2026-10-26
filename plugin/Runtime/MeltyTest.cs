@@ -1569,8 +1569,22 @@ namespace DeadlockOfRain
             Report("mind-sight", losOk, body.baseNameToken);
             if (!losOk) why[0] += $"mind-sight: open {open}, behind a wall refused {blocked}; ";
 
-            // in the air: aimed at the sky she goes up there
-            var up = (fwd + Vector3.up * 0.35f).normalized;
+            // in the air: aimed at the sky she goes up there. The aim needs open sky: under Verdant Falls' tree canopy the one
+            // straight ahead hit the tree and she had nowhere to go (Melty test 2026-10-26), so the first of eight directions with
+            // 25 m of clear air is used, and with none on this spot both air checks are left out (logged) rather than failed
+            var eyeUp = body.inputBank.aimOrigin;
+            Vector3 up = Vector3.zero;
+            for (int i = 0; i < 8 && up == Vector3.zero; i++)
+            {
+                var d = (Quaternion.Euler(0f, 45f * i, 0f) * fwd + Vector3.up * 0.35f).normalized;
+                if (!Physics.SphereCast(eyeUp, 0.5f, d, out _, 25f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) up = d;
+            }
+            if (up == Vector3.zero)
+            {
+                Log.Info($"Melty test: {hero.Id} project mind in the air not checked: no open sky round the test spot");
+                TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+                yield break;
+            }
             AimCamera(body, up);
             for (int f = 0; f < 6; f++) { body.inputBank.aimDirection = up; yield return null; }
             float y0 = body.footPosition.y;
