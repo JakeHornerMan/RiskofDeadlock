@@ -182,7 +182,7 @@ two per trip in the air, given back on landing or by Rising Ram. **Never takes f
 | R | **Rising Ram** | Charge 15 m; ramming an enemy deals 1200 % and chains (396 % each) haul every grounded enemy within 10 m, and him, into a **3 s float** (2026-10-24: was 2 s; the bat keeps it going, see M2). Cooldown halved on a hit. Ground only. | 1200 %, chains 396 % | 6 s | 941 |
 | Q | **Chain Gang** (equipment) | Up to **20 chains** to the enemies in sight within 20 m, **one each**, hauled 6 m up and slammed for **1500 % a chain**; leftover chains go to **bosses, up to 5 each** (7500 %), slammed where they stand; the rest stunned 3 s (2026-10-24: was 6000 % per enemy, one chain each). | **1500 %** a chain, 20 chains (30,000 % in all) | 120 s | 10,500 on the ult bench (7 of 30 + queen) |
 
-## Wraith: the card shark (main moves at once: **944 %/s**, one v1.0.1a run; match Bandit 1919 (library): **below** ±500 (−975), doc 05 §3.18)
+## Wraith: the card shark (main moves at once: **937 %/s**, one v1.0.1c run (The Rake 684 alone, Card Trick 207); match Bandit 1919 (library): **below** ±500 (−982), doc 05 §3.18; Telekinesis ult bench 78,000 %, 13 hit)
 
 New 2026-10-23 (not released); reworked 2026-10-25 (v1.0.1a) from the creator's play. Deadlock's model (her fedora and long coat; her face in Deadlock's own vertex colours since v1.0.1b; 2.37 m to the
 top of the head, `heightScale` 0.983). **Her whole long coat, its two tails and her ponytail swing as springs** (`springRoots`

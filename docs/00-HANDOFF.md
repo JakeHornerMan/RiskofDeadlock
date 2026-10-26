@@ -274,7 +274,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ## 9. Last work: Wraith v1.0.1c (2026-10-26)
 - Creator's feedback: Project Mind 60 → 75 m (`range`; the flight still takes at most 1 s for a full trip, `interval`); Full Auto loads its own row's `clipSize` (104, double The Rake's 52) instead of refilling the gun (`FullAuto`, MeltyTest's full-auto check now expects that magazine).
-- Preflight clean, plugin builds. **Not tested in game, not benched** ("please do not run any tests just code changes!"): owed `run_test.sh wraith`, a Wraith bench, and the five pages republished (kit_pages.py already updated).
+- Preflight clean, plugin builds. **Not tested in game** ("please do not run any tests just code changes!"): `run_test.sh wraith` owed. Benched afterwards at the creator's request: all 937 vs Bandit 1919 (below, as before), ult bench 78,000 % (13 hit); library and `docs/ult-bench.txt` updated (`dps_library.py` VERSION v1.0.1c). Pages not republished yet.
 
 ## 9-prev27. 1.0.2 freeze fix (2026-10-26)
 - Melty's only open issue was `crash:hung` on 1.0.1 (1 player, 66 s, logs end before `hero material template`). Cause (likely): blocking `WaitForCompletion()` during the content load; now yielded (doc 02 §12). A `never-started` Play with no logs had nothing to act on.

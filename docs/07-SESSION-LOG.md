@@ -1379,3 +1379,11 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** preflight clean, plugin builds (0 errors). No game run.
 **Not done / open:** `run_test.sh wraith`, a Wraith bench, republishing the pages. The ammo counter reads `104/52` during Full Auto.
 **Lessons:** `main` is checked out in `../RiskofDeadlock-wraith`; the main folder was on the old `fix-1.0.2` branch: check the branch before editing.
+
+### 2026-10-26 · Benches for Wraith and Mina (and their ults) · main (Wraith), branch `mina` (Mina)
+**Request (verbatim):** "run dps test on both mina and wraith also run the test for thier Ultimate · Q equipment"
+**Questions asked → answers:** none.
+**Done:** `run_bench.sh 30 wraith` from `main` (the first try failed: no flat spot with a clear view on that stage; the retry ran), `ULTS=1 run_bench.sh 30 wraith`; Mina's from the `mina` folder (her entry is on that branch). Library merged (VERSION v1.0.1c here), Wraith's line in `docs/ult-bench.txt`, docs 00, 05, 06.
+**Results:** Wraith all 937 vs Bandit 1919 (below, −982; was 944), The Rake 684 alone, Card Trick 207; Telekinesis 78,000 % (13 hit, boss 6000 %). Mina (branch `mina`): all 3098 vs Huntress 1921 (above, +1177), Nox Nostra 2580 alone; Mist Form 100,500 % (29 hit).
+**Not done / open:** `run_test.sh` for both; pages not republished; Mina sits above Huntress's band (the creator's call).
+**Lessons:** none new.
