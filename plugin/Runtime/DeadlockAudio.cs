@@ -9,15 +9,21 @@ using UnityEngine;
 namespace DeadlockOfRain
 {
     /// <summary>Plays the Deadlock sounds the extractor decoded from the player's install. RoR2 turns Unity's own audio off
-    /// (it uses Wwise), so this is a tiny software mixer on Windows' waveOut: 44.1 kHz stereo, 4 x 20 ms buffers.</summary>
+    /// (it uses Wwise), so this is a tiny software mixer on Windows' waveOut: 44.1 kHz stereo, 4 x 20 ms buffers.
+    /// The sounds (about 1,400 files, 380 MB) are read on the mixer's own thread, not the game's: read on the main thread at
+    /// start they held the game still long enough on a player's slow drive for it to be reported frozen (1.0.2, 2026-10-26).
+    /// They are kept as 16-bit samples (half the memory of floats).</summary>
     public static class DeadlockAudio
     {
         const int Rate = 44100, BufferFrames = 882, Buffers = 4;
-        sealed class Clip { public float[] L, R; public int Take = -1; }
+        sealed class Clip { public short[] L, R; public int Take = -1; }
         sealed class Voice { public Clip clip; public int pos; public float vol, pan; public bool loop; public int id; }
         sealed class Event { public float volume; public List<Clip> clips = new List<Clip>(); }
 
-        static readonly Dictionary<string, Event> events = new Dictionary<string, Event>(StringComparer.OrdinalIgnoreCase);
+        // filled once on the mixer thread, then swapped in whole: never changed after that, so reading it is safe anywhere
+        static volatile Dictionary<string, Event> events = new Dictionary<string, Event>(StringComparer.OrdinalIgnoreCase);
+        /// <summary>The sounds are read (a few seconds after start; until then nothing plays).</summary>
+        public static bool Loaded => events.Count > 0;
         static readonly List<Voice> voices = new List<Voice>();
         static readonly object gate = new object();
         static readonly System.Random rng = new System.Random();
@@ -32,8 +38,7 @@ namespace DeadlockOfRain
         {
             try
             {
-                LoadIndex();
-                if (events.Count == 0) return;
+                if (!File.Exists(System.IO.Path.Combine(System.IO.Path.Combine(DeadlockCache.Dir ?? "", "sounds"), "sounds.json"))) { Log.Warn("no Deadlock sounds in cache"); return; }
                 running = true;
                 thread = new Thread(Run) { IsBackground = true, Name = "DeadlockAudio" };
                 thread.Start();
@@ -83,6 +88,8 @@ namespace DeadlockOfRain
             var index = System.IO.Path.Combine(dir, "sounds.json");
             if (!File.Exists(index)) { Log.Warn("no Deadlock sounds in cache"); return; }
             // tiny parser for {"Event": {"volume": 1.0, "files": ["a.wav", ...]}, ...}
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var loaded = new Dictionary<string, Event>(StringComparer.OrdinalIgnoreCase);
             var text = File.ReadAllText(index);
             int i = 0;
             while (true)
@@ -114,10 +121,12 @@ namespace DeadlockOfRain
                     if (int.TryParse(stem.Substring(stem.LastIndexOf('_') + 1), out var take)) clip.Take = take;
                     ev.clips.Add(clip);
                 }
-                if (ev.clips.Count > 0) events[name] = ev;
+                if (ev.clips.Count > 0) loaded[name] = ev;
                 i = end + 1;
+                if (!running) return;
             }
-            Log.Info($"Deadlock sounds: {events.Count} events loaded");
+            events = loaded;
+            Log.Info($"Deadlock sounds: {loaded.Count} events loaded ({sw.Elapsed.TotalSeconds:F1} s, on the audio thread)");
         }
 
         static Clip ReadWav(string file)
@@ -140,16 +149,27 @@ namespace DeadlockOfRain
                     int frames = data.Length / 2 / channels;
                     int outFrames = (int)((long)frames * Rate / rate);
                     // a mono file shares one array for both sides (half the memory: most voice lines are mono)
-                    var c = new Clip { L = new float[outFrames] };
-                    c.R = channels == 1 ? c.L : new float[outFrames];
-                    for (int o = 0; o < outFrames; o++)
+                    var src16 = new short[frames * channels];
+                    Buffer.BlockCopy(data, 0, src16, 0, frames * channels * 2);
+                    var c = new Clip { L = new short[outFrames] };
+                    c.R = channels == 1 ? c.L : new short[outFrames];
+                    if (rate == Rate)
                     {
-                        double src = (double)o * rate / Rate; int a = (int)src; float t = (float)(src - a);
-                        int b = Math.Min(a + 1, frames - 1);
-                        float S(int f, int ch) => BitConverter.ToInt16(data, (f * channels + Math.Min(ch, channels - 1)) * 2) / 32768f;
-                        c.L[o] = S(a, 0) * (1 - t) + S(b, 0) * t;
-                        if (channels > 1) c.R[o] = S(a, 1) * (1 - t) + S(b, 1) * t;
+                        // already 44.1 kHz (nearly every file): split the channels, nothing to resample
+                        for (int o = 0; o < outFrames; o++)
+                        {
+                            c.L[o] = src16[o * channels];
+                            if (channels > 1) c.R[o] = src16[o * channels + 1];
+                        }
                     }
+                    else
+                        for (int o = 0; o < outFrames; o++)
+                        {
+                            double src = (double)o * rate / Rate; int a = (int)src; float t = (float)(src - a);
+                            int b = Math.Min(a + 1, frames - 1);
+                            c.L[o] = (short)(src16[a * channels] * (1 - t) + src16[b * channels] * t);
+                            if (channels > 1) c.R[o] = (short)(src16[a * channels + 1] * (1 - t) + src16[b * channels + 1] * t);
+                        }
                     return c;
                 }
             }
@@ -223,6 +243,9 @@ namespace DeadlockOfRain
 
         static void Run()
         {
+            // the sounds first, here and not on the game's thread (see the class summary)
+            try { LoadIndex(); } catch (Exception e) { Log.Warn("Deadlock sounds not read: " + e.Message); }
+            if (!running || events.Count == 0) { running = false; return; }
             var fmt = new WaveFormatEx { wFormatTag = 1, nChannels = 2, nSamplesPerSec = Rate, wBitsPerSample = 16, nBlockAlign = 4, nAvgBytesPerSec = Rate * 4 };
             if (waveOutOpen(out device, -1, ref fmt, IntPtr.Zero, IntPtr.Zero, 0) != 0) { Log.Warn("waveOutOpen failed; Deadlock sounds off"); return; }
             int hdrSize = Marshal.SizeOf(typeof(WaveHdr));
@@ -256,7 +279,8 @@ namespace DeadlockOfRain
                             for (int i = voices.Count - 1; i >= 0; i--)
                             {
                                 var v = voices[i];
-                                float gl = v.vol * mv * (1f - Math.Max(0, v.pan)), gr = v.vol * mv * (1f + Math.Min(0, v.pan));
+                                // samples are 16-bit: the 1/32768 scale rides in the gains
+                                float gl = v.vol * mv * (1f - Math.Max(0, v.pan)) / 32768f, gr = v.vol * mv * (1f + Math.Min(0, v.pan)) / 32768f;
                                 var c = v.clip; int n = c.L.Length;
                                 for (int f = 0; f < BufferFrames; f++)
                                 {

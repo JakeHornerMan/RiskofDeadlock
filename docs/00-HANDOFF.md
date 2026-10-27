@@ -161,6 +161,7 @@ cooldown increases rather than nerfing damage"): Lightning Ball 6 → 16 s, Stat
 ---
 
 ## 7. Lessons from past sessions (things that cost time)
+- **Never read big files on the main thread at start** (2026-10-27): 1.0.2 read every Deadlock sound (380 MB) in `Plugin.Awake`; a player's game froze there. The last log line before a freeze names the step: read the player's LogOutput against this PC's order.
 - **RoR2's standard shader ignores mesh vertex colours** (2026-10-26, Wraith's face): `_ColorsOn` 1 and `VERTEXCOLOR` changed nothing; a hero's vertex-coloured material is painted into its own texture (`HeroAsset.AtlasPart`). Check a render (`PORTRAITS=1 run_bench.sh 0 <hero>`) before trusting a shader flag.
 - **`run_test.sh` / `run_bench.sh` can leave our game copy running** (2026-10-26, twice): before the next run, `tasklist`; if the PID is in `%LOCALAPPDATA%\DeadlockOfRain\lab-game-pids.txt` it is ours: `lab_restore.sh`. A skill longer than 7 s needs its kind in MeltyTest's long-window list.
 - **An aimed area move needs the DPS bench bot to aim it** (2026-10-26, Mina's Nox Nostra): the bot aims at the nearest enemy's chest, so a circle planted from the air landed behind the pack (or on a stray monster 28 m off); runs swung 429-1514. Plant on `DpsBench.PackCentre`, keep the bot from mashing a move into cutting itself short, and take three runs (`REPEAT=3`) before tuning.
@@ -274,7 +275,14 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: Mina v1.1.0b, Nox Nostra stream and Mist Form (2026-10-26, branch `mina`)
+## 9. Last work: 1.1.0 for Melty, Deadlock 6821, the 1.0.2 freeze (2026-10-26/27)
+- 1.1.0 on `main` (mina branch fast-forwarded in): Wraith released, Mina coming soon (`release.json`), Plugin and `Net.CoopVersion` 1.1.0. Zip `build/DeadlockOfRain-1.1.0.zip` (`--melty`), `setup.done.contains` `|1.9.0|F01D13948E6426E3`, recipe checks = the first 12 lines (as 1.0.2 but no billy-plays line in the 12).
+- Deadlock updated to **6821** (2026-10-27): cache rebuilt 10/10 with extractor 1.9.0; `RELEASE_ZIP` run_test 9 heroes: all pass except one Billy air-bat miss that passed alone; BREAK=infernus pass.
+- **1.0.2 freeze (player, GTX 1060, game on D:)**: log ends right after `Deadlock content from build`, i.e. inside `DeadlockAudio.Init`, which read 380 MB of WAVs on the main thread. Fixed: loaded on the audio thread, 16-bit samples (mod start now 0.3 s, sounds 2.3 s in the background). The same player's later 'didn't start' was RoR2's own corrupt profile XML (`SaveSystemSteam.LoadUserProfileFromDisk`), likely from killing the frozen game.
+- Melty: draft 1.1.0 uploads `00a804dc` / `056ed587` / `79ef9723` (latest has the two hardened test checks); tests `3d952374` and `09fe64c6` failed only on test checks (Wraith Project Mind air under Verdant Falls' canopy; Mo & Krill Burrow timing on a low-memory PC), both hardened. **Needs a new upload (the audio fix), `submit_release`, `test_release`, then publish: the creator said to wait for his go.**
+- Co-op test (`run_coop_test.sh`) fails on 1.0.2 as well as 1.1.0 on this PC now (memory: two copies, ~1.4 GB free): not a 1.1.0 regression; check with a real friend.
+
+## 9-prev28. Last work: Mina v1.1.0b, Nox Nostra stream and Mist Form (2026-10-26, branch `mina`)
 - **v1.1.0c+ (latest):** Mist Form sinks on Shift (Utility) as well as Sprint, hint names Shift; Wraith's face finally dark (vertex colours painted into a per-triangle texture, `HeroAsset.AtlasPart`: RoR2's shader never showed vertex colours); benches: Mina 2644 vs Huntress 1921 (above), Wraith 2426 vs Bandit 1919 (+507, just above), ults Mist Form 115,200 %, Telekinesis 93,000 %; library VERSION v1.1.0c; pages republished.
 - **v1.1.0c (latest):** Wraith's card trick splashes 7 m (crit = `wraithmark`, `markCrit` column), Project Mind 60 m, refund documented (M2 text, page tile); Mina's Rake 1000 % with a slash per hit and the area at her height, umbrella opens whenever Jump is held in the air (0.8 air control, +50 % speed: new column `floatMoveSpeedMult`), reload keeps the umbrella hand while floating (gesture mask). Built and installed, not tested (the creator plays it); pages republished.
 - **Latest:** Wraith takes no fall damage from the drop after Project Mind (`MindTravel.OnExit` + `SoftLanding`, until she lands); other falls hurt. Built and installed in the Steam copy, not tested (the creator tests it in play).

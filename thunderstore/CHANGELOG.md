@@ -1,9 +1,11 @@
 # Changelog
 
 ## 1.1.0
-- Built with Risk of Rain 2 build 25921972 and Deadlock build 6819 (v1.1.0, 2026-10-26).
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6821 (v1.1.0, 2026-10-27).
 - **Wraith joins**, the ninth hero, matched to Bandit: The Rake tommy gun (72 % a bullet, 52 rounds), **Card Trick** (a card that follows your crosshair; each draws Bleed, a Crit, a Stun or Burn, and the trick splashes onto every enemy within 7 m; holds 4 cards, every 5 Rake hits bring the next one 1 s sooner), **Project Mind** (mark a spot up to 60 m away, on the ground or in the air, and fly there as purple smoke and cards; no fall damage from the drop after it), **Full Auto** (a double magazine, 104 rounds, fired 50 % faster) and the **Telekinesis** ult (lift every enemy within 30 m and throw them where you aim).
 - One more locked "coming soon" hero tile in character select.
+- Fixed another freeze at start: the Deadlock sounds (about 1,400 files) were read before the game could go on, which on a slow drive or a busy PC could make it stop responding. They now load in the background in a couple of seconds and take half the memory.
+- Works with Deadlock's update of 2026-10-27 (build 6821): every hero reads.
 - Players on 1.1.0 play together; earlier versions can't join them (new hero content).
 
 ## 1.0.2

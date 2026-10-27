@@ -42,7 +42,7 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
 | `Runtime/DeadlockCache.cs` | Reads the extractor cache: `ready.json`, `HeroAsset.Read` (DLM), `Parts` (one mesh per submesh), textures, UI images/sprites. Cache dir = env `DEADLOCKOFRAIN_CACHE` or `%LOCALAPPDATA%\DeadlockOfRain\cache`. |
 | `Runtime/ModelBuilder.cs` | Builds a hero model GameObject: skeleton, one SkinnedMeshRenderer per material, Hopoo materials, ChildLocator, animator, CharacterModel, hurtboxes. `GlobalScale`. |
 | `Runtime/DeadlockAnimator.cs` | Legacy `Animation` player for the Deadlock clips: locomotion, upper-body gestures, full-body overrides, death, and the **gun rig** (rigid gun arms, welded gun, aim, recoil). |
-| `Runtime/DeadlockAudio.cs` | waveOut software mixer (RoR2 turns Unity audio off). Plays the decoded Deadlock sound events. |
+| `Runtime/DeadlockAudio.cs` | waveOut software mixer (RoR2 turns Unity audio off). Plays the decoded Deadlock sound events. Since 1.1.0 the ~1,400 WAVs (380 MB) are read on the mixer thread before it opens waveOut (`events` swapped in whole once read; `Loaded`), not in `Plugin.Awake`: a 1.0.2 player's game froze with its log ending right before `Deadlock sounds: N events loaded`. Samples are kept as 16-bit `short[]` (the mixer scales by 1/32768), half the memory of the old floats. `Plugin.Awake` logs `mod start took N s`. |
 | `Runtime/Fx.cs` | Effect prefabs by Addressables key (`effects.json`) and combat helpers: `Enemies`, `Hit`, `Blast`, `Stun`, `KnockAside`, `KnockBack`, `MuzzleFlash`, `Sound`, `Loop`, `Muzzle`, `Impact`, `Ghost`, `Prefab`. |
 | `Runtime/Vfx.cs` | Our own visual effects (effects of kind `custom`, §8.1), built at runtime with RoR2 materials; `Play(id, moment, ...)`, `Stop`, `Bolt`, `Ring`, `Burst`, `Flash`, `EmberFx`. |
 | `Runtime/Projectiles.cs` | Simulated objects, on every machine (only the server's copy deals damage, §7.7): `DlrProjectile` (Sleep Dagger, Lightning Ball), `DlrDelayed` (Static Charge), `DlrLob` (Napalm), `DlrZone` (Thunderhead). |
@@ -143,7 +143,7 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
    - `ContentManager.collectContentPackProviders += add => add(new DeadlockContentProvider())`.
    - `Equipment.Init()` subscribes `CharacterBody.onBodyStartGlobal` (starting equipment) and `Run.onRunStartGlobal`.
    - `Buffs.InitHooks()` subscribes the Infernal Resilience heal-back. The other buff effects live in the Harmony patches.
-   - `DeadlockAudio.Init()` loads `sounds.json` and starts the mixer thread.
+   - `DeadlockAudio.Init()` starts the mixer thread, which reads `sounds.json` and every WAV first (1.1.0: off the main thread).
    - `MeltyTest.Init()` activates only if `%LOCALAPPDATA%\Melty\test\risk-of-deadlock-2.json` (Melty's, named after the listing slug) or `deadlock-of-rain.json` (written by our tools) exists.
 2. **`DeadlockContentProvider.LoadStaticContentAsync`**, during RoR2's content loading. If `FirstRun` started the
    extractor, it first yields while the process runs (the loading bar follows `progress.txt`, up to 45 % of our share),
