@@ -48,8 +48,12 @@ namespace DeadlockOfRain.States
         /// <summary>How hard the coat flares on a throw (m/s at the tips).</summary>
         const float CoatFlare = 9f;
 
+        /// <summary>The gun's barrel tip (creator, 2026-10-27: the card left from her feet and hit the floor); the old spot in
+        /// front of the aim only when the model has no muzzle.</summary>
         Vector3 HandPos()
         {
+            var muzzle = Fx.Muzzle(characterBody);
+            if (muzzle && muzzle != characterBody.aimOriginTransform) return muzzle.position;
             var aim = GetAimRay();
             var right = Vector3.Cross(Vector3.up, aim.direction).normalized;
             return aim.origin + aim.direction * 0.8f - right * 0.35f;

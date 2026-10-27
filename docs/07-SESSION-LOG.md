@@ -1459,3 +1459,8 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Done:** found the Melty app (started 19:38) had installed 1.1.0 at 19:40 and started a cache re-read that stopped half-way (no `ready.json`). Main's DLL, all-ten `heroes.txt`, BepInEx on, cache rebuilt 10/10. `tools/steam_dev_guard.sh`: cache check and background rebuild, waits while DeadlockExtract runs, log file; `tools/steam_dev_watch.vbs` runs it hidden for a 5-minute Windows task. Docs 00, 03 §3/§5, CLAUDE.md.
 **Not done / open:** the creator registers the task (Claude was refused: persistence) and keeps `.claude/settings.json` (the hook).
 **Lessons:** the Melty app re-installs its release on start, outside any Claude session: a check tied to Claude turns isn't enough.
+
+### 2026-10-27 · Wraith's card from the gun barrel
+**Request (verbatim):** "small fix on wraith, i think the sourse of where the card are being thown is at her feet as it keeps hitting the floor, if we could sent the card from the position of where her gun barrel is that woudl be great!" Then: "do not test anything".
+**Done:** `CardTrick.HandPos` uses the gun's muzzle (`Fx.Muzzle`), the old aim-based spot only without one; docs 02, 06. Visual/feel only, no numbers changed (no retest flag).
+**Results:** builds; not tested in game, as asked. The guard installs it on the Steam copy.
