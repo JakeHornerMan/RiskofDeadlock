@@ -27,17 +27,16 @@ L="$LOCALAPPDATA/DeadlockOfRain"
 for f in "$LOCALAPPDATA/Melty/test/risk-of-deadlock-2.json" "$LOCALAPPDATA/Melty/test/deadlock-of-rain.json"; do
   [ -n "$(find "$f" -mmin -180 2>/dev/null)" ] && exit 0
 done
-running=$(powershell -NoProfile -Command "Get-Process -Name 'Risk of Rain 2','DeadlockExtract' -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Id" | tr -d '')
+running=$(powershell -NoProfile -Command "Get-Process -Name 'Risk of Rain 2','DeadlockExtract' -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Id" | tr -d '\r')
 [ -n "$running" ] && exit 0
 
-want=$(python -c "import json,sys; print(' '.join(h['id'] for h in json.load(open(sys.argv[1], encoding='utf-8'))['rows']))" "$ROOT/design/heroes.json")
+want=$(python -c "import json,sys; print(' '.join(h['id'] for h in json.load(open(sys.argv[1], encoding='utf-8'))['rows']))" "$ROOT/design/heroes.json" | tr -d '\r')
 miss=$(python -c "import json,sys,os; f=sys.argv[1]; have=json.load(open(f)).get('heroes',[]) if os.path.exists(f) else []
-print(' '.join(h for h in sys.argv[2].split() if h not in have))" "$L/cache/ready.json" "$want")
+print(' '.join(h for h in sys.argv[2].split() if h not in have))" "$L/cache/ready.json" "$want" | tr -d '\r')
 why=""
 [ -f "$R/winhttp.dll" ] || why="$why BepInEx-off"
 [ -f "$D/coming-soon.txt" ] && why="$why coming-soon.txt"
-[ "$(tr -s '
-' ' ' <"$D/heroes.txt" 2>/dev/null | xargs)" = "$want" ] || why="$why heroes.txt"
+[ "$(tr -s '\r\n' ' ' <"$D/heroes.txt" 2>/dev/null | xargs)" = "$want" ] || why="$why heroes.txt"
 [ -f "$DEV" ] && ! cmp -s "$DEV" "$D/DeadlockOfRain.dll" && why="$why release-DLL"
 [ -n "$miss" ] && why="$why cache-misses($miss)"
 [ -z "$why" ] && exit 0
