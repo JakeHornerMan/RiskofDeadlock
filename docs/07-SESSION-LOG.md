@@ -1451,3 +1451,4 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** guard tested: no change on a clean install; a faked `coming-soon.txt` and a wrong DLL were both put back (~7 s).
 **Not done / open:** the creator adds the hook to `.claude/settings.json` (Claude may not edit its own settings); the usual folder back on `main`.
 **Lessons:** doc 00 §7: a check that runs by itself, not a rule to remember.
+**Then:** "ah you need to fix the branches and get everything up to date with main please!", "merge everything i just want 1 branch main with all the stuuff in it" → every branch was 0 commits ahead of main (nothing to merge); deleted `fix-1.0.2`, `mina`, `hotfix-0.6.4`, removed the `-mina`/`-wraith` worktrees (clean), detached Melty's old fix worktree (its uncommitted VRF bump is older than main's). The usual folder is on `main`; the guard rebuilt and installed main's DLL (ten heroes). Not pushed.
