@@ -1,4 +1,4 @@
-# Deadlock of Rain
+# Risk of Deadlock
 
 Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus or Mo & Krill** from Deadlock, using their real models, animations, guns, abilities, icons and sounds, read from your own Deadlock install.
 
@@ -76,4 +76,4 @@ its SHA-256, the same file that is in this download.
   - BepInEx 5 / HarmonyX (installed by Melty)
 
 ## License
-Deadlock of Rain code: **All rights reserved** (see LICENSE.txt). Remixing on Melty is allowed.
+Risk of Deadlock code: **All rights reserved** (see LICENSE.txt). Remixing on Melty is allowed.

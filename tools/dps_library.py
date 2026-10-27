@@ -90,7 +90,7 @@ def build(paths, base=None):
         e['dps'] = {m: summary(v) for m, v in modes.items() if v}
         if who in NOTES: e['note'] = NOTES[who]
         else: e.pop('note', None)
-    lib['about'] = ('Stored DPS library (Deadlock of Rain). Main moves and each move alone, % of damage stat per second, '
+    lib['about'] = ('Stored DPS library (Risk of Deadlock). Main moves and each move alone, % of damage stat per second, '
                     'measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, '
                     '30 s per pass, perfect aim, every move used when ready, no equipment except the "equipment" pass). '
                     '"all" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are '

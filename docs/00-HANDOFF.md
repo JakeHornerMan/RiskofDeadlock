@@ -10,7 +10,7 @@
 
 ## 0. Prompt for a new coding agent (paste-ready)
 
-You are taking over **Deadlock of Rain** (`C:\Users\jakeh\Documents\GitHub\RiskofDeadlock`), a Melty mashup that puts
+You are taking over **Risk of Deadlock** (`C:\Users\jakeh\Documents\GitHub\RiskofDeadlock`), a Melty mashup that puts
 four Deadlock heroes (Haze, Abrams, Seven, Infernus) into Risk of Rain 2 as survivors. It reads Deadlock's assets from the
 player's own install; nothing from either game ships. You do all the technical work (code, tools, build, test, docs);
 you talk to the creator about the game only, in plain words, and **ask a lot of questions before big changes** (the
@@ -277,6 +277,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 ---
 
 ## 9. Last work: the Steam copy guards itself (2026-10-27)
+- Name: "Deadlock of Rain" replaced by "Risk of Deadlock" in every visible text (loading screen, picker, plugin name, extractor line, README/LICENSE, docs, pages); internal `DeadlockOfRain` names kept.
 - Mina: 150 +27 health (was Huntress's 90 +27), `design/stats.json`; not tested. The dev listings (`tools/dev/`, gitignored) were regenerated with `tools/dev_listings.py`: removing the `-mina` worktree had taken the copy that knew Mina.
 - Wraith: Card Trick now leaves from her gun barrel (was hitting the floor). Not tested (creator: "do not test anything"); built and installed for the creator to try.
 - Evening: "now for the last time! put the mod on my steam client with all characters this is my dev environment!" The Melty app, started 19:38, had put 1.1.0 back at 19:40 (release DLL, `coming-soon.txt` mina, BepInEx parked) and begun re-reading the cache, which stopped half-way (no `ready.json`); the Stop hook can't see that. Restored main's build, cache rebuilt 10/10. The guard now also rebuilds the cache itself, waits while DeadlockExtract runs, logs, and runs every 5 minutes as the task "DeadlockOfRain dev guard" (creator registers it; Claude may not).

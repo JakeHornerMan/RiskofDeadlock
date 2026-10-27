@@ -1,4 +1,4 @@
-# MODLOG: Deadlock of Rain
+# MODLOG: Risk of Deadlock
 
 ## Versions
 - Risk of Rain 2 1.5.0#1210 (Unity 2021.3.45, Mono), BepInEx 5.4.23.5 (Melty installs it)

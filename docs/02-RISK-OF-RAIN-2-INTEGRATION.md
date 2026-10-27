@@ -93,11 +93,11 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
    - **On screen, every start (v0.11.0, creator 2026-10-23 after a player closed 0.10.0 at 41 s before the title screen):**
      `FirstRunOverlay` (IMGUI, so it draws while RoR2's UI is still loading; needs `UnityEngine.IMGUIModule` in the csproj),
      shown from `Plugin.Awake` on Melty and Thunderstore starts alike, draws two things:
-     - a **banner** across the upper screen (dark band, sizes scale with screen height): "DEADLOCK OF RAIN", a headline and a
+     - a **banner** across the upper screen (dark band, sizes scale with screen height): "RISK OF DEADLOCK", a headline and a
        detail line. Headline: "Reading the heroes from your own Deadlock install" (Thunderstore extraction, with % and clock),
        "Getting your Deadlock heroes ready" (before content loading), "Building your Deadlock heroes: <Name> (n of N)"
        (`Survivors.Build`), then the result ("All 7 Deadlock heroes ready" / "6 of 7 ..."). The detail always says the game is not stuck.
-     - the **box** at the bottom left: `Deadlock of Rain: <Status>`, a progress line (extraction %/clock, or "n of N heroes done"),
+     - the **box** at the bottom left: `Risk of Deadlock: <Status>`, a progress line (extraction %/clock, or "n of N heroes done"),
        and the last ten lines (the box and its fonts grow with screen height so nine heroes plus the versions line fit): one per hero as it is built (`<Name>: ready` / `<Name>: NOT AVAILABLE (why)`), and on a
        Thunderstore first start the extractor's own lines.
      `Survivors.Build` calls `FirstRun.BuildBegin/BuildHero/BuildHeroDone` and then waits until `Time.frameCount` moves on (RoR2's loader can

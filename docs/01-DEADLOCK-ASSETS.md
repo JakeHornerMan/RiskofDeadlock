@@ -330,7 +330,7 @@ this cache is "stale" but still a superset of what 0.2.0 needs:
     and a last line `Ready: haze, abrams | Skipped: infernus`.
   - **1.7.0 (creator, 2026-10-23: "make it really clear that we are extracting files and building their game")**: the lines say it in
     plain words, since a player closed the game 41 s in on 0.10.0 and Melty's setup screen shows exactly these lines. After the
-    `DeadlockExtract <ver>: Deadlock build ...` line come two lines ("Deadlock of Rain is reading the heroes' models, animations, icons
+    `DeadlockExtract <ver>: Deadlock build ...` line come two lines ("Risk of Deadlock is reading the heroes' models, animations, icons
     and sounds from your own Deadlock install ...", "This happens once, and again after each Deadlock update: ... It is not stuck.");
     each hero is `[n/total] Reading <Display Name> from Deadlock (model and animations)...` and `<id> ready (N s): <Name> converted`;
     the other steps say what they read ("icons (portraits and ability icons)", "sounds and voice lines"); after `Ready: ...` comes

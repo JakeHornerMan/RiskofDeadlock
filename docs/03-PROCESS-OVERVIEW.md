@@ -1,4 +1,4 @@
-# 03: Process overview: how Deadlock of Rain is made, tested and shipped
+# 03: Process overview: how Risk of Deadlock is made, tested and shipped
 
 > **Audience:** anyone (human or agent) picking this project up cold. Start with `docs/00-HANDOFF.md` (current state)
 > and the newest entries of `docs/07-SESSION-LOG.md` (history), then this file, then docs 01 and 02 for depth.
@@ -9,7 +9,7 @@
 
 ## 1. What this project is
 
-**Deadlock of Rain** (repo folder `RiskofDeadlock`) is a **Melty mashup** that adds four **Deadlock** heroes (Haze,
+**Risk of Deadlock** (repo folder `RiskofDeadlock`) is a **Melty mashup** that adds four **Deadlock** heroes (Haze,
 Abrams, Seven, Infernus) to **Risk of Rain 2** as playable survivors. Each hero has:
 - the real Deadlock model, animations, portrait, ability icons and sounds, read from the player's own Deadlock install
 - RoR2's **four skills**: Deadlock gun (Left Click), two Deadlock abilities (Right Click, Shift) and a new **R** move (from a Deadlock item, melee or ability)
@@ -291,7 +291,7 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 ```json
 { "schemaVersion": 1, "mode": "installed",
   "games": [ {"slug":"risk-of-rain-2","role":"primary"}, {"slug":"deadlock","role":"companion"} ],
-  "components": [ {"id":"main","fileName":"DeadlockOfRain-<ver>.zip","label":"Deadlock of Rain","kind":"main","required":true} ],
+  "components": [ {"id":"main","fileName":"DeadlockOfRain-<ver>.zip","label":"Risk of Deadlock","kind":"main","required":true} ],
   "requirements": [ {"kind":"loader","id":"bepinex-5"} ],
   "mappings": [ {"component":"main","from":"plugins/","to":"{game}/BepInEx/plugins"},
                 {"component":"main","from":"extract/","to":"{localappdata}/DeadlockOfRain/extract"} ],

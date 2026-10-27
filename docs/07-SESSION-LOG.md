@@ -1470,3 +1470,8 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Done:** `design/stats.json` mina baseMaxHealth 90 → 150, levelMaxHealth stays 27; gen; doc 06. Health only, no DPS change (no retest flag).
 **Results:** not tested in game (the creator asked for no tests). Preflight first failed on `tools/dev/anim_names.json` lacking Mina: the gitignored listings in the removed `-mina` worktree were the only ones with her; regenerated with `tools/dev_listings.py`.
 **Lessons:** removing a worktree deletes its gitignored files too (dev listings, build/); regenerate `tools/dev/` after.
+
+### 2026-10-27 · The name is Risk of Deadlock everywhere
+**Request (verbatim):** "Deadlock of Rain... IT IS CALLED RISK OF DEADLOCK!!! PLEASE SERACH FOR THIS STRING AND REPLACE IT WITH Risk of Deadlock!"
+**Done:** every "Deadlock of Rain" / "DEADLOCK OF RAIN" → "Risk of Deadlock" / "RISK OF DEADLOCK" (18 files: the loading-screen banner and box, problem headers, hero picker title, BepInEx plugin name, extractor's progress line, README, LICENSE, THIRD-PARTY-NOTICES, CHANGELOG, docs, kit pages, DPS library). Kept: doc 03's rename record and this log's history. Internal names stay (`DeadlockOfRain` folder, DLL, GUID, `deadlock-of-rain.json` test file): changing them would break players' installs and caches.
+**Not done / open:** the extractor's line reaches players with the next extractor build (`extractor-<ver>` tag); the plugin's text with the next release.

@@ -768,7 +768,7 @@ def hero_page(h):
       <figcaption>Survivor · {E(h["displayName"])}</figcaption>
     </figure>
     <div class="id">
-      <div class="eyebrow">Deadlock of Rain · {VERSION}</div>
+      <div class="eyebrow">Risk of Deadlock · {VERSION}</div>
       <h1>{E(h["displayName"])}</h1>
       <div class="sub">{E(h["subtitle"])}</div>
       <div class="chips"><span class="chip">Risk of Rain match<b>{E(v["name"])}</b></span><span class="chip">Main moves<b>{fmt(me, " %/s")}</b></span><span class="chip">{E(v["name"])}<b>{fmt(base, " %/s")}</b></span></div>
@@ -892,7 +892,7 @@ def overview_page():
     if pre: fun.append((pre['total'], f'<tr><td>Preon Accumulator</td><td>Commando (vanilla item)</td><td class="n">{pre["total"]:,.0f} %</td><td class="n">{pre["enemies"]}</td><td class="n">{pre["boss"]:,.0f} %</td></tr>'))
     fun_html = ''.join(r for _, r in sorted(fun, key=lambda x: -x[0]))
     inside = sum(1 for h in HEROES if verdict(avg_all(hero_who(h['id'])), avg_all(match_of(h['id'])[1]['who']))[0] == 'inside')
-    return f'''<title>Deadlock of Rain Balance</title>
+    return f'''<title>Risk of Deadlock Balance</title>
 {FONTS}
 <style>{css("#c9a35b")}
 .hgrid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }}
@@ -913,7 +913,7 @@ def overview_page():
 <main class="wrap">
   {nav("overview")}
   <header class="id" style="gap:14px">
-    <div class="eyebrow">Deadlock of Rain · {VERSION} · Balance</div>
+    <div class="eyebrow">Risk of Deadlock · {VERSION} · Balance</div>
     <h1>Each hero <span style="color:var(--brass)">vs</span> their Risk of Rain match</h1>
     <p class="muted">Every Deadlock hero is paired with the Risk of Rain 2 survivor their stats are built on, and both are measured the same way: all main moves (M1, M2, Shift, R) used the moment they are ready for 30 s against a pack of 12. Balanced means within ±500 %/s of the match. <strong style="color:var(--cream)">{inside} of {len(HEROES)}</strong> are inside.</p>
   </header>

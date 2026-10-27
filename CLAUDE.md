@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# Deadlock of Rain (RiskofDeadlock)
+# Risk of Deadlock (RiskofDeadlock)
 
 A Melty mashup that adds Deadlock heroes (Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King, Billy, Wraith, Mina) to Risk of Rain 2 as survivors. The first four
 were finished in v0.6.3 (2026-10-18); Mo & Krill were added in v0.7.0 (2026-10-19), Viscous in v0.8.0 (2026-10-20), Rat King in v0.9.0 (2026-10-21), Billy and Wraith (2026-10-23) in the unreleased 0.11.0 work, Mina (2026-10-26, unreleased); new heroes follow `docs/08-NEW-HERO-PLAYBOOK.md`. It reads

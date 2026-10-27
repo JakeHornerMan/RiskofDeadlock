@@ -27,7 +27,7 @@ namespace DeadlockOfRain
         static int lastDone = -1;
         static long logPos;
         public static string Problem;   // shown on the title screen when the heroes could not be loaded
-        public static string ProblemHeader = "Deadlock of Rain: no Deadlock heroes";
+        public static string ProblemHeader = "Risk of Deadlock: no Deadlock heroes";
 
         public static bool Running => proc != null && !proc.HasExited;
 
@@ -76,7 +76,7 @@ namespace DeadlockOfRain
                 if (!Directory.Exists(ExtractDir)) return false;
                 Say($"DeadlockExtract.exe is missing from {ExtractDir}");
                 Status = "DeadlockExtract.exe is missing (antivirus?)";
-                ProblemHeader = "Deadlock of Rain: DeadlockExtract.exe is missing";
+                ProblemHeader = "Risk of Deadlock: DeadlockExtract.exe is missing";
                 if (!File.Exists(Path.Combine(cacheDir, "ready.json")))
                     Problem = "The mod's Deadlock reader, DeadlockExtract.exe, is missing from\n" + ExtractDir + "\n\nThis is nearly always your antivirus removing it. "
                         + "Restore it from the antivirus quarantine (or allow it), or reinstall the mod, then restart Risk of Rain 2. The Deadlock folder setting can't help with this.\n\n" + BuiltWith.Versions();
@@ -286,7 +286,7 @@ namespace DeadlockOfRain
             if (stalled)
             {
                 Status = "Reading Deadlock stopped responding: see BepInEx/LogOutput.log";
-                ProblemHeader = "Deadlock of Rain: reading Deadlock got stuck";
+                ProblemHeader = "Risk of Deadlock: reading Deadlock got stuck";
                 Problem = $"Reading the heroes from Deadlock printed nothing for {StallSeconds / 60f:F0} minutes, so it was stopped and the game started without them. "
                     + "Restart Risk of Rain 2 to try again. If it happens again, an antivirus scanning DeadlockExtract.exe is the usual cause: allow it. The details are in "
                     + Path.Combine(cacheDir, "extract.log") + ".\n\n" + BuiltWith.Versions();
@@ -429,7 +429,7 @@ namespace DeadlockOfRain
         }
     }
 
-    /// <summary>The loading screen on every start: a banner across the screen ("Deadlock of Rain: building your Deadlock heroes",
+    /// <summary>The loading screen on every start: a banner across the screen ("Risk of Deadlock: building your Deadlock heroes",
     /// the hero being built, the time, "the game is not stuck") and a box at the bottom left with each hero as it gets ready and,
     /// on a Thunderstore first start, the extractor's latest lines (the same as BepInEx/LogOutput.log). IMGUI, because it has to
     /// draw while RoR2's own UI is still loading. Fades out after our content is built (12 s on screen when a hero is missing).</summary>
@@ -504,7 +504,7 @@ namespace DeadlockOfRain
             smallLine.fontSize = Mathf.RoundToInt(18 * k);
             var b = new Rect(0f, Screen.height * 0.12f, Screen.width, 170f * k);
             GUI.Box(b, GUIContent.none, band);
-            GUI.Label(new Rect(0f, b.y + 14f * k, Screen.width, 60f * k), "DEADLOCK OF RAIN", bigTitle);
+            GUI.Label(new Rect(0f, b.y + 14f * k, Screen.width, 60f * k), "RISK OF DEADLOCK", bigTitle);
             GUI.Label(new Rect(0f, b.y + 76f * k, Screen.width, 40f * k), headline, bigLine);
             GUI.Label(new Rect(0f, b.y + 118f * k, Screen.width, 32f * k), detail, smallLine);
             if (Event.current.type == EventType.Repaint)
@@ -522,7 +522,7 @@ namespace DeadlockOfRain
             var r = new Rect(20f, Screen.height - h - 20f, w, h);
             GUI.Box(r, GUIContent.none, box);
             GUILayout.BeginArea(new Rect(r.x + 14, r.y + 10, r.width - 28, r.height - 20));
-            GUILayout.Label("Deadlock of Rain: " + FirstRun.Status, title);
+            GUILayout.Label("Risk of Deadlock: " + FirstRun.Status, title);
             if (reading) GUILayout.Label($"{FirstRun.Progress * 100f:F0} %   ·   {clock}   ·   first start only: it is not stuck", text);
             else GUILayout.Label(FirstRun.BuildTotal > 0 ? $"{FirstRun.BuildDone} of {FirstRun.BuildTotal} heroes done   ·   {clock}" : clock, text);
             GUILayout.Space(6);

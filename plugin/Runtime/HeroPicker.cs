@@ -94,7 +94,7 @@ namespace DeadlockOfRain
             GUI.Box(r, GUIContent.none, panel);
             float x = r.x + 30f * k, iw = r.width - 60f * k, y = r.y + 18f * k;
 
-            GUI.Label(new Rect(r.x, y, r.width, 50f * k), "DEADLOCK OF RAIN", title); y += 52f * k;
+            GUI.Label(new Rect(r.x, y, r.width, 50f * k), "RISK OF DEADLOCK", title); y += 52f * k;
             GUI.Label(new Rect(x, y, iw, 70f * k), "Choose the heroes to read from your own Deadlock install. Each is read once; the ones you skip stay on this list for next time.", sub);
             y += 70f * k;
             // co-op needs the same heroes on every PC (the mod-list entry names them; Net.cs), so say it before anyone skips one

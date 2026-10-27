@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace DeadlockOfRain
 {
-    [BepInPlugin(Guid, "Deadlock of Rain", Version)]
+    [BepInPlugin(Guid, "Risk of Deadlock", Version)]
     public sealed class Plugin : BaseUnityPlugin
     {
         public const string Guid = "melty.deadlockofrain";
@@ -59,7 +59,7 @@ namespace DeadlockOfRain
         public static void OpenCache()
         {
             DeadlockCache.Open(DeadlockCache.DefaultDir());
-            Log.Info($"Deadlock of Rain {Version}: Deadlock content from build {DeadlockCache.DeadlockBuild} at {DeadlockCache.Dir}");
+            Log.Info($"Risk of Deadlock {Version}: Deadlock content from build {DeadlockCache.DeadlockBuild} at {DeadlockCache.Dir}");
             if (!DeadlockCache.Ready && FirstRun.Problem == null)
                 FirstRun.Problem = "The Deadlock heroes are missing. Install Deadlock (free on Steam) and restart Risk of Rain 2.\n\n" + BuiltWith.Versions();
         }

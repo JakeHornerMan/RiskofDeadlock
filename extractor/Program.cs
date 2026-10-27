@@ -116,7 +116,7 @@ public static class Program
         }
         Log($"DeadlockExtract {Version}: Deadlock build {build} at {deadlock}");
         // 1.7.0: say plainly what is happening; Melty's setup shows these lines while the player waits (creator, 2026-10-23)
-        Log($"Deadlock of Rain is reading the heroes' models, animations, icons and sounds from your own Deadlock install and converting them for Risk of Rain 2.");
+        Log($"Risk of Deadlock is reading the heroes' models, animations, icons and sounds from your own Deadlock install and converting them for Risk of Rain 2.");
         Log($"This happens once per hero, and again after each Deadlock update: about 2 minutes for every hero, less for a few. It is not stuck.");
 
         using var package = new Package();

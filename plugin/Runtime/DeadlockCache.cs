@@ -81,7 +81,7 @@ namespace DeadlockOfRain
             }
             if (FirstRun.Problem == null)
             {
-                FirstRun.ProblemHeader = "Deadlock of Rain: " + string.Join(", ", names) + " not available";
+                FirstRun.ProblemHeader = "Risk of Deadlock: " + string.Join(", ", names) + " not available";
                 FirstRun.Problem = string.Join(", ", names) + " couldn't"
                     + $" be read from this Deadlock version (build {DeadlockBuild}); the other heroes are ready to play. "
                     + (names.Count == 1 ? "Its" : "Their") + " portrait shows a red ! in character select.\n\n" + BuiltWith.Versions()
