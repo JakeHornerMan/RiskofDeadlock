@@ -1442,3 +1442,4 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** on Deadlock 6821, `RELEASE_ZIP` run_test 9 heroes: every check passes except one Billy air-bat miss (Billy alone: all pass); BREAK=infernus pass; mod start 0.3 s, sounds 2.3 s on the audio thread; sound and voice checks pass.
 **Not done / open:** upload the audio-fix zip, submit, Melty test and publish on the creator's go; Discord post; `report_bug_fix` for `crash:hung` and the didn't-start report; co-op with a real friend.
 **Lessons:** doc 00 §7 (no big file reads on the main thread at start).
+**Then (2026-10-27):** "UPLOAD TO MELTY IF ALL BUGS HAVE BEEN FIXED FFS NO MORE QUESTIONS WE ARE RELEASING WRAITH, AND KEEPING MINA UNPLAYABLE!!!" → uploaded `1a38b63c-…`, release `db35b931-…` (checks clear, one-click), published (Melty safety review), listing updated, `report_bug_fix` for both 1.0.2 issues; no third Melty test (the creator's call).
