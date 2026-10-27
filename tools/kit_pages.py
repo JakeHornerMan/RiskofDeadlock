@@ -88,7 +88,8 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
- 'mina': [('v1.1.0c', ['Rake 1000 % (was 400 %), a crimson slash across every enemy it hits, and its area shown as a half-disc at her own height (on the ground or in the air)',
+ 'mina': [('v1.1.0d', ['Health 150 +27 (was Huntress’s 90 +27)']),
+          ('v1.1.0c', ['Rake 1000 % (was 400 %), a crimson slash across every enemy it hits, and its area shown as a half-disc at her own height (on the ground or in the air)',
                         'The umbrella: hold Jump in the air and it opens, after a jump or not, and stays open while you hold it; 80 % steering and 50 % faster drift',
                         'Her umbrella hand stays on the umbrella through a reload while she floats']),
           ('v1.1.0b', ['Nox Nostra: she hangs still for 5 s and a blood-red stream of bats pours out of her in a cone to wherever you aim, 600 % every 0.5 s to everything inside it; press R again to stop early',

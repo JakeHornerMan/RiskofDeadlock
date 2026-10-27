@@ -1464,3 +1464,9 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Request (verbatim):** "small fix on wraith, i think the sourse of where the card are being thown is at her feet as it keeps hitting the floor, if we could sent the card from the position of where her gun barrel is that woudl be great!" Then: "do not test anything".
 **Done:** `CardTrick.HandPos` uses the gun's muzzle (`Fx.Muzzle`), the old aim-based spot only without one; docs 02, 06. Visual/feel only, no numbers changed (no retest flag).
 **Results:** builds; not tested in game, as asked. The guard installs it on the Steam copy.
+
+### 2026-10-27 · Mina 150 health
+**Request (verbatim):** "we need to give mina base 150 health", then "+27/level perlevel for mina please".
+**Done:** `design/stats.json` mina baseMaxHealth 90 → 150, levelMaxHealth stays 27; gen; doc 06. Health only, no DPS change (no retest flag).
+**Results:** not tested in game (the creator asked for no tests). Preflight first failed on `tools/dev/anim_names.json` lacking Mina: the gitignored listings in the removed `-mina` worktree were the only ones with her; regenerated with `tools/dev_listings.py`.
+**Lessons:** removing a worktree deletes its gitignored files too (dev listings, build/); regenerate `tools/dev/` after.

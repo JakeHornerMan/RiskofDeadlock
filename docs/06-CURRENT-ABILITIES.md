@@ -205,7 +205,7 @@ over each enemy Telekinesis lifts.
 New 2026-10-26 (v1.1.0a, not released) from the creator's spec. Deadlock's model (`vampirebat`: her pistol in her **left** hand, her
 umbrella in her right, 2.39 m to the top of the head, `heightScale` 0.99). **Her skirt, hair and the charm on her bag swing as springs**
 (`springRoots` `skirt_0`, `skirt_a_0_L/R`, `skirt_b_0_L/R`, `hair_0`, `hair_0_L/R`, `purse_charm_0`); they lift and flutter while she floats.
-The umbrella stays in her hand whatever the gun rig does (`holdBones umbrella>hand_R`). Stats: Huntress's exactly (90 +27 health, 0 armor,
+The umbrella stays in her hand whatever the gun rig does (`holdBones umbrella>hand_R`). Stats: Huntress's except health: **150 +27 health** (2026-10-27, creator: "we need to give mina base 150 health", "+27/level"; was 90 +27), 0 armor,
 1 +0.2 regen, 12 +2.4 damage, 7 m/s, 1 jump). Her look: **crimson and blood red, and Deadlock's own bats** (the bat model flapping through its
 wing poses, extractor 1.9.0) in Sanguine Retreat, Nox Nostra and Mist Form; Deadlock's bite mark, marker and Rake cone textures.
 
