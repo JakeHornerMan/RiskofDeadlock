@@ -61,6 +61,7 @@ Deadlock's assets from the player's own install; nothing from either game ships.
   right after each Melty `publish` (the daily watch's too), run `python tools/discord_update.py <version>`. It posts the
   version's CHANGELOG section and the Melty link to #update in the Risk of Deadlock Discord (invite `discord.gg/sNByetmcqc`,
   doc 03 §9). The webhook link is secret like the Melty token: only in `%LOCALAPPDATA%\DeadlockOfRain\discord-update-webhook.txt`.
+- **The Steam copy is always main's dev build** (creator, 2026-10-27: "EVERYTIME YOU DO A RELEASE YOU REMOVE MY MOD DEVELOPMENT ENVIRONMENT FROM MY STEAM CLIENT!!!"). `tools/steam_dev_guard.sh` runs as a Stop hook and restores it; to test the release cut across turns, create `%LOCALAPPDATA%\DeadlockOfRain\keep-release-cut` and delete it afterwards. Never release from the usual folder's branch and leave it there: go back to `main` after a release.
 - **Commit after each logical step; do not push unless asked.** Ask the creator before `publish` on Melty. The one
   exception is the **daily watch** (`tools/watch/`, doc 03 §5b): its unattended fix run may publish a fix on its own, but
   only after every check and Melty's `test_release` pass, and only when `main` holds no unreleased work besides the fix (doc 10 §3.4).

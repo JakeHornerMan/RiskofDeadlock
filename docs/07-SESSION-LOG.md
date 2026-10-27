@@ -1443,3 +1443,11 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Not done / open:** upload the audio-fix zip, submit, Melty test and publish on the creator's go; Discord post; `report_bug_fix` for `crash:hung` and the didn't-start report; co-op with a real friend.
 **Lessons:** doc 00 §7 (no big file reads on the main thread at start).
 **Then (2026-10-27):** "UPLOAD TO MELTY IF ALL BUGS HAVE BEEN FIXED FFS NO MORE QUESTIONS WE ARE RELEASING WRAITH, AND KEEPING MINA UNPLAYABLE!!!" → uploaded `1a38b63c-…`, release `db35b931-…` (checks clear, one-click), published (Melty safety review), listing updated, `report_bug_fix` for both 1.0.2 issues; no third Melty test (the creator's call).
+
+### 2026-10-27 · Steam copy restored, and guarded after every turn
+**Request (verbatim):** "EVERYTIME YOU DO A RELEASE YOU REMOVE MY MOD DEVELOPMENT ENVIRONMENT FROM MY STEAM CLIENT!!!"
+**Questions asked → answers:** none.
+**Done:** found the 1.0.2/1.1.0 release cut on the Steam copy (BepInEx parked, release DLL, `coming-soon.txt`, cache without Mina) and `RiskofDeadlock/` still on `fix-1.0.2`. Installed main's DLL (ten heroes), BepInEx on, cache rebuilt 10/10. New `tools/steam_dev_guard.sh` (Stop hook) restores main's build after every turn; CLAUDE.md rule; docs 00 §1/§7/§9, 03 §3/§5.
+**Results:** guard tested: no change on a clean install; a faked `coming-soon.txt` and a wrong DLL were both put back (~7 s).
+**Not done / open:** the creator adds the hook to `.claude/settings.json` (Claude may not edit its own settings); the usual folder back on `main`.
+**Lessons:** doc 00 §7: a check that runs by itself, not a rule to remember.
