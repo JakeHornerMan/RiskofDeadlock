@@ -1452,3 +1452,10 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Not done / open:** the creator adds the hook to `.claude/settings.json` (Claude may not edit its own settings); the usual folder back on `main`.
 **Lessons:** doc 00 §7: a check that runs by itself, not a rule to remember.
 **Then:** "ah you need to fix the branches and get everything up to date with main please!", "merge everything i just want 1 branch main with all the stuuff in it" → every branch was 0 commits ahead of main (nothing to merge); deleted `fix-1.0.2`, `mina`, `hotfix-0.6.4`, removed the `-mina`/`-wraith` worktrees (clean), detached Melty's old fix worktree (its uncommitted VRF bump is older than main's). The usual folder is on `main`; the guard rebuilt and installed main's DLL (ten heroes). Not pushed.
+
+### 2026-10-27 (evening) · Melty put its release back on start; guard every 5 minutes
+**Request (verbatim):** "now for the last time! put the mod on my steam client with all characters this is my dev environment!"
+**Questions asked → answers:** none.
+**Done:** found the Melty app (started 19:38) had installed 1.1.0 at 19:40 and started a cache re-read that stopped half-way (no `ready.json`). Main's DLL, all-ten `heroes.txt`, BepInEx on, cache rebuilt 10/10. `tools/steam_dev_guard.sh`: cache check and background rebuild, waits while DeadlockExtract runs, log file; `tools/steam_dev_watch.vbs` runs it hidden for a 5-minute Windows task. Docs 00, 03 §3/§5, CLAUDE.md.
+**Not done / open:** the creator registers the task (Claude was refused: persistence) and keeps `.claude/settings.json` (the hook).
+**Lessons:** the Melty app re-installs its release on start, outside any Claude session: a check tied to Claude turns isn't enough.

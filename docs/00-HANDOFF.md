@@ -277,6 +277,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 ---
 
 ## 9. Last work: the Steam copy guards itself (2026-10-27)
+- Evening: "now for the last time! put the mod on my steam client with all characters this is my dev environment!" The Melty app, started 19:38, had put 1.1.0 back at 19:40 (release DLL, `coming-soon.txt` mina, BepInEx parked) and begun re-reading the cache, which stopped half-way (no `ready.json`); the Stop hook can't see that. Restored main's build, cache rebuilt 10/10. The guard now also rebuilds the cache itself, waits while DeadlockExtract runs, logs, and runs every 5 minutes as the task "DeadlockOfRain dev guard" (creator registers it; Claude may not).
 - Creator: "EVERYTIME YOU DO A RELEASE YOU REMOVE MY MOD DEVELOPMENT ENVIRONMENT FROM MY STEAM CLIENT!!!"
 - Found: BepInEx parked as `.melty-off`, the release DLL, `coming-soon.txt` (mina), cache 9/9 without Mina; `RiskofDeadlock/` itself on the stale `fix-1.0.2` branch while `main` (1.1.0, ten heroes) is in `RiskofDeadlock-wraith/`.
 - Done: main's DLL, all-ten `heroes.txt`, BepInEx on, cache rebuilt 10/10 (Deadlock extractor 1.9.0). New `tools/steam_dev_guard.sh`: after every Claude turn, unless the game runs, a Melty test file is under 3 h old or `%LOCALAPPDATA%\DeadlockOfRain\keep-release-cut` exists, it compares the install with main's build and restores it (rebuilds the DLL, runs main's `lab_restore.sh`); a missing cache hero blocks the turn until the cache is rebuilt.
