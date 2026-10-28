@@ -12,3 +12,4 @@ DeadlockBilly equipment: raw 1260 (42.0/s), 10500% of damage (350%/s), hits 7, e
 DeadlockWraith equipment: raw 11160 (372.0/s), 93000% of damage (3100%/s), hits 14, enemies hit 14, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 6000%
 DeadlockMina equipment: raw 13824 (460.8/s), 115200% of damage (3840%/s), hits 123, enemies hit 30, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 3000%
 DPS bench finished
+DeadlockPocket equipment: raw 7200 (240.0/s), 60000% of damage (2000%/s), hits 30, enemies hit 30, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 0%

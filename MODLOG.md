@@ -5,6 +5,12 @@
 - Deadlock ClientVersion 6817 (build 26143760, 2026-10-22 evening; no clip, mesh or sound change for our heroes); 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
+## Pocket (2026-10-27/28, v1.2.0a-c, not released)
+- The eleventh hero, matched to Bandit: The Black Sheep (Deadlock's hexagon), lock-on Barrage with a damage amp, Flying Cloak (his own coat,
+  teleport recast), Enchanter's Satchel (siphon heal), Frog Form (any survivor). New columns `skills.tickProc`, `buffs.damageAdd`,
+  `animations.restBones`, `animations.clothChains`. Bench counts damage-stat buffs now (gotcha 37); a hop pushed while "not grounded" skates
+  on slopes (gotcha 38).
+
 ## 1.0.2 freeze fix (2026-10-26)
 - A 1.0.1 player's game hung 66 s in, before our first build line: the only code there was two blocking Addressables
   `WaitForCompletion()` calls (Commando body and material) while RoR2 loads the same bundles beside us. Now every load

@@ -88,7 +88,11 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
- 'pocket': [('v1.2.0b', ['Barrage locks onto the enemy you aim at and rains its 4 bursts on it while you keep shooting (no enemy, no cast)',
+ 'pocket': [('v1.2.0c', ['Flying Cloak: only his coat flies (no Pocket inside it), collar to the sky',
+                        'Enchanter’s Satchel: the case floats above the floor, shaking and turning while he is inside',
+                        'Frog Form: the frog takes off, flies and lands in step with its hop',
+                        'His coat tails swing freely; the briefcase arm back as it was']),
+            ('v1.2.0b', ['Barrage locks onto the enemy you aim at and rains its 4 bursts on it while you keep shooting (no enemy, no cast)',
                         'Flying Cloak is Pocket’s own coat flying in Deadlock’s lift pose with a teal glow, 15 m/s, skimming along the floor',
                         'Enchanter’s Satchel: the case opens at his feet and he shrinks into it, the lid slams with a shockwave',
                         'Frog Form: 60 s cooldown, hops twice as high, steer in the air; the case spins, rocks and bursts open in a green treasure explosion; every landing 10 m of damage plus a 5 m stun ring, much heavier slams',
@@ -236,10 +240,10 @@ PAPER = {
 }
 
 ANALYSIS = {
- 'pocket': ['Three runs at v1.2.0a: 2,442, 2,423 and 2,404 %/s with every main move, mean 2,423 against Bandit’s 1,919. That is +504: on the edge of the ±500 band, well inside the bench’s noise.',
-            'Barrage carries him (about 1,440 %/s alone: four 250 % bursts on most of the pack, each a stun), and its amp (+4 % a burst that hits, up to +16 %) raises everything else. The Black Sheep 577, the Satchel 514, Flying Cloak 387.',
+ 'pocket': ['Three runs at v1.2.0c (lock-on Barrage he shoots through): 2,411, 2,197 and 2,291 %/s with every main move, mean 2,300 against Bandit’s 1,919. That is +381: inside the ±500 band. (v1.2.0a: 2,423.)',
+            'Barrage still carries him (about 1,316 %/s alone: four 250 % bursts, each a stun, on the enemy it locked) and its amp (+4 % a burst that hits, up to +16 %) raises everything else. The Black Sheep 591, the Satchel 529, Flying Cloak 383.',
             'The spec’s numbers measured about 2,709 counted honestly (the bench used to divide the amp back out of the damage), so its two levers were used: amp 6 → 4 % a burst, then the Satchel burst 600 → 450 %.',
-            'Frog Form (Q, the ult): 8 s of hopping landings for 1,000 % (2,000 % high leaps); it isn’t in the all-together number.'],
+            'Frog Form (Q, the ult): one use on the ult bench (30 enemies and a Beetle Queen) did 60,000 % to all 30. It recharges in 60 s and isn’t in the all-together number.'],
  'mina': ['One run at v1.1.0c (Rake 1,000 %): 2,644 %/s with every main move (3,098 at v1.1.0b, 1,475 at v1.1.0a), against Huntress’s 1,921 (library). That is +723: above the ±500 band.',
           'Nox Nostra carries her (2,500 %/s alone: she hangs still for 5 s and the cone of bats hits everything inside it for 600 % every half second, about 9 hits a cast, every 15 s; 1,438 as the planted circle). Rake 367 at 1,000 % (27 at 400 %), New Money 249 (the bench’s pack stands 10–15 m out, at the edge of Rake’s 10 m reach).',
           'Levers if she should come back into the band: Nox Nostra 600 → 300 % a hit (about 1,400 all together), or a longer cooldown. In the bench the bot shoots whatever enemy is nearest, so 20 bites rarely land on one enemy and the Love Bites cuts seldom fire; a player holding the gun on one target gets Nox Nostra back sooner.',

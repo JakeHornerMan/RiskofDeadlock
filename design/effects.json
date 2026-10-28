@@ -1825,6 +1825,20 @@
       ],
       "tint": "none",
       "notes": "Deadlock's frog (3 m wide, 1 m tall in the glb) with its skeleton, sitting pose and hop, for Frog Form's frogs"
+    },
+    {
+      "id": "pocket_cloak_prop",
+      "kind": "prop",
+      "addressable": "models/heroes_wip/pocket/pocket.vmdl",
+      "scaleWithRadius": false,
+      "meshes": [
+        "coat_scarf"
+      ],
+      "clips": [
+        "lift_loop"
+      ],
+      "tint": "none",
+      "notes": "Flying Cloak: Pocket's own coat alone (mesh coat_scarf of his model) with his lift_loop clip, as Deadlock's cloak particle draws his model in its lift pose"
     }
   ]
 }

@@ -365,7 +365,6 @@
         "dash_air_forward",
         "item_throw",
         "jump_in_air_loop",
-        "lift_loop",
         "reload_idle",
         "sprint_355_n",
         "throw",
@@ -916,6 +915,16 @@
       "clips": [
         "frog_idle",
         "frog_run"
+      ]
+    },
+    {
+      "id": "pocket_cloak_prop",
+      "vmdl": "models/heroes_wip/pocket/pocket.vmdl",
+      "meshes": [
+        "coat_scarf"
+      ],
+      "clips": [
+        "lift_loop"
       ]
     }
   ],
@@ -2008,6 +2017,9 @@
       "seven"
     ],
     "pocket_case_prop": [
+      "pocket"
+    ],
+    "pocket_cloak_prop": [
       "pocket"
     ],
     "pocket_frog_prop": [

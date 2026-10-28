@@ -175,7 +175,8 @@ namespace DeadlockOfRain.States
         GameObject glow, tethers, caseRoot;
         CharacterModel model;
         Transform modelT;
-        Vector3 modelScale = Vector3.one;
+        Vector3 modelScale = Vector3.one, caseAt;
+        float caseSpin;
         readonly List<Vector3> tetherTo = new List<Vector3>();
 
         public override void OnEnter()
@@ -200,14 +201,27 @@ namespace DeadlockOfRain.States
             if (modelT) modelScale = modelT.localScale;
             if (Server) characterBody.AddTimedBuff(RoR2Content.Buffs.HiddenInvincibility, row.MinDuration + row.Duration + 0.2f);
             // Deadlock's entry: the case swings out of his hand and opens on the ground, he leaps in and shrinks into it
-            caseRoot = PocketParts.CaseProp(row.Extra, spot, characterDirection ? characterDirection.forward : transform.forward, 0.2f, true);
+            // the case floats above the floor where he stood (creator, 2026-10-28: "raise it up above the floor floating")
+            caseAt = characterBody.footPosition + Vector3.up * 1.4f;
+            caseRoot = PocketParts.CaseProp(row.Extra, caseAt, characterDirection ? characterDirection.forward : transform.forward, 0.2f, true);
             Vfx.Play(row.Vfx, "cast", spot, 1f);
         }
 
         public override void Update()
         {
             base.Update();
-            if (inside) return;
+            if (inside)
+            {
+                // shut, it shakes and turns as it hangs there, bobbing a little
+                if (caseRoot)
+                {
+                    caseSpin += Time.deltaTime * 90f;
+                    float t = Time.time;
+                    caseRoot.transform.SetPositionAndRotation(caseAt + Vector3.up * Mathf.Sin(t * 3f) * 0.15f,
+                        Quaternion.Euler(Mathf.Sin(t * 37f) * 7f, caseSpin, Mathf.Sin(t * 29f + 1f) * 7f));
+                }
+                return;
+            }
             float k = Mathf.Clamp01(fixedAge / Mathf.Max(0.05f, row.MinDuration));
             if (caseRoot) caseRoot.transform.localScale = Vector3.one * Mathf.Lerp(0.2f, 1.6f, Mathf.SmoothStep(0f, 1f, k * 1.8f)) * ModelBuilder.GlobalScale;
             if (modelT) modelT.localScale = modelScale * Mathf.Lerp(1f, 0.12f, Mathf.SmoothStep(0f, 1f, (k - 0.35f) / 0.65f));
@@ -224,11 +238,11 @@ namespace DeadlockOfRain.States
             loop = Fx.Loop(row.Id, spot);
             if (modelT) modelT.localScale = modelScale;
             // the lid slams shut on him: a thud, a purple shockwave and a shake
-            Vfx.Play(row.Vfx, "enter", spot, row.Radius);
+            Vfx.Play(row.Vfx, "enter", caseAt, row.Radius);
             Sound("land");
             if (caseRoot) caseRoot.transform.localScale = Vector3.one * 1.6f * ModelBuilder.GlobalScale;
-            glow = Vfx.Play(row.Vfx, "loop", spot, row.Radius, caseRoot ? caseRoot.transform : null);
-            tethers = Vfx.Play(row.Vfx, "tether", spot, 1f);
+            glow = Vfx.Play(row.Vfx, "loop", caseAt, row.Radius, caseRoot ? caseRoot.transform : null);
+            tethers = Vfx.Play(row.Vfx, "tether", caseAt, 1f);
             MeltyTest.Report("satchel-in", true, characterBody.baseNameToken);
         }
 
@@ -248,11 +262,11 @@ namespace DeadlockOfRain.States
                 tetherTo.Clear();
                 var enemies = Fx.Enemies(characterBody, spot, row.Radius);
                 foreach (var hb in enemies) tetherTo.Add(hb.healthComponent.body ? hb.healthComponent.body.corePosition : hb.transform.position);
-                PocketParts.SetTethers(tethers, spot, tetherTo);
+                PocketParts.SetTethers(tethers, caseAt, tetherTo);
                 if (fixedAge >= nextDrain)
                 {
                     nextDrain = fixedAge + row.Interval;
-                    foreach (var p in tetherTo) Vfx.Play(row.Vfx, "drain", p, 1f, null, spot);
+                    foreach (var p in tetherTo) Vfx.Play(row.Vfx, "drain", p, 1f, null, caseAt);
                     if (tetherTo.Count > 0) Sound("hit");
                 }
                 if (Server && fixedAge >= nextTick)
@@ -281,7 +295,7 @@ namespace DeadlockOfRain.States
             Vfx.Stop(tethers, 0.1f); tethers = null;
             if (caseRoot) PocketParts.Pop(caseRoot);
             caseRoot = null;
-            Vfx.Play(row.Vfx, "end", spot, row.Radius);
+            Vfx.Play(row.Vfx, "end", caseAt, row.Radius);
             Sound("end");
             if (hidden && model) model.invisibilityCount--;
             hidden = false;
@@ -419,16 +433,45 @@ namespace DeadlockOfRain.States
             var face = isAuthority ? hopVel : characterBody.characterDirection ? characterBody.characterDirection.forward : transform.forward;
             face.y = 0f;
             if (face.sqrMagnitude > 0.01f) frog.transform.rotation = Quaternion.Slerp(frog.transform.rotation, Quaternion.LookRotation(face.normalized), Mathf.Min(1f, Time.deltaTime * 12f));
-            if (frogAnim)
+            if (frogAnim) FrogPose();
+        }
+
+        // the hop clip split in three (creator, 2026-10-28: "the animation finishes before the form reaches the ground ... the jump the air
+        // on a loop, and then trigger the land when we get close to the floor"): its first part as it takes off, its middle swaying on a
+        // loop while it flies, its last part from the moment it is about to touch down; sitting between hops
+        enum HopPart { Sit, TakeOff, Air, Land }
+        HopPart part;
+        float partStart, lastY;
+        const float TakeOffEnd = 0.3f, AirEnd = 0.55f;
+
+        void FrogPose()
+        {
+            var st = clipHop != null ? frogAnim[clipHop] : null;
+            if (st == null) return;
+            float len = st.length, now = Time.time, dt = Mathf.Max(1e-4f, Time.deltaTime);
+            var feet = characterBody.footPosition;
+            float vy = (feet.y - lastY) / dt;
+            lastY = feet.y;
+            bool ground = PocketParts.Grounded(characterBody);
+            float drop = Physics.Raycast(feet + Vector3.up * 0.2f, Vector3.down, out var g, 40f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore) ? g.distance - 0.2f : 40f;
+            var next = part;
+            if (part == HopPart.Sit && !ground && vy > 0.5f) next = HopPart.TakeOff;
+            else if (part == HopPart.TakeOff && now - partStart > 0.18f) next = HopPart.Air;
+            // about to touch down: a quarter of a second away at this speed
+            if ((next == HopPart.Air || next == HopPart.TakeOff) && vy < 0f && drop < Mathf.Max(0.6f, -vy * 0.25f)) next = HopPart.Land;
+            if (part == HopPart.Land && ground && now - partStart > 0.25f) next = HopPart.Sit;
+            if (next != part) { part = next; partStart = now; }
+            float k = now - partStart;
+            if (part == HopPart.Sit)
             {
-                bool air = !PocketParts.Grounded(characterBody);
-                var want = air && clipHop != null ? clipHop : clipSit;
-                if (want != null && frogAnim[want] && !frogAnim.IsPlaying(want))
-                {
-                    frogAnim[want].wrapMode = want == clipHop ? WrapMode.ClampForever : WrapMode.Loop;
-                    frogAnim.CrossFade(want, 0.08f);
-                }
+                if (clipSit != null && frogAnim[clipSit] && !frogAnim.IsPlaying(clipSit)) { frogAnim[clipSit].wrapMode = WrapMode.Loop; frogAnim.CrossFade(clipSit, 0.1f); }
+                return;
             }
+            if (!frogAnim.IsPlaying(clipHop)) { st.wrapMode = WrapMode.ClampForever; st.speed = 0f; frogAnim.CrossFade(clipHop, 0.06f); }
+            st.speed = 0f;
+            st.time = part == HopPart.TakeOff ? Mathf.Lerp(0f, TakeOffEnd, k / 0.18f) * len
+                    : part == HopPart.Air ? Mathf.Lerp(TakeOffEnd, AirEnd, 0.5f + 0.5f * Mathf.Sin(k * 6f)) * len
+                    : Mathf.Lerp(AirEnd, 1f, Mathf.Clamp01(k / 0.25f)) * len;
         }
 
         public override void FixedUpdate()

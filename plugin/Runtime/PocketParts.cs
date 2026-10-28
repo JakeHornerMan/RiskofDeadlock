@@ -85,19 +85,16 @@ namespace DeadlockOfRain
             return root;
         }
 
-        /// <summary>The Flying Cloak's body: a copy of the hero's model, only its coat and body (the body material: no head, hair, gun or
-        /// case), playing the animations row's ult_loop (Deadlock's lift_loop, the pose its cloak particle draws), with no gun rig.</summary>
-        public static GameObject CloakModel(string heroId)
+        /// <summary>The Flying Cloak's coat: an effects prop of the hero's own coat alone (no Pocket inside it), playing its clip (Deadlock's
+        /// lift_loop, the pose its cloak particle draws) on a loop, at the hero's size; null when the cache has none.</summary>
+        public static GameObject CloakModel(string propId)
         {
-            var hero = Sheet.Hero(heroId);
-            if (hero == null) return null;
-            var m = ModelBuilder.Build(hero, true, "body");
-            if (!m) return null;
-            foreach (var da in m.GetComponents<DeadlockAnimator>()) Object.DestroyImmediate(da);
-            var an = m.GetComponent<Animation>();
-            var clip = Sheet.Anims(heroId)?.UltLoop;
-            if (an && clip != null && clip != "none" && an[clip]) { an[clip].wrapMode = WrapMode.Loop; an.Play(clip); }
-            return m;
+            var built = propId != "none" ? PropModels.Build(propId) : null;
+            if (built == null) return null;
+            var clips = Sheet.Effect(propId)?.Clips ?? new string[0];
+            if (built.Anim && clips.Length > 0 && clips[0] != "none" && built.Anim[clips[0]]) { built.Anim[clips[0]].wrapMode = WrapMode.Loop; built.Anim.Play(clips[0]); }
+            built.Root.transform.localScale = Vector3.one * ModelBuilder.GlobalScale;
+            return built.Root;
         }
 
         /// <summary>A prop pops away: it shrinks to nothing in a moment and is gone.</summary>
@@ -296,11 +293,12 @@ namespace DeadlockOfRain
             c.vfx = Vfx.Play(row.Vfx, "loop", from, row.Radius, go.transform);
             if (c.vfx) c.vfx.transform.rotation = Quaternion.LookRotation(c.dir);
             // Deadlock draws the cloak as Pocket's own coat flying in his lift pose (its particle renders his model): so do we
-            c.model = PocketParts.CloakModel(row.Hero);
+            c.model = PocketParts.CloakModel(row.Extra);
             if (c.model)
             {
                 c.model.transform.SetParent(go.transform, false);
-                c.model.transform.localRotation = Quaternion.Euler(55f, 0f, 0f);
+                // the collar to the sky (creator, 2026-10-28: "the head shold be pointing towards the sky ... a 90 degree rotation")
+                c.model.transform.localRotation = Quaternion.Euler(-35f, 0f, 0f);
                 c.model.transform.localScale *= 1.3f;
                 c.model.transform.localPosition = c.model.transform.localRotation * (Vector3.down * 1.1f);
             }

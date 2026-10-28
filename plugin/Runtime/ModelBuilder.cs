@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using DeadlockOfRain.Sheets;
 using HarmonyLib;
@@ -16,6 +17,40 @@ namespace DeadlockOfRain
         public static Material Template;
 
         /// <param name="onlyMaterials">keep only the parts whose material name contains this ("rider": just Krill, for his figure).</param>
+        /// <summary>Links the loose cloth bones below height (Deadlock metres, model space) into hanging chains: each one under the
+        /// nearest cloth bone above it (mostly straight above, up to 0.4 m higher). Returns the chains' top bones (spring roots).</summary>
+        static List<string> ChainCloth(HeroAsset asset, Transform[] bones, Transform root, float height)
+        {
+            var cloth = new List<int>();
+            for (int i = 0; i < bones.Length; i++) if (asset.Bones[i].Name.StartsWith("$cloth")) cloth.Add(i);
+            Vector3 P(int i) => root.InverseTransformPoint(bones[i].position);
+            var linked = new HashSet<int>();
+            foreach (var i in cloth)
+            {
+                var p = P(i);
+                if (p.y >= height) continue;
+                int best = -1; float bd = float.MaxValue;
+                foreach (var j in cloth)
+                {
+                    if (j == i) continue;
+                    var q = P(j);
+                    float dy = q.y - p.y;
+                    if (dy < 0.03f || dy > 0.4f) continue;
+                    float side = new Vector2(q.x - p.x, q.z - p.z).magnitude;
+                    float score = side + dy * 0.3f;
+                    if (side < 0.15f && score < bd) { bd = score; best = j; }
+                }
+                if (best < 0 || bones[best].IsChildOf(bones[i])) continue;
+                bones[i].SetParent(bones[best], true);
+                linked.Add(best);
+            }
+            // the top of each chain: a cloth bone with cloth below it whose own parent is not cloth
+            var roots = new List<string>();
+            foreach (var j in linked)
+                if (!bones[j].parent || !bones[j].parent.name.StartsWith("$cloth")) roots.Add(bones[j].name);
+            return roots;
+        }
+
         public static GameObject Build(HeroRow hero, bool forDisplay, string onlyMaterials = null)
         {
             var asset = DeadlockCache.LoadHero(hero.Id);
@@ -50,6 +85,9 @@ namespace DeadlockOfRain
                     foreach (var c in clothParents) { float d = (c.position - bones[i].position).sqrMagnitude; if (d < bd) { bd = d; best = c; } }
                     bones[i].SetParent(best, true);
                 }
+            // animations clothChains (Pocket's coat tails): the loose cloth bones below that height hang in chains, each from the nearest
+            // cloth bone above it, and the chains run as springs (their top bones become extra spring roots)
+            var clothRoots = anims.ClothChains > 0f ? ChainCloth(asset, bones, root.transform, anims.ClothChains) : null;
 
             // one skinned renderer per material: RoR2's CharacterModel drives exactly one material per renderer
             // a vertex-coloured material (Wraith's face) gets its own painted texture (HeroAsset.AtlasPart)
@@ -114,7 +152,17 @@ namespace DeadlockOfRain
             AccessTools.Field(typeof(ChildLocator), "transformPairs").SetValue(locator, pairs.ToArray());
 
             // the cape and tail springs (animations springRoots); added first, so the animator finds them and steps them after its gun rig
-            SpringBones.Add(root, anims, hero.SourceHeight * GlobalScale * hero.ModelScale);
+            var springs = SpringBones.Add(root, anims, hero.SourceHeight * GlobalScale * hero.ModelScale);
+            if (clothRoots != null && clothRoots.Count > 0)
+            {
+                if (!springs)
+                {
+                    springs = root.AddComponent<SpringBones>();
+                    springs.Roots = new string[0]; springs.Stiffness = anims.SpringStiffness; springs.Damping = anims.SpringDamping;
+                    springs.Gravity = anims.SpringGravity; springs.Height = hero.SourceHeight * GlobalScale * hero.ModelScale;
+                }
+                springs.Roots = springs.Roots.Where(r => r != "none").Concat(clothRoots).ToArray();
+            }
             var anim = root.AddComponent<DeadlockAnimator>();
             anim.Setup(hero.Id, asset, bones, armature);
 
