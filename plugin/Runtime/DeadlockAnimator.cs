@@ -628,9 +628,7 @@ namespace DeadlockOfRain
         void RestPose()
         {
             if (restBones == null || restBones.Length == 0 || anim == null) return;
-            var g = gestureClip != null ? anim[gestureClip] : null;
-            bool busy = overrideClip != null || g != null && g.enabled && g.weight > 0.01f;
-            if (busy) return;
+            if (MovePlaying()) return;
             for (int i = 0; i < restBones.Length; i++) if (restBones[i]) { restBones[i].localRotation = restRot[i]; restBones[i].localPosition = restPos[i]; }
         }
 
@@ -645,12 +643,12 @@ namespace DeadlockOfRain
             if (anim == null || rows == null || rows.RunArm == "none" || dead) return;
             if (!runArmTried) { runArmTried = true; SampleRunArm(); }
             if (runArm == null) return;
-            var g = gestureClip != null ? anim[gestureClip] : null;
-            bool busy = overrideClip != null || g != null && g.enabled && g.weight > 0.01f || holdLogical != null;
+            bool busy = MovePlaying() || holdLogical != null;
             var m = body ? body.characterMotor : null;
             float speed = 0f;
             if (m) { var v = m.velocity; v.y = 0f; speed = v.magnitude; }
-            bool running = m && m.isGrounded && !busy;
+            // sprinting only: walking keeps the run clip's own arm (creator, 2026-10-28: "a little to far behind while walking")
+            bool running = m && m.isGrounded && !busy && body.isSprinting;
             float want = running ? Mathf.Clamp01((speed - 1f) / 2f) : 0f;
             runArmWeight = Mathf.MoveTowards(runArmWeight, want, Time.deltaTime / 0.15f);
             if (runArmWeight <= 0.001f) return;
@@ -662,6 +660,15 @@ namespace DeadlockOfRain
                 var pose = Quaternion.Slerp(runArmRot[i0][b], runArmRot[i1][b], k);
                 runArm[b].localRotation = Quaternion.Slerp(runArm[b].localRotation, pose, runArmWeight);
             }
+        }
+
+        /// <summary>A move's clip is playing: any gesture or override layer clip still running (seen from its own state, so a clip
+        /// cross-fading in on its first frame counts; the gesture field is cleared while its weight is still 0).</summary>
+        bool MovePlaying()
+        {
+            if (overrideClip != null) return true;
+            foreach (AnimationState st in anim) if (st.layer >= 1 && st.enabled && (st.weight > 0.001f || st.time < st.length)) return true;
+            return false;
         }
 
         void SampleRunArm()

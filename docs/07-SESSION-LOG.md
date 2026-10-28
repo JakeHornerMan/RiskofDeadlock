@@ -1503,3 +1503,7 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Request (verbatim):** "pocket left hand with the case in it the running still look bad see when pocket is jumping the case trains behind can we also do that while he is running! also the case always seem to be open if the case in pockets hand is not doing anything it need to be closed shut ... these chaneg require no retest! ill test myself"
 **Done:** `animations.runArm` (the left arm takes the jump clip's pose while running), `restBones` suitcase1/2 held shut whenever no move plays (Deadlock's glb: `suitcase1` is the lid, identity = shut, Barrage turns it 180°); docs 02/06. Built and installed.
 **Results:** not tested (creator's request).
+
+### 2026-10-28 · Briefcase arm on sprint only, the case opens again in moves · v1.2.0e
+**Request (verbatim):** "the case tariling while running is perfect, but can we revert back the walking version it a little to far behind while walking... also no wthe case doesnt open at all it used to open on a few move can you revert back to when it open on certain moves!"
+**Done:** `runArm` only while sprinting; `restBones` held shut only when no layer-1/2 clip is enabled (`DeadlockAnimator.MovePlaying`): 1.2.0d read `gestureClip`, which `ModelSpaceGesture` clears while a cross-fade's weight is still 0, so moves never counted. Not tested (creator tests).

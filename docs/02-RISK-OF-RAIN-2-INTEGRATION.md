@@ -559,8 +559,8 @@ the air, the rest from the moment the ground is a quarter of a second away; `fro
 
 **Pocket's briefcase arm (v1.2.0d):** `animations.runArm` (clavicle_L): `DeadlockAnimator.SampleRunArm` records that arm's bones over the
 `jump_air` clip once (16 frames, `AnimationClip.SampleAnimation`, the rest of the pose put back), and `RunArm` blends the arm to that
-looping pose while he runs on the ground with no gesture, override or held pose (weight from speed 1 to 3 m/s). `animations.restBones`
-(suitcase1/2, the lid) are held at bind (shut) every frame no gesture or override plays (Barrage's clip spins `suitcase1` 180° open).
+looping pose while he sprints on the ground (v1.2.0e; walking keeps the run clip's arm) with no gesture, override or held pose (weight from speed 1 to 3 m/s). `animations.restBones`
+(suitcase1/2, the lid) are held at bind (shut) every frame no gesture or override plays (`MovePlaying`: any enabled clip on layer 1 or 2, so a clip cross-fading in counts; v1.2.0d checked the gesture field, cleared at weight 0, and kept the case shut through every move) (Barrage's clip spins `suitcase1` 180° open).
 
 **Pocket's passive (v1.2.0a), Unpredictable:** `heroes.airDodges` 1 / `dodgeDistance` 7 / `dodgeTime` 0.25 / `dodgePct` 0: Billy's G.O.A.T. dodge
 (`BillyAir.TryDodge`, `BillyDodge` on the Body machine) does his air dash; with `dodgePct` 0 it hits nothing, and it plays the hero's own
