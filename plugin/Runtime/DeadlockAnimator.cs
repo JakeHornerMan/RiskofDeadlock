@@ -621,21 +621,73 @@ namespace DeadlockOfRain
             foreach (var hb in GetComponentsInChildren<HurtBox>(true)) { var c = hb.GetComponent<Collider>(); if (c) c.enabled = false; }
         }
 
-        Transform[] restBones; Quaternion[] restRot; Vector3[] restPos; bool restBusy;
+        Transform[] restBones; Quaternion[] restRot; Vector3[] restPos;
 
-        /// <summary>A gesture or override has just ended: the restBones go back to their bind pose (the locomotion never keys them).</summary>
+        /// <summary>restBones (Pocket's briefcase lid) stay at their bind pose while no gesture or override plays: the case is shut
+        /// whenever it just sits in his hand (creator, 2026-10-28).</summary>
         void RestPose()
         {
             if (restBones == null || restBones.Length == 0 || anim == null) return;
             var g = gestureClip != null ? anim[gestureClip] : null;
             bool busy = overrideClip != null || g != null && g.enabled && g.weight > 0.01f;
-            if (restBusy && !busy)
-                for (int i = 0; i < restBones.Length; i++) if (restBones[i]) { restBones[i].localRotation = restRot[i]; restBones[i].localPosition = restPos[i]; }
-            restBusy = busy;
+            if (busy) return;
+            for (int i = 0; i < restBones.Length; i++) if (restBones[i]) { restBones[i].localRotation = restRot[i]; restBones[i].localPosition = restPos[i]; }
+        }
+
+        // runArm: the arm's pose over the jump_air clip, sampled once (every bone under the arm's root, RunArmFrames frames)
+        const int RunArmFrames = 16;
+        Transform[] runArm; Quaternion[][] runArmRot; float runArmLen, runArmWeight; bool runArmTried;
+
+        /// <summary>runArm (Pocket's briefcase arm): while he runs on the ground and no move plays, that arm takes its pose from the
+        /// jump_air clip (the case trailing behind, as in his jump) instead of the run's swing, blended in with his speed.</summary>
+        void RunArm()
+        {
+            if (anim == null || rows == null || rows.RunArm == "none" || dead) return;
+            if (!runArmTried) { runArmTried = true; SampleRunArm(); }
+            if (runArm == null) return;
+            var g = gestureClip != null ? anim[gestureClip] : null;
+            bool busy = overrideClip != null || g != null && g.enabled && g.weight > 0.01f || holdLogical != null;
+            var m = body ? body.characterMotor : null;
+            float speed = 0f;
+            if (m) { var v = m.velocity; v.y = 0f; speed = v.magnitude; }
+            bool running = m && m.isGrounded && !busy;
+            float want = running ? Mathf.Clamp01((speed - 1f) / 2f) : 0f;
+            runArmWeight = Mathf.MoveTowards(runArmWeight, want, Time.deltaTime / 0.15f);
+            if (runArmWeight <= 0.001f) return;
+            float f = Mathf.Repeat(Time.time / Mathf.Max(0.1f, runArmLen), 1f) * RunArmFrames;
+            int i0 = (int)f % RunArmFrames, i1 = (i0 + 1) % RunArmFrames;
+            float k = f - Mathf.Floor(f);
+            for (int b = 0; b < runArm.Length; b++)
+            {
+                var pose = Quaternion.Slerp(runArmRot[i0][b], runArmRot[i1][b], k);
+                runArm[b].localRotation = Quaternion.Slerp(runArm[b].localRotation, pose, runArmWeight);
+            }
+        }
+
+        void SampleRunArm()
+        {
+            var c = Clip("jump_air");
+            Transform root = null;
+            foreach (var t in GetComponentsInChildren<Transform>(true)) if (t.name == rows.RunArm) { root = t; break; }
+            if (c == null || !root || anim[c] == null) return;
+            var clip = anim[c].clip;
+            var all = GetComponentsInChildren<Transform>(true);
+            var savedR = all.Select(t => t.localRotation).ToArray();
+            var savedP = all.Select(t => t.localPosition).ToArray();
+            runArm = root.GetComponentsInChildren<Transform>(true);
+            runArmLen = clip.length;
+            runArmRot = new Quaternion[RunArmFrames][];
+            for (int f = 0; f < RunArmFrames; f++)
+            {
+                clip.SampleAnimation(gameObject, clip.length * f / RunArmFrames);
+                runArmRot[f] = runArm.Select(t => t.localRotation).ToArray();
+            }
+            for (int i = 0; i < all.Length; i++) { all[i].localRotation = savedR[i]; all[i].localPosition = savedP[i]; }
         }
 
         void LateUpdate()
         {
+            RunArm();
             RestPose();
             CaptureWelds();
             ModelSpaceGesture();

@@ -1498,3 +1498,8 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** `run_test.sh` (all heroes, shared code changed) **11/11 heroes, every check pass**; bench 2411 / 2197 / 2291 → **2300 vs Bandit 1919 (inside)**; Frog Form ult bench 60,000 %, all 30 hit; co-op test: see below.
 **Not done / open:** the full run's devshots were taken over its end screen, so the new looks were not seen by eye; the creator's playtest.
 **Co-op:** `run_coop_test.sh pocket` pass: every move as a joined player (Frog Form 600 % and stun on the host), 20 relayed effects.
+
+### 2026-10-28 · Pocket's briefcase arm and lid · v1.2.0d
+**Request (verbatim):** "pocket left hand with the case in it the running still look bad see when pocket is jumping the case trains behind can we also do that while he is running! also the case always seem to be open if the case in pockets hand is not doing anything it need to be closed shut ... these chaneg require no retest! ill test myself"
+**Done:** `animations.runArm` (the left arm takes the jump clip's pose while running), `restBones` suitcase1/2 held shut whenever no move plays (Deadlock's glb: `suitcase1` is the lid, identity = shut, Barrage turns it 180°); docs 02/06. Built and installed.
+**Results:** not tested (creator's request).
