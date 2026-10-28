@@ -68,6 +68,7 @@ Other codenames you will meet in asset paths and sound events:
 - Seven = **gigawatt** (`gigawatt_sm_psd`, `Gigawatt.StormCloud.Cast`).
 - Infernus = **inferno** (`Inferno.FireBomb.Explode`).
 - Mina = **vampirebat** (`hero_vampirebat`, `VampireBat.Rake.Cast`; her gun's events are spelled `Vampirebat.Wpn.*`).
+- Pocket = **synth** (`hero_synth`, abilities `synth_*`, voice `sounds/vo/synth/`), but his model folder and sound events say **pocket** (`models/heroes_wip/pocket/`, `Pocket.Barrage.Start`).
 
 Some events use the display name instead (`Haze.Wpn.Fire.Main`, `Abrams.A1.SiphonLife.Cast`, `Seven.Wpn.Fire`,
 `Infernus.Wpn.Fire`). **Always look the exact name up; do not guess** (section 8).
@@ -696,6 +697,36 @@ the source values. The RoR2-scale numbers next to them are our own balance (doc 
 - **Voice:** `sounds/vo/vampirebat/vampirebat_<group>`: `select`, `unselect`, `use_power1..4` (power 3 has 20 takes), `killstreak_start/_mid/_high`, `happy`.
 - **Particles** (looked at for names only, nothing exported): `particles/abilities/vampirebat/vampirebat_blink*`, `_batswarm_*`,
   `_steallife_*`, `_lovebites_damage*`, `particles/weapon_fx/vampirebat/vampirebat_muzzle_flash*` / `_tracer*`.
+
+**Pocket (added 2026-10-27, v1.2.0a; Deadlock build 6821):**
+- **Codename** `synth` (`hero_synth`, hero id 50); model `models/heroes_wip/pocket/pocket.vmdl` (`m_strModelName`; a `heroes_staging/synth/synth.vmdl`
+  exists too), images `panorama/images/heroes/synth_sm_psd` / `synth_card_psd`, gun icon `heroes/guns/synth_gun_psd`, ability icons in
+  `hud/abilities/synth/`: `synth_barrage_psd` (Barrage, `synth_barrage`), `synth_plasma_flux_psd` (Flying Cloak, `synth_plasma_flux`),
+  `synth_pulse_psd` (Enchanter's Satchel, `synth_pulse`), `synth_affliction_psd` (his ult Affliction, `synth_affliction`: our Frog Form's icon),
+  `synth_grasp_psd` (no ability uses it: the Unpredictable passive's icon).
+- **Meshes** `pocket` (body, head, hair), `coat_scarf`, `gun`, `briefcase` (the suitcase in his left hand; all four kept) and `frog` (a frog
+  skinned to `frog_*` bones that rides in the suitcase, with one morph target: dropped). 2.38 m to the top of the head (`sourceHeight`; the
+  extractor reads 2.384).
+- **Skeleton:** the standard chain (`pelvis` under `root_motion`; the 12 ragdoll bones exist), about 130 cloth bones (`$cloth_m0p*`, the coat:
+  `clothParents` as Abrams'), `scarf_0..9_L/R` and `hair_0..1_L/R` (springs). The gun is a child of the right hand (`hand_R` → `palm_R` →
+  `gun_base` → `muzzle_fx`), the suitcase of the left (`hand_L` → `palm_L` → `suitcase` → `suitcase1/2`, `frog_root_attach` → `frog_root` ...).
+- **Clips** (413 in the glb; `ui_hero_reveal` fails to load): `weapon_stand_idle` (aim pose: the gun 9° up), `weapon_run_n/s/e/w`,
+  `sprint_355_n`, `jump_in_air_loop`, `reload_idle`, `ability_barrage_start` / `_loop` (the briefcase opened), `ability_enchant_satchel_start`
+  / `_exit`, `ability_affliction`, `throw`, `item_throw`, `dash_air_forward/back/left/right`. No death clip (ragdoll).
+- **Gun** (`citadel_weapon_synth_set`, The Black Sheep): 7 pellets at fixed `m_vecScatterOffsets` [0,0] [±0.7,±1.2] [±1.2,0] (a hexagon,
+  flat top and bottom), 4.28 each, cycle 0.525 s, clip 11, reload 2.82 s, falloff 629.9 → 1800 units (16 → 46 m) down to 0.1.
+- **Abilities** (`abilities.vdata`): Barrage 32 s, cast delay 0.3, 2 s channel, 4 projectiles of 32 damage, `Radius` 4.5 m, `SlowDuration` 1.5,
+  amp 6 % for `AmpDuration` 15 s; Flying Cloak (`synth_plasma_flux`) 26 s, 60 damage, `Radius` 5 m, 3.8 s; Enchanter's Satchel (`synth_pulse`)
+  17 s, 1.5 s inside, 65 damage, `Radius` 12 m; Affliction 170 s, 9 m, 32 damage every 0.5 s for 10 s.
+- **Props** (effects kind prop): `models/abilities/pocket_briefcase_model.vmdl` (meshes `briefcase` (kept) and `outline` (dropped), 2 bones
+  `case_01`/`case_02`, clip `enchanted_satchel_case` 3.3 s; 0.75 m wide), `models/abilities/pocket_frog_small.vmdl` (34 bones incl. `Jaw`,
+  clips `frog_idle` and `frog_run` (0.7 s), 3 m wide and 1 m tall in the glb: Affliction's frog, used for Frog Form's frogs).
+- **Sounds** (`soundevents/hero/pocket.vsndevts`): `Pocket.Wpn.Fire/.Impact/.Whizby/.Reload.Start/.Mid/.End`, `Pocket.Barrage.Start/.Fire/.Hit/
+  .Proj.Lp/.Proj.Impact/.Proj.Whizby`, `Pocket.Cloak.Cast/.Proj.Lp/.Hit/.Arrive/.Expire/.Timer/.Caster.Lp`, `Pocket.Satchel.Cast/.Lp/.Hit/.Explode`,
+  `Pocket.Affliction.Cast/.Hit/.Debuff.Lp`, `Pocket.Movement.Short/.Long` (the air dash), `Pocket.Footstep`, `Pocket.JumpLand`.
+- **Voice:** `sounds/vo/synth/synth_<group>`: `select`, `unselect`, `use_power1..4`, `killstreak_start/_mid/_high`, `hunt` (no `happy`).
+- **Particles** (looked at for names only, nothing exported): `particles/abilities/pocket/pocket_barrage_*`, `pocket_flying_cloak_*` (the cloak
+  is particles only in Deadlock, no model: ours is a cloth made in code), `pocket_satchel_*`, `pocket_affliction_*`.
 
 ---
 

@@ -165,6 +165,18 @@ Tell the creator the count first: normally **3 launches** (test, bench, portrait
 - Two other Claude sessions shared the PC: work in a git worktree, message them (`ListAgents`, `SendMessage`) before a cache rebuild or a game run.
 - Launches used: 3 test runs, 1 bench + portraits, 9 bench launches while tuning (17 runs), 2 ult benches.
 
+## 7f. Lessons from Pocket (the eleventh hero, 2026-10-27)
+- **Check `build/extract/DeadlockExtract.exe`'s version before a cache rebuild**: it was a 1.8.0 exe while the source was 1.9.0, and a
+  1.8.0 rebuild drops Mina's bat poses. `ready.json` `extractor` tells you; re-publish (doc 01 §6.7) and rebuild if they differ.
+- A second hero with an air dodge reuses Billy's (`heroes.airDodges`; `dodgePct` 0 = no gore, `<hero>_dodge` effect, `<gun>/dodge` sound); Billy's
+  air and bat tests are tied to a `bat_combo` row now.
+- A move that must not stop another goes on the other state machine (Barrage on Weapon; the cloak's throw, the Satchel and the dash on Body).
+- A buff that raises the damage stat hides itself from the bench (gotcha 37); a hop pushed every frame in the air skates off on slopes (gotcha 38).
+- A recast window that holds the key's cooldown (Mina's `MinaRecast`, Pocket's `PocketCloakRecast`) is a small owner-side component.
+- `REPEAT=3 run_bench.sh` takes over 10 minutes: start it in the background and wait for its notification.
+- Launches used: 3 test runs (one on a slope where the frog skated off), 3 bench launches (one with no flat spot, one cut by the 10-minute
+  limit but finished by the game), 1 ult bench, 1 co-op run.
+
 ## 8. Definition of done
 - [ ] `PREFLIGHT CLEAN`, build clean, cache rebuilt with the new content.
 - [ ] `run_test.sh <hero>`: every check passes (including `ragdoll`, `sound-events`, `voice-lines`), `1/1 heroes`.

@@ -701,6 +701,68 @@
       "floatHold": 0,
       "floatAirControl": 0.8,
       "floatMoveSpeedMult": 1.5
+    },
+    {
+      "id": "pocket",
+      "displayName": "Pocket",
+      "deadlockKey": "hero_synth",
+      "vmdl": "models/heroes_wip/pocket/pocket.vmdl",
+      "meshInclude": [
+        "pocket",
+        "coat_scarf",
+        "gun",
+        "briefcase"
+      ],
+      "splitMeshes": [
+        "none"
+      ],
+      "imageSmall": "panorama/images/heroes/synth_sm_psd.vtex",
+      "imageCard": "panorama/images/heroes/synth_card_psd.vtex",
+      "soundevents": "soundevents/hero/pocket.vsndevts",
+      "sourceHeight": 2.38,
+      "heightScale": 0.986,
+      "modelScale": 1.0,
+      "widthScale": 1.0,
+      "capsuleFrom": "none",
+      "cameraFrom": "none",
+      "cameraScale": 1.0,
+      "cameraRight": 0.0,
+      "interactRange": 1.0,
+      "immuneToForce": false,
+      "noFallDamage": false,
+      "airJumpMult": 1.0,
+      "landShake": 0.0,
+      "voiceGain": 1.0,
+      "gooMaterials": [
+        "none"
+      ],
+      "glassMaterials": [
+        "none"
+      ],
+      "riderBone": "none",
+      "primaryColor": "#7A4FD0",
+      "sortPosition": 101.1,
+      "roR2Analog": "Bandit2Body",
+      "subtitle": "The Elusive Trickster",
+      "passiveName": "Unpredictable",
+      "passiveDescription": "Pocket has <style=cIsUtility>one jump</style>. Press jump again in the air to <style=cIsUtility>air dash 7m</style> along your keys (or at the crosshair with none held), once per trip in the air. Dashing never stops Barrage. Hiding in the <style=cIsUtility>Enchanter's Satchel</style> finishes a reload at once.",
+      "passiveIcon": "panorama/images/hud/abilities/synth/synth_grasp_psd.vtex",
+      "damageHealBack": 0,
+      "damageHealBackTime": 0,
+      "debuffResist": 0,
+      "lore": "Deadlock's elusive trickster, a magician with a shotgun and a briefcase full of spirits. The Black Sheep blasts a hexagon of pellets; Barrage opens the briefcase and rains stunning purple bursts that make every hit hurt more; Flying Cloak sends a living cloak through the enemy line and puts him where it is; the Enchanter's Satchel hides him in his suitcase to drink the life of everything near it before he bursts out; Frog Form turns whoever holds it into a giant, ever-hopping frog.",
+      "airDodges": 1,
+      "dodgeDistance": 7,
+      "dodgeTime": 0.25,
+      "dodgePct": 0,
+      "readSeconds": 17,
+      "vertexColorMaterials": [
+        "none"
+      ],
+      "floatFallSpeed": 0,
+      "floatHold": 0,
+      "floatAirControl": 0,
+      "floatMoveSpeedMult": 0
     }
   ]
 }

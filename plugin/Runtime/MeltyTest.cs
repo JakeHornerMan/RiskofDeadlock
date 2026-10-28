@@ -488,7 +488,7 @@ namespace DeadlockOfRain
                 }
                 // Billy's air combat: the G.O.A.T. dodges, then an air bat swing at a floating enemy (it hits, holds him up, keeps
                 // the enemy floating past its float time and reloads part of Biquette)
-                if (hero.AirDodges > 0)
+                if (hero.AirDodges > 0 && Sheet.SkillsOf(hero.Id).Any(s => s.Kind == "bat_combo"))
                 {
                     var why = new string[1];
                     yield return TestBillyAir(master, hero, why);
@@ -579,7 +579,7 @@ namespace DeadlockOfRain
                 }
                 // Billy's M2 key test switches the player's own input off for a while, after which RoR2's HUD stops drawing the skill
                 // bar (it never happens in play): so it runs after the ammo counter has been checked
-                if (hero.AirDodges > 0)
+                if (hero.AirDodges > 0 && Sheet.SkillsOf(hero.Id).Any(s => s.Kind == "bat_combo"))
                 {
                     var why = new string[1];
                     yield return TestBillyBat(master, hero, why);
@@ -590,6 +590,13 @@ namespace DeadlockOfRain
                 {
                     var why = new string[1];
                     yield return TestWraith(master, hero, why);
+                    kitWhy += why[0];
+                }
+                // Pocket: one air dash per trip in the air, the Satchel finishing a reload, Barrage's amp
+                if (Sheet.SkillsOf(hero.Id).Any(r => r.Kind == "satchel"))
+                {
+                    var why = new string[1];
+                    yield return TestPocket(master, hero, why);
                     kitWhy += why[0];
                 }
                 // Mina: Love Bites' rewards, the extra jump, the umbrella float, Sanguine Retreat's recast
@@ -655,7 +662,7 @@ namespace DeadlockOfRain
             // Commando holding Dust Devil spins in the same tornado
             string anyWhy = ""; bool anyTested = false;
             // (only when its hero is among the tested ones)
-            foreach (var bomb in SkillRow.All.Where(r => (r.Kind == "ult_selfbomb" || r.Kind == "ult_devil" || r.Kind == "ult_gooball" || r.Kind == "ult_swarm" || r.Kind == "ult_chains" || r.Kind == "ult_mist") && tested.Any(h => h.Id == r.Hero)).ToList())
+            foreach (var bomb in SkillRow.All.Where(r => (r.Kind == "ult_selfbomb" || r.Kind == "ult_devil" || r.Kind == "ult_gooball" || r.Kind == "ult_swarm" || r.Kind == "ult_chains" || r.Kind == "ult_mist" || r.Kind == "ult_frog") && tested.Any(h => h.Id == r.Hero)).ToList())
             {
                 master.TransformBody("CommandoBody");
                 yield return new WaitForSeconds(1.5f);
@@ -1177,7 +1184,8 @@ namespace DeadlockOfRain
                 }
 
                 // Storm Cloud can't be cut short (skills locked, he flies the whole time): wait it out before the next skill
-                float window = row.Slot == "primary" ? 6f : row.Kind == "storm_flight" || row.Kind == "nox_stream" || row.Kind == "ult_mist" ? row.Duration + 1.5f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
+                float window = row.Slot == "primary" ? 6f : row.Kind == "storm_flight" || row.Kind == "nox_stream" || row.Kind == "ult_mist" ? row.Duration + 1.5f :
+                    row.Kind == "ult_frog" ? row.MinDuration + row.Duration + 1f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
                 float t0 = Time.time;
                 int shots = 0;
                 while (Time.time - t0 < window)
@@ -1638,6 +1646,94 @@ namespace DeadlockOfRain
         /// Nox Nostra and bring Rake back early; five more bites in the air with every jump spent give a jump back; high up with
         /// Jump held the umbrella opens (about floatFallSpeed, the glide clip, no fall damage) and letting go closes it; Sanguine
         /// Retreat's recast, Nox Nostra's stream and Rake's hits were seen in their skill tests. why[0] = "" on success.</summary>
+        /// <summary>Pocket (2026-10-27): put 6 m up, his one air dash carries him most of dodgeDistance and a second is refused; a reload
+        /// under way finishes the moment he hides in the Enchanter's Satchel; a Barrage at a target stacks its amp on him and raises his
+        /// damage. why[0] = "" on success.</summary>
+        IEnumerator TestPocket(CharacterMaster master, HeroRow hero, string[] why)
+        {
+            why[0] = "";
+            var body = master.GetBody();
+            var rt = body ? body.GetComponent<HeroRuntime>() : null;
+            var gunRow = body ? Survivors.RowFor(body.skillLocator.primary) : null;
+            var barrage = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "barrage");
+            if (!rt || gunRow == null || barrage == null) { why[0] = "pocket: no runtime, gun or Barrage; "; yield break; }
+            KillTargets();
+            var weapon = EntityStateMachine.FindByCustomName(body.gameObject, "Weapon");
+            if (weapon) weapon.SetNextStateToMain();
+            var fwd = arenaForward;
+            var spot = arena != Vector3.zero ? arena : body.footPosition;
+            // the air dash: one per trip in the air (the second try comes in the same trip)
+            int done = 0; float least = 99f;
+            TeleportHelper.TeleportBody(body, spot + Vector3.up * 6f, false);
+            for (int i = 0; i <= hero.AirDodges; i++)
+            {
+                if (body.characterMotor) { body.characterMotor.velocity = Vector3.zero; body.characterMotor.jumpCount = body.maxJumpCount; }
+                AimCamera(body, fwd);
+                for (int f = 0; f < 5; f++) { body.inputBank.aimDirection = fwd; yield return new WaitForFixedUpdate(); }
+                var p0 = body.corePosition;
+                bool went = BillyAir.TryDodge(body);
+                yield return new WaitForSeconds(hero.DodgeTime + 0.1f);
+                var moved = body.corePosition - p0; moved.y = 0;
+                if (i < hero.AirDodges)
+                {
+                    if (!went) { why[0] += $"air dash {i + 1}: refused; "; continue; }
+                    done++; least = Mathf.Min(least, moved.magnitude);
+                }
+                else if (went) why[0] += $"air dash {i + 1}: allowed past airDodges {hero.AirDodges}; ";
+            }
+            Log.Info($"Melty test: {hero.Id} air dash: {done}/{hero.AirDodges}, the shortest went {least:F1} m (want about {hero.DodgeDistance:F0})");
+            if (done == hero.AirDodges && least < hero.DodgeDistance * 0.6f) why[0] += $"air dash went only {least:F1} m; ";
+            Report("air-dash", done == hero.AirDodges && least >= hero.DodgeDistance * 0.6f, body.baseNameToken);
+            TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+            if (body.characterMotor) body.characterMotor.velocity = Vector3.zero;
+            yield return new WaitForSeconds(0.8f);
+
+            // hiding finishes a reload
+            rt.Ammo = 0; rt.Reloading = false;
+            rt.BeginReload(gunRow, 1f);
+            yield return new WaitForSeconds(0.2f);
+            var rs = body.skillLocator.special;
+            rs.Reset();
+            rs.ExecuteIfReady();
+            yield return new WaitForSeconds(0.3f);
+            bool reloaded = !rt.Reloading && rt.Ammo == (int)gunRow.ClipSize;
+            Log.Info($"Melty test: {hero.Id} satchel reload: reloading {rt.Reloading}, magazine {rt.Ammo}/{(int)gunRow.ClipSize}");
+            if (!reloaded) why[0] += $"satchel-reload: still reloading {rt.Reloading}, magazine {rt.Ammo}; ";
+            Report("satchel-reload", reloaded, body.baseNameToken);
+            yield return new WaitForSeconds(2.5f);
+
+            // Barrage's amp: bursts that hit stack it on him, and his damage rises with it
+            var t = Summon(body, spot + fwd * 9f + Vector3.up * 0.5f);
+            if (!t) { why[0] += "barrage amp: no target; "; yield break; }
+            if (t.master && t.master.inventory) t.master.inventory.GiveItem(RoR2Content.Items.BoostHp, 200);
+            yield return new WaitForSeconds(0.5f);
+            float dmg0 = body.damage;
+            var look = (t.corePosition - body.inputBank.aimOrigin).normalized;
+            AimCamera(body, look);
+            var ms = body.skillLocator.secondary;
+            ms.Reset();
+            ms.ExecuteIfReady();
+            int stacks = 0;
+            float dmg1 = dmg0;
+            for (float w = 0f; w < barrage.Duration + 1.5f; w += Time.deltaTime)
+            {
+                if (t) body.inputBank.aimDirection = (t.corePosition - body.inputBank.aimOrigin).normalized;
+                stacks = Mathf.Max(stacks, Buffs.Count(body, barrage.Buff));
+                dmg1 = Mathf.Max(dmg1, body.damage);
+                yield return null;
+            }
+            var amp = Sheet.Buff(barrage.Buff);
+            float want = 1f + (amp != null ? amp.DamageAdd : 0f) * stacks;
+            Log.Info($"Melty test: {hero.Id} barrage amp: {stacks} stacks, damage {dmg0:F1} -> {dmg1:F1} (want x{want:F2})");
+            bool ampOk = stacks >= 2 && dmg1 > dmg0 * (1f + (want - 1f) * 0.5f);
+            if (!ampOk) why[0] += $"barrage-amp: {stacks} stacks, damage {dmg0:F1} -> {dmg1:F1}; ";
+            Report("barrage-amp", ampOk, body.baseNameToken);
+            // the amp would still raise his damage for the level-stats check after the kit
+            Buffs.Clear(body, barrage.Buff);
+            KillTargets();
+            yield return new WaitForSeconds(0.5f);
+        }
+
         IEnumerator TestMina(CharacterMaster master, HeroRow hero, string[] why)
         {
             why[0] = "";

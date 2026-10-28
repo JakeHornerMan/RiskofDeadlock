@@ -17,7 +17,7 @@ Every hero's abilities, numbers and measured damage against their Risk of Rain 2
 - [Viscous](https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC) (matched to REX)
 - [Rat King](https://claude.ai/artifact/Kw4rTyRrvXTb2eEyT9oTYa) (matched to Captain)
 - [Wraith](https://claude.ai/artifact/2Bdxqd6iUwp89iEEPELgBb) (matched to Bandit; new, not released yet)
-- [Mina](https://claude.ai/artifact/NWZWgZoK8DRusJpTVzbYoe) (matched to Huntress; new, not released yet)
+- [Mina](https://claude.ai/artifact/NWZWgZoK8DRusJpTVzbYoe) · [Pocket](https://claude.ai/artifact/Mc8uRq1qWykkkLncPtNCD5) (matched to Huntress; new, not released yet)
 - [Balance overview](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3): every hero next to every Risk of Rain 2 survivor
 
 ## Features

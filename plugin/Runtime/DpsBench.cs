@@ -144,10 +144,12 @@ namespace DeadlockOfRain
             // damageInfo.damage: what the hit was worth after crits and damage mods, before the victim's armor and health cap
             float dmg = r.damageInfo != null ? r.damageInfo.damage : r.damageDealt;
             tally.Raw += dmg;
-            tally.Pct += dmg / Mathf.Max(1f, benchBody.damage) * 100f;
+            // % of the damage stat without our own damage buffs (Pocket's Barrage amp), so a damage amp counts as the damage it adds
+            float stat = Mathf.Max(1f, benchBody.damage / Buffs.DamageMult(benchBody));
+            tally.Pct += dmg / stat * 100f;
             tally.Hits++;
             tally.Victims.Add(r.victimBody);
-            if (r.victimBody.isChampion) tally.BossPct += dmg / Mathf.Max(1f, benchBody.damage) * 100f;
+            if (r.victimBody.isChampion) tally.BossPct += dmg / stat * 100f;
         }
 
         void OnSkill(GenericSkill s)

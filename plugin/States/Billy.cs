@@ -636,7 +636,7 @@ namespace DeadlockOfRain.States
             anim = DeadlockAnimator.Of(characterBody);
             if (anim) anim.Override("dash_air", time + 0.2f);
             Fx.Sound(snd, "cast", characterBody.corePosition);
-            fx = Vfx.Play("billy_dodge", "cast", characterBody.corePosition, 1f, transform);
+            fx = Vfx.Play(FxId, "cast", characterBody.corePosition, 1f, transform);
             if (fx) fx.transform.rotation = Quaternion.LookRotation(Dir);
             if (characterMotor)
             {
@@ -649,6 +649,9 @@ namespace DeadlockOfRain.States
         public override void OnSerialize(NetworkWriter writer) { base.OnSerialize(writer); writer.Write(Dir); }
         public override void OnDeserialize(NetworkReader reader) { base.OnDeserialize(reader); Dir = reader.ReadVector3(); }
 
+        /// <summary>The dodge's look: the hero's own &lt;hero&gt;_dodge effect (Pocket's purple dash), else Billy's.</summary>
+        string FxId => hero != null && Sheet.Effect(hero.Id + "_dodge") != null ? hero.Id + "_dodge" : "billy_dodge";
+
         public override void FixedUpdate()
         {
             base.FixedUpdate();
@@ -660,8 +663,8 @@ namespace DeadlockOfRain.States
                 var flat = Dir; flat.y = 0;
                 if (flat.sqrMagnitude > 0.01f && characterDirection) characterDirection.forward = flat.normalized;
             }
-            // the horns: each enemy along the path once (server)
-            if (NetworkServer.active)
+            // the horns: each enemy along the path once (server); a dodge without damage (Pocket's air dash) hits nothing
+            if (NetworkServer.active && hero.DodgePct > 0f)
                 foreach (var hb in Fx.Enemies(characterBody, characterBody.corePosition, characterBody.radius + 1.2f))
                 {
                     if (!gored.Add(hb.healthComponent)) continue;
@@ -670,7 +673,7 @@ namespace DeadlockOfRain.States
                     // a flinch
                     Fx.Stun(hb.healthComponent, 0.3f);
                     Relay.Sound(snd, "hit", at);
-                    Relay.Vfx("billy_dodge", "hit", at);
+                    Relay.Vfx(FxId, "hit", at);
                 }
             if (fixedAge >= time && isAuthority) outer.SetNextStateToMain();
         }
@@ -684,6 +687,7 @@ namespace DeadlockOfRain.States
             }
             Vfx.Stop(fx, 0.4f);
             if (anim) anim.StopOverride();
+            if (hero != null) Vfx.Play(FxId, "end", characterBody.corePosition, 1f);
             base.OnExit();
         }
 

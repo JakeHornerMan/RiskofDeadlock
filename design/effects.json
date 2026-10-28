@@ -1698,6 +1698,133 @@
       ],
       "tint": "none",
       "notes": "Deadlock's Rake cone, laid on the ground in front of her as she swings"
+    },
+    {
+      "id": "tracer_pocket",
+      "kind": "tracer",
+      "addressable": "RoR2/Base/Commando/TracerCommandoDefault.prefab",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "#B48CFF",
+      "notes": "The Black Sheep's pellet tracers, Commando's tracer in Pocket's lilac"
+    },
+    {
+      "id": "pocket_gun",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "The Black Sheep: a purple-white muzzle flash with a puff of violet smoke and a quick light on every shot; small violet sparks where each pellet lands"
+    },
+    {
+      "id": "pocket_dodge",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Unpredictable air dash: a violet streak and a burst of purple smoke and spirit motes where he leaves, a soft puff where he stops"
+    },
+    {
+      "id": "pocket_barrage",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Barrage: violet light and a spinning spirit ring at the open briefcase while he channels, the owner's landing circle under the crosshair; each burst a glowing purple orb with a ribbon trail arcing to the spot, then a purple blast: flash, shockwave ring, spirit motes and dust; a dizzy swirl over each stunned enemy"
+    },
+    {
+      "id": "pocket_cloak",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Flying Cloak: a living dark-violet cloak, its cloth rippling and twisting as it flies, glowing lilac edges, a trail of purple motes and a faint 5 m sphere; a slash of light on each enemy it passes through; a purple puff where Pocket leaves and arrives when he teleports"
+    },
+    {
+      "id": "pocket_satchel",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Enchanter's Satchel: a puff of purple smoke as he hops in; Deadlock's suitcase floating and rattling where he stood, a violet glow and a 12 m ring on the ground; purple tendrils reaching to every enemy in range drawing red motes back into the case; the lid bursts open in a 12 m purple spirit blast as he springs out"
+    },
+    {
+      "id": "pocket_frog",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Frog Form: the suitcase thrown (or dropped from the sky), growing huge, the lid swinging open and a giant copy of Deadlock's frog rising out of it and opening its mouth; then the playable frog (Deadlock's frog at the carrier's size) hopping; every landing a heavy thud, a ring of green-grey slime and water, splashes, a shake and a few small frogs hopping out of it; a puff of smoke as the carrier comes back"
+    },
+    {
+      "id": "pocket_case_prop",
+      "kind": "prop",
+      "addressable": "models/abilities/pocket_briefcase_model.vmdl",
+      "scaleWithRadius": false,
+      "meshes": [
+        "briefcase"
+      ],
+      "clips": [
+        "enchanted_satchel_case"
+      ],
+      "tint": "none",
+      "notes": "Deadlock's Enchanter's Satchel suitcase (75 cm wide) with its own rattling clip, for the Satchel and Frog Form"
+    },
+    {
+      "id": "pocket_frog_prop",
+      "kind": "prop",
+      "addressable": "models/abilities/pocket_frog_small.vmdl",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "frog_idle",
+        "frog_run"
+      ],
+      "tint": "none",
+      "notes": "Deadlock's frog (3 m wide, 1 m tall in the glb) with its skeleton, sitting pose and hop, for Frog Form's frogs"
     }
   ]
 }

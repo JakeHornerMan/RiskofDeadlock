@@ -122,6 +122,17 @@
       "enigmaCompatible": true,
       "randomTrigger": true,
       "figure": "all"
+    },
+    {
+      "id": "eq_pocket_frog",
+      "hero": "pocket",
+      "skill": "pocket_frog",
+      "pickupText": "Become a giant, ever-hopping frog for 8s: every landing splashes for 1000%, Space for a 2000% high leap.",
+      "lore": "Nobody knows what else is in the briefcase. Nobody who has seen the frog asks.",
+      "canDrop": true,
+      "enigmaCompatible": true,
+      "randomTrigger": true,
+      "figure": "all"
     }
   ]
 }

@@ -43,6 +43,14 @@ namespace DeadlockOfRain
             return b && d ? b.GetBuffCount(d) : 0;
         }
 
+        /// <summary>How much our damageAdd buffs raise the body's damage stat now (Barrage's amp: 1.16 at 4 stacks); 1 = none.</summary>
+        public static float DamageMult(CharacterBody b)
+        {
+            float add = 0f;
+            if (b) foreach (var row in BuffRow.All) if (row.DamageAdd != 0) { int n = Count(b, row.Id); if (n > 0) add += row.DamageAdd * (row.CanStack ? n : 1); }
+            return Mathf.Max(0.1f, 1f + add);
+        }
+
         public static CharacterBody OwnerOf(CharacterBody victim, string id) =>
             victim && owners.TryGetValue(id, out var m) && m.TryGetValue(victim, out var o) ? o : null;
 
@@ -269,11 +277,11 @@ namespace DeadlockOfRain
             float vanillaMax = b.maxHealth;
             float moveAdd = 0, attackAdd = 0, armorAdd = 0, regenAdd = 0, slowResist = 0, healthAdd = 0;
             // linearSlow buffs (Gooed) take their fraction straight off the speed; acceleration, jump power and extra jumps (Goo Ball)
-            float linearMove = 0, accelAdd = 0, jumpAdd = 0, jumpCount = 0;
+            float linearMove = 0, accelAdd = 0, jumpAdd = 0, jumpCount = 0, damageAdd = 0;
             foreach (var row in BuffRow.All)
             {
                 if (row.MoveSpeedAdd == 0 && row.AttackSpeedAdd == 0 && row.ArmorAdd == 0 && row.RegenAdd == 0 && row.SlowResist == 0 && row.MaxHealthAdd == 0
-                    && row.AccelerationAdd == 0 && row.JumpPowerAdd == 0 && row.JumpCountAdd == 0) continue;
+                    && row.AccelerationAdd == 0 && row.JumpPowerAdd == 0 && row.JumpCountAdd == 0 && row.DamageAdd == 0) continue;
                 var d = Buffs.Get(row.Id);
                 if (!d) continue;
                 int n = b.GetBuffCount(d);
@@ -285,6 +293,7 @@ namespace DeadlockOfRain
                 attackAdd += row.AttackSpeedAdd * speedK; armorAdd += row.ArmorAdd * k; regenAdd += row.RegenAdd * k;
                 healthAdd += row.MaxHealthAdd * k;
                 accelAdd += row.AccelerationAdd * k; jumpAdd += row.JumpPowerAdd * k; jumpCount += row.JumpCountAdd * k;
+                damageAdd += row.DamageAdd * k;
                 slowResist = Mathf.Max(slowResist, row.SlowResist);
             }
             if (healthAdd != 0 || lastHealthAdd.TryGetValue(b, out _)) lastHealthAdd.GetValue(b, _ => new float[1])[0] = healthAdd;
@@ -299,6 +308,8 @@ namespace DeadlockOfRain
             if (accelAdd != 0) Set(b, "acceleration", b.acceleration * Mathf.Max(0.02f, 1f + accelAdd));
             if (jumpAdd != 0) Set(b, "jumpPower", b.jumpPower * Mathf.Max(0.1f, 1f + jumpAdd));
             if (jumpCount != 0) SetInt(b, "maxJumpCount", Mathf.Max(0, b.maxJumpCount + (int)jumpCount));
+            // Pocket's Barrage amp: every hit he lands is that much harder (the damage stat itself)
+            if (damageAdd != 0) Set(b, "damage", b.damage * Mathf.Max(0.1f, 1f + damageAdd));
             // Mina's open umbrella (heroes floatMoveSpeedMult; MinaRuntime.Floating, on her owner's machine, which moves her)
             var mina = b.GetComponent<MinaRuntime>();
             if (mina && mina.Floating)

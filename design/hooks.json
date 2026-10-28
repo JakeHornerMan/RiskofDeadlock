@@ -30,8 +30,8 @@
       "id": "stats_recalc",
       "method": "harmony-postfix",
       "target": "RoR2.CharacterBody.RecalculateStats()",
-      "purpose": "apply our buffs' move speed / attack speed / armor / regen and slow resistance (vanilla level scaling of base stats is untouched and comes from the level* fields)",
-      "reads": "buffs.moveSpeedAdd/attackSpeedAdd/armorAdd/regenAdd/slowResist, buffs.linearSlow, buffs.bossStatCut, buffs.accelerationAdd, buffs.jumpPowerAdd, buffs.jumpCountAdd",
+      "purpose": "apply our buffs' move speed / attack speed / armor / regen / damage (damageAdd: Pocket's Barrage amp) and slow resistance (vanilla level scaling of base stats is untouched and comes from the level* fields)",
+      "reads": "buffs.moveSpeedAdd/attackSpeedAdd/armorAdd/regenAdd/slowResist, buffs.linearSlow, buffs.bossStatCut, buffs.accelerationAdd, buffs.jumpPowerAdd, buffs.jumpCountAdd, buffs.damageAdd",
       "side": "both"
     },
     {
@@ -326,7 +326,7 @@
       "id": "lock_skills",
       "method": "component",
       "target": "RoR2.GenericSkill.SetSkillOverride(CharacterBody.CommonAssets.disabledSkill)",
-      "purpose": "The Cube and Goo Ball: no moves while they run",
+      "purpose": "The Cube, Goo Ball, Mist Form, Pocket's Enchanter's Satchel and Frog Form: no moves while they run",
       "reads": "none",
       "side": "owner"
     },
@@ -390,7 +390,7 @@
       "id": "billy_air",
       "method": "component",
       "target": "HeroRuntime.FixedUpdate (owner) + BillyAir (Runtime/BillyAir.cs)",
-      "purpose": "G.O.A.T.: a jump pressed in the air with every jump used starts the dodge on the Body machine (no RoR2 jump is touched); the hang time that holds Billy up after each air bat hit (4 s budget per trip); the 5 m lock-on",
+      "purpose": "G.O.A.T. (and Pocket's Unpredictable air dash, dodgePct 0: no gore, his own pocket_dodge look): a jump pressed in the air with every jump used starts the dodge on the Body machine (no RoR2 jump is touched); the hang time that holds Billy up after each air bat hit (4 s budget per trip); the 5 m lock-on",
       "reads": "heroes.airDodges/dodgeDistance/dodgeTime/dodgePct, skills.hangTime/floatTime/lockRange",
       "side": "owner"
     },
@@ -449,6 +449,22 @@
       "purpose": "The umbrella float: on the owner, held Jump in the air (or Jump with none left) slows the fall to 2.5 m/s with more air control and no fall damage; every machine plays the glide clip, the umbrella sounds and glow (others read it from the slow fall)",
       "reads": "skills (none), animations.float, sounds mina_gun/umbrella",
       "side": "all"
+    },
+    {
+      "id": "pocket_frog_landing",
+      "method": "component",
+      "target": "DeadlockOfRain.States.FrogForm.ServerLandings",
+      "purpose": "Frog Form's landings seen on the server from how the body moves (a ray under its feet: in the air, then down again), so a joined player's frog deals its splash; relayed slam visual and sound",
+      "reads": "skills.radius/nearRadius/damagePct/splashPct/knockback/speed/launchHeight",
+      "side": "server"
+    },
+    {
+      "id": "pocket_cloak_recast",
+      "method": "component",
+      "target": "DeadlockOfRain.States.PocketCloakRecast",
+      "purpose": "Flying Cloak: holds the utility recharge at 0 while the cloak flies and turns Shift again into the teleport (CloakPort on the Body machine)",
+      "reads": "skills.duration",
+      "side": "owner"
     }
   ]
 }

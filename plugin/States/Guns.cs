@@ -177,6 +177,15 @@ namespace DeadlockOfRain.States
             new Vector2(0.707f, -0.707f), new Vector2(-0.707f, -0.707f), new Vector2(0f, -1f), new Vector2(0f, 1f),
         };
 
+        /// <summary>Pocket's The Black Sheep (pattern hexagon): Deadlock's m_vecScatterOffsets, one pellet dead centre and six at the
+        /// corners of a hexagon with flat top and bottom edges (left and right corners 1.2 out, the other four 0.7 across and 1.2 up or
+        /// down), the same every shot; the left and right corners sit spreadDeg off the centre.</summary>
+        static readonly Vector2[] Hexagon =
+        {
+            new Vector2(0f, 0f), new Vector2(-0.7f, -1.2f), new Vector2(0.7f, -1.2f), new Vector2(-1.2f, 0f),
+            new Vector2(1.2f, 0f), new Vector2(-0.7f, 1.2f), new Vector2(0.7f, 1.2f),
+        };
+
         void FireOne()
         {
             if (rt != null)
@@ -222,6 +231,29 @@ namespace DeadlockOfRain.States
                         isCrit = crit, radius = 0.3f, smartCollision = true, maxDistance = row.Range,
                         falloffModel = BulletAttack.FalloffModel.Buckshot,
                         hitCallback = PelletHit,
+                        damageType = new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Primary },
+                    }.Fire();
+                }
+            }
+            else if (isAuthority && row.Pattern == "hexagon")
+            {
+                // one bullet per pellet along its fixed offset; damage by distance from falloffStart to falloffEnd (RatPelletHit)
+                var up = Vector3.Cross(aim.direction, Vector3.Cross(Vector3.up, aim.direction)).normalized;
+                var side = Vector3.Cross(Vector3.up, aim.direction).normalized;
+                bool crit = RollCrit();
+                foreach (var o in Hexagon)
+                {
+                    var dir = Quaternion.AngleAxis(o.x * row.SpreadDeg / 1.2f, up) * Quaternion.AngleAxis(-o.y * row.SpreadDeg / 1.2f, side) * aim.direction;
+                    new BulletAttack
+                    {
+                        owner = gameObject, weapon = gameObject,
+                        origin = aim.origin, aimVector = dir,
+                        minSpread = 0f, maxSpread = 0f, bulletCount = 1,
+                        damage = damageStat * Coef, procCoefficient = row.ProcCoefficient, force = 100f,
+                        tracerEffectPrefab = Fx.Prefab(row.Effect), muzzleName = "MuzzleRight", hitEffectPrefab = null,
+                        isCrit = crit, radius = 0.3f, smartCollision = true, maxDistance = row.Range,
+                        falloffModel = BulletAttack.FalloffModel.None,
+                        hitCallback = RatPelletHit,
                         damageType = new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Primary },
                     }.Fire();
                 }

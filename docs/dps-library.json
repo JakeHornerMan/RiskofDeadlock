@@ -1727,9 +1727,94 @@
      "max": 2310
     }
    }
+  },
+  "DeadlockPocket": {
+   "name": "Pocket",
+   "stats": {
+    "health": 110.0,
+    "healthPerLevel": 33.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "The Black Sheep",
+    "secondary": "Barrage",
+    "utility": "Flying Cloak",
+    "special": "Enchanter's Satchel"
+   },
+   "hero": true,
+   "measuredOn": "v1.2.0a",
+   "dps": {
+    "all": {
+     "runs": [
+      2442,
+      2423,
+      2404
+     ],
+     "mean": 2423,
+     "min": 2404,
+     "max": 2442
+    },
+    "primary": {
+     "runs": [
+      568,
+      595,
+      568
+     ],
+     "mean": 577,
+     "min": 568,
+     "max": 595
+    },
+    "secondary": {
+     "runs": [
+      1379,
+      1557,
+      1372
+     ],
+     "mean": 1436,
+     "min": 1372,
+     "max": 1557
+    },
+    "utility": {
+     "runs": [
+      379,
+      377,
+      404
+     ],
+     "mean": 387,
+     "min": 377,
+     "max": 404
+    },
+    "special": {
+     "runs": [
+      503,
+      508,
+      530
+     ],
+     "mean": 514,
+     "min": 503,
+     "max": 530
+    },
+    "equipment": {
+     "runs": [
+      767,
+      2033,
+      1333
+     ],
+     "mean": 1378,
+     "min": 767,
+     "max": 2033
+    }
+   }
   }
  },
  "about": "Stored DPS library (Risk of Deadlock). Main moves and each move alone, % of damage stat per second, measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, 30 s per pass, perfect aim, every move used when ready, no equipment except the \"equipment\" pass). \"all\" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are tagged with the build they were measured on. Built by tools/dps_library.py.",
- "updated": "2026-10-26",
+ "updated": "2026-10-28",
  "runsPerSurvivor": 3
 }

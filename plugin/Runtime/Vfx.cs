@@ -58,6 +58,8 @@ namespace DeadlockOfRain
                         return Wraith(id, moment, at, radius, follow, to, angle);
                     case "mina_gun": case "mina_bites": case "mina_umbrella": case "mina_rake": case "mina_bats": case "mina_nox": case "mina_mist":
                         return Mina(id, moment, at, radius, follow, to, life);
+                    case "pocket_gun": case "pocket_dodge": case "pocket_barrage": case "pocket_cloak": case "pocket_satchel": case "pocket_frog":
+                        return Pocket(id, moment, at, radius, follow, to, angle);
                 }
             }
             catch (System.Exception e) { Log.Warn($"vfx {id}/{moment}: {e.Message}"); }

@@ -65,7 +65,7 @@ for r in sheets['skills']['rows']:
     ref('skills', r['id'], 'hero', r['hero'], heroes, False)
     ref('skills', r['id'], 'buff', r['buff'], buffs)
     ref('skills', r['id'], 'debuff', r['debuff'], buffs)
-    ref('skills', r['id'], 'pattern', r['pattern'], {'krill', 'ratking', 'octagon'})
+    ref('skills', r['id'], 'pattern', r['pattern'], {'krill', 'ratking', 'octagon', 'hexagon'})
     if r['meleePct'] > 0 and r['slot'] != 'primary': bad(f'skills[{r["id"]}].meleePct: only a gun row punches')
     ref('skills', r['id'], 'effect', r['effect'], effects, False)
     ref('skills', r['id'], 'vfx', r['vfx'], effects)
@@ -170,6 +170,7 @@ for r in skills.values():
         elif r['kind'] == 'ult_gooball': total = r['duration'] / r['interval'] * r['damageMinPct']  # a smash every re-hit interval, at the slowest speed
         elif r['kind'] == 'ult_chains': total = r['chainCount'] * r['damagePct']  # chainCount chains of damagePct, one per enemy (bosses up to bossMult)
         elif r['kind'] == 'ult_mist': total = r['splashPct'] + r['duration'] / r['interval'] * r['damagePct']  # the reform burst, plus a pass through the same enemy every re-hit interval for the whole flight
+        elif r['kind'] == 'ult_frog': total = r['duration'] / r['interval'] * r['damagePct']  # a landing splash every hop for the whole form (high leaps are extra)
         elif r['kind'] == 'ult_swarm': total = r['chainCount'] * 15 / r['interval'] * r['damagePct']  # chainCount rats on one enemy biting until it dies (no time limit): counted over 15 s
         else: total = r['damagePct']
         if total < 6000:

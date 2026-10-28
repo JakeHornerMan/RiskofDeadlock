@@ -345,6 +345,37 @@
       ],
       "split": [],
       "vertexColors": []
+    },
+    {
+      "id": "pocket",
+      "name": "Pocket",
+      "key": "hero_synth",
+      "vmdl": "models/heroes_wip/pocket/pocket.vmdl",
+      "meshes": [
+        "pocket",
+        "coat_scarf",
+        "gun",
+        "briefcase"
+      ],
+      "clips": [
+        "ability_barrage_loop",
+        "ability_barrage_start",
+        "ability_enchant_satchel_exit",
+        "ability_enchant_satchel_start",
+        "dash_air_forward",
+        "item_throw",
+        "jump_in_air_loop",
+        "reload_idle",
+        "sprint_355_n",
+        "throw",
+        "weapon_run_e",
+        "weapon_run_n",
+        "weapon_run_s",
+        "weapon_run_w",
+        "weapon_stand_idle"
+      ],
+      "split": [],
+      "vertexColors": []
     }
   ],
   "images": [
@@ -368,6 +399,7 @@
     "panorama/images/heroes/guns/inferno_gun_psd.vtex",
     "panorama/images/heroes/guns/punkgoat_gun_psd.vtex",
     "panorama/images/heroes/guns/ratking_gun_psd.vtex",
+    "panorama/images/heroes/guns/synth_gun_psd.vtex",
     "panorama/images/heroes/guns/vampirebat_gun_psd.vtex",
     "panorama/images/heroes/guns/viscous_gun_psd.vtex",
     "panorama/images/heroes/guns/wraith_gun_psd.vtex",
@@ -379,6 +411,8 @@
     "panorama/images/heroes/punkgoat_sm_psd.vtex",
     "panorama/images/heroes/ratking_card_psd.vtex",
     "panorama/images/heroes/ratking_sm_psd.vtex",
+    "panorama/images/heroes/synth_card_psd.vtex",
+    "panorama/images/heroes/synth_sm_psd.vtex",
     "panorama/images/heroes/vampirebat_card_psd.vtex",
     "panorama/images/heroes/vampirebat_sm_psd.vtex",
     "panorama/images/heroes/viscous_card_psd.vtex",
@@ -414,6 +448,11 @@
     "panorama/images/hud/abilities/ratking/ratking_grenade_psd.vtex",
     "panorama/images/hud/abilities/ratking/ratking_shield_psd.vtex",
     "panorama/images/hud/abilities/ratking/ratking_swarm_psd.vtex",
+    "panorama/images/hud/abilities/synth/synth_affliction_psd.vtex",
+    "panorama/images/hud/abilities/synth/synth_barrage_psd.vtex",
+    "panorama/images/hud/abilities/synth/synth_grasp_psd.vtex",
+    "panorama/images/hud/abilities/synth/synth_plasma_flux_psd.vtex",
+    "panorama/images/hud/abilities/synth/synth_pulse_psd.vtex",
     "panorama/images/hud/abilities/vampirebat/vampirebat_love_bites_psd.vtex",
     "panorama/images/hud/abilities/vampirebat/vampirebat_nox_nostra_psd.vtex",
     "panorama/images/hud/abilities/vampirebat/vampirebat_rake_psd.vtex",
@@ -504,6 +543,28 @@
     "Mods.Tech.Stasis.Active",
     "Mods.Tech.Stasis.End",
     "Mods.Tech.TormentPulse.Proc",
+    "Pocket.Affliction.Cast",
+    "Pocket.Affliction.Hit",
+    "Pocket.Barrage.Fire",
+    "Pocket.Barrage.Hit",
+    "Pocket.Barrage.Proj.Impact",
+    "Pocket.Barrage.Proj.Lp",
+    "Pocket.Barrage.Start",
+    "Pocket.Cloak.Arrive",
+    "Pocket.Cloak.Cast",
+    "Pocket.Cloak.Expire",
+    "Pocket.Cloak.Hit",
+    "Pocket.Cloak.Proj.Lp",
+    "Pocket.Footstep",
+    "Pocket.JumpLand",
+    "Pocket.Movement.Short",
+    "Pocket.Satchel.Cast",
+    "Pocket.Satchel.Explode",
+    "Pocket.Satchel.Hit",
+    "Pocket.Satchel.Lp",
+    "Pocket.Wpn.Fire",
+    "Pocket.Wpn.Impact",
+    "Pocket.Wpn.Reload.Start",
     "PunkGoat.Wpn.Fire.Main",
     "PunkGoat.Wpn.Impact",
     "PunkGoat.Wpn.Reload.Start",
@@ -632,6 +693,7 @@
     "soundevents/hero/haze.vsndevts",
     "soundevents/hero/inferno.vsndevts",
     "soundevents/hero/krill.vsndevts",
+    "soundevents/hero/pocket.vsndevts",
     "soundevents/hero/punkgoat.vsndevts",
     "soundevents/hero/ratking.vsndevts",
     "soundevents/hero/vampirebat.vsndevts",
@@ -713,6 +775,16 @@
     "ratking/ratking_use_power1",
     "ratking/ratking_use_power2",
     "ratking/ratking_use_power4",
+    "synth/synth_hunt",
+    "synth/synth_killstreak_high",
+    "synth/synth_killstreak_mid",
+    "synth/synth_killstreak_start",
+    "synth/synth_select",
+    "synth/synth_unselect",
+    "synth/synth_use_power1",
+    "synth/synth_use_power2",
+    "synth/synth_use_power3",
+    "synth/synth_use_power4",
     "vampirebat/vampirebat_happy",
     "vampirebat/vampirebat_killstreak_high",
     "vampirebat/vampirebat_killstreak_mid",
@@ -823,6 +895,25 @@
       "vmdl": "models/particle/vampirebat_bat.vmdl",
       "meshes": [],
       "clips": []
+    },
+    {
+      "id": "pocket_case_prop",
+      "vmdl": "models/abilities/pocket_briefcase_model.vmdl",
+      "meshes": [
+        "briefcase"
+      ],
+      "clips": [
+        "enchanted_satchel_case"
+      ]
+    },
+    {
+      "id": "pocket_frog_prop",
+      "vmdl": "models/abilities/pocket_frog_small.vmdl",
+      "meshes": [],
+      "clips": [
+        "frog_idle",
+        "frog_run"
+      ]
     }
   ],
   "owners": {
@@ -1031,6 +1122,72 @@
     ],
     "Mods.Tech.TormentPulse.Proc": [
       "infernus"
+    ],
+    "Pocket.Affliction.Cast": [
+      "pocket"
+    ],
+    "Pocket.Affliction.Hit": [
+      "pocket"
+    ],
+    "Pocket.Barrage.Fire": [
+      "pocket"
+    ],
+    "Pocket.Barrage.Hit": [
+      "pocket"
+    ],
+    "Pocket.Barrage.Proj.Impact": [
+      "pocket"
+    ],
+    "Pocket.Barrage.Proj.Lp": [
+      "pocket"
+    ],
+    "Pocket.Barrage.Start": [
+      "pocket"
+    ],
+    "Pocket.Cloak.Arrive": [
+      "pocket"
+    ],
+    "Pocket.Cloak.Cast": [
+      "pocket"
+    ],
+    "Pocket.Cloak.Expire": [
+      "pocket"
+    ],
+    "Pocket.Cloak.Hit": [
+      "pocket"
+    ],
+    "Pocket.Cloak.Proj.Lp": [
+      "pocket"
+    ],
+    "Pocket.Footstep": [
+      "pocket"
+    ],
+    "Pocket.JumpLand": [
+      "pocket"
+    ],
+    "Pocket.Movement.Short": [
+      "pocket"
+    ],
+    "Pocket.Satchel.Cast": [
+      "pocket"
+    ],
+    "Pocket.Satchel.Explode": [
+      "pocket"
+    ],
+    "Pocket.Satchel.Hit": [
+      "pocket"
+    ],
+    "Pocket.Satchel.Lp": [
+      "pocket"
+    ],
+    "Pocket.Wpn.Fire": [
+      "pocket"
+    ],
+    "Pocket.Wpn.Impact": [
+      "pocket"
+    ],
+    "Pocket.Wpn.Reload.Start": [
+      "pocket"
     ],
     "PunkGoat.Wpn.Fire.Main": [
       "billy"
@@ -1628,6 +1785,9 @@
     "panorama/images/heroes/guns/ratking_gun_psd.vtex": [
       "ratking"
     ],
+    "panorama/images/heroes/guns/synth_gun_psd.vtex": [
+      "pocket"
+    ],
     "panorama/images/heroes/guns/vampirebat_gun_psd.vtex": [
       "mina"
     ],
@@ -1660,6 +1820,12 @@
     ],
     "panorama/images/heroes/ratking_sm_psd.vtex": [
       "ratking"
+    ],
+    "panorama/images/heroes/synth_card_psd.vtex": [
+      "pocket"
+    ],
+    "panorama/images/heroes/synth_sm_psd.vtex": [
+      "pocket"
     ],
     "panorama/images/heroes/vampirebat_card_psd.vtex": [
       "mina"
@@ -1763,6 +1929,21 @@
     "panorama/images/hud/abilities/ratking/ratking_swarm_psd.vtex": [
       "ratking"
     ],
+    "panorama/images/hud/abilities/synth/synth_affliction_psd.vtex": [
+      "pocket"
+    ],
+    "panorama/images/hud/abilities/synth/synth_barrage_psd.vtex": [
+      "pocket"
+    ],
+    "panorama/images/hud/abilities/synth/synth_grasp_psd.vtex": [
+      "pocket"
+    ],
+    "panorama/images/hud/abilities/synth/synth_plasma_flux_psd.vtex": [
+      "pocket"
+    ],
+    "panorama/images/hud/abilities/synth/synth_pulse_psd.vtex": [
+      "pocket"
+    ],
     "panorama/images/hud/abilities/vampirebat/vampirebat_love_bites_psd.vtex": [
       "mina"
     ],
@@ -1822,6 +2003,12 @@
     ],
     "panorama/images/items/weapon/tesla_bullets_psd.vtex": [
       "seven"
+    ],
+    "pocket_case_prop": [
+      "pocket"
+    ],
+    "pocket_frog_prop": [
+      "pocket"
     ],
     "punkgoat/punkgoat_bespoke_ability_line": [
       "billy"
@@ -1907,6 +2094,9 @@
     "soundevents/hero/krill.vsndevts": [
       "mokrill"
     ],
+    "soundevents/hero/pocket.vsndevts": [
+      "pocket"
+    ],
     "soundevents/hero/punkgoat.vsndevts": [
       "billy"
     ],
@@ -1921,6 +2111,36 @@
     ],
     "soundevents/hero/wraith.vsndevts": [
       "wraith"
+    ],
+    "synth/synth_hunt": [
+      "pocket"
+    ],
+    "synth/synth_killstreak_high": [
+      "pocket"
+    ],
+    "synth/synth_killstreak_mid": [
+      "pocket"
+    ],
+    "synth/synth_killstreak_start": [
+      "pocket"
+    ],
+    "synth/synth_select": [
+      "pocket"
+    ],
+    "synth/synth_unselect": [
+      "pocket"
+    ],
+    "synth/synth_use_power1": [
+      "pocket"
+    ],
+    "synth/synth_use_power2": [
+      "pocket"
+    ],
+    "synth/synth_use_power3": [
+      "pocket"
+    ],
+    "synth/synth_use_power4": [
+      "pocket"
     ],
     "vampirebat/vampirebat_happy": [
       "mina"

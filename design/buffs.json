@@ -1,6 +1,6 @@
 {
   "sheet": "buffs",
-  "about": "One row per BuffDef the mod registers. stat effects are applied in a RecalculateStats postfix (hooks sheet). perStack values multiply by the buff count. icon is a Deadlock HUD image (vtex) read from the player's install, or 'none' for hidden buffs. debuff=true buffs sit on enemies. critStacks: stacks a critical hit adds (0 = same as a normal hit). trigger*: what happens when a stacking debuff reaches triggerStacks (0 = never): triggerDamagePct to the target plus triggerTargets more enemies within triggerRadius, a triggerStun, triggerBuff applied to them, and the burn from dotDamagePct; triggerClears=true empties the stacks, false fires again every triggerStacks stacks. withBuff: another buff applied whenever this one is. slowResist: while the buff is on, that fraction of any slow is ignored. maxHealthAdd: max health per stack (Tag Team's reward). disarm: the buff also locks the victim's skills for its duration (vanilla DisableAllSkills: monsters can move but not attack). noGun: the hero's gun can't fire while it is on (Burrow, Dust Devil). melee: the hero's M1 punches with the gun row's melee numbers while it is on (Krill away), and riderBone is hidden. linearSlow: a negative moveSpeedAdd takes that fraction straight off the speed per stack (Gooed: -8% a stack, -40% at 5) instead of dividing. bossStatCut: bosses (champions) feel that fraction less of the buff's move and attack speed (0.5 = half). accelerationAdd / jumpPowerAdd: fraction added to acceleration / jump power (Goo Ball: -0.875 = an eighth of the grip, momentum; +0.8 = jumps 80% higher). jumpCountAdd: extra jumps while it is on (a double jump). vfx: our own visual (effects row of kind custom) shown on whoever carries the buff, started when it first lands (Gooed: goo dripping, more per stack), or none. refreshAll: every new stack starts all of the enemy's stacks over, so they fade together duration seconds after the last hit (Mina's Love Bites). jumpEvery: the owner's own game counts the hero's gun hits per enemy (MinaRuntime) and every jumpEvery of them gives a jump back (2 at most, one per trip in the air; 0 = none); the same count drives each of that hero's skill rows' hitsPerRefund / refundSeconds. markCrit: the next real hit on a body with this buff (proc coefficient above 0, so not a DoT tick; any attacker) is a certain critical hit, and the buff is used up (DamagePatch; Wraith's Card Trick crit splash).",
+  "about": "One row per BuffDef the mod registers. stat effects are applied in a RecalculateStats postfix (hooks sheet). perStack values multiply by the buff count. icon is a Deadlock HUD image (vtex) read from the player's install, or 'none' for hidden buffs. debuff=true buffs sit on enemies. critStacks: stacks a critical hit adds (0 = same as a normal hit). trigger*: what happens when a stacking debuff reaches triggerStacks (0 = never): triggerDamagePct to the target plus triggerTargets more enemies within triggerRadius, a triggerStun, triggerBuff applied to them, and the burn from dotDamagePct; triggerClears=true empties the stacks, false fires again every triggerStacks stacks. withBuff: another buff applied whenever this one is. slowResist: while the buff is on, that fraction of any slow is ignored. maxHealthAdd: max health per stack (Tag Team's reward). disarm: the buff also locks the victim's skills for its duration (vanilla DisableAllSkills: monsters can move but not attack). noGun: the hero's gun can't fire while it is on (Burrow, Dust Devil). melee: the hero's M1 punches with the gun row's melee numbers while it is on (Krill away), and riderBone is hidden. linearSlow: a negative moveSpeedAdd takes that fraction straight off the speed per stack (Gooed: -8% a stack, -40% at 5) instead of dividing. bossStatCut: bosses (champions) feel that fraction less of the buff's move and attack speed (0.5 = half). accelerationAdd / jumpPowerAdd: fraction added to acceleration / jump power (Goo Ball: -0.875 = an eighth of the grip, momentum; +0.8 = jumps 80% higher). jumpCountAdd: extra jumps while it is on (a double jump). vfx: our own visual (effects row of kind custom) shown on whoever carries the buff, started when it first lands (Gooed: goo dripping, more per stack), or none. refreshAll: every new stack starts all of the enemy's stacks over, so they fade together duration seconds after the last hit (Mina's Love Bites). jumpEvery: the owner's own game counts the hero's gun hits per enemy (MinaRuntime) and every jumpEvery of them gives a jump back (2 at most, one per trip in the air; 0 = none); the same count drives each of that hero's skill rows' hitsPerRefund / refundSeconds. markCrit: the next real hit on a body with this buff (proc coefficient above 0, so not a DoT tick; any attacker) is a certain critical hit, and the buff is used up (DamagePatch; Wraith's Card Trick crit splash). damageAdd: fraction added to the damage stat per stack (Barrage: +6% a stack), so every hit of the carrier is that much harder.",
   "columns": [
     "id",
     "name",
@@ -42,7 +42,8 @@
     "notes",
     "refreshAll",
     "jumpEvery",
-    "markCrit"
+    "markCrit",
+    "damageAdd"
   ],
   "rows": [
     {
@@ -86,7 +87,8 @@
       "notes": "on enemies; Haze's hits deal +2.5%/stack; crits add 3 stacks; every 10 stacks the target takes 300%, splashing to every enemy within 6m, and gets Fixation Slow; stacks fall off 6s after the last hit",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "smoke",
@@ -129,7 +131,8 @@
       "notes": "applies vanilla Cloak while active; enemy AIs aiming at Haze drop her (HeroRuntime) and cannot re-acquire a cloaked body; removed when the gun fires",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "bullet_dance",
@@ -172,7 +175,8 @@
       "notes": "30% chance to evade incoming hits",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "siphon",
@@ -215,7 +219,8 @@
       "notes": "marker while the drain aura runs",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "thunderhead",
@@ -258,7 +263,8 @@
       "notes": "marker on Seven while his Thunderhead storm is up (the Warbanner ward gives the speed)",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "afterburn_buildup",
@@ -301,7 +307,8 @@
       "notes": "Deadlock: 8.1% build-up per bullet -> ~12 hits ignite; at 12 stacks the stacks clear and the target burns (vanilla Burn DoT, 3s, dotDamagePct %/s)",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "napalm",
@@ -344,7 +351,8 @@
       "notes": "Deadlock IncomingDamagePercentFromCaster=16, DebuffDuration=8; the 28% slow is napalm_slow (4s)",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "fixation_slow",
@@ -387,7 +395,8 @@
       "notes": "Fixation burst: a true 12% slow for 2s (1/1.136 = 0.88; Deadlock Fixation T1)",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "static",
@@ -430,7 +439,8 @@
       "notes": "Seven's Capacitor: hits build Static; at 10 it discharges 300% to the target and 2 enemies within 12m and stuns 1s",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "napalm_slow",
@@ -473,7 +483,8 @@
       "notes": "Deadlock SlowPercent=28 for 4s: negative adds divide speed (1/1.389 = 0.72), so -0.389 is a true 28% slow",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "flame_dash",
@@ -516,7 +527,8 @@
       "notes": "on Infernus while dashing: 50% slow resistance",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "burrowed",
@@ -559,7 +571,8 @@
       "notes": "on Mo while underground: twice as fast, +100 armor, no gun; the model is hidden by the Burrow state",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "burrow_slow",
@@ -602,7 +615,8 @@
       "notes": "on enemies hit by Burrow's pop-out spin: 50% slow for 2s",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "sanded",
@@ -645,7 +659,8 @@
       "notes": "on enemies hit by Sand Blast: can't use skills (attack) and 30% slower for 2s (bosses: half as long, the skill row's bossMult)",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "dust_devil",
@@ -688,7 +703,8 @@
       "notes": "on Mo while he spins: no gun (his arms are out)",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "krill_away",
@@ -731,7 +747,8 @@
       "notes": "on whoever threw Krill (Tag Team) until he is back: Krill is hidden, Mo moves twice as fast and M1 punches (Frenzy, red aura)",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "tag_team_health",
@@ -774,7 +791,8 @@
       "notes": "+2 max health per stack, one per kill Mo & Krill make with any move (10 for a boss), up to 100 stacks; permanent on the body, so it resets each stage",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "gooed",
@@ -817,7 +835,8 @@
       "notes": "Viscous' goo on enemies: -8% move and attack speed per stack (linear, -40% at 5), bosses half; every new stack refreshes all of them to 3s (Buffs.AddStacks). Monster attacks read attack speed, so they really wind up and fire slower",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "slick",
@@ -860,7 +879,8 @@
       "notes": "on Viscous and allies standing in a goo puddle (Splatter): 30% faster, renewed every puddle tick (Deadlock: allies slide faster on the puddles)",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "cube_exit",
@@ -903,7 +923,8 @@
       "notes": "after The Cube bursts: 30% faster for 3s (Deadlock's exit move-speed buff)",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "goo_ball",
@@ -946,7 +967,8 @@
       "notes": "on whoever rolls in the Goo Ball: top speed 20 m/s from a 7 m/s walk, half the grip (0.8.0d: a little looser than 0.8.0c's 70 %, still far snappier than the first eighth), jumps 80% higher plus a double jump, +100 armor (Deadlock's 35% resists), no gun",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "scrap_slow",
@@ -989,7 +1011,8 @@
       "notes": "Scrap Grenade's first two blasts: -20% movement speed for 4 s (Deadlock's MovementSlow 20 for SlowDuration 4)",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "scrap_slow_big",
@@ -1032,7 +1055,8 @@
       "notes": "Scrap Grenade's big final blast: -40% movement speed for 4 s",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "fullauto",
@@ -1075,7 +1099,8 @@
       "notes": "Wraith's Full Auto: +50% attack speed (fire rate) until the magazine Full Auto filled is empty; the gun then reloads at the normal speed and the server takes the buff off (the reload's relay); 30 s is only a safety cap. Purple smoke curls off her gun while it is on (WraithAura).",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "lovebites",
@@ -1118,7 +1143,8 @@
       "notes": "Mina's Love Bites: one stack per New Money bullet on that enemy; every hit starts all its stacks' 6 s over (refreshAll), so they fade 6 s after her last hit. Her own game counts the same hits per enemy (MinaRuntime): every jumpEvery stacks a jump back (2 at most, 1 per trip in the air), and each skill row's hitsPerRefund/refundSeconds take that much off its cooldown (Rake 3 s per 10, Nox Nostra 10 s per 20). No damage of its own.",
       "refreshAll": true,
       "jumpEvery": 5,
-      "markCrit": false
+      "markCrit": false,
+      "damageAdd": 0
     },
     {
       "id": "wraithmark",
@@ -1161,7 +1187,96 @@
       "notes": "Wraith's Card Trick crit card splash (creator, 2026-10-26): every enemy within 7 m of where the crit card hit is marked for 6 s; the next real hit on it (any attacker, proc above 0, so not a DoT tick) is a certain critical hit, and the mark is used up (DamagePatch).",
       "refreshAll": false,
       "jumpEvery": 0,
-      "markCrit": true
+      "markCrit": true,
+      "damageAdd": 0
+    },
+    {
+      "id": "pocket_amp",
+      "name": "Barrage",
+      "icon": "panorama/images/hud/abilities/synth/synth_barrage_psd.vtex",
+      "color": "#9B6BFF",
+      "canStack": true,
+      "isDebuff": false,
+      "isHidden": false,
+      "maxStacks": 4,
+      "duration": 15,
+      "moveSpeedAdd": 0,
+      "attackSpeedAdd": 0,
+      "armorAdd": 0,
+      "regenAdd": 0,
+      "damageTakenFromOwnerPerStack": 0,
+      "cloak": false,
+      "evasionChance": 0,
+      "dotDamagePct": 0,
+      "critStacks": 0,
+      "triggerStacks": 0,
+      "triggerClears": false,
+      "triggerDamagePct": 0,
+      "triggerTargets": 0,
+      "triggerRadius": 0,
+      "triggerStun": 0,
+      "triggerBuff": "none",
+      "withBuff": "none",
+      "slowResist": 0,
+      "linearSlow": false,
+      "bossStatCut": 0,
+      "accelerationAdd": 0,
+      "jumpPowerAdd": 0,
+      "jumpCountAdd": 0,
+      "vfx": "none",
+      "maxHealthAdd": 0,
+      "disarm": false,
+      "noGun": false,
+      "melee": false,
+      "notes": "Pocket's Barrage: +4% damage per stack (6% in the spec; 4% the spec's first lever, bench 2026-10-27) (all his damage) for 15 s; one stack per burst that hits at least one enemy, 4 at most per cast; a fresh cast starts them over (Deadlock's damage amp).",
+      "refreshAll": false,
+      "jumpEvery": 0,
+      "markCrit": false,
+      "damageAdd": 0.04
+    },
+    {
+      "id": "pocket_frog",
+      "name": "Frog Form",
+      "icon": "panorama/images/hud/abilities/synth/synth_affliction_psd.vtex",
+      "color": "#5FA83A",
+      "canStack": false,
+      "isDebuff": false,
+      "isHidden": false,
+      "maxStacks": 1,
+      "duration": 10,
+      "moveSpeedAdd": 0,
+      "attackSpeedAdd": 0,
+      "armorAdd": 200,
+      "regenAdd": 0,
+      "damageTakenFromOwnerPerStack": 0,
+      "cloak": false,
+      "evasionChance": 0,
+      "dotDamagePct": 0,
+      "critStacks": 0,
+      "triggerStacks": 0,
+      "triggerClears": false,
+      "triggerDamagePct": 0,
+      "triggerTargets": 0,
+      "triggerRadius": 0,
+      "triggerStun": 0,
+      "triggerBuff": "none",
+      "withBuff": "none",
+      "slowResist": 0,
+      "linearSlow": false,
+      "bossStatCut": 0,
+      "accelerationAdd": 0,
+      "jumpPowerAdd": 0,
+      "jumpCountAdd": 0,
+      "vfx": "none",
+      "maxHealthAdd": 0,
+      "disarm": false,
+      "noGun": false,
+      "melee": false,
+      "notes": "Frog Form: +200 armor while the carrier is the frog (a third of the damage gets through); taken off when it ends.",
+      "refreshAll": false,
+      "jumpEvery": 0,
+      "markCrit": false,
+      "damageAdd": 0
     }
   ]
 }

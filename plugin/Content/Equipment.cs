@@ -171,8 +171,8 @@ namespace DeadlockOfRain
             // Q underground: Burrow holds the Body machine (Frozen), so Dust Devil takes over directly and Mo bursts out
             // of the ground into it
             if (machine.state is States.Burrow && state is States.UltDevil devil) { devil.FromBurrow = true; machine.SetNextState(state); ok = true; }
-            // Mist Form ends whatever the body was doing (Burrow, The Cube, a flight): the user becomes the flock at once
-            else if (state is States.MistForm && !(machine.state is States.UltState || machine.state is EntityStates.StunState || machine.state is EntityStates.FrozenState || machine.state is EntityStates.ShockState)) { machine.SetNextState(state); ok = true; }
+            // Mist Form and Frog Form end whatever the body was doing (Burrow, The Cube, a flight): the user becomes the flock or the frog at once
+            else if ((state is States.MistForm || state is States.FrogForm) && !(machine.state is States.UltState || machine.state is EntityStates.StunState || machine.state is EntityStates.FrozenState || machine.state is EntityStates.ShockState)) { machine.SetNextState(state); ok = true; }
             // false while another ult (or a stun) holds the machine: no charge is spent
             else ok = machine.SetInterruptState(state, InterruptPriority.PrioritySkill);
             // the ult speaks with its own hero's voice, whoever fired it (design/voice.json)

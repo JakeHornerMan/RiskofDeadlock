@@ -1285,6 +1285,126 @@
       "gap": 0,
       "chain": 0,
       "skipTakes": "none"
+    },
+    {
+      "id": "pocket_select",
+      "hero": "pocket",
+      "trigger": "select",
+      "skill": "none",
+      "kills": 0,
+      "group": "synth/synth_select",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "pocket_unselect",
+      "hero": "pocket",
+      "trigger": "unselect",
+      "skill": "none",
+      "kills": 0,
+      "group": "synth/synth_unselect",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "pocket_barrage_vo",
+      "hero": "pocket",
+      "trigger": "skill",
+      "skill": "pocket_barrage",
+      "kills": 0,
+      "group": "synth/synth_use_power1",
+      "chance": 0.3,
+      "gap": 10,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "pocket_cloak_vo",
+      "hero": "pocket",
+      "trigger": "skill",
+      "skill": "pocket_cloak",
+      "kills": 0,
+      "group": "synth/synth_use_power2",
+      "chance": 0.4,
+      "gap": 10,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "pocket_satchel_vo",
+      "hero": "pocket",
+      "trigger": "skill",
+      "skill": "pocket_satchel",
+      "kills": 0,
+      "group": "synth/synth_use_power3",
+      "chance": 0.5,
+      "gap": 10,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "pocket_frog_vo",
+      "hero": "pocket",
+      "trigger": "skill",
+      "skill": "pocket_frog",
+      "kills": 0,
+      "group": "synth/synth_use_power4",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "pocket_streak4",
+      "hero": "pocket",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 4,
+      "group": "synth/synth_killstreak_start",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "pocket_streak7",
+      "hero": "pocket",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 7,
+      "group": "synth/synth_killstreak_mid",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "pocket_streak10",
+      "hero": "pocket",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 10,
+      "group": "synth/synth_killstreak_high",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "pocket_hunt",
+      "hero": "pocket",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "synth/synth_hunt",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     }
   ]
 }

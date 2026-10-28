@@ -14,6 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
+| Pocket | Frog Form (Q) ult bench | new ult, `ULTS=1 run_bench.sh` not run (creator: stop after the DPS test) | this one | open |
 | Mina | 2026-10-26 (v1.1.0c): Rake 400 → 1000 %, a slash on every enemy hit, the area at her height; umbrella opens whenever Jump is held in the air, air control 0.8, +50 % move speed while open | the creator: "to do way more damage" (asked: 1000 %), "80% conteol and 50% extra move speed" | this one | **benched** (creator: "do a dps test"): all **2644** vs Huntress 1921 (**+723, above**; 3098 at v1.1.0b, this run's Nox Nostra measured 2500), Rake 367 alone (was 27), New Money 249; ult bench Mist Form **115,200 %**, all 30 hit (boss 3000 %). Not tested in game (the creator plays it) | **benched** |
 | Wraith | 2026-10-26 (v1.1.0c): Card Trick's trick splashes onto every enemy within 7 m (no damage; crit = a mark); Project Mind 75 → 60 m | the creator: "do an aoe of the stack build ... in a 7 meter radius", "reduce the Project Mind back to 60" | this one | **benched**: all **2426** vs Bandit 1919 (**+507, just above**; was 937), Card Trick **1413** alone (was 207: the splash spreads 5 Bleed / 5 Burn over the pack), The Rake 684; ult bench Telekinesis **93,000 %** (14 hit, boss 6000 %). Not tested in game | **benched** |
 | Mina | 2026-10-26 (v1.1.0b): Nox Nostra hangs still 5 s (was an 8 s flight + a 6 s planted circle) and streams a cone of bats that follows the aim, 600 % every 0.5 s to everything inside (was 150 % × 4/s in the circle), R again cancels; Mist Form 8 s (was 5), cooldown 60 s (was 120), bigger effects | the creator: "remove the flying controls so they are static i want the move to last 5 seconds", "double the damage", "last for 8 seconds and the cool down to be 60 seconds" | this one | not tested in game (creator: code only); **benched** (creator: "run dps test on both mina and wraith"): all **3098** vs Huntress 1921 (**+1177, above**), Nox Nostra 2580 alone (was 1438), New Money 252, Rake 27; ult bench Mist Form **100,500 %** (29 hit, boss 5700 %; was 57,000 %, 16 hit). The creator decides whether to bring her down (levers: 600 → 300 % a tick, or a longer cooldown). `run_test.sh mina` 1/1 every check pass (after the test window was made to cover the 8 s Mist Form) | **done** |
@@ -298,6 +299,21 @@ New hero, matched to REX (`TreebotBody`, library 1738 %/s). Three runs after the
 - **%/s hides base damage**: it is a share of the survivor's own damage stat. Viscous's 15 against REX's 12 means 25 % more
   real damage than the %/s says (≈336 dmg/s at level 1 against ≈209). Mo & Krill (11) are the only other hero off 12.
 - Levers if he needs pulling back: Splatter 200 → 150 % first (it is two thirds of the total), then the punch.
+
+### 3.20 v1.2.0a Pocket, the eleventh hero (Pocket-only runs, 2026-10-27)
+`VERSION` v1.2.0a, `REPEAT=3 run_bench.sh 30 pocket`, after the bench fix that counts damage-stat buffs (doc 02 gotcha 37).
+
+| Pass | Pocket (%/s, runs → mean) | Bandit (library) |
+|---|---|---|
+| All main moves | 2442 / 2423 / 2404 → **2423** | 1919 |
+| M1 The Black Sheep | 568 / 595 / 568 → 577 | Blast |
+| M2 Barrage | 1379 / 1557 / 1372 → 1436 | 1478 (Serrated Dagger) |
+| Shift Flying Cloak | 379 / 377 / 404 → 387 | 709 (Smoke Bomb) |
+| R Enchanter's Satchel | 503 / 508 / 530 → 514 | 140 (Lights Out) |
+
+- **+504 against Bandit: on the band's edge** (4 over), inside the bench's ±10 % noise; reported, not tuned further.
+- The spec's numbers (amp 6 %, Satchel burst 600 %) measured 2289 / 2239 / 2476, but the bench divided Barrage's amp back out of the damage; counted
+  honestly about 2709. The spec's own levers applied: amp 6 → 4 %, Satchel burst 600 → 450 %. Frog Form not ult-benched (creator stopped the run there).
 
 ### 3.19 v1.1.0a Mina, the tenth hero (Mina-only runs, 2026-10-26)
 `VERSION` v1.1.0a, `REPEAT=3 run_bench.sh 30 mina` at the final numbers (New Money 90 %, Nox Nostra 150 % a tick and 15 s).

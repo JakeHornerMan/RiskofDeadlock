@@ -25,7 +25,7 @@ def sheet(name):
 HEROES = sheet('heroes'); STATS = {r['hero']: r for r in sheet('stats')}
 SKILLS = sheet('skills'); BUFFS = {r['id']: r for r in sheet('buffs')}
 EQUIP = {r['hero']: r for r in sheet('equipment')}
-LINKS = {'haze': 'https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p', 'abrams': 'https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG',
+LINKS = {'pocket': 'https://claude.ai/artifact/Mc8uRq1qWykkkLncPtNCD5', 'haze': 'https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p', 'abrams': 'https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG',
          'seven': 'https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m', 'infernus': 'https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF',
          'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'viscous': 'https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC', 'ratking': 'https://claude.ai/artifact/Kw4rTyRrvXTb2eEyT9oTYa', 'billy': 'https://claude.ai/artifact/7m271DJLqzAvMZDrqU6QjL', 'wraith': 'https://claude.ai/artifact/2Bdxqd6iUwp89iEEPELgBb', 'mina': 'https://claude.ai/artifact/NWZWgZoK8DRusJpTVzbYoe', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
 SLOTS = ['primary', 'secondary', 'utility', 'special']
@@ -88,6 +88,12 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
+ 'pocket': [('v1.2.0a', ['New hero: Pocket, matched to Bandit (Bandit’s stats exactly), from the creator’s spec',
+                        'Unpredictable: one jump plus an air dash; hiding in the suitcase finishes a reload',
+                        'The Black Sheep: Deadlock’s fixed hexagon of 7 pellets; Barrage on its own channel so you can dash and throw the cloak while it runs',
+                        'Flying Cloak: a living cloak you can teleport to; Enchanter’s Satchel: hide in Deadlock’s suitcase and drink the life of everything near it',
+                        'Frog Form (Q): the suitcase grows, a giant Deadlock frog rises out of it, and you hop as a frog, splashing every landing',
+                        'Balanced with the spec’s own levers: Barrage amp 6 → 4 % a burst, the Satchel burst 600 → 450 %']),],
  'mina': [('v1.1.0d', ['Health 150 +27 (was Huntress’s 90 +27)']),
           ('v1.1.0c', ['Rake 1000 % (was 400 %), a crimson slash across every enemy it hits, and its area shown as a half-disc at her own height (on the ground or in the air)',
                         'The umbrella: hold Jump in the air and it opens, after a jump or not, and stays open while you hold it; 80 % steering and 50 % faster drift',
@@ -225,6 +231,10 @@ PAPER = {
 }
 
 ANALYSIS = {
+ 'pocket': ['Three runs at v1.2.0a: 2,442, 2,423 and 2,404 %/s with every main move, mean 2,423 against Bandit’s 1,919. That is +504: on the edge of the ±500 band, well inside the bench’s noise.',
+            'Barrage carries him (about 1,440 %/s alone: four 250 % bursts on most of the pack, each a stun), and its amp (+4 % a burst that hits, up to +16 %) raises everything else. The Black Sheep 577, the Satchel 514, Flying Cloak 387.',
+            'The spec’s numbers measured about 2,709 counted honestly (the bench used to divide the amp back out of the damage), so its two levers were used: amp 6 → 4 % a burst, then the Satchel burst 600 → 450 %.',
+            'Frog Form (Q, the ult): 8 s of hopping landings for 1,000 % (2,000 % high leaps); it isn’t in the all-together number.'],
  'mina': ['One run at v1.1.0c (Rake 1,000 %): 2,644 %/s with every main move (3,098 at v1.1.0b, 1,475 at v1.1.0a), against Huntress’s 1,921 (library). That is +723: above the ±500 band.',
           'Nox Nostra carries her (2,500 %/s alone: she hangs still for 5 s and the cone of bats hits everything inside it for 600 % every half second, about 9 hits a cast, every 15 s; 1,438 as the planted circle). Rake 367 at 1,000 % (27 at 400 %), New Money 249 (the bench’s pack stands 10–15 m out, at the edge of Rake’s 10 m reach).',
           'Levers if she should come back into the band: Nox Nostra 600 → 300 % a hit (about 1,400 all together), or a longer cooldown. In the bench the bot shoots whatever enemy is nearest, so 20 bites rarely land on one enemy and the Love Bites cuts seldom fire; a player holding the gun on one target gets Nox Nostra back sooner.',
@@ -434,6 +444,21 @@ def maths(r):
         return [f"no damage of its own: a full magazine fired {n(BUFFS[r['buff']]['attackSpeedAdd'] * 100)} % faster", f"every {n(cd)} s"], 0
     if k == 'ult_telekinesis':
         return [f"{n(d)} % to every enemy within {n(r['radius'])} m where it lands, {n(d * r['airMult'])} % into a wall", f"thrown {n(r['reach'])} m; every {n(cd)} s"], None
+    if k == 'barrage':
+        amp = BUFFS[r['buff']]['damageAdd'] * 100 if r['buff'] in BUFFS else 0
+        tot = r['chainCount'] * d
+        return [f"{n(r['chainCount'])} bursts × {n(d)} % = {n(tot)} % to an enemy caught by all of them, each a {n(r['stunDuration'])} s stun",
+                f"every {n(cd)} s, plus +{n(amp)} % damage per burst that hits for 15 s"], tot / cd
+    if k == 'flying_cloak':
+        return [f"{n(d)} % to every enemy within {n(r['radius'])} m of its path, once",
+                f"every {n(r['duration'] + cd)} s ({n(r['duration'])} s flight + {n(cd)} s cooldown)"], d / (r['duration'] + cd)
+    if k == 'satchel':
+        tot = r['duration'] * r['splashPct'] + d
+        return [f"{n(r['duration'])} s × {n(r['splashPct'])} %/s siphon + {n(d)} % burst = {n(tot)} % to everything within {n(r['radius'])} m",
+                f"every {n(r['duration'] + cd)} s ({n(r['duration'])} s inside + {n(cd)} s cooldown)"], tot / (r['duration'] + cd)
+    if k == 'ult_frog':
+        hops = r['duration'] / r['interval']
+        return [f"about {n(hops)} landings × {n(d)} % within {n(r['radius'])} m = {n(hops * d)} % per enemy, a high leap {n(r['splashPct'])} % within {n(r['nearRadius'])} m"], None
     if k == 'self_buff':
         return ['no damage: invisibility and speed'], 0
     return [], None
