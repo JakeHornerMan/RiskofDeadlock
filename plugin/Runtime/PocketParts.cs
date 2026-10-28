@@ -82,6 +82,7 @@ namespace DeadlockOfRain
                 built.Anim[clips[0]].wrapMode = rattle ? WrapMode.Loop : WrapMode.Once;
                 built.Anim.Play(clips[0]);
             }
+            if (built != null) root.AddComponent<CaseLid>();
             return root;
         }
 
@@ -127,6 +128,51 @@ namespace DeadlockOfRain
         {
             var t = tethers ? tethers.GetComponent<PocketTendrils>() : null;
             if (t) t.Set(from, to);
+        }
+    }
+
+    /// <summary>The suitcase prop's lid (bone case_02, the front half, hinged at its bottom edge along the case's width): Open 0 shut,
+    /// 1 swung wide; it eases there. The hinge and the way it opens are worked out from the mesh (the lid's vertices against the body's),
+    /// so no axis is guessed.</summary>
+    public sealed class CaseLid : MonoBehaviour
+    {
+        public float Open, Speed = 5f;
+        Transform lid; Quaternion rest; Vector3 axis; float sign = 1f, cur; bool ready;
+
+        void Start()
+        {
+            foreach (var t in GetComponentsInChildren<Transform>(true)) if (t.name == "case_02") lid = t;
+            var smr = GetComponentInChildren<SkinnedMeshRenderer>();
+            if (!lid || !lid.parent || !smr || !smr.sharedMesh) return;
+            rest = lid.localRotation;
+            int li = System.Array.IndexOf(smr.bones, lid);
+            var verts = smr.sharedMesh.vertices; var w = smr.sharedMesh.boneWeights;
+            Vector3 cl = Vector3.zero, cb = Vector3.zero; int nl = 0, nb = 0;
+            for (int i = 0; i < verts.Length && i < w.Length; i++)
+            {
+                var p = smr.transform.TransformPoint(verts[i]);
+                if (w[i].boneIndex0 == li) { cl += p; nl++; } else { cb += p; nb++; }
+            }
+            if (nl == 0 || nb == 0) return;
+            cl /= nl; cb /= nb;
+            var hinge = lid.position; var worldAxis = transform.right;
+            var moved = Quaternion.AngleAxis(10f, worldAxis) * (cl - hinge) + hinge - cl;
+            sign = Vector3.Dot(moved, cl - cb) >= 0f ? 1f : -1f;
+            axis = lid.parent.InverseTransformDirection(worldAxis);
+            ready = true;
+        }
+
+        void LateUpdate()
+        {
+            if (!ready) return;
+            cur = Mathf.MoveTowards(cur, Mathf.Clamp01(Open), Speed * Time.deltaTime);
+            lid.localRotation = Quaternion.AngleAxis(sign * 105f * cur, axis) * rest;
+        }
+
+        public static void Set(GameObject caseRoot, float open, float speed = 5f)
+        {
+            var l = caseRoot ? caseRoot.GetComponent<CaseLid>() : null;
+            if (l) { l.Open = open; l.Speed = speed; }
         }
     }
 
@@ -448,12 +494,8 @@ namespace DeadlockOfRain
                     }
                 }
             }
-            if (lid && grew)
-            {
-                // the lid swings open while the frog rises, and shut again as it sinks
-                float k = sank ? Mathf.Clamp01(1f - (age - tRise - open * 0.4f) / (open * 0.2f)) : Mathf.Clamp01((age - tGrow) / (open * 0.2f));
-                lid.localRotation = lidRest * Quaternion.Euler(-110f * k, 0f, 0f);
-            }
+            // the lid bursts open as the frog comes out, and shuts again as it sinks back
+            if (grew) CaseLid.Set(suitcase, sank ? 0f : 1f, sank ? 3f : 8f);
             if (giant)
             {
                 float caseTop = 0.57f * CaseScale * GrowTo * ModelBuilder.GlobalScale * 0.6f;

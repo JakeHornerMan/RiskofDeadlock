@@ -204,6 +204,8 @@ namespace DeadlockOfRain.States
             // the case floats above the floor where he stood (creator, 2026-10-28: "raise it up above the floor floating")
             caseAt = characterBody.footPosition + Vector3.up * 1.4f;
             caseRoot = PocketParts.CaseProp(row.Extra, caseAt, characterDirection ? characterDirection.forward : transform.forward, 0.2f, true);
+            CaseLid.Set(caseRoot, 1f, 8f);
+            if (anim) anim.HoldOpen(row.MinDuration);
             Vfx.Play(row.Vfx, "cast", spot, 1f);
         }
 
@@ -241,6 +243,7 @@ namespace DeadlockOfRain.States
             Vfx.Play(row.Vfx, "enter", caseAt, row.Radius);
             Sound("land");
             if (caseRoot) caseRoot.transform.localScale = Vector3.one * 1.6f * ModelBuilder.GlobalScale;
+            CaseLid.Set(caseRoot, 0f, 12f);
             glow = Vfx.Play(row.Vfx, "loop", caseAt, row.Radius, caseRoot ? caseRoot.transform : null);
             tethers = Vfx.Play(row.Vfx, "tether", caseAt, 1f);
             MeltyTest.Report("satchel-in", true, characterBody.baseNameToken);
@@ -293,7 +296,9 @@ namespace DeadlockOfRain.States
             DeadlockAudio.Stop(loop);
             Vfx.Stop(glow, 0.3f); glow = null;
             Vfx.Stop(tethers, 0.1f); tethers = null;
-            if (caseRoot) PocketParts.Pop(caseRoot);
+            // the lid bursts open as he springs out
+            CaseLid.Set(caseRoot, 1f, 14f);
+            if (caseRoot) PocketParts.Pop(caseRoot, 0.4f);
             caseRoot = null;
             Vfx.Play(row.Vfx, "end", caseAt, row.Radius);
             Sound("end");
@@ -408,6 +413,7 @@ namespace DeadlockOfRain.States
             frog = built != null ? built.Root : PocketParts.FrogStandIn();
             frog.transform.localScale = Vector3.one * PocketParts.FrogScale(Size);
             frogAnim = built != null ? built.Anim : null;
+            if (built != null) frog.AddComponent<FrogRootPin>();
             var clips = Sheet.Effect(row.Extra)?.Clips ?? new string[0];
             clipSit = clips.Length > 0 && clips[0] != "none" ? clips[0] : null;
             clipHop = clips.Length > 1 ? clips[1] : null;
@@ -436,43 +442,52 @@ namespace DeadlockOfRain.States
             if (frogAnim) FrogPose();
         }
 
-        // the hop clip split in three (creator, 2026-10-28: "the animation finishes before the form reaches the ground ... the jump the air
-        // on a loop, and then trigger the land when we get close to the floor"): its first part as it takes off, its middle swaying on a
-        // loop while it flies, its last part from the moment it is about to touch down; sitting between hops
-        enum HopPart { Sit, TakeOff, Air, Land }
+        // Deadlock's frog_run is a whole hop of its own: its root rises about 3 m and comes down again inside the clip. The root is pinned
+        // where the frog sits (FrogRootPin), so only the legs, body and arms move, and the clip runs once per hop in step with the real
+        // flight (creator, 2026-10-28: "the frog jump animation looks terrible"): the push-off as it leaves the ground, the stretch and tuck
+        // following its rise and fall (by its vertical speed against the take-off speed), the legs reaching forward as it comes down and
+        // landing on touch-down; sitting between hops.
+        enum HopPart { Sit, Hop, Land }
         HopPart part;
-        float partStart, lastY;
-        const float TakeOffEnd = 0.3f, AirEnd = 0.55f;
+        float partStart, lastY, takeOffVy, landFrom;
+        const float PushEnd = 0.2f, ApexAt = 0.4f, ReachEnd = 0.6f;
 
         void FrogPose()
         {
             var st = clipHop != null ? frogAnim[clipHop] : null;
             if (st == null) return;
             float len = st.length, now = Time.time, dt = Mathf.Max(1e-4f, Time.deltaTime);
-            var feet = characterBody.footPosition;
-            float vy = (feet.y - lastY) / dt;
-            lastY = feet.y;
+            float y = characterBody.footPosition.y;
+            float vy = Mathf.Lerp(lastVy, (y - lastY) / dt, 0.5f);
+            lastVy = vy; lastY = y;
             bool ground = PocketParts.Grounded(characterBody);
-            float drop = Physics.Raycast(feet + Vector3.up * 0.2f, Vector3.down, out var g, 40f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore) ? g.distance - 0.2f : 40f;
-            var next = part;
-            if (part == HopPart.Sit && !ground && vy > 0.5f) next = HopPart.TakeOff;
-            else if (part == HopPart.TakeOff && now - partStart > 0.18f) next = HopPart.Air;
-            // about to touch down: a quarter of a second away at this speed
-            if ((next == HopPart.Air || next == HopPart.TakeOff) && vy < 0f && drop < Mathf.Max(0.6f, -vy * 0.25f)) next = HopPart.Land;
-            if (part == HopPart.Land && ground && now - partStart > 0.25f) next = HopPart.Sit;
-            if (next != part) { part = next; partStart = now; }
-            float k = now - partStart;
+            if (part == HopPart.Sit && !ground && vy > 0.5f) { part = HopPart.Hop; partStart = now; takeOffVy = Mathf.Max(vy, 1f); }
+            if (part == HopPart.Hop)
+            {
+                takeOffVy = Mathf.Max(takeOffVy, vy);
+                if (ground && now - partStart > 0.15f) { part = HopPart.Land; partStart = now; landFrom = st.time / len; }
+            }
+            if (part == HopPart.Land && now - partStart > 0.22f) part = HopPart.Sit;
             if (part == HopPart.Sit)
             {
-                if (clipSit != null && frogAnim[clipSit] && !frogAnim.IsPlaying(clipSit)) { frogAnim[clipSit].wrapMode = WrapMode.Loop; frogAnim.CrossFade(clipSit, 0.1f); }
+                if (clipSit != null && frogAnim[clipSit] && !frogAnim.IsPlaying(clipSit)) { frogAnim[clipSit].wrapMode = WrapMode.Loop; frogAnim.CrossFade(clipSit, 0.12f); }
                 return;
             }
-            if (!frogAnim.IsPlaying(clipHop)) { st.wrapMode = WrapMode.ClampForever; st.speed = 0f; frogAnim.CrossFade(clipHop, 0.06f); }
+            if (!frogAnim.IsPlaying(clipHop)) { st.wrapMode = WrapMode.ClampForever; frogAnim.CrossFade(clipHop, 0.05f); }
             st.speed = 0f;
-            st.time = part == HopPart.TakeOff ? Mathf.Lerp(0f, TakeOffEnd, k / 0.18f) * len
-                    : part == HopPart.Air ? Mathf.Lerp(TakeOffEnd, AirEnd, 0.5f + 0.5f * Mathf.Sin(k * 6f)) * len
-                    : Mathf.Lerp(AirEnd, 1f, Mathf.Clamp01(k / 0.25f)) * len;
+            float t;
+            if (part == HopPart.Hop)
+            {
+                // 0 at take-off speed, 1 at the same speed falling: the push-off in the first 0.12 s, then the arc
+                float arc = Mathf.Clamp01((takeOffVy - vy) / (2f * takeOffVy));
+                float push = Mathf.Clamp01((now - partStart) / 0.12f);
+                t = push < 1f ? Mathf.Lerp(0f, PushEnd, push) : Mathf.Lerp(PushEnd, ReachEnd, arc);
+            }
+            else t = Mathf.Lerp(Mathf.Max(landFrom, ReachEnd), 1f, Mathf.Clamp01((now - partStart) / 0.2f));
+            st.time = t * len;
         }
+
+        float lastVy;
 
         public override void FixedUpdate()
         {

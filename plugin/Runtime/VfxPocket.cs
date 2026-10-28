@@ -368,6 +368,19 @@ namespace DeadlockOfRain
         }
     }
 
+    /// <summary>Keeps Deadlock's frog's root bone where it sits: its hop clip lifts the root about 3 m on its own, which the frog's real
+    /// flight already does (the frog floated out of its body).</summary>
+    public sealed class FrogRootPin : MonoBehaviour
+    {
+        Transform root; Vector3 rest;
+        void Start()
+        {
+            foreach (var t in GetComponentsInChildren<Transform>(true)) if (t.name == "root") { root = t; break; }
+            if (root) rest = root.localPosition;
+        }
+        void LateUpdate() { if (root) root.localPosition = rest; }
+    }
+
     /// <summary>The small frogs that hop out of a Frog Form landing: Deadlock's frog, small, two hops away from the splash, then
     /// shrinking away. Only for show.</summary>
     public sealed class PocketFrogs : MonoBehaviour
@@ -390,6 +403,7 @@ namespace DeadlockOfRain
                 built.Root.transform.SetPositionAndRotation(f.start, Quaternion.LookRotation(f.dir));
                 built.Root.transform.localScale = Vector3.one * f.size;
                 f.anim = built.Anim;
+                built.Root.AddComponent<FrogRootPin>();
                 if (f.anim && hop != null && f.anim[hop]) { f.anim[hop].wrapMode = WrapMode.Loop; f.anim[hop].speed = 1.4f; f.anim.Play(hop); }
             }
         }

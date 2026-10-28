@@ -554,8 +554,11 @@ the gun's buff has `refreshAll`):**
 bone below that height under the nearest cloth bone above it (mostly straight above, at most 0.4 m higher) and adds each chain's top bone to the
 `SpringBones` roots, so the coat tails swing like Rat King's cape. The Flying Cloak flies the effects prop `pocket_cloak_prop` (his model's
 `coat_scarf` mesh alone with `lift_loop`, `PocketParts.CloakModel`), collar up; Deadlock's own cloak particle renders his model in `lift`.
-Frog Form's frog plays its one hop clip in three parts (`FrogForm.FrogPose`): the first 30 % as it takes off, 30-55 % swaying on a loop in
-the air, the rest from the moment the ground is a quarter of a second away; `frog_idle` between hops.
+Frog Form's frog (v1.2.0g): Deadlock's `frog_run` is a whole hop whose root rises ~3 m inside the clip, so `FrogRootPin` holds the root bone at its
+sitting place and `FrogForm.FrogPose` runs the clip once per hop in step with the real flight: 0-20 % pushing off (0.12 s), 20-60 % by the arc
+(vertical speed against the take-off speed), the rest on touch-down; `frog_idle` between hops. `CaseLid` (on every suitcase prop) swings the
+lid bone `case_02` up to 105° about the case's width, its way found from the mesh (lid vertices against the body's): Frog Form's case and the
+Satchel's open and shut with their moves.
 
 **Pocket's briefcase arm (v1.2.0d):** `animations.runArm` (clavicle_L): `DeadlockAnimator.SampleRunArm` records that arm's bones over the
 `jump_air` clip once (16 frames, `AnimationClip.SampleAnimation`, the rest of the pose put back), and `RunArm` blends the arm to that
