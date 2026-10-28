@@ -628,6 +628,12 @@ namespace DeadlockOfRain
         void RestPose()
         {
             if (restBones == null || restBones.Length == 0 || anim == null) return;
+            // held open by a move (Barrage's volley): the open pose from the secondary_air clip (Deadlock's open briefcase)
+            if (Time.time < openUntil)
+            {
+                if (openRot == null) openRot = SamplePose("secondary_air", restBones, 0f);
+                if (openRot != null) { for (int i = 0; i < restBones.Length; i++) if (restBones[i]) restBones[i].localRotation = openRot[i]; return; }
+            }
             if (MovePlaying()) return;
             for (int i = 0; i < restBones.Length; i++) if (restBones[i]) { restBones[i].localRotation = restRot[i]; restBones[i].localPosition = restPos[i]; }
         }
@@ -669,6 +675,27 @@ namespace DeadlockOfRain
             if (overrideClip != null) return true;
             foreach (AnimationState st in anim) if (st.layer >= 1 && st.enabled && (st.weight > 0.001f || st.time < st.length)) return true;
             return false;
+        }
+
+        float openUntil;
+        Quaternion[] openRot;
+
+        /// <summary>A move holds the restBones open (Pocket's briefcase lid while Barrage throws its volley) for seconds from now.</summary>
+        public void HoldOpen(float seconds) => openUntil = Mathf.Max(openUntil, Time.time + seconds);
+
+        /// <summary>The local rotations of bones at time t of a logical clip, sampled once (the rest of the pose put back); null without the clip.</summary>
+        Quaternion[] SamplePose(string logicalName, Transform[] of, float t)
+        {
+            var c = Clip(logicalName);
+            if (c == null || anim[c] == null) return null;
+            var clip = anim[c].clip;
+            var all = GetComponentsInChildren<Transform>(true);
+            var savedR = all.Select(x => x.localRotation).ToArray();
+            var savedP = all.Select(x => x.localPosition).ToArray();
+            clip.SampleAnimation(gameObject, Mathf.Min(t, clip.length));
+            var r = of.Select(x => x ? x.localRotation : Quaternion.identity).ToArray();
+            for (int i = 0; i < all.Length; i++) { all[i].localRotation = savedR[i]; all[i].localPosition = savedP[i]; }
+            return r;
         }
 
         void SampleRunArm()

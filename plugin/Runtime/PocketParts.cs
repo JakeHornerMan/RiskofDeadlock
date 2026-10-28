@@ -232,6 +232,9 @@ namespace DeadlockOfRain
             v.last = v.target ? v.target.footPosition : target.transform.position;
             v.marker = Vfx.Play(row.Vfx, "aim", v.last, row.Radius);
             v.aura = Vfx.Play(row.Vfx, "loop", owner.corePosition, 1f, PocketParts.Case(owner));
+            // the briefcase stands open while it throws (Deadlock's barrage clips open its lid)
+            var anim = DeadlockAnimator.Of(owner);
+            if (anim) anim.HoldOpen(row.ChainCount * row.Interval + 0.4f);
         }
 
         bool Alive => target && target.healthComponent && target.healthComponent.alive;

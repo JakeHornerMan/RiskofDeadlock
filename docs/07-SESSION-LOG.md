@@ -1507,3 +1507,7 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 ### 2026-10-28 · Briefcase arm on sprint only, the case opens again in moves · v1.2.0e
 **Request (verbatim):** "the case tariling while running is perfect, but can we revert back the walking version it a little to far behind while walking... also no wthe case doesnt open at all it used to open on a few move can you revert back to when it open on certain moves!"
 **Done:** `runArm` only while sprinting; `restBones` held shut only when no layer-1/2 clip is enabled (`DeadlockAnimator.MovePlaying`): 1.2.0d read `gestureClip`, which `ModelSpaceGesture` clears while a cross-fade's weight is still 0, so moves never counted. Not tested (creator tests).
+
+### 2026-10-28 · The case open during Barrage · v1.2.0f
+**Request (verbatim):** "yeah acse still doenst opne on eavh of the moves!"
+**Done:** Deadlock's `ability_barrage_start` only reaches the open lid on its last frame and `ability_barrage_loop` is one frame, so the lid flashed open and was shut at once (before 1.2.0d it simply never shut again). `DeadlockAnimator.HoldOpen`: Barrage's volley holds the lid in the open pose (sampled from `secondary_air`) while it throws, then it shuts. The Satchel and Frog Form hide his model (the case there is the prop). Not tested (creator tests).
