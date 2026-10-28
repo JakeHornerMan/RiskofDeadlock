@@ -9,91 +9,44 @@ using UnityEngine.Networking;
 namespace DeadlockOfRain.States
 {
     // ---------------- Pocket: Barrage (M2) ----------------
-    /// <summary>Pocket opens the briefcase and channels for duration on the Weapon machine, so walking, his air dash (Body) and
-    /// Flying Cloak (Body) carry on under it. chainCount bursts, the first after minDuration and then one every interval, each a
-    /// lobbed spirit burst (<see cref="DlrBarrageBurst"/>) to the point under the crosshair, scattered up to reach metres. A fresh cast
-    /// starts the damage amp (buff) over; each burst that hits adds a stack. M1 or M2 again ends it (before the first burst with the
-    /// charge back), so does the Satchel. Cast in the air, he floats for it. The scatter comes from a seed the owner picks, so every
-    /// machine throws the same bursts.</summary>
+    /// <summary>Barrage, lock-on and set and forget (v1.2.0b): M2 needs an enemy under the crosshair within lockRange (else the charge
+    /// comes back); a minDuration cast on the Weapon machine, then <see cref="BarrageVolley"/> (every machine; the enemy and the scatter
+    /// seed travel with the state) throws the bursts at that enemy from his briefcase while he shoots, dashes or throws the cloak. A fresh
+    /// cast starts the damage amp (buff) over; each burst that hits adds a stack.</summary>
     [Kind("barrage")]
     public sealed class Barrage : DlrState
     {
-        int fired, seed;
-        bool floating;
-        GameObject aura, marker;
+        int seed;
+        bool started;
 
         public override void OnEnter()
         {
             base.OnEnter();
+            // lock-on (creator, 2026-10-27: "if they don't point it at an enemy it doesn't trigger"): the enemy under the crosshair
             if (isAuthority) seed = Random.Range(1, int.MaxValue);
+            var target = LockOn(row.LockRange);
+            if (!target)
+            {
+                if (isAuthority) { RefundStock(); outer.SetNextStateToMain(); }
+                return;
+            }
+            started = true;
             Sound("cast");
             if (anim) anim.Gesture("secondary");
-            characterBody.SetAimTimer(row.Duration + 1f);
-            aura = Vfx.Play(row.Vfx, "loop", characterBody.corePosition, 1f, PocketParts.Case(characterBody));
-            if (isAuthority) marker = Vfx.Play(row.Vfx, "aim", PocketParts.AimPoint(characterBody, row.Range), row.Radius);
+            characterBody.SetAimTimer(1f);
             if (Server) Buffs.Clear(characterBody, row.Buff);
-            if (characterMotor && !characterMotor.isGrounded)
-            {
-                var gp = characterMotor.gravityParameters; gp.channeledAntiGravityGranterCount++; characterMotor.gravityParameters = gp;
-                floating = true;
-            }
-        }
-
-        bool Bot => MeltyTest.Active || DpsBench.Active;
-
-        public override void Update()
-        {
-            base.Update();
-            if (marker) marker.transform.position = PocketParts.AimPoint(characterBody, row.Range);
+            // set and forget: the briefcase throws the volley on its own, so the gun, the dash and the cloak all go on
+            BarrageVolley.Begin(characterBody, row, target, seed, Server);
         }
 
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            characterBody.SetAimTimer(1f);
-            if (isAuthority && floating && characterMotor && characterMotor.velocity.y < 0f)
-            {
-                var v = characterMotor.velocity; v.y = 0f; characterMotor.velocity = v;
-            }
-            if (fired < row.ChainCount && fixedAge >= row.MinDuration + fired * row.Interval) Fire();
-            if (!isAuthority) return;
-            // shooting or M2 again ends it; before the first burst the charge comes back (Deadlock)
-            if (!Bot && inputBank && (inputBank.skill1.down || inputBank.skill2.justPressed && fixedAge > 0.2f))
-            {
-                if (fired == 0) RefundStock();
-                outer.SetNextStateToMain();
-                return;
-            }
-            if (fixedAge >= row.Duration) outer.SetNextStateToMain();
-        }
-
-        void Fire()
-        {
-            var rng = new System.Random(seed + fired * 7919);
-            fired++;
-            var from = PocketParts.CaseMouth(characterBody);
-            float a = (float)rng.NextDouble() * Mathf.PI * 2f, r = Mathf.Sqrt((float)rng.NextDouble()) * row.Reach;
-            var to = PocketParts.Floor(PocketParts.AimPoint(characterBody, row.Range) + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * r);
-            DlrBarrageBurst.Launch(characterBody, row, from, to, Server);
-            Sound("fire");
-            if (anim) anim.Gesture("secondary_air");
-            Vfx.Play(row.Vfx, "muzzle", from, 1f);
+            if (isAuthority && (!started || fixedAge >= row.MinDuration)) outer.SetNextStateToMain();
         }
 
         public override void OnSerialize(NetworkWriter writer) { base.OnSerialize(writer); writer.Write(seed); }
         public override void OnDeserialize(NetworkReader reader) { base.OnDeserialize(reader); seed = reader.ReadInt32(); }
-
-        public override void OnExit()
-        {
-            Vfx.Stop(aura, 0.4f);
-            Vfx.Stop(marker, 0.1f);
-            if (floating && characterMotor)
-            {
-                var gp = characterMotor.gravityParameters; gp.channeledAntiGravityGranterCount--; characterMotor.gravityParameters = gp;
-            }
-            floating = false;
-            base.OnExit();
-        }
     }
 
     // ---------------- Pocket: Flying Cloak (Shift) ----------------
@@ -221,6 +174,8 @@ namespace DeadlockOfRain.States
         Vector3 spot;
         GameObject glow, tethers, caseRoot;
         CharacterModel model;
+        Transform modelT;
+        Vector3 modelScale = Vector3.one;
         readonly List<Vector3> tetherTo = new List<Vector3>();
 
         public override void OnEnter()
@@ -241,7 +196,21 @@ namespace DeadlockOfRain.States
             }
             if (isAuthority) { LockSkills(true); locked = true; }
             model = characterBody.modelLocator && characterBody.modelLocator.modelTransform ? characterBody.modelLocator.modelTransform.GetComponent<CharacterModel>() : null;
+            modelT = model ? model.transform : null;
+            if (modelT) modelScale = modelT.localScale;
             if (Server) characterBody.AddTimedBuff(RoR2Content.Buffs.HiddenInvincibility, row.MinDuration + row.Duration + 0.2f);
+            // Deadlock's entry: the case swings out of his hand and opens on the ground, he leaps in and shrinks into it
+            caseRoot = PocketParts.CaseProp(row.Extra, spot, characterDirection ? characterDirection.forward : transform.forward, 0.2f, true);
+            Vfx.Play(row.Vfx, "cast", spot, 1f);
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            if (inside) return;
+            float k = Mathf.Clamp01(fixedAge / Mathf.Max(0.05f, row.MinDuration));
+            if (caseRoot) caseRoot.transform.localScale = Vector3.one * Mathf.Lerp(0.2f, 1.6f, Mathf.SmoothStep(0f, 1f, k * 1.8f)) * ModelBuilder.GlobalScale;
+            if (modelT) modelT.localScale = modelScale * Mathf.Lerp(1f, 0.12f, Mathf.SmoothStep(0f, 1f, (k - 0.35f) / 0.65f));
         }
 
         bool Bot => MeltyTest.Active || DpsBench.Active;
@@ -253,8 +222,11 @@ namespace DeadlockOfRain.States
             if (model) { model.invisibilityCount++; hidden = true; }
             if (Server) characterBody.AddTimedBuff(RoR2Content.Buffs.Cloak, row.Duration + 0.3f);
             loop = Fx.Loop(row.Id, spot);
-            Vfx.Play(row.Vfx, "cast", spot, 1f);
-            caseRoot = PocketParts.CaseProp(row.Extra, spot, characterDirection ? characterDirection.forward : transform.forward, 1.6f, true);
+            if (modelT) modelT.localScale = modelScale;
+            // the lid slams shut on him: a thud, a purple shockwave and a shake
+            Vfx.Play(row.Vfx, "enter", spot, row.Radius);
+            Sound("land");
+            if (caseRoot) caseRoot.transform.localScale = Vector3.one * 1.6f * ModelBuilder.GlobalScale;
             glow = Vfx.Play(row.Vfx, "loop", spot, row.Radius, caseRoot ? caseRoot.transform : null);
             tethers = Vfx.Play(row.Vfx, "tether", spot, 1f);
             MeltyTest.Report("satchel-in", true, characterBody.baseNameToken);
@@ -313,6 +285,7 @@ namespace DeadlockOfRain.States
             Sound("end");
             if (hidden && model) model.invisibilityCount--;
             hidden = false;
+            if (modelT) modelT.localScale = modelScale;
             if (anim) anim.Override("special", 0.5f);
             if (!Server) return;
             characterBody.ClearTimedBuffs(RoR2Content.Buffs.HiddenInvincibility);
@@ -348,7 +321,7 @@ namespace DeadlockOfRain.States
     public sealed class FrogForm : UltState
     {
         bool hidden, locked, frozen, hadNoFall, hopping, leapQueued, sAir;
-        float nextHop, nextLeap, hopUntil, sTake, sTop, sAirSince, airControl;
+        float nextHop, nextLeap, hopUntil, hopCap, sTake, sTop, sAirSince, airControl;
         Vector3 hopVel, caseAt;
         GameObject frog;
         FrogOpening opening;
@@ -480,6 +453,11 @@ namespace DeadlockOfRain.States
                 }
                 else if (fixedAge < hopUntil)
                 {
+                    // steering in the air (creator, 2026-10-27: "more controllable in air like you are steering the frog"): the
+                    // move keys turn and push the hop, up to its own speed
+                    var keys = inputBank ? inputBank.moveVector : Vector3.zero; keys.y = 0f;
+                    if (!Bot && keys.sqrMagnitude > 0.04f)
+                        hopVel = Vector3.MoveTowards(hopVel, keys.normalized * Mathf.Max(hopCap, hopVel.magnitude), row.TurnRate * Time.fixedDeltaTime);
                     // the hop carries on at its own speed for its flight time only (on a steep slope the motor never reads grounded:
                     // past that it slides or falls as the motor lets it)
                     var v = characterMotor.velocity; characterMotor.velocity = new Vector3(hopVel.x, v.y, hopVel.z);
@@ -515,6 +493,7 @@ namespace DeadlockOfRain.States
             float g = Mathf.Max(1f, -Physics.gravity.y);
             float vy = Mathf.Sqrt(2f * g * height), t = 2f * vy / g;
             hopVel = dir * (dist / t);
+            hopCap = Mathf.Max(hopVel.magnitude, row.Range / Mathf.Max(0.3f, 2f * Mathf.Sqrt(2f * g * row.Speed) / g));
             characterMotor.Motor.ForceUnground();
             characterMotor.velocity = hopVel + Vector3.up * vy;
             nextHop = fixedAge + row.Interval;
@@ -549,7 +528,7 @@ namespace DeadlockOfRain.States
 
         void Slam(Vector3 at, bool high)
         {
-            float radius = high ? row.NearRadius : row.Radius;
+            float radius = row.Radius;
             Relay.Vfx(row.Vfx, "slam", at, radius, null, null, high ? 1f : 0f);
             Relay.Sound(row.Id, "hit", at);
             var type = new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Equipment };
@@ -558,6 +537,12 @@ namespace DeadlockOfRain.States
             {
                 var b = hb.healthComponent.body;
                 if (b && !b.isChampion) Fx.KnockBack(characterBody, hb.healthComponent, b.corePosition - at, row.Knockback);
+            }
+            // the ring beyond the damage: stunned only (creator, 2026-10-27: "an extr 5 meter will just stun each enemy")
+            foreach (var hb in Fx.Enemies(characterBody, at, row.NearRadius))
+            {
+                var p = hb.healthComponent.body ? hb.healthComponent.body.footPosition : hb.transform.position;
+                if ((p - at).magnitude > radius) Fx.Stun(hb.healthComponent, row.StunDuration);
             }
             MeltyTest.Report("frog-landing", true, characterBody.baseNameToken);
         }

@@ -365,6 +365,7 @@
         "dash_air_forward",
         "item_throw",
         "jump_in_air_loop",
+        "lift_loop",
         "reload_idle",
         "sprint_355_n",
         "throw",
@@ -375,7 +376,9 @@
         "weapon_stand_idle"
       ],
       "split": [],
-      "vertexColors": []
+      "vertexColors": [
+        "pocket_hair"
+      ]
     }
   ],
   "images": [

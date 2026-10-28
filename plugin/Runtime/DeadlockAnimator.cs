@@ -143,6 +143,12 @@ namespace DeadlockOfRain
                 propBones[i].localScale = Vector3.zero;
             }
             propsShown = false;
+            // restBones (Pocket's briefcase lid): their bind pose, put back when a gesture or override that moved them ends
+            var rest = new List<Transform>();
+            foreach (var n in rows.RestBones) { var t = n == "none" ? null : Bone(n); if (t) rest.Add(t); }
+            restBones = rest.ToArray();
+            restRot = restBones.Select(t => t.localRotation).ToArray();
+            restPos = restBones.Select(t => t.localPosition).ToArray();
             var wb = new List<Transform>(); var wh = new List<Transform>();
             foreach (var pair in rows.HoldBones)
             {
@@ -615,8 +621,22 @@ namespace DeadlockOfRain
             foreach (var hb in GetComponentsInChildren<HurtBox>(true)) { var c = hb.GetComponent<Collider>(); if (c) c.enabled = false; }
         }
 
+        Transform[] restBones; Quaternion[] restRot; Vector3[] restPos; bool restBusy;
+
+        /// <summary>A gesture or override has just ended: the restBones go back to their bind pose (the locomotion never keys them).</summary>
+        void RestPose()
+        {
+            if (restBones == null || restBones.Length == 0 || anim == null) return;
+            var g = gestureClip != null ? anim[gestureClip] : null;
+            bool busy = overrideClip != null || g != null && g.enabled && g.weight > 0.01f;
+            if (restBusy && !busy)
+                for (int i = 0; i < restBones.Length; i++) if (restBones[i]) { restBones[i].localRotation = restRot[i]; restBones[i].localPosition = restPos[i]; }
+            restBusy = busy;
+        }
+
         void LateUpdate()
         {
+            RestPose();
             CaptureWelds();
             ModelSpaceGesture();
             Rig();

@@ -88,7 +88,12 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
- 'pocket': [('v1.2.0a', ['New hero: Pocket, matched to Bandit (Bandit’s stats exactly), from the creator’s spec',
+ 'pocket': [('v1.2.0b', ['Barrage locks onto the enemy you aim at and rains its 4 bursts on it while you keep shooting (no enemy, no cast)',
+                        'Flying Cloak is Pocket’s own coat flying in Deadlock’s lift pose with a teal glow, 15 m/s, skimming along the floor',
+                        'Enchanter’s Satchel: the case opens at his feet and he shrinks into it, the lid slams with a shockwave',
+                        'Frog Form: 60 s cooldown, hops twice as high, steer in the air; the case spins, rocks and bursts open in a green treasure explosion; every landing 10 m of damage plus a 5 m stun ring, much heavier slams',
+                        'Jet-black hair, the briefcase held still while running, the briefcase lid no longer stays open']),
+            ('v1.2.0a', ['New hero: Pocket, matched to Bandit (Bandit’s stats exactly), from the creator’s spec',
                         'Unpredictable: one jump plus an air dash; hiding in the suitcase finishes a reload',
                         'The Black Sheep: Deadlock’s fixed hexagon of 7 pellets; Barrage on its own channel so you can dash and throw the cloak while it runs',
                         'Flying Cloak: a living cloak you can teleport to; Enchanter’s Satchel: hide in Deadlock’s suitcase and drink the life of everything near it',

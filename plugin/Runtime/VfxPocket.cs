@@ -12,7 +12,9 @@ namespace DeadlockOfRain
     {
         static readonly Color pocketViolet = new Color(0.55f, 0.32f, 0.95f), pocketLilac = new Color(0.8f, 0.66f, 1f),
                               pocketDeep = new Color(0.22f, 0.1f, 0.42f), pocketSmoke = new Color(0.72f, 0.56f, 1f, 1f),
-                              pocketRed = new Color(1f, 0.22f, 0.28f), slime = new Color(0.5f, 0.66f, 0.32f), water = new Color(0.66f, 0.85f, 0.95f);
+                              pocketRed = new Color(1f, 0.22f, 0.28f),
+                              pocketTeal = new Color(0.25f, 0.95f, 0.8f), pocketTealDeep = new Color(0.1f, 0.6f, 0.55f),
+                              treasure = new Color(0.4f, 1f, 0.35f), gold = new Color(1f, 0.82f, 0.3f), slime = new Color(0.5f, 0.66f, 0.32f), water = new Color(0.66f, 0.85f, 0.95f);
 
         static GameObject Pocket(string id, string moment, Vector3 at, float radius, Transform follow, Vector3? to, float angle)
         {
@@ -21,7 +23,7 @@ namespace DeadlockOfRain
                 case "pocket_gun": return PocketGun(moment, at);
                 case "pocket_dodge": return PocketDodge(moment, at, follow);
                 case "pocket_barrage": return PocketBarrage(moment, at, radius, follow);
-                case "pocket_cloak": return PocketCloak(moment, at, radius, to);
+                case "pocket_cloak": return PocketCloak(moment, at, radius, follow, to);
                 case "pocket_satchel": return PocketSatchel(moment, at, radius, follow, to);
                 case "pocket_frog": return PocketFrog(id, moment, at, radius, angle);
             }
@@ -140,29 +142,27 @@ namespace DeadlockOfRain
         }
 
         // ------------------------------------------------------------------ Flying Cloak
-        static GameObject PocketCloak(string moment, Vector3 at, float radius, Vector3? to)
+        static GameObject PocketCloak(string moment, Vector3 at, float radius, Transform follow, Vector3? to)
         {
             switch (moment)
             {
                 case "loop":
                 {
-                    // the living cloak: a rippling sheet flying flat, a glowing hood with two eyes, lilac edges, a trail of motes and a
-                    // faint sphere of its reach
-                    var root = Root(at, 0f, null);
-                    PocketCloth.Make(root.transform, 2.2f, 2.6f, new Color(0.36f, 0.1f, 0.5f, 0.92f), pocketLilac);
-                    var hood = new GameObject("hood"); hood.transform.SetParent(root.transform, false); hood.transform.localPosition = new Vector3(0f, 0.15f, 0.1f);
-                    Particles(hood, "mat_glow", pocketViolet, rate: 30, life: 0.2f, speed: 0f, size: 0.8f);
-                    foreach (float x in new[] { -0.2f, 0.2f })
+                    // Deadlock's look round his flying coat (the coat itself is his own model in its lift pose, DlrCloak): a teal
+                    // glow and aura, streaks trailing it, motes and a faint ring of its reach
+                    var root = Root(at, 0f, follow);
+                    Particles(root, "mat_glow", pocketTeal, rate: 40, life: 0.25f, speed: 0.2f, size: 1.6f, shapeRadius: 0.4f);
+                    Particles(root, "mat_glow", pocketTealDeep, rate: 60, life: 0.6f, speed: 0.4f, size: 0.35f, shapeRadius: 1.1f, world: true);
+                    Particles(root, "mat_smoke", new Color(0.55f, 1f, 0.9f, 1f), rate: 12, life: 0.8f, speed: 0.3f, size: 0.6f, shapeRadius: 0.7f, world: true);
+                    foreach (var x in new[] { -0.7f, 0.7f })
                     {
-                        var eye = new GameObject("eye"); eye.transform.SetParent(hood.transform, false); eye.transform.localPosition = new Vector3(x, 0.1f, 0.2f);
-                        Particles(eye, "mat_glow", pocketLilac, rate: 25, life: 0.12f, speed: 0f, size: 0.22f);
+                        var streak = new GameObject("streak"); streak.transform.SetParent(root.transform, false); streak.transform.localPosition = new Vector3(x, 0.2f, -0.3f);
+                        Trail(streak, pocketTeal, 0.3f, 0.45f);
                     }
-                    Particles(root, "mat_glow", pocketViolet, rate: 45, life: 0.6f, speed: 0.3f, size: 0.2f, shapeRadius: 1f, world: true);
-                    Particles(root, "mat_smoke", pocketSmoke, rate: 10, life: 0.8f, speed: 0.3f, size: 0.5f, shapeRadius: 0.6f, world: true);
                     var reach = new GameObject("reach"); reach.transform.SetParent(root.transform, false);
-                    Circle(reach.transform, new Color(pocketViolet.r, pocketViolet.g, pocketViolet.b, 0.35f), radius, 0.04f, 48, true);
+                    Circle(reach.transform, new Color(pocketTeal.r, pocketTeal.g, pocketTeal.b, 0.35f), radius, 0.04f, 48, true);
                     reach.AddComponent<Spin>().DegPerSec = 60f;
-                    Light(root, pocketViolet, 6f, 2f, Vector3.zero);
+                    Light(root, pocketTeal, 7f, 2.5f, Vector3.zero);
                     return root;
                 }
                 case "hit":
@@ -172,7 +172,7 @@ namespace DeadlockOfRain
                     var from = to ?? at;
                     var dir = (at - from); dir.y = 0f;
                     var side = dir.sqrMagnitude > 0.01f ? Vector3.Cross(Vector3.up, dir.normalized) : Vector3.right;
-                    var lr = Line(root.transform, pocketLilac, 0.12f, -side * 0.9f + Vector3.up * 0.4f, side * 0.9f - Vector3.up * 0.4f);
+                    var lr = Line(root.transform, pocketTeal, 0.12f, -side * 0.9f + Vector3.up * 0.4f, side * 0.9f - Vector3.up * 0.4f);
                     lr.gameObject.AddComponent<FadeLine>().Life = 0.3f;
                     Burst(at, "mat_spark", pocketLilac, 10, 0.3f, 5f, 0.06f, 0.2f);
                     Burst(at, "mat_glow", pocketViolet, 4, 0.25f, 1f, 0.35f);
@@ -183,9 +183,9 @@ namespace DeadlockOfRain
                     return null;
                 case "end":
                 case "port":
-                    Burst(at, "mat_smoke", pocketSmoke, 12, 0.7f, 2f, 0.7f, 0.5f);
-                    Burst(at, "mat_glow", pocketViolet, 12, 0.4f, 4f, 0.25f, 0.4f);
-                    Flash(at, pocketViolet, 6f, 0.2f, 3f);
+                    Burst(at, "mat_smoke", new Color(0.55f, 1f, 0.9f, 1f), 12, 0.7f, 2f, 0.7f, 0.5f);
+                    Burst(at, "mat_glow", pocketTeal, 14, 0.4f, 4f, 0.3f, 0.4f);
+                    Flash(at, pocketTeal, 7f, 0.2f, 3f);
                     return null;
             }
             return null;
@@ -215,6 +215,15 @@ namespace DeadlockOfRain
                     Particles(ground, "mat_glow", pocketViolet, rate: 30, life: 0.8f, speed: 0.6f, size: 0.25f, shapeRadius: radius, ring: true);
                     return root;
                 }
+                case "enter":
+                    // he is in: the lid slams, a purple shockwave and a shake
+                    Flash(at, pocketViolet, 8f, 0.2f, 5f);
+                    Ring(PocketParts.Floor(at) + Vector3.up * 0.15f, pocketLilac, 0.5f, radius * 0.6f, 0.4f, 0.3f);
+                    Burst(at, "mat_smoke", pocketSmoke, 20, 0.8f, 3.5f, 0.9f, 0.6f);
+                    Burst(at, "mat_glow", pocketViolet, 16, 0.4f, 5f, 0.3f, 0.4f);
+                    Burst(at, "mat_spark", pocketLilac, 14, 0.35f, 6f, 0.07f, 0.3f);
+                    Shake(at, 25f, 2.5f, 0.25f);
+                    return null;
                 case "tether":
                 {
                     var root = Root(at, 0f, null);
@@ -261,6 +270,30 @@ namespace DeadlockOfRain
                     Burst(at, "mat_dust", new Color(0.55f, 0.5f, 0.45f), 6, 0.6f, 2f, 0.4f, 0.5f, flat: true);
                     Shake(at, 15f, 1f, 0.15f);
                     return null;
+                case "jolt":
+                    // something inside bangs against the lid
+                    Burst(at, "mat_smoke", pocketSmoke, 4, 0.5f, 2f, radius * 0.15f, radius * 0.2f, flat: true);
+                    Burst(at + Vector3.up * radius * 0.3f, "mat_glow", treasure, 4, 0.3f, 3f, 0.25f, radius * 0.2f);
+                    Shake(at, 20f, 0.8f, 0.1f);
+                    return null;
+                case "burst":
+                {
+                    // the case bursts open: a treasure chest's green explosion and a column of light out of it
+                    var up = at + Vector3.up * radius * 0.25f;
+                    Flash(up, treasure, radius * 3f, 0.6f, 8f);
+                    Flash(up, gold, radius * 2f, 0.4f, 4f);
+                    Ring(at + Vector3.up * 0.2f, treasure, 1f, radius * 1.6f, 0.6f, 0.45f);
+                    Ring(up, gold, 0.5f, radius * 1.2f, 0.45f, 0.3f, true);
+                    Burst(up, "mat_glow", treasure, 60, 1.1f, radius * 2.2f, 0.5f, radius * 0.2f, upward: true, gravity: 0.6f);
+                    Burst(up, "mat_spark", gold, 70, 1.3f, radius * 2.8f, 0.12f, radius * 0.2f, upward: true, gravity: 1.2f);
+                    Burst(up, "mat_glow", new Color(0.85f, 1f, 0.6f), 30, 1.6f, radius * 0.6f, 0.3f, radius * 0.3f);
+                    Burst(at, "mat_smoke", new Color(0.6f, 0.95f, 0.55f, 1f), 30, 1.4f, radius * 0.8f, radius * 0.3f, radius * 0.3f, flat: true);
+                    var beam = Root(at, 1.2f, null);
+                    var lr = Line(beam.transform, treasure, radius * 0.5f, Vector3.zero, Vector3.up * radius * 5f, "mat_glow");
+                    lr.gameObject.AddComponent<FadeLine>().Life = 1.1f;
+                    Shake(at, 40f, 4f, 0.4f);
+                    return null;
+                }
                 case "grow":
                     Burst(at, "mat_smoke", pocketSmoke, 20, 0.9f, radius * 0.6f, radius * 0.25f, radius * 0.2f, flat: true);
                     Ring(at + Vector3.up * 0.2f, pocketLilac, 0.5f, radius, 0.4f, 0.25f);
@@ -272,95 +305,26 @@ namespace DeadlockOfRain
                     return null;
                 case "slam":
                 {
-                    // a heavy thud: a ring of slime and water, splashes, a shake by distance and a few small frogs hopping away
+                    // a very heavy landing: a flash, two shockwaves over the 10 m it damages and one to the 15 m ring it stuns, a column of
+                    // dust and slime, water and debris thrown out, a hard shake and small frogs hopping out of it
                     bool high = angle > 0.5f;
+                    float stun = radius * 1.5f;
                     var floor = PocketParts.Floor(at + Vector3.up * 0.5f) + Vector3.up * 0.15f;
-                    Ring(floor, slime, 0.8f, radius, 0.5f, 0.35f);
-                    Ring(floor, water, 0.4f, radius * 0.7f, 0.4f, 0.2f);
-                    Burst(floor, "mat_spark", water, high ? 50 : 30, 0.7f, radius * 1.3f, 0.12f, 0.6f, upward: true, gravity: 2f);
-                    Burst(floor, "mat_glow", slime, high ? 20 : 12, 0.6f, radius, 0.35f, 0.6f, flat: true);
-                    Burst(floor, "mat_dust", new Color(0.45f, 0.5f, 0.35f), 5, 0.7f, radius * 0.6f, 0.4f, 0.5f, flat: true);
-                    Shake(floor, radius * 3f, high ? 4f : 2f, 0.3f);
-                    PocketFrogs.Scatter(id + "_prop", floor, radius, high ? 5 : 3);
+                    Flash(floor + Vector3.up, treasure, radius * 2.5f, 0.3f, high ? 8f : 5f);
+                    Ring(floor, slime, 0.8f, radius, 0.45f, 0.5f);
+                    Ring(floor, water, 0.5f, radius * 0.75f, 0.35f, 0.3f);
+                    Ring(floor + Vector3.up * 0.1f, new Color(0.9f, 1f, 0.7f), radius, stun, 0.6f, 0.2f);
+                    Ring(floor + Vector3.up * 1f, slime, 0.5f, radius * 0.6f, 0.3f, 0.25f, true);
+                    Burst(floor, "mat_spark", water, high ? 80 : 50, 0.9f, radius * 1.6f, 0.14f, 0.8f, upward: true, gravity: 2f);
+                    Burst(floor, "mat_glow", slime, high ? 30 : 20, 0.7f, radius * 1.3f, 0.45f, 0.8f, flat: true);
+                    Burst(floor, "mat_smoke", new Color(0.7f, 0.75f, 0.6f, 1f), high ? 26 : 16, 1.2f, radius * 0.5f, radius * 0.25f, radius * 0.3f, upward: true);
+                    Burst(floor, "mat_dust", new Color(0.42f, 0.4f, 0.32f), high ? 14 : 9, 1f, radius * 1.2f, 0.18f, 0.6f, upward: true, gravity: 2.5f);
+                    Shake(floor, stun * 3f, high ? 9f : 5f, 0.45f);
+                    PocketFrogs.Scatter(id + "_prop", floor, radius, high ? 6 : 4);
                     return null;
                 }
             }
             return null;
-        }
-    }
-
-    /// <summary>The Flying Cloak's cloth: a sheet flying flat along +Z (its leading edge at the root), rippling in waves that run
-    /// back along it and twisting slowly, with glowing edges.</summary>
-    public sealed class PocketCloth : MonoBehaviour
-    {
-        const int NX = 9, NY = 7;
-        Mesh mesh; Vector3[] basePos, verts; float t, w, h;
-
-        public static PocketCloth Make(Transform parent, float width, float length, Color c, Color edge)
-        {
-            var go = new GameObject("cloth");
-            go.transform.SetParent(parent, false);
-            var cl = go.AddComponent<PocketCloth>();
-            cl.w = width; cl.h = length;
-            cl.Build();
-            go.AddComponent<MeshFilter>().sharedMesh = cl.mesh;
-            go.AddComponent<MeshRenderer>().sharedMaterial = new Material(Shader.Find("Sprites/Default")) { color = c };
-            // the glowing hem along both sides and the trailing edge
-            foreach (var x in new[] { -0.5f, 0.5f })
-            {
-                var hem = new GameObject("hem"); hem.transform.SetParent(go.transform, false);
-                hem.transform.localPosition = new Vector3(x * width, 0f, -length);
-                var tr = hem.AddComponent<TrailRenderer>();
-                tr.sharedMaterial = Vfx.Mat("mat_tracer", edge);
-                tr.time = 0.35f; tr.minVertexDistance = 0.1f;
-                tr.widthCurve = new AnimationCurve(new Keyframe(0, 0.18f), new Keyframe(1, 0));
-                cl.hems.Add(hem.transform);
-            }
-            return cl;
-        }
-
-        readonly List<Transform> hems = new List<Transform>();
-
-        void Build()
-        {
-            mesh = new Mesh { name = "PocketCloth" };
-            basePos = new Vector3[NX * NY];
-            var uv = new Vector2[NX * NY];
-            for (int y = 0; y < NY; y++)
-                for (int x = 0; x < NX; x++)
-                {
-                    float u = x / (NX - 1f), v = y / (NY - 1f);
-                    // narrower at the hood, wide at the hem
-                    basePos[y * NX + x] = new Vector3((u - 0.5f) * w * Mathf.Lerp(0.45f, 1f, v), 0f, -v * h);
-                    uv[y * NX + x] = new Vector2(u, v);
-                }
-            var tris = new List<int>();
-            for (int y = 0; y < NY - 1; y++)
-                for (int x = 0; x < NX - 1; x++)
-                {
-                    int i = y * NX + x;
-                    tris.AddRange(new[] { i, i + NX, i + 1, i + 1, i + NX, i + NX + 1 });
-                }
-            verts = (Vector3[])basePos.Clone();
-            mesh.vertices = verts; mesh.uv = uv; mesh.SetTriangles(tris, 0); mesh.RecalculateNormals();
-        }
-
-        void Update()
-        {
-            t += Time.deltaTime;
-            for (int i = 0; i < verts.Length; i++)
-            {
-                var b = basePos[i];
-                float v = -b.z / h, u = b.x / Mathf.Max(0.01f, w);
-                float wave = Mathf.Sin(t * 8f - v * 6f + u * 2f) * 0.35f * v + Mathf.Sin(t * 4.5f + u * 7f) * 0.1f;
-                verts[i] = new Vector3(b.x * (1f - 0.2f * v * Mathf.Sin(t * 3f)), wave, b.z + Mathf.Sin(t * 5f + u * 4f) * 0.12f * v);
-            }
-            mesh.vertices = verts;
-            mesh.RecalculateNormals();
-            mesh.RecalculateBounds();
-            // the corners of the hem ride the waves
-            for (int k = 0; k < hems.Count; k++) hems[k].localPosition = verts[(NY - 1) * NX + (k == 0 ? 0 : NX - 1)];
-            transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * 2f) * 25f);
         }
     }
 

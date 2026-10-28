@@ -1484,3 +1484,10 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** `run_test.sh pocket` all pass, 1/1 heroes (third run; run 1 failed level-stats with the amp on, run 2 the frog skated 110 m off a slope: both fixed). Bench mean 2423 vs Bandit 1919 (+504) after the spec's two levers (amp 4 %, Satchel 450 %).
 **Not done / open:** Frog Form ult bench, co-op test, merge into `main` (so the Steam dev copy has Pocket), doc 00 / doc 03 decision row / MODLOG refresh, the creator to share the page; giant frog facing and the cloak's look not reviewed by the creator.
 **Lessons:** doc 08 §7f.
+
+### 2026-10-28 · Pocket first-play feedback · v1.2.0b
+**Request (verbatim, excerpts):** "The running animation look stupid his arm with the brief case sway side to side", "Why is Pocket hard white it is more like jet black hair", "Shift Flying Cloak ... please try find the model for the cape in deadlock files", "Q Frog Form reduce the ultimate down to 60 seconds ... case spins and grows with some rocking ... big green chest treasure explosion ... jump twice as high and be more controllable in air", "the cuit case burst open ... stayed open for evere", "10m radius of damage and an extr 5 meter will just stun", "M2 Barrage ... a lock on to 1 enemy set and forget", "R Enchanter's Satchel ... climbing into the suitcase to be more impact ful"; then "just implement the changes when you have made the plan i will test!".
+**Questions asked → answers:** Barrage: keep shooting while it rains → "Yes, keep shooting".
+**Done:** Deadlock's cloak particle renders Pocket's own model in `lift` at 590 u/s: the cloak is now his model (body material) in `lift_loop`, teal, 15 m/s, slides along floors; its glow now follows it (it was left behind: the "doesn't move" bug). Barrage `BarrageVolley` lock-on. Satchel entry. Frog Form changes. Hair `vertexColorMaterials` (cache rebuilt). `gunArms` LR. New `animations.restBones` (DeadlockAnimator.RestPose).
+**Results:** `run_test.sh pocket` all pass, 1/1 heroes. Not benched (creator testing first).
+**Not done / open:** bench v1.2.0b, Frog Form ult bench, co-op test; the creator's playtest.

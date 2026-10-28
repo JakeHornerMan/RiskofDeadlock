@@ -223,6 +223,8 @@ wing poses, extractor 1.9.0) in Sanguine Retreat, Nox Nostra and Mist Form; Dead
 
 New 2026-10-27 (v1.2.0a, not released) from the creator's spec. Deadlock's model (`synth`/`pocket`: gun in his right hand, the suitcase in his left, coat cloth, scarf and hair springs), Bandit's stats exactly (110 +33 health, 0 armor, 12 +2.4 damage, 7 m/s, 1 jump). Violet spirit effects; Deadlock's own suitcase and frog models.
 
+
+**v1.2.0b (2026-10-28, the creator's first-play feedback; not benched yet, ⚠ retest):** Barrage locks onto the enemy under the crosshair (none: no cast, charge back) and the briefcase throws the 4 bursts at it over 2 s while he keeps shooting; Flying Cloak is his own coat (his model, body material only, in Deadlock's `lift_loop`) with a teal glow, 15 m/s, skimming floors; Satchel entry 0.5 s (case opens at his feet, he shrinks in, lid slam); Frog Form 60 s, hop 5 m / high leap 12 m, steer in the air, 10 m damage + 10–15 m stun ring (1.5 s), spin-rock-burst green opening; hair from vertex colours (jet black); both arms held by the rig (no briefcase swing); the briefcase lid returns to rest after ability clips (`restBones`).
 | Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s) |
 |---|---|---|---|---|---|
 | Passive | **Unpredictable** | One jump plus a **7 m air dash** (once per trip in the air, along the keys or the crosshair); the dash never stops Barrage; hiding in the Satchel finishes a reload. | 7 m in 0.25 s | – | – |
