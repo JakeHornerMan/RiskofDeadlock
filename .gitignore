@@ -4,3 +4,6 @@ build/
 lab-backup/
 tools/dev/
 *.dlm
+
+# a creator's own copies of Deadlock hero files for editing (game files: never commit)
+character/

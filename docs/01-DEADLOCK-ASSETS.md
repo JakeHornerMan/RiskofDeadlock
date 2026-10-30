@@ -21,6 +21,9 @@ Related documents:
    around Deadlock's anti-cheat; we have no reason to touch the running game at all.
 3. **The project repo holds no Deadlock content either.** Exports made while developing go to a scratch folder or to
    the gitignored `tools/dev/` (listings only, never assets) and to `%LOCALAPPDATA%\DeadlockOfRain\cache` (gitignored, outside the repo).
+   The creator's own editing copies of a hero's Deadlock files go in the gitignored `character/` (e.g. `character/infernusFiles/`:
+   `deadlock/` every VPK file whose path names the hero, copied raw with `Source2Viewer-CLI -i <vpk> -f <paths> -o <dir>`, and
+   `mod-cache/` the hero's files from our cache; 2026-10-30). Nothing in it is read by the mod or shipped.
 
 ---
 - **Visual effects are never taken from Deadlock.** Deadlock's particle systems (`.vpcf`) are not read or exported.

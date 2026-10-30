@@ -1529,3 +1529,11 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** preflight clean, plugin builds (0 errors). In-game tests waited: the creator's own game was open (started 16:23, not a lab copy).
 **Not done / open:** release-cut `run_test.sh` (10 heroes) + `BREAK=infernus run_test.sh haze`, Melty upload/test, publish on the creator's go, listing, Discord post, `report_bug_fix`.
 **Lessons:** doc 00 §7 (a Play that ends with no error needs a trail).
+
+### 2026-10-30 · Infernus' files copied out for the creator to edit · main
+**Request (verbatim):** "ok can you gather all the files for infernus and put them in a new folder character/infernusFiles i want to edit this character myself i nwant the models the aimtion and the voice lines and anything else relavent!" then "these are the file in deadlock i want them copied and in a new folder!" (after asking how the extractor finds each hero's files; explained, files opened in VS Code).
+**Questions asked → answers:** how much → "Everything in Deadlock (Recommended)"; file types → "The mod's own files"; edits in game → "Yes, plan it now".
+**Done:** `character/infernusFiles/deadlock/`: every VPK path (build 6821) containing `inferno`/`infernus`, except other heroes' voice folders: 2,727 files, 196 MB, raw `_c` files in their VPK folders (model, 228 clips, materials, 1,880 voice takes, sounds, sound events, particles, icons, scenes). `mod-cache/`: `heroes/infernus/` from the cache, plus the 132 sounds/voice takes and icons `manifest_owners.json` gives him (42 MB). A README in the folder. `character/` added to `.gitignore` (game files); doc 01 §1 rule 3.
+**Results:** every listed file copied (2,727/2,727). Nothing committed from `character/`.
+**Not done / open:** how edits reach the game: a plan was proposed to the creator (a local override folder the plugin reads first, glb → DLM through `DlmWriter`), waiting on their choice. Edited files can never ship (they are Deadlock's).
+**Lessons:** `Source2Viewer-CLI` without `-d` copies raw files fine on new builds (only decompiling needs the newer VRF); pass full paths in chunks of ~150 (`-f` takes a comma list).
