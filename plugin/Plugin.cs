@@ -12,7 +12,7 @@ namespace DeadlockOfRain
     public sealed class Plugin : BaseUnityPlugin
     {
         public const string Guid = "melty.deadlockofrain";
-        public const string Version = "1.1.0";
+        public const string Version = "1.2.0";
         public static Plugin Instance;
         public static ConfigEntry<float> Volume;
         public static ConfigEntry<string> DeadlockFolder;
@@ -28,6 +28,8 @@ namespace DeadlockOfRain
 
             DeadlockFolder = Config.Bind("Deadlock", "Deadlock folder", "", "Only needed if Deadlock is not found by itself: your Deadlock folder, e.g. D:\\SteamLibrary\\steamapps\\common\\Deadlock (Steam: Deadlock > Manage > Browse local files). Its game or game\\citadel folder works too.");
 
+            // every step of the start in the log and start-trail.txt, so a "closed right after starting" report says why (1.2.0)
+            StartTrail.Init();
             QuitSafety.Init();
             // test-mode "off": "mod": nothing but the quit fixes and the test itself, to see whether a problem needs the mod
             if (MeltyTest.Off("mod")) { MeltyTest.Init(); return; }

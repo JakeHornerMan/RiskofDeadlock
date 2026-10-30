@@ -1165,5 +1165,17 @@ the other is the **host** (only the host writes checks). How to run it: doc 03 Â
     stat at that moment, so a buff that raises the stat cancels out of the %/s. Divide by the stat without the buff (`Buffs.DamageMult`).
 38. **Forcing a hop's sideways speed while 'not grounded' skates on slopes** (v1.2.0a, Frog Form): on steep ground the motor never reads
     grounded, so a frog given its hop speed every frame in the air slid 110 m off the pack. Hold it only for the hop's own flight time.
+39. **A game that ends with no error can only be traced by a start-up trail** (1.2.0, Melty's "closed right after starting" on 1.1.0):
+    two players' logs just stopped, one during Mono start-up (no BepInEx log, so before any mod), one right after RoR2's
+    `loadingbasic` scene, with no exception and none of the memory lines Unity writes on a normal quit (so the process was ended
+    from outside). `Runtime/StartTrail.cs` now logs every step with seconds since the mod loaded (mod start, RoR2 loading screen,
+    game loaded, Steam, title screen) to the BepInEx log and to `%LOCALAPPDATA%\DeadlockOfRain\start-trail.txt` (written at once).
+    The Steam line says whether Steam started the game (`SteamAppId`/`SteamGameId`), whether it sits in a Steam library (an
+    appmanifest beside it; RoR2 at `M:\Risk of Rain 2` had none) and whether Steamworks stayed up: RoR2's
+    `SteamworksClientManager` disposes itself (and RoR2 quits or restarts through Steam) when `RestartIfNecessary`, ownership or
+    Steam fails, and a Harmony prefix on its `Dispose` logs the caller. `Application.wantsToQuit`/`quitting` write a `closing`
+    line ("RoR2's quit command" via `CCQuit`); a start whose trail has no `closing` line is reported by the next start as
+    "ended without closing" (killed from outside or crashed). Our own lab scripts close their copies the same way, so after a
+    test that warning is expected.
 
 33. **Never `WaitForCompletion()` while the game loads** (`LoadStaticContentAsync`, `Survivors.Build`, `Fx.Preload`): RoR2 loads its own content beside ours from the same bundles, and a blocking wait holds the main thread, so a slow drive makes Windows call the game frozen (a 1.0.1 player hung 66 s in, before `hero material template`). Start the loads and `yield return null` until `IsDone` (1.0.2); the log says `content load started` and how long the Commando template took (a warning past 10 s). Later lookups (`Fx.Prefab`, `Vfx.Mat`) then find the assets already loaded.

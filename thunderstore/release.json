@@ -1,6 +1,28 @@
 {
   "name": "Risk_of_Deadlock",
-  "heroes": ["haze", "abrams", "seven", "infernus", "mokrill", "viscous", "ratking", "billy"],
-  "melty": ["haze", "abrams", "seven", "infernus", "mokrill", "viscous", "ratking", "billy", "wraith"],
-  "comingSoon": ["mina"]
+  "heroes": [
+    "haze",
+    "abrams",
+    "seven",
+    "infernus",
+    "mokrill",
+    "viscous",
+    "ratking",
+    "billy"
+  ],
+  "melty": [
+    "haze",
+    "abrams",
+    "seven",
+    "infernus",
+    "mokrill",
+    "viscous",
+    "ratking",
+    "billy",
+    "wraith",
+    "mina"
+  ],
+  "comingSoon": [
+    "pocket"
+  ]
 }

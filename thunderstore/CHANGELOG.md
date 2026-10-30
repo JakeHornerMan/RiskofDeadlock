@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6821 (v1.2.0, 2026-10-30).
+- **Mina joins**, the tenth hero, matched to Huntress (150 health): **New Money** (a pistol, 90 % a bullet, 12 rounds; every hit leaves a Love Bite), **Rake** (an umbrella sweep through a 180° arc, 1000 %, heals for every enemy hit), **Sanguine Retreat** (burst into bats and fly 15 m where you look, untouchable; press again for a second hop), **Nox Nostra** (hang in the air for 5 s and pour a blood-red stream of bats onto the ground under your crosshair) and the **Mist Form** ult (8 s as a flock of furious bats, untouchable, flying freely). Hold Jump to float under her umbrella; **Love Bites** stack on enemies and bring her moves back sooner.
+- The "coming soon" tile in character select now hides the next hero.
+- The game's start is now written step by step to the log (and to start-trail.txt), with how Steam started it, so a game that closes right after starting can be traced. A copy of Risk of Rain 2 outside a Steam library gets a warning in the log: Steam may close or restart it.
+- Players on 1.2.0 play together; earlier versions can't join them (new hero content).
+
 ## 1.1.0
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6821 (v1.1.0, 2026-10-27).
 - **Wraith joins**, the ninth hero, matched to Bandit: The Rake tommy gun (72 % a bullet, 52 rounds), **Card Trick** (a card that follows your crosshair; each draws Bleed, a Crit, a Stun or Burn, and the trick splashes onto every enemy within 7 m; holds 4 cards, every 5 Rake hits bring the next one 1 s sooner), **Project Mind** (mark a spot up to 60 m away, on the ground or in the air, and fly there as purple smoke and cards; no fall damage from the drop after it), **Full Auto** (a double magazine, 104 rounds, fired 50 % faster) and the **Telekinesis** ult (lift every enemy within 30 m and throw them where you aim).
