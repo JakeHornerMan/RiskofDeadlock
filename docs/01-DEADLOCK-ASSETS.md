@@ -25,7 +25,7 @@ Related documents:
    `deadlock/` every VPK file whose path names the hero, copied raw with `Source2Viewer-CLI -i <vpk> -f <paths> -o <dir>`, and
    `mod-cache/` the hero's files from our cache; 2026-10-30; all eleven heroes 2026-11-01, `character/README.md` lists each
    hero's code names. Abrams' `atlas`/`bull` also match unrelated paths: `models/architecture`, `models/foliage`, `particles/npc`,
-   `materials/particle/text` are left out). Nothing in it is read by the mod or shipped.
+   `materials/particle/text` are left out). Nothing in it is read by the mod or shipped. The creator renamed it `characterRip/` (2026-11-01, also gitignored).
 
 ---
 - **Visual effects are never taken from Deadlock.** Deadlock's particle systems (`.vpcf`) are not read or exported.

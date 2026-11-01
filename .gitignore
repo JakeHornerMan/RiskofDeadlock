@@ -7,3 +7,4 @@ tools/dev/
 
 # a creator's own copies of Deadlock hero files for editing (game files: never commit)
 character/
+characterRip/

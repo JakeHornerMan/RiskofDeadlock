@@ -1545,3 +1545,7 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Done:** `character/<hero>Files/` for haze, abrams, seven, mokrill, viscous, ratking, billy, wraith, mina, pocket: `deadlock/` every VPK path naming the hero's code names (README table) plus their own `sounds/vo/<code>/`, without false matches (`models/architecture`, `models/foliage`, `particles/npc`, `materials/particle/text`); `mod-cache/` model, sounds, icons and props from the cache. `character/README.md`. Doc 01 §1.
 **Results:** every listed file copied (27,249 for the ten; about 3.2 GB in total with Infernus). Nothing in git.
 **Not done / open:** the local override for edits (proposed for Infernus) is still waiting on the creator.
+
+### 2026-11-01 · The hero files found again · main
+**Request (verbatim):** "i lost the foel can you find them again if not let copy all just mokrill now!"
+**Done:** the folder was in the Recycle Bin as `characterRip` (renamed and deleted from the repo folder); restored with the Shell's undelete to `characterRip/`, all eleven `<hero>Files` intact (mokrillFiles 2,615 files), so no new copy. `characterRip/` added to `.gitignore` (only `character/` was ignored). Doc 01 §1.
