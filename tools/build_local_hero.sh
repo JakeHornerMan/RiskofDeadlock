@@ -14,6 +14,9 @@
 # --r2modman (2026-11-01) also writes <folder>/r2modman/<Name>-<version>.zip for r2modman's "Import local mod" (the creator's
 # own profile; the version is the build time, so every import is newer). Same plugin id as Risk of Deadlock: disable that one
 # in the profile. Never upload the zip: the DLL holds Deadlock's files.
+#   bash tools/build_local_hero.sh all charactersFinal --r2modman   (2026-11-01: "a zip ... with all my edited characters")
+# "all" runs steps 1-3 for every <id>Files folder in the given folder (--cache-only), merges their mod-caches into
+# build/local-all/cache (sounds.json joined, files shared by heroes kept once) and builds one DLL with every hero in it.
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 R="/c/Program Files (x86)/Steam/steamapps/common/Risk of Rain 2"
@@ -31,16 +34,55 @@ if [ "$1" = "--uninstall" ]; then
   exit 0
 fi
 
-ID="$1"; F="$2"; INSTALL=""; R2=""
-for a in "${@:3}"; do case "$a" in --install) INSTALL=1;; --r2modman) R2=1;; *) echo "unknown option $a"; exit 1;; esac; done
+ID="$1"; F="$2"; INSTALL=""; R2=""; CACHE_ONLY=""
+for a in "${@:3}"; do case "$a" in --install) INSTALL=1;; --r2modman) R2=1;; --cache-only) CACHE_ONLY=1;; *) echo "unknown option $a"; exit 1;; esac; done
 [ -n "$ID" ] && [ -n "$F" ] || { sed -n 5,7p "$0"; exit 1; }
 F="$(cd "$F" && pwd)"
+[ -f "$EXE" ] || { echo "No $EXE: publish the extractor first (docs/01 §6.7)"; exit 1; }
+
+if [ "$ID" = "all" ]; then
+  # every hero folder on its own first (its glb, its file check), then one cache with all of them
+  OUT="$ROOT/build/local-all"
+  C="$OUT/cache"
+  n=0
+  for d in "$F"/*Files/; do
+    [ -d "$d/mod-cache" ] || continue
+    h=$(basename "$d"); h=${h%Files}
+    echo "== $h"
+    bash "$0" "$h" "$d" --cache-only || { echo "Stopped at $h (see above)"; exit 1; }
+    n=$((n + 1))
+  done
+  [ $n -gt 0 ] || { echo "No <hero>Files folders with a mod-cache in $F"; exit 1; }
+  rm -rf "$C"
+  python - "$F" "$C" <<'EOF'
+import json, os, shutil, sys
+src, dst = sys.argv[1], sys.argv[2]
+heroes, props, sounds = [], [], {}
+for d in sorted(os.listdir(src)):
+    c = os.path.join(src, d, 'mod-cache')
+    if not d.endswith('Files') or not os.path.isdir(c): continue
+    ready = json.load(open(os.path.join(c, 'ready.json')))
+    heroes += ready['heroes']; props += [p for p in ready['props'] if p not in props]
+    sounds.update(json.load(open(os.path.join(c, 'sounds', 'sounds.json'))))
+    for base, _, files in os.walk(c):
+        for f in files:
+            rel = os.path.relpath(os.path.join(base, f), c)
+            if rel in ('ready.json', os.path.join('sounds', 'sounds.json'), 'extract.log'): continue
+            out = os.path.join(dst, rel)
+            os.makedirs(os.path.dirname(out), exist_ok=True)
+            shutil.copy2(os.path.join(base, f), out)   # a file two heroes share is the same file in both: kept once
+os.makedirs(os.path.join(dst, 'sounds'), exist_ok=True)
+json.dump(sounds, open(os.path.join(dst, 'sounds', 'sounds.json'), 'w'), indent=1)
+json.dump({'stamp': 'own files', 'deadlockBuild': 'your own files', 'heroes': heroes, 'failed': [], 'props': props, 'failedProps': []},
+          open(os.path.join(dst, 'ready.json'), 'w'), indent=2)
+print(f'== One cache with {len(heroes)} heroes: {", ".join(heroes)}')
+EOF
+else
 C="$F/mod-cache"
 GLB="$F/edit/$ID.glb"
 DLM="$C/heroes/$ID/$ID.dlm"
 OUT="$ROOT/build/local-$ID"
 [ -d "$C" ] || { echo "No mod-cache folder in $F"; exit 1; }
-[ -f "$EXE" ] || { echo "No $EXE: publish the extractor first (docs/01 §6.7)"; exit 1; }
 
 # 1. the model to edit (once; reads Deadlock)
 if [ ! -f "$GLB" ]; then
@@ -82,6 +124,8 @@ json.dump({'stamp': 'own files', 'deadlockBuild': 'your own files', 'heroes': [h
           open(os.path.join(c, 'ready.json'), 'w'), indent=2)
 print(f'== Every file {hid} uses is in mod-cache')
 EOF
+[ -n "$CACHE_ONLY" ] && exit 0
+fi
 
 # 4. the DLL with mod-cache inside (its own output and obj folders: main's dev DLL is untouched)
 echo "== Building the DLL"
@@ -105,15 +149,21 @@ if [ -n "$R2" ]; then
   python - "$OUT/DeadlockOfRain.dll" "$F/r2modman" "$ID" "$ROOT" <<'EOF'
 import io, json, os, sys, time, zipfile
 dll, outdir, hid, root = sys.argv[1:5]
-row = next(r for r in json.load(open(os.path.join(root, 'design', 'heroes.json'), encoding='utf-8'))['rows'] if r['id'] == hid)
-display = row['displayName']
-name = ''.join(c if c.isalnum() else '_' for c in display.replace('&', 'and')).replace('__', '_') + '_Own_Files'
+rows = json.load(open(os.path.join(root, 'design', 'heroes.json'), encoding='utf-8'))['rows']
+if hid == 'all':
+    ids = json.load(open(os.path.join(os.path.dirname(dll), 'cache', 'ready.json')))['heroes']
+    display, name = 'Every hero', 'Risk_of_Deadlock_Own_Files'
+else:
+    ids = [hid]
+    display = next(r for r in rows if r['id'] == hid)['displayName']
+    name = ''.join(c if c.isalnum() else '_' for c in display.replace('&', 'and')).replace('__', '_') + '_Own_Files'
 version = time.strftime('1.%y%m%d.%H%M')
 manifest = {'name': name, 'version_number': version, 'website_url': '',
             'description': f'{display} from my own edited files (built into the DLL, Deadlock not needed). My PC only.',
             'dependencies': ['bbepis-BepInExPack-5.4.2122']}
+names = ', '.join(next(r['displayName'] for r in rows if r['id'] == h) for h in ids)
 readme = '\n'.join([f'# {display}, my own files', '',
-    f'Risk of Deadlock built with my edited {display} inside the DLL: only {display}, and Deadlock is not read. '
+    f'Risk of Deadlock built with my edited files inside the DLL: {names}. Deadlock is not read. '
     'Built ' + time.strftime('%Y-%m-%d %H:%M') + '.', '',
     'Disable "Risk of Deadlock" in this profile while this one is on (both are the same plugin).', ''])
 from PIL import Image
@@ -124,15 +174,20 @@ for y in range(256):
         d = min(1.0, (((x - 128) / 150) ** 2 + ((y - 120) / 130) ** 2) ** 0.5)
         k = (1 - d) ** 1.6
         px[x, y] = (int(24 + 190 * k), int(18 + 120 * k), int(16 + 60 * k), 255)
-render = os.path.join(root, 'build', 'pages', 'img', hid + '.webp')   # our own in-game render (tools/portraits.py)
-if os.path.exists(render):
-    im = Image.open(render).convert('RGBA')
+# our own in-game renders (tools/portraits.py) side by side, the outer ones smaller and drawn first (as package.py's icon)
+renders = [(i, h) for i, h in enumerate(ids) if os.path.exists(os.path.join(root, 'build', 'pages', 'img', h + '.webp'))]
+n = len(renders)
+placed = []
+for j, (i, h) in enumerate(renders):
+    mid = abs(j - (n - 1) / 2) / max(1, (n - 1) / 2)
+    placed.append((mid, h, round(256 * (j + 0.5) / n), round((200 if n == 1 else 170) - 40 * mid)))
+for _, h, cx, tall in sorted(placed, reverse=True):
+    im = Image.open(os.path.join(root, 'build', 'pages', 'img', h + '.webp')).convert('RGBA')
     im = im.crop(im.getbbox())
-    tall = 200
     w = round(im.width * tall / im.height)
     if w > 240: w, tall = 240, round(im.height * 240 / im.width)
     im = im.resize((w, tall), Image.LANCZOS)
-    icon.alpha_composite(im, (128 - w // 2, 256 - tall))
+    icon.alpha_composite(im, (cx - w // 2, 256 - tall))
 buf = io.BytesIO(); icon.convert('RGB').save(buf, 'PNG')
 os.makedirs(outdir, exist_ok=True)
 for f in os.listdir(outdir):

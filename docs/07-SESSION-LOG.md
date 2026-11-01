@@ -1564,3 +1564,10 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** zip built and checked (4 files, manifest valid, icon looked at). Not imported: that is the creator's click in r2modman (their "Deadlock" profile has Risk_of_Deadlock 1.0.0, which must be switched off).
 **Lessons:** in this shell, a bash heredoc fed to Python halved backslashes in one run (`\\n` became a real newline); write longer Python to a file with the Write tool.
 
+### 2026-11-01 · Every hero from the creator's files in one r2modman zip · main
+**Request (verbatim):** ""C:\Users\jakeh\Documents\GitHub\RiskofDeadlock\charactersFinal" ok so i have edited all the files in here! can we create a zip that can be usine in r2modman with all my edited characters!"
+**Questions asked -> answers:** every file in `charactersFinal` (mod-cache hashed, the raw `deadlock/` folders compared byte for byte) was identical to `characterRip`: no edits found; asked where the edits went -> "Build all 11 anyway".
+**Done:** `tools/build_local_hero.sh all <folder>` (+ `--cache-only` per hero): a glb from Deadlock for each hero without one, every hero's file check, one merged cache, one DLL, the r2modman zip with an icon of every hero's render. `charactersFinal/build&install.md` section 4c. Doc 03 §5c.
+**Results:** DLL 599 MB, zip `charactersFinal/r2modman/Risk_of_Deadlock_Own_Files-1.261101.1844.zip` 472 MB. In game (Steam copy, briefly): 1819 files written out, all 11 heroes in character select, mod start 4.2 s, `run_test.sh mokrill,ratking` 22/22 pass. The Steam copy has the Mo & Krill build again (`local-hero.txt`). The zip was not imported (the creator's clicks in r2modman).
+**Not done / open:** the creator's edits themselves (none found in the folders yet).
+

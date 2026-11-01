@@ -289,7 +289,8 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
   your own files ... Deadlock is not read"), character select shows Mo & Krill as the only Deadlock hero; `--uninstall` and
   `--install` both checked. Installed now; the creator's `charactersFinal/mokrillFiles` has no edits yet.
 - `--r2modman` also makes a zip for r2modman's Import local mod (creator's "Deadlock" profile; switch Risk_of_Deadlock off there).
-- Open: the creator's first edited build. The Melty app puts its release back when it starts (rerun `--install`).
+- `all charactersFinal --r2modman`: every hero in one DLL (599 MB) and zip (472 MB); 11 heroes load, mokrill+ratking tests pass.
+- Open: the creator's first edited build (no edits found in `charactersFinal` on 2026-11-01). The Melty app puts its release back when it starts (rerun `--install`).
 
 ## 9-prev33. Every hero's files for the creator to edit (2026-10-30 / 11-01)
 - 2026-11-01: the other ten heroes the same way (`character/README.md`: folders, code names, counts). Later the creator renamed

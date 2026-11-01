@@ -228,6 +228,9 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   also writes `<folder>/r2modman/<Name>_Own_Files-1.<yymmdd>.<hhmm>.zip` (manifest, README, an icon from our own render
   `build/pages/img/<id>.webp`, the DLL) for r2modman's Settings > Profile > **Import local mod** in the creator's "Deadlock"
   profile. Same plugin GUID as Risk_of_Deadlock: switch that one off in the profile. The profile is outside the dev guard's reach.
+- `all <folder>` (2026-11-01): steps 1-3 for every `<id>Files` folder (`--cache-only`), their mod-caches joined into
+  `build/local-all/cache` (sounds.json merged, ready.json with every hero and prop), one DLL (~600 MB for 11 heroes; loads fine,
+  mod start 4.2 s) and `<folder>/r2modman/Risk_of_Deadlock_Own_Files-<version>.zip` (~470 MB).
 - Never package or upload this DLL, the r2modman zip, `mod-cache` or the glb: they are Deadlock's files.
 
 ## 5b. Daily watch: game updates and Melty breaks (since 2026-10-21)
