@@ -1537,3 +1537,10 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** every listed file copied (2,727/2,727). Nothing committed from `character/`.
 **Not done / open:** how edits reach the game: a plan was proposed to the creator (a local override folder the plugin reads first, glb → DLM through `DlmWriter`), waiting on their choice. Edited files can never ship (they are Deadlock's).
 **Lessons:** `Source2Viewer-CLI` without `-d` copies raw files fine on new builds (only decompiling needs the newer VRF); pass full paths in chunks of ~150 (`-f` takes a comma list).
+
+### 2026-11-01 · Every hero's files copied out for the creator · main
+**Request (verbatim):** "now do that for every single character!" (sent several times)
+**Questions asked → answers:** none (same choices as Infernus: everything in Deadlock + the mod's own files). Read as the mod's eleven heroes, not every Deadlock hero.
+**Done:** `character/<hero>Files/` for haze, abrams, seven, mokrill, viscous, ratking, billy, wraith, mina, pocket: `deadlock/` every VPK path naming the hero's code names (README table) plus their own `sounds/vo/<code>/`, without false matches (`models/architecture`, `models/foliage`, `particles/npc`, `materials/particle/text`); `mod-cache/` model, sounds, icons and props from the cache. `character/README.md`. Doc 01 §1.
+**Results:** every listed file copied (27,249 for the ten; about 3.2 GB in total with Infernus). Nothing in git.
+**Not done / open:** the local override for edits (proposed for Infernus) is still waiting on the creator.
