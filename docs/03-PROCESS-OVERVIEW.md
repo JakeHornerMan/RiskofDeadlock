@@ -224,7 +224,11 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   the Steam copy alone, and `dev_run.sh` / `lab_restore.sh` put that DLL in instead of main's, so `run_test.sh <id>` tests it
   and nothing swaps it out. `build_local_hero.sh --uninstall` deletes the file and restores main's dev build. The Melty app
   still puts its release back when it starts.
-- Never package or upload this DLL, `mod-cache` or the glb: they are Deadlock's files.
+- `--r2modman` (2026-11-01, creator: "can we install this though the same app we installed the mods on thunderstore?"):
+  also writes `<folder>/r2modman/<Name>_Own_Files-1.<yymmdd>.<hhmm>.zip` (manifest, README, an icon from our own render
+  `build/pages/img/<id>.webp`, the DLL) for r2modman's Settings > Profile > **Import local mod** in the creator's "Deadlock"
+  profile. Same plugin GUID as Risk_of_Deadlock: switch that one off in the profile. The profile is outside the dev guard's reach.
+- Never package or upload this DLL, the r2modman zip, `mod-cache` or the glb: they are Deadlock's files.
 
 ## 5b. Daily watch: game updates and Melty breaks (since 2026-10-21)
 The full manual is **doc 10** (`docs/10-DAILY-WATCH.md`); this is the summary.

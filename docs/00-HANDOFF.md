@@ -288,6 +288,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 - Results: unedited glb -> dlm byte-identical; `run_test.sh mokrill` 21/21 pass with the embedded DLL (log: "Playing mokrill from
   your own files ... Deadlock is not read"), character select shows Mo & Krill as the only Deadlock hero; `--uninstall` and
   `--install` both checked. Installed now; the creator's `charactersFinal/mokrillFiles` has no edits yet.
+- `--r2modman` also makes a zip for r2modman's Import local mod (creator's "Deadlock" profile; switch Risk_of_Deadlock off there).
 - Open: the creator's first edited build. The Melty app puts its release back when it starts (rerun `--install`).
 
 ## 9-prev33. Every hero's files for the creator to edit (2026-10-30 / 11-01)

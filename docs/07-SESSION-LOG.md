@@ -1558,3 +1558,9 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Not done / open:** the creator's edits (none yet). Not a release: nothing packaged or uploaded.
 **Lessons:** `dev_run.sh` copies main's DLL before every start, so the first test ran the normal build; the own build needs a marker the lab scripts honour (`local-hero.txt`), not only the dev guard's `keep-release-cut`.
 
+### 2026-11-01 · The own Mo & Krill build through r2modman · main
+**Request (verbatim):** "can we install this though the same app we installed the mods on thunderstore?" then "can you updtae the build and install.md"
+**Done:** `tools/build_local_hero.sh --r2modman`: a zip for r2modman's "Import local mod" in `charactersFinal/mokrillFiles/r2modman/` (manifest `Mo_and_Krill_Own_Files`, version = build time, icon from our in-game render, the 40 MB DLL; only the newest zip kept). Options now combine (`--install --r2modman`). `charactersFinal/build&install.md`: section 4b (import, switch Risk_of_Deadlock off, Start modded, updating, going back), problem rows. Doc 03 §5c.
+**Results:** zip built and checked (4 files, manifest valid, icon looked at). Not imported: that is the creator's click in r2modman (their "Deadlock" profile has Risk_of_Deadlock 1.0.0, which must be switched off).
+**Lessons:** in this shell, a bash heredoc fed to Python halved backslashes in one run (`\\n` became a real newline); write longer Python to a file with the Write tool.
+

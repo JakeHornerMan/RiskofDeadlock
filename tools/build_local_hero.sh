@@ -3,7 +3,7 @@
 # installed"; "Embedded in the DLL"): their edited files built into DeadlockOfRain.dll, for their PC only. Never packaged,
 # never uploaded. The guide for the creator is charactersFinal/build&install.md; doc 03 §5c has the short version.
 #
-#   bash tools/build_local_hero.sh <id> <folder> [--install]   e.g. mokrill charactersFinal/mokrillFiles --install
+#   bash tools/build_local_hero.sh <id> <folder> [--install] [--r2modman]   e.g. mokrill charactersFinal/mokrillFiles --install
 #   bash tools/build_local_hero.sh --uninstall                  back to main's dev build with every hero
 #
 # <folder>/mod-cache is the hero's cache (heroes/<id>/, sounds/, images/, props/) and gets built into the DLL as it is.
@@ -11,6 +11,9 @@
 # is newer than the hero's .dlm it is converted back into mod-cache (DeadlockExtract --import-glb).
 # --install copies the DLL into the Steam copy and writes $LOCALAPPDATA/DeadlockOfRain/local-hero.txt: while that file exists the
 # dev guard leaves the Steam copy alone and lab_restore.sh puts this DLL back instead of main's.
+# --r2modman (2026-11-01) also writes <folder>/r2modman/<Name>-<version>.zip for r2modman's "Import local mod" (the creator's
+# own profile; the version is the build time, so every import is newer). Same plugin id as Risk of Deadlock: disable that one
+# in the profile. Never upload the zip: the DLL holds Deadlock's files.
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 R="/c/Program Files (x86)/Steam/steamapps/common/Risk of Rain 2"
@@ -28,7 +31,8 @@ if [ "$1" = "--uninstall" ]; then
   exit 0
 fi
 
-ID="$1"; F="$2"; INSTALL="$3"
+ID="$1"; F="$2"; INSTALL=""; R2=""
+for a in "${@:3}"; do case "$a" in --install) INSTALL=1;; --r2modman) R2=1;; *) echo "unknown option $a"; exit 1;; esac; done
 [ -n "$ID" ] && [ -n "$F" ] || { sed -n 5,7p "$0"; exit 1; }
 F="$(cd "$F" && pwd)"
 C="$F/mod-cache"
@@ -87,11 +91,58 @@ dotnet build "$ROOT/plugin" -c Release -v q -nologo -p:LocalHeroDir="$(cygpath -
 echo "   $OUT/DeadlockOfRain.dll ($(du -h "$OUT/DeadlockOfRain.dll" | cut -f1))"
 
 # 5. into the Steam copy
-if [ "$INSTALL" = "--install" ]; then
+if [ -n "$INSTALL" ]; then
   [ -n "$(running)" ] && { echo "Risk of Rain 2 is running: close it, then run this again with --install."; exit 1; }
   [ -d "$P" ] || { echo "No $P: is the mod installed in the Steam copy?"; exit 1; }
   cp "$OUT/DeadlockOfRain.dll" "$P/DeadlockOfRain.dll"
   cygpath -w "$OUT/DeadlockOfRain.dll" > "$MARK"
   [ -f "$R/winhttp.dll" ] || cp "$R/winhttp.dll.melty-off" "$R/winhttp.dll" 2>/dev/null || true
   echo "== Installed: start Risk of Rain 2 from Steam. Back to every hero: bash tools/build_local_hero.sh --uninstall"
+fi
+
+# 6. a zip for r2modman's "Import local mod"
+if [ -n "$R2" ]; then
+  python - "$OUT/DeadlockOfRain.dll" "$F/r2modman" "$ID" "$ROOT" <<'EOF'
+import io, json, os, sys, time, zipfile
+dll, outdir, hid, root = sys.argv[1:5]
+row = next(r for r in json.load(open(os.path.join(root, 'design', 'heroes.json'), encoding='utf-8'))['rows'] if r['id'] == hid)
+display = row['displayName']
+name = ''.join(c if c.isalnum() else '_' for c in display.replace('&', 'and')).replace('__', '_') + '_Own_Files'
+version = time.strftime('1.%y%m%d.%H%M')
+manifest = {'name': name, 'version_number': version, 'website_url': '',
+            'description': f'{display} from my own edited files (built into the DLL, Deadlock not needed). My PC only.',
+            'dependencies': ['bbepis-BepInExPack-5.4.2122']}
+readme = '\n'.join([f'# {display}, my own files', '',
+    f'Risk of Deadlock built with my edited {display} inside the DLL: only {display}, and Deadlock is not read. '
+    'Built ' + time.strftime('%Y-%m-%d %H:%M') + '.', '',
+    'Disable "Risk of Deadlock" in this profile while this one is on (both are the same plugin).', ''])
+from PIL import Image
+icon = Image.new('RGBA', (256, 256))
+px = icon.load()
+for y in range(256):
+    for x in range(256):
+        d = min(1.0, (((x - 128) / 150) ** 2 + ((y - 120) / 130) ** 2) ** 0.5)
+        k = (1 - d) ** 1.6
+        px[x, y] = (int(24 + 190 * k), int(18 + 120 * k), int(16 + 60 * k), 255)
+render = os.path.join(root, 'build', 'pages', 'img', hid + '.webp')   # our own in-game render (tools/portraits.py)
+if os.path.exists(render):
+    im = Image.open(render).convert('RGBA')
+    im = im.crop(im.getbbox())
+    tall = 200
+    w = round(im.width * tall / im.height)
+    if w > 240: w, tall = 240, round(im.height * 240 / im.width)
+    im = im.resize((w, tall), Image.LANCZOS)
+    icon.alpha_composite(im, (128 - w // 2, 256 - tall))
+buf = io.BytesIO(); icon.convert('RGB').save(buf, 'PNG')
+os.makedirs(outdir, exist_ok=True)
+for f in os.listdir(outdir):
+    if f.endswith('.zip'): os.remove(os.path.join(outdir, f))
+zpath = os.path.join(outdir, f'{name}-{version}.zip')
+with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
+    z.writestr('manifest.json', json.dumps(manifest, indent=2))
+    z.writestr('README.md', readme)
+    z.writestr('icon.png', buf.getvalue())
+    z.write(dll, 'DeadlockOfRain.dll')
+print(f'== r2modman zip: {zpath}')
+EOF
 fi
