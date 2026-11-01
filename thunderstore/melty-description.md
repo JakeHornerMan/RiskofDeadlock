@@ -1,4 +1,4 @@
-Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King, Billy, Wraith or Mina** from Deadlock, with their real models, animations, guns, abilities, icons, sounds and voice lines, read from your own Deadlock install. **Pocket is coming soon**: she waits in character select as a black silhouette.
+Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King, Billy, Wraith or Mina** from Deadlock, with their real models, animations, guns, abilities, icons, sounds and voice lines, read from your own Deadlock install. **Pocket is coming soon**: he waits in character select as a black silhouette.
 
 ## What you get
 - Ten new survivors, each with Risk of Rain 2's four skills built from their Deadlock kit, and their **Deadlock ultimate as equipment** (Q). Every hero starts holding their own, and anyone can find the ults in chests.
@@ -35,5 +35,6 @@ Every hero's abilities, numbers and measured damage, with our own in-game pictur
 
 ## Good to know
 - You need **Risk of Rain 2 and Deadlock** installed. Nothing from either game is in this download: before the first start, Melty reads the heroes from your Deadlock folder (about 2 minutes, once per Deadlock update), and the setup screen says what it is reading. Then the loading screen shows each hero being built, with a timer: the game is not stuck.
+- Install Risk of Rain 2 through Steam (inside a Steam library): Steam may close or restart a copy kept elsewhere.
 - Playing together needs 1.2.0 on every PC (Mina is new hero content), with the same heroes.
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6821 (v1.2.0, 2026-10-30).
