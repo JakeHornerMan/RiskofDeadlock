@@ -36,8 +36,9 @@ namespace DeadlockOfRain
             BuiltWith.Read();
             // every start: the loading screen says the Deadlock heroes are being read and built, and names each one (FirstRunOverlay)
             FirstRunOverlay.Show();
-            // Thunderstore install: read the heroes from Deadlock now; the loading screen waits for it (Survivors.cs)
-            if (!FirstRun.Start(DeadlockCache.DefaultDir(), DeadlockFolder.Value)) OpenCache();
+            // Thunderstore install: read the heroes from Deadlock now; the loading screen waits for it (Survivors.cs).
+            // A DLL with the creator's own hero files built in (LocalHero) never looks for Deadlock.
+            if (LocalHero.Init() || !FirstRun.Start(DeadlockCache.DefaultDir(), DeadlockFolder.Value)) OpenCache();
 
             if (!MeltyTest.Off("harmony")) new Harmony(Guid).PatchAll(typeof(Plugin).Assembly);
             ContentManager.collectContentPackProviders += add => add(new DeadlockContentProvider());

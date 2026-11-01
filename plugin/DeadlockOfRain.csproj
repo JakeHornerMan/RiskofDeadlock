@@ -46,4 +46,8 @@
     <EmbeddedResource Include="Assets\discord.png" LogicalName="DeadlockOfRain.discord.png" />
     <EmbeddedResource Include="Assets\heroes.png" LogicalName="DeadlockOfRain.heroes.png" />
   </ItemGroup>
+  <!-- the creator's own hero files inside the DLL (tools/build_local_hero.sh: -p:LocalHeroDir=<folder>, their PC only; LocalHero.cs) -->
+  <ItemGroup Condition="'$(LocalHeroDir)' != ''">
+    <EmbeddedResource Include="$(LocalHeroDir)\**\*" LogicalName="localhero/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
 </Project>

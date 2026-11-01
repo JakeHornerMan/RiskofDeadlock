@@ -212,6 +212,20 @@ them**. Leave it installed and tell them it is ready.
 - DLM: `python tools/dlm_pose.py <hero> [frame] [clip-substring]` reads the cache directly. `dlm_sub.py`, `dlm_check.py` and `dlm_tris.py` take a `.dlm` path and must be run from the repo root.
 - Decompiled RoR2: `C:\Users\jakeh\ror2-decomp\ror2`, or `ilspycmd -t <Type> RoR2.dll`.
 
+## 5c. The creator's own hero build (since 2026-11-01, their PC only)
+Creator: "a mod that will run mo and krill only ... without the need of deadlock installed ... just for my pc"; they chose
+"Embedded in the DLL". Their edited files live in the gitignored `charactersFinal/<hero>Files/` (`mod-cache/` = the hero's cache,
+`edit/<id>.glb` = the model for Blender); their own guide is `charactersFinal/build&install.md`.
+- `bash tools/build_local_hero.sh mokrill charactersFinal/mokrillFiles [--install]`: makes `edit/mokrill.glb` once from Deadlock
+  (`--keep-glb`), converts it back when it is newer than the dlm (`--import-glb`, doc 01 §6.6b), checks every file the hero's
+  rows use (`manifest_owners.json`), writes `ready.json`, builds `build/local-<id>/DeadlockOfRain.dll` (own obj folder; main's
+  `plugin/bin` DLL is untouched) with the folder embedded (doc 02 §3), and `--install` copies it into the Steam copy.
+- **`%LOCALAPPDATA%\DeadlockOfRain\local-hero.txt`** (the installed DLL's path) marks it installed: `steam_dev_guard.sh` leaves
+  the Steam copy alone, and `dev_run.sh` / `lab_restore.sh` put that DLL in instead of main's, so `run_test.sh <id>` tests it
+  and nothing swaps it out. `build_local_hero.sh --uninstall` deletes the file and restores main's dev build. The Melty app
+  still puts its release back when it starts.
+- Never package or upload this DLL, `mod-cache` or the glb: they are Deadlock's files.
+
 ## 5b. Daily watch: game updates and Melty breaks (since 2026-10-21)
 The full manual is **doc 10** (`docs/10-DAILY-WATCH.md`); this is the summary.
 

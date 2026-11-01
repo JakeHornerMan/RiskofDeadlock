@@ -5,6 +5,10 @@
 - Deadlock ClientVersion 6817 (build 26143760, 2026-10-22 evening; no clip, mesh or sound change for our heroes); 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
+## Own Mo & Krill build (2026-11-01, the creator's PC only)
+- `charactersFinal/mokrillFiles/mod-cache` embedded in the DLL (`LocalHero.cs`, `tools/build_local_hero.sh`): only Mo & Krill, Deadlock not read.
+  Extractor `--keep-glb` / `--import-glb` (glb from Blender -> dlm; unedited round trip byte-identical). Doc 03 §5c.
+
 ## 1.2.0 (2026-10-30)
 - Mina released on Melty, Pocket the coming-soon tile. Start-up trail (`StartTrail.cs`, `start-trail.txt`) for Melty's
   "closed right after starting": steps with seconds, the Steam line, a `closing` line, "ended without closing" on the next start (doc 02 gotcha 39).

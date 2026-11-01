@@ -21,6 +21,7 @@ namespace DeadlockOfRain
 
         public static string DefaultDir()
         {
+            if (LocalHero.Dir != null) return LocalHero.Dir;
             var env = Environment.GetEnvironmentVariable("DEADLOCKOFRAIN_CACHE");
             if (!string.IsNullOrEmpty(env)) return env;
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DeadlockOfRain", "cache");

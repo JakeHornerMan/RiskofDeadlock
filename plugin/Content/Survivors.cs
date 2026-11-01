@@ -54,6 +54,8 @@ namespace DeadlockOfRain
             get
             {
                 if (released != null) return released;
+                // the creator's own hero files in the DLL: only those heroes (LocalHero)
+                if (LocalHero.Heroes != null) return released = HeroRow.All.Where(h => LocalHero.Heroes.Contains(h.Id)).ToArray();
                 var file = System.IO.Path.Combine(Plugin.PluginDir ?? "", "heroes.txt");
                 if (!System.IO.File.Exists(file)) return released = HeroRow.All;
                 var ids = new HashSet<string>(System.IO.File.ReadAllLines(file).Select(l => l.Trim()).Where(l => l.Length > 0));

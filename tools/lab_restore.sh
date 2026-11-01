@@ -21,7 +21,10 @@ if [ -n "$MELTY_OFF" ]; then [ -f "$R/winhttp.dll.melty-off" ] && rm -f "$R/winh
 else [ -f "$R/winhttp.dll" ] || cp "$R/winhttp.dll.melty-off" "$R/winhttp.dll" 2>/dev/null; fi
 D="$R/BepInEx/plugins/DeadlockOfRain"; ROOT="$(dirname "$0")/.."
 if [ -d "$D" ]; then
-  [ -f "$ROOT/plugin/bin/Release/netstandard2.1/DeadlockOfRain.dll" ] && cp "$ROOT/plugin/bin/Release/netstandard2.1/DeadlockOfRain.dll" "$D/"
+  # the creator's own hero build (tools/build_local_hero.sh --install) stays in until they --uninstall it
+  LOCAL_DLL=$(cat "$LOCALAPPDATA/DeadlockOfRain/local-hero.txt" 2>/dev/null | tr -d '')
+  if [ -n "$LOCAL_DLL" ] && [ -f "$(cygpath -u "$LOCAL_DLL")" ]; then cp "$(cygpath -u "$LOCAL_DLL")" "$D/DeadlockOfRain.dll"; echo "own hero build kept (local-hero.txt)"
+  else [ -f "$ROOT/plugin/bin/Release/netstandard2.1/DeadlockOfRain.dll" ] && cp "$ROOT/plugin/bin/Release/netstandard2.1/DeadlockOfRain.dll" "$D/"; fi
   python -c "import json,sys; print('\n'.join(h['id'] for h in json.load(open(sys.argv[1], encoding='utf-8'))['rows']))" "$ROOT/design/heroes.json" > "$D/heroes.txt"
   rm -f "$D/coming-soon.txt"
   python -c "import json,sys,os; want=open(sys.argv[2]).read().split(); f=sys.argv[1]

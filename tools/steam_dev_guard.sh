@@ -24,6 +24,8 @@ L="$LOCALAPPDATA/DeadlockOfRain"
 
 [ -d "$D" ] || exit 0
 [ -f "$L/keep-release-cut" ] && exit 0
+# the creator's own hero build is installed (tools/build_local_hero.sh --install; --uninstall brings the dev build back)
+[ -f "$L/local-hero.txt" ] && exit 0
 for f in "$LOCALAPPDATA/Melty/test/risk-of-deadlock-2.json" "$LOCALAPPDATA/Melty/test/deadlock-of-rain.json"; do
   [ -n "$(find "$f" -mmin -180 2>/dev/null)" ] && exit 0
 done

@@ -353,6 +353,15 @@ this cache is "stale" but still a superset of what 0.2.0 needs:
   unchanged by that, so `Version` stayed 1.2.0 (a release's cut-down manifest gives it its own stamp, §5); 1.3.0 is the per-hero change above.
 - The plugin reads `deadlockBuild` for its log line only. It does **not** re-check the stamp.
 
+### 6.6b Dev-only modes: `--keep-glb` and `--import-glb` (2026-11-01)
+For the creator's own hero build (doc 03 §5c, `tools/build_local_hero.sh`), not used by Melty or Thunderstore:
+- `--heroes <id> --keep-glb <file.glb>`: `ExportHero` also copies the glTF it already makes (the manifest's meshes and clips,
+  additive clips composed) to that file before deleting `_gltf`. That glb is what the creator edits in Blender.
+- `--import-glb <file.glb> --hero <id> --out <cache> [--manifest m.json]`: `ModelRoot.Load` + `DlmWriter.Write` with the
+  manifest's hero entry into `<cache>/heroes/<id>/` (written to `<id>.tmp`, swapped in when done). No Deadlock needed.
+  An unedited glb round-trips byte-identical to the extractor's own `.dlm` (Mo & Krill: 167 bones, 65 173 verts, 17/17 clips).
+What players' extractor writes didn't change, so `Version` stays 1.9.0 (as in 1.2.0, §6.6) and the `extractor-1.9.0` tag still fits.
+
 ### 6.7 Building and publishing the extractor exe
 ```
 cd extractor

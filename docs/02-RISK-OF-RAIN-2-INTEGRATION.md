@@ -63,6 +63,11 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
 ## 3. Boot sequence
 
 1. **`Plugin.Awake`** (BepInEx chainloader):
+   - **`LocalHero.Init`** first (2026-11-01, `Runtime/LocalHero.cs`): a DLL built with `-p:LocalHeroDir=<folder>`
+     (`tools/build_local_hero.sh`, the creator's PC only) carries that folder as `localhero/...` resources (csproj). They are
+     written out to `%LOCALAPPDATA%\DeadlockOfRain\embedded\` once per DLL build (module version id in `dll-build.txt`),
+     `DeadlockCache.DefaultDir()` returns that folder, `FirstRun.Start` is skipped (Deadlock is never looked for) and
+     `Survivors.Released` keeps only the heroes in its `ready.json`. The normal build has no such resources and behaves as before.
    - `FirstRun.Start` (Thunderstore build only: `extract/DeadlockExtract.exe` beside the DLL). It finds Deadlock (config
      *Deadlock folder*, env `DEADLOCKOFRAIN_DEADLOCK`, RoR2's own Steam library, Steam's path from `reg.exe query
      HKCU\Software\Valve\Steam`, `C:\Program Files (x86)\Steam`, then every library in `libraryfolders.vdf`; Deadlock is

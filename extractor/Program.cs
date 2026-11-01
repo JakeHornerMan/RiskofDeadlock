@@ -3,6 +3,9 @@
 //
 //   DeadlockExtract.exe --deadlock <Deadlock folder> --out <cache folder> [--manifest manifest.json] [--force]
 //   DeadlockExtract.exe --deadlock <Deadlock folder> --list-models     (each hero key's model, from scripts/heroes.vdata)
+//   ... --heroes <id> --keep-glb <file.glb>      also keep the hero's glTF (the meshes and clips the mod uses), to edit in Blender
+//   DeadlockExtract.exe --import-glb <file.glb> --hero <id> --out <cache folder> [--manifest m.json]
+//        an edited glTF back into heroes/<id>/ (dlm + textures) without Deadlock (tools/build_local_hero.sh, the creator's PC)
 //
 // Melty runs this once before the first start (recipe.setup) and again when Deadlock updates; the Thunderstore build's
 // plugin runs it on every start from BepInEx/plugins/.../extract/ (it returns at once when ready.json is current).
@@ -24,10 +27,11 @@ public static class Program
 {
     public const string Version = "1.9.0";
     static StreamWriter? log;
+    static string? keepGlb;   // --keep-glb: copy the hero's glTF here before it is deleted
 
     public static int Main(string[] args)
     {
-        string? deadlock = null, outDir = null, manifestPath = null;
+        string? deadlock = null, outDir = null, manifestPath = null, importGlb = null, importHero = null;
         bool force = false, listModels = false;
         HashSet<string>? only = null;   // 1.8.0: --heroes a,b: read only these (the plugin's hero picker)
         for (int i = 0; i < args.Length; i++)
@@ -39,6 +43,9 @@ public static class Program
                 case "--manifest": manifestPath = args[++i]; break;
                 case "--force": force = true; break;
                 case "--list-models": listModels = true; break;
+                case "--keep-glb": keepGlb = Path.GetFullPath(args[++i]); break;
+                case "--import-glb": importGlb = args[++i]; break;
+                case "--hero": importHero = args[++i]; break;
                 case "--heroes": only = new HashSet<string>(args[++i].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), StringComparer.OrdinalIgnoreCase); break;
             }
         }
@@ -49,6 +56,7 @@ public static class Program
         log = new StreamWriter(Path.Combine(outDir, "extract.log"), false, new UTF8Encoding(false)) { AutoFlush = true };
         try
         {
+            if (importGlb != null) return ImportGlb(importGlb, importHero ?? throw new Exception("--import-glb needs --hero <id>"), outDir, manifestPath);
             if (deadlock == null) throw new Exception("No Deadlock folder given (--deadlock).");
             if (listModels) return ListModels(deadlock);
             return Run(deadlock, outDir, manifestPath, force, only);
@@ -382,7 +390,26 @@ public static class Program
                 ? new VmatInfo(Vector3.One, false, true, Vector3.Zero) : null;
         var stats = DlmWriter.Write(model, hero, dir, Log, vc);
         Log($"  {hero.Id}: {stats}");
+        if (keepGlb != null) { Directory.CreateDirectory(Path.GetDirectoryName(keepGlb)!); File.Copy(glb, keepGlb, true); Log($"  glTF kept: {keepGlb}"); }
         Directory.Delete(tmp, true);
+    }
+
+    /// <summary>--import-glb: the creator's edited glTF (Blender) to heroes/&lt;id&gt;/ the same way ExportHero converts Deadlock's,
+    /// with the manifest's clip list; written beside and swapped in only when it worked. Deadlock is not needed.</summary>
+    static int ImportGlb(string glb, string id, string outDir, string manifestPath)
+    {
+        var manifest = JsonSerializer.Deserialize<Manifest>(File.ReadAllText(manifestPath), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        var hero = manifest.Heroes.FirstOrDefault(h => string.Equals(h.Id, id, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception($"hero {id} is not in {manifestPath}");
+        var dir = Path.Combine(outDir, "heroes", hero.Id);
+        var work = dir + ".tmp";
+        TryDeleteDir(work);
+        Directory.CreateDirectory(work);
+        Log($"Importing {glb} as {hero.Id}");
+        var stats = DlmWriter.Write(ModelRoot.Load(glb), hero, work, Log, null);
+        Log($"  {hero.Id}: {stats}");
+        TryDeleteDir(dir);
+        Directory.Move(work, dir);
+        return 0;
     }
 
     /// <summary>One effect model (a prop): its meshes and materials to DLM; since 1.6.0 also its skeleton and the clips the
