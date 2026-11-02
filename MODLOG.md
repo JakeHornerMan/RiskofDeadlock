@@ -5,6 +5,10 @@
 - Deadlock ClientVersion 6817 (build 26143760, 2026-10-22 evening; no clip, mesh or sound change for our heroes); 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
+## 1.5.0 (2026-11-02)
+- Pocket released on Melty: all 11 heroes playable, no coming-soon tile; Mina's rebuilt Nox Nostra and Jump-only umbrella; built with Deadlock 6839 (cache 11/11).
+  Release-cut test 11/11 32/32, BREAK 20/20; Melty release `503d0c88-…`. The Steam copy's hand-installed BepInEx needs RoR2BepInExPack for Newtonsoft.Json.
+
 ## 2026-11-02 (main, not released)
 - Nox Nostra bats only (30 dark bats, no beam/mist/sparks/lights/flash/shake per bite); Frog Form opening: the case pops, the frog jumps out (no giant frog); Pocket's hair near-black with a sheen (`heroes.tintMaterials`/`tintColor`/`tintGloss`).
 - Later: the bat stream a tight column of 48 glowing bats; `CaseFloorGuard` keeps suitcase props out of the floor; Frog Form slams on top of an enemy (`PocketParts.OnEnemy`); `tools/r2modman_install.py` / `--r2modman-install`.
