@@ -89,7 +89,7 @@ VANILLA = {
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
  'pocket': [('2026-11-02', ['Frog Form: the case lands, jolts three times and pops open in a green burst, and you leap out of it as the frog (no giant frog, no wild spinning)',
-                        'Hair near-black with a sheen, closer to Deadlock’s']),
+                        'Hair near-black with a sheen, closer to Deadlock’s', 'Frog Form: landing on top of an enemy slams too (damage and the stun ring), and the frog hops off it', 'The suitcase never sinks into the floor']),
             ('v1.2.0c', ['Flying Cloak: only his coat flies (no Pocket inside it), collar to the sky',
                         'Enchanter’s Satchel: the case floats above the floor, shaking and turning while he is inside',
                         'Frog Form: the frog takes off, flies and lands in step with its hop',
@@ -105,7 +105,7 @@ CHANGES = {
                         'Flying Cloak: a living cloak you can teleport to; Enchanter’s Satchel: hide in Deadlock’s suitcase and drink the life of everything near it',
                         'Frog Form (Q): the suitcase grows, a giant Deadlock frog rises out of it, and you hop as a frog, splashing every landing',
                         'Balanced with the spec’s own levers: Barrage amp 6 → 4 % a burst, the Satchel burst 600 → 450 %']),],
- 'mina': [('2026-11-02', ['Nox Nostra: bats only, 30 big dark bats flapping down the cone instead of a beam, mist, sparks and flashes; far lighter on the PC']),
+ 'mina': [('2026-11-02', ['Nox Nostra: bats only, a tight stream of 48 big glowing bats flapping down the cone instead of a beam, mist, sparks and flashes; far lighter on the PC']),
           ('v1.1.0d', ['Health 150 +27 (was Huntress’s 90 +27)']),
           ('v1.1.0c', ['Rake 1000 % (was 400 %), a crimson slash across every enemy it hits, and its area shown as a half-disc at her own height (on the ground or in the air)',
                         'The umbrella: hold Jump in the air and it opens, after a jump or not, and stays open while you hold it; 80 % steering and 50 % faster drift',
