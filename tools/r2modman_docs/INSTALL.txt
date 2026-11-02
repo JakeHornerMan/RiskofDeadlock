@@ -1,0 +1,150 @@
+RISK OF DEADLOCK - INSTALL GUIDE (JakeHornerMan's own build)
+===========================================================
+
+Two ways to install. Pick ONE and keep only one copy of the mod at a time:
+  PART A  By hand, into the Steam copy of Risk of Rain 2   (started with Steam's Play button)
+  PART B  With r2modman                                    (started with r2modman's "Start modded")
+Then: PART C updating, PART D removing everything, PART E problems.
+(These steps were followed one by one on a cleared PC on 2026-11-02 and the mod loaded both ways.)
+
+You need:
+  - Windows, Steam, and Risk of Rain 2 bought and installed on Steam.
+  - The package zip: JakeHornerMan-Risk_of_Deadlock-1.5.x.zip
+    (made by the build, in charactersFinal\r2modman\ of the RiskofDeadlock repo).
+  - Deadlock is NOT needed: every hero's files are inside the DLL.
+Never upload or share the zip or the DLL: they contain Deadlock's files.
+
+
+-------------------------------------------------------------------------------------------------------
+PART A - INSTALL BY HAND (Steam copy)
+-------------------------------------------------------------------------------------------------------
+A1. Close Risk of Rain 2 if it is running.
+
+A2. Find the game folder.
+    Steam > Library > right-click Risk of Rain 2 > Manage > Browse local files.
+    Usually: C:\Program Files (x86)\Steam\steamapps\common\Risk of Rain 2
+    You should see "Risk of Rain 2.exe" in it. This guide calls it the GAME FOLDER.
+
+A3. Install BepInEx (the mod loader), once.
+    a. Open https://thunderstore.io/c/riskofrain2/p/bbepis/BepInExPack/ and download version 5.4.2122
+       ("Manual Download"). Direct link: https://thunderstore.io/package/download/bbepis/BepInExPack/5.4.2122/
+    b. Right-click the downloaded zip > Extract All, into a new empty folder.
+    c. Inside it, open the folder "BepInExPack". Select EVERYTHING inside it (the BepInEx folder,
+       winhttp.dll, doorstop_config.ini and the rest) and copy it into the GAME FOLDER.
+       Say Yes if Windows asks to replace files.
+    d. Check: the GAME FOLDER now has winhttp.dll, doorstop_config.ini and a BepInEx folder with "core" in it.
+
+A4. Make the plugins folder: in GAME FOLDER\BepInEx make a folder named "plugins" if it isn't there yet.
+    (Starting the game once with BepInEx also makes it.)
+
+A5. Install RoR2BepInExPack (Risk of Rain 2's own BepInEx helper), once. WITHOUT IT THE MOD DOES NOT LOAD:
+    the log then says "Could not load file or assembly 'Newtonsoft.Json, Version=12.0.0.0'" (the game itself
+    has no Newtonsoft.Json; this pack brings it).
+    a. Open https://thunderstore.io/c/riskofrain2/p/RiskofThunder/RoR2BepInExPack/ and download version 1.49.0
+       ("Manual Download"). Direct link: https://thunderstore.io/package/download/RiskofThunder/RoR2BepInExPack/1.49.0/
+    b. Extract the zip into a new empty folder (Extract All).
+    c. Make the folder  GAME FOLDER\BepInEx\plugins\RiskofThunder-RoR2BepInExPack
+    d. In the extracted pack, open the folder "plugins" and copy the folder "RoR2BepInExPack" from there INTO that new
+       folder, so you get
+           GAME FOLDER\BepInEx\plugins\RiskofThunder-RoR2BepInExPack\RoR2BepInExPack\RoR2BepInExPack.dll
+       (and Newtonsoft.Json.dll next to it).
+       DO NOT put it straight in plugins\RoR2BepInExPack: BepInExPack 5.4.2122 deletes a folder with exactly that name
+       every time the game starts (the log says "Deleting folder: ...\plugins\RoR2BepInExPack").
+
+A6. Put the mod in.
+    a. Make the folder  GAME FOLDER\BepInEx\plugins\JakeHornerMan-Risk_of_Deadlock
+    b. Open the package zip. Copy the files at its top (manifest.json, icon.png, README.md, CHANGELOG.md, INSTALL.txt,
+       README.txt) into that folder, then open the zip's "plugins" folder and copy what is in it (DeadlockOfRain.dll,
+       LICENSE.txt, THIRD-PARTY-NOTICES.txt, built-with.txt) into the SAME folder (not into a plugins folder of its own).
+       That is exactly what r2modman does with the package.
+    c. Check: GAME FOLDER\BepInEx\plugins\JakeHornerMan-Risk_of_Deadlock\DeadlockOfRain.dll exists (about 600 MB).
+    d. Make sure no OTHER copy of DeadlockOfRain.dll is anywhere in GAME FOLDER\BepInEx\plugins.
+
+A7. Start it: press Play on Steam.
+    The first start of a new DLL unpacks the hero files to %LOCALAPPDATA%\DeadlockOfRain\embedded
+    (a few seconds). In character select you should see all 11 Deadlock heroes.
+
+A8. Check it loaded (if anything looks wrong): open GAME FOLDER\BepInEx\LogOutput.log and look for
+        Playing abrams, billy, haze, ... from your own files (built into this DLL); Deadlock is not read
+
+    Note for this PC: two things here can change the Steam copy behind your back.
+    - The Melty app puts its own Risk of Deadlock release back when it starts (it renames winhttp.dll to
+      winhttp.dll.melty-off). Close the Melty app, or use PART B.
+    - The scheduled task "DeadlockOfRain dev guard" puts the developer build back every 5 minutes. To keep a
+      hand install, disable that task in Task Scheduler (or create the empty file
+      %LOCALAPPDATA%\DeadlockOfRain\keep-release-cut while you use it).
+
+
+-------------------------------------------------------------------------------------------------------
+PART B - INSTALL WITH r2modman
+-------------------------------------------------------------------------------------------------------
+B1. Install r2modman once: https://thunderstore.io/c/riskofrain2/p/ebkr/r2modman/ (or r2modman.com),
+    run the installer, open it, pick Risk of Rain 2, and pick (or create) a profile. Mine is "Deadlock".
+
+B2. The two packs the mod needs, in the profile: in r2modman's "Online" tab search and install
+      - "BepInExPack" by bbepis (5.4.2122)
+      - "RoR2BepInExPack" by RiskofThunder (1.49.0 or newer): without it the mod does not load (Newtonsoft.Json).
+    Both show under "Installed" afterwards. (Both already there in my Deadlock profile.)
+
+B3. Remove any old Risk of Deadlock first: "Installed" tab > Risk_of_Deadlock (any version, any author)
+    > Uninstall. Only one copy may be installed.
+
+B4. Import the package: Settings (left) > Profile > Import local mod > choose
+    JakeHornerMan-Risk_of_Deadlock-1.5.x.zip. In the form, check:
+        Name      Risk_of_Deadlock
+        Author    JakeHornerMan   (type it if empty)
+        Version   1.5.x
+    then Import. It now shows in "Installed".
+
+B5. Start it: press "Start modded" (top left). Not Steam's Play button: that starts the Steam copy.
+
+B6. Check it loaded: r2modman > Settings > Locations > Browse profile folder, then open
+    BepInEx\LogOutput.log and look for the same "Playing ... from your own files" line as in A8.
+
+B (the quick way, with the RiskofDeadlock repo): one command does B3 to B4 for you, closing r2modman first and
+    starting it again after (it waits if the game is running):
+        python tools/r2modman_install.py charactersFinal/r2modman/JakeHornerMan-Risk_of_Deadlock-1.5.x.zip --wait
+    or build a new version and install it in one go:
+        bash tools/build_local_hero.sh all charactersFinal --r2modman-install
+
+
+-------------------------------------------------------------------------------------------------------
+PART C - UPDATING TO A NEW 1.5.x
+-------------------------------------------------------------------------------------------------------
+Close the game first.
+  By hand:   replace the files in GAME FOLDER\BepInEx\plugins\JakeHornerMan-Risk_of_Deadlock as in A6 (DeadlockOfRain.dll
+             comes from the zip's plugins folder).
+  r2modman:  Uninstall the old Risk_of_Deadlock (B3), then Import local mod with the new zip (B4).
+             Or the one command from "B (the quick way)".
+The first start of the new DLL unpacks its files again (a few seconds).
+
+
+-------------------------------------------------------------------------------------------------------
+PART D - REMOVING EVERYTHING (start from scratch)
+-------------------------------------------------------------------------------------------------------
+Close the game and r2modman first. Never delete charactersFinal: that is where my edited heroes live.
+D1. r2modman: Installed > Risk_of_Deadlock > Uninstall (every copy). Optional: delete its download cache
+    folders %APPDATA%\r2modmanPlus-local\RiskOfRain2\cache\JakeHornerMan-Risk_of_Deadlock (and any
+    Unknown-Risk_of_Deadlock / Risk_of_Deadlock-Risk_of_Deadlock).
+    (Repo command: python tools/r2modman_install.py --uninstall)
+D2. Steam copy, in the GAME FOLDER delete: the BepInEx folder (RoR2BepInExPack and the mod go with it),
+    winhttp.dll, winhttp.dll.melty-off, doorstop_config.ini, .doorstop_version. The game then starts unmodded.
+D3. The mod's own files: delete %LOCALAPPDATA%\DeadlockOfRain\embedded, \cache, \extract and any \cache.* folder.
+    Keep discord-update-webhook.txt there (the Discord update link).
+D4. Optional: Steam > Risk of Rain 2 > Properties > Installed Files > Verify integrity, to be sure the game is clean.
+
+
+-------------------------------------------------------------------------------------------------------
+PART E - PROBLEMS
+-------------------------------------------------------------------------------------------------------
+No Deadlock heroes in character select
+  - The DLL isn't loading: check the folder names in A6 / B4 and that only one DeadlockOfRain.dll exists.
+  - "Could not load file or assembly 'Newtonsoft.Json'" in the log: RoR2BepInExPack is missing (A5 / B2).
+  - Steam's Play but you installed with r2modman (or the other way round): use the matching start button.
+  - Open LogOutput.log (A8 / B6) and look for "Risk of Deadlock" errors.
+The game starts unmodded from Steam
+  - winhttp.dll is missing or renamed to winhttp.dll.melty-off (the Melty app): redo A3, close the Melty app.
+Two copies / old version still showing
+  - Uninstall every Risk_of_Deadlock in r2modman, delete extra folders holding DeadlockOfRain.dll, install once.
+The first start takes long
+  - Normal once per new DLL: it unpacks about 1,800 files (600 MB) to %LOCALAPPDATA%\DeadlockOfRain\embedded.

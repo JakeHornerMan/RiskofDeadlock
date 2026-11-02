@@ -257,6 +257,16 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   (manifest `author`; r2modman's folder and `mods.yml` name), zip `JakeHornerMan-Risk_of_Deadlock-<version>.zip`, and the version
   is one line, **1.5.x**: `build_local_hero.sh` bumps the patch in `tools/r2modman_version.txt` (committed) on every build. The
   install removes every other package holding our DLL, so the old `Unknown-Risk_of_Deadlock` goes with the first 1.5.x.
+- **The package is laid out like a Thunderstore release** (creator, 2026-11-02: "in the style of thunderstore ... like a proper
+  release every time"): **`tools/r2modman_package.py`** (run by `--r2modman`) writes `manifest.json` (author JakeHornerMan, both
+  dependencies: bbepis-BepInExPack 5.4.2122 and RiskofThunder-RoR2BepInExPack 1.49.0), `icon.png`, `README.md` and `CHANGELOG.md`
+  (from `tools/r2modman_docs/`, `{BUILT_WITH}` filled in), `INSTALL.txt` and `README.txt` at the top, and `plugins/DeadlockOfRain.dll`,
+  `LICENSE.txt`, `THIRD-PARTY-NOTICES.txt`, `built-with.txt`; the guides are also written beside the zip in `charactersFinal/r2modman/`.
+  Like `package.py` it **refuses to build without a `## <version>` section** in `tools/r2modman_docs/CHANGELOG.md`, so write the next
+  version's section first; the version number is used only once it builds. `r2modman_install.py` unpacks `plugins/` straight into the
+  mod's folder, as r2modman does. INSTALL.txt was followed on a cleared PC (2026-11-02): Part A by hand works once RoR2BepInExPack is
+  in `plugins\RiskofThunder-RoR2BepInExPack` (BepInExPack 5.4.2122 deletes `plugins\RoR2BepInExPack` on every start; without the pack
+  the mod fails on Newtonsoft.Json 12); Part B through `r2modman_install.py` (its in-game start was not run: the creator stopped it).
 
 ## 5b. Daily watch: game updates and Melty breaks (since 2026-10-21)
 The full manual is **doc 10** (`docs/10-DAILY-WATCH.md`); this is the summary.

@@ -2,13 +2,14 @@
 2026-11-02: "can we automate this process where we delete the old package and import the new dll in r2modman").
 
     python tools/r2modman_install.py <zip> [--profile Deadlock] [--wait]
+    python tools/r2modman_install.py --uninstall [--profile Deadlock]
 
 Does what r2modman's Settings > Profile > Import local mod does, after removing the old ones by hand:
 - every package in the profile that holds DeadlockOfRain.dll (or its disabled .old copy) is removed, from BepInEx/plugins and
   from the profile's mods.yml: the own-files builds and the old Thunderstore Risk_of_Deadlock alike (the same plugin twice
   clashes; Thunderstore was given up on 2026-11-02);
 - r2modman's download cache of those packages goes too (the newest import is kept there, as r2modman keeps it);
-- the zip goes to BepInEx/plugins/Unknown-<name>/ with r2modman's mm_v2_manifest.json, and its entry is added to mods.yml.
+- the zip goes to BepInEx/plugins/<author>-<name>/ with r2modman's mm_v2_manifest.json, and its entry is added to mods.yml.
 r2modman keeps mods.yml in memory and writes it back on close, so the script closes r2modman first and starts it again at the end;
 it stops only while the game is running (the creator may be playing). Never upload the zip: its DLL holds Deadlock's files.
 """
@@ -19,11 +20,15 @@ profile = 'Deadlock'
 # --wait: if the game is running (the creator is playing), wait for it to close instead of stopping
 wait = '--wait' in args
 if wait: args.remove('--wait')
+# --uninstall: only remove every Risk of Deadlock from the profile (INSTALL.txt part D)
+uninstall = '--uninstall' in args
+if uninstall: args.remove('--uninstall')
 if '--profile' in args:
     i = args.index('--profile'); profile = args[i + 1]; del args[i:i + 2]
-if len(args) != 1 or not args[0].endswith('.zip'):
+if not uninstall and (len(args) != 1 or not args[0].endswith('.zip')):
     print(__doc__.split('\n\n')[1]); sys.exit(2)
-zpath = args[0]
+zpath = args[0] if args else None
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GAME = os.path.join(os.environ['APPDATA'], 'r2modmanPlus-local', 'RiskOfRain2')
 P = os.path.join(GAME, 'profiles', profile)
 plugins, mods_yml = os.path.join(P, 'BepInEx', 'plugins'), os.path.join(P, 'mods.yml')
@@ -62,13 +67,16 @@ if r2exe:
     if running('r2modman'):
         ps("Stop-Process -Name r2modman -Force -ErrorAction SilentlyContinue"); time.sleep(1)
 
-with zipfile.ZipFile(zpath) as z:
-    manifest = json.loads(z.read('manifest.json').decode('utf-8-sig'))
-name = manifest['name']
-# the author (creator, 2026-11-02: "make the mod by JakeHornerMan"); an import without one is r2modman's Unknown
-author = manifest.get('author') or 'Unknown'
-full = author + '-' + name
-major, minor, patch = (int(x) for x in manifest['version_number'].split('.'))
+if zpath:
+    with zipfile.ZipFile(zpath) as z:
+        manifest = json.loads(z.read('manifest.json').decode('utf-8-sig'))
+    name = manifest['name']
+    # the author (creator, 2026-11-02: "make the mod by JakeHornerMan"); an import without one is r2modman's Unknown
+    author = manifest.get('author') or 'Unknown'
+    full = author + '-' + name
+    major, minor, patch = (int(x) for x in manifest['version_number'].split('.'))
+else:
+    full = None
 
 # 1. every package holding our plugin goes (folder and mods.yml entry)
 gone = []
@@ -79,13 +87,24 @@ for d in sorted(os.listdir(plugins)):
 text = open(mods_yml, encoding='utf-8').read()
 head, *blocks = re.split(r'(?m)^(?=- manifestVersion:)', text)
 keep = [b for b in blocks if not (re.search(r'(?m)^  name: (.+)$', b) and re.search(r'(?m)^  name: (.+)$', b).group(1).strip() in gone + [full])]
+keep = [b if b.endswith('\n') else b + '\n' for b in keep]
+# a backup of r2modman's list, outside the profile (r2modman copies the profile's top files into the game folder)
+bk = os.path.join(ROOT, 'build', 'r2modman-backups')
+os.makedirs(bk, exist_ok=True)
+shutil.copy2(mods_yml, os.path.join(bk, 'mods.yml.' + time.strftime('%Y%m%d-%H%M%S')))
 
 # 2. r2modman's cache: our older imports and the gone packages (the new one is put back below)
 cache = os.path.join(GAME, 'cache')
-old_imports = [d for d in (os.listdir(cache) if os.path.isdir(cache) else []) if (d.startswith('Unknown-') or d.startswith(author + '-')) and
-               any('DeadlockOfRain.dll' in fs for _, _, fs in os.walk(os.path.join(cache, d)))]
-for d in set(gone + old_imports + [full]):
+old_imports = [d for d in (os.listdir(cache) if os.path.isdir(cache) else [])
+               if any('DeadlockOfRain.dll' in fs for _, _, fs in os.walk(os.path.join(cache, d)))]
+for d in set(gone + old_imports):
     if os.path.isdir(os.path.join(cache, d)): shutil.rmtree(os.path.join(cache, d))
+
+if uninstall:
+    open(mods_yml, 'w', encoding='utf-8', newline='\n').write(head + ''.join(keep))
+    print(f'== r2modman profile "{profile}": removed {", ".join(gone) or "nothing"} (and {len(old_imports)} cached copies)')
+    if r2exe: ps(f"Start-Process -FilePath '{r2exe}'")
+    sys.exit(0)
 
 # 3. the new package, as r2modman's import lays it out
 now = int(time.time() * 1000)
@@ -97,7 +116,14 @@ mm = {'manifestVersion': 1, 'name': full, 'authorName': author, 'websiteUrl': ma
       'onlineSource': False, 'trustedPackage': False}
 for dest in (os.path.join(plugins, full), os.path.join(cache, full, manifest['version_number'])):
     os.makedirs(dest, exist_ok=True)
-    with zipfile.ZipFile(zpath) as z: z.extractall(dest)
+    # as r2modman lays a Thunderstore-style package out: the files in plugins/ go straight into the mod's folder, beside the top ones
+    with zipfile.ZipFile(zpath) as z:
+        for info in z.infolist():
+            if info.is_dir(): continue
+            rel = info.filename[len('plugins/'):] if info.filename.startswith('plugins/') else info.filename
+            out = os.path.join(dest, *rel.split('/'))
+            os.makedirs(os.path.dirname(out), exist_ok=True)
+            with z.open(info) as src, open(out, 'wb') as dst: shutil.copyfileobj(src, dst, 1 << 20)
     json.dump(mm, open(os.path.join(dest, 'mm_v2_manifest.json'), 'w', encoding='utf-8'), separators=(',', ':'))
 deps = ''.join(f'\n    - {d}' for d in mm['dependencies']) or ' []'
 desc = mm['description'].replace("'", "''")
@@ -124,8 +150,6 @@ entry = f"""- manifestVersion: 1
   onlineSource: false
   trustedPackage: false
 """
-keep = [b if b.endswith('\n') else b + '\n' for b in keep]
-shutil.copy2(mods_yml, mods_yml + '.before-risk-of-deadlock')
 open(mods_yml, 'w', encoding='utf-8', newline='\n').write(head + ''.join(keep) + entry)
 print(f'== r2modman profile "{profile}": removed {", ".join(gone) or "nothing"}; installed {full} {manifest["version_number"]}')
 if r2exe:

@@ -170,66 +170,8 @@ fi
 
 # 6. a zip for r2modman's "Import local mod"
 if [ -n "$R2" ]; then
-  python - "$OUT/DeadlockOfRain.dll" "$F/r2modman" "$ID" "$ROOT" <<'EOF'
-import io, json, os, sys, time, zipfile
-dll, outdir, hid, root = sys.argv[1:5]
-rows = json.load(open(os.path.join(root, 'design', 'heroes.json'), encoding='utf-8'))['rows']
-if hid == 'all':
-    ids = json.load(open(os.path.join(os.path.dirname(dll), 'cache', 'ready.json')))['heroes']
-    display, name = 'Every hero', 'Risk_of_Deadlock'
-else:
-    ids = [hid]
-    display = next(r for r in rows if r['id'] == hid)['displayName']
-    name = ''.join(c if c.isalnum() else '_' for c in display.replace('&', 'and')).replace('__', '_') + '_Own_Files'
-# one version line, one patch up a build (creator, 2026-11-02: "this is 1.5 version we keep updating it with that number
-# incrementally now like 1.5.1 1.5.2"); the last one used is in tools/r2modman_version.txt (committed)
-vfile = os.path.join(root, 'tools', 'r2modman_version.txt')
-last = open(vfile).read().strip() if os.path.exists(vfile) else '1.5.0'
-major, minor, patch = (int(x) for x in last.split('.'))
-version = f'{major}.{minor}.{patch + 1}'
-open(vfile, 'w').write(version + '\n')
-manifest = {'name': name, 'author': 'JakeHornerMan', 'version_number': version, 'website_url': '',
-            'description': f'{display} from my own edited files (built into the DLL, Deadlock not needed).',
-            'dependencies': ['bbepis-BepInExPack-5.4.2122']}
-names = ', '.join(next(r['displayName'] for r in rows if r['id'] == h) for h in ids)
-readme = '\n'.join([f'# {display}, my own files', '',
-    f'Risk of Deadlock built with my edited files inside the DLL: {names}. Deadlock is not read. '
-    'Built ' + time.strftime('%Y-%m-%d %H:%M') + '.', '',
-    'Disable "Risk of Deadlock" in this profile while this one is on (both are the same plugin).', ''])
-from PIL import Image
-icon = Image.new('RGBA', (256, 256))
-px = icon.load()
-for y in range(256):
-    for x in range(256):
-        d = min(1.0, (((x - 128) / 150) ** 2 + ((y - 120) / 130) ** 2) ** 0.5)
-        k = (1 - d) ** 1.6
-        px[x, y] = (int(24 + 190 * k), int(18 + 120 * k), int(16 + 60 * k), 255)
-# our own in-game renders (tools/portraits.py) side by side, the outer ones smaller and drawn first (as package.py's icon)
-renders = [(i, h) for i, h in enumerate(ids) if os.path.exists(os.path.join(root, 'build', 'pages', 'img', h + '.webp'))]
-n = len(renders)
-placed = []
-for j, (i, h) in enumerate(renders):
-    mid = abs(j - (n - 1) / 2) / max(1, (n - 1) / 2)
-    placed.append((mid, h, round(256 * (j + 0.5) / n), round((200 if n == 1 else 170) - 40 * mid)))
-for _, h, cx, tall in sorted(placed, reverse=True):
-    im = Image.open(os.path.join(root, 'build', 'pages', 'img', h + '.webp')).convert('RGBA')
-    im = im.crop(im.getbbox())
-    w = round(im.width * tall / im.height)
-    if w > 240: w, tall = 240, round(im.height * 240 / im.width)
-    im = im.resize((w, tall), Image.LANCZOS)
-    icon.alpha_composite(im, (cx - w // 2, 256 - tall))
-buf = io.BytesIO(); icon.convert('RGB').save(buf, 'PNG')
-os.makedirs(outdir, exist_ok=True)
-for f in os.listdir(outdir):
-    if f.endswith('.zip'): os.remove(os.path.join(outdir, f))
-zpath = os.path.join(outdir, f"{manifest['author']}-{name}-{version}.zip")
-with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
-    z.writestr('manifest.json', json.dumps(manifest, indent=2))
-    z.writestr('README.md', readme)
-    z.writestr('icon.png', buf.getvalue())
-    z.write(dll, 'DeadlockOfRain.dll')
-print(f'== r2modman zip: {zpath}')
-EOF
+  # laid out like a Thunderstore release (tools/r2modman_package.py; creator, 2026-11-02)
+  python "$ROOT/tools/r2modman_package.py" "$OUT/DeadlockOfRain.dll" "$F/r2modman" "$ID" || exit 1
   # 7. (--r2modman-install) straight into the r2modman profile, every older Risk of Deadlock package removed first
   if [ -n "$R2I" ]; then
     Z=$(ls -t "$F/r2modman"/*.zip | head -1)
