@@ -487,7 +487,10 @@ namespace DeadlockOfRain.States
             st.time = t * len;
         }
 
-        float lastVy;
+        float lastVy, sQuietUntil;
+        /// <summary>On an enemy: it must have fallen this far from the top of the hop, and a floor landing within EnemyQuiet s
+        /// after one without rising again is it sliding off.</summary>
+        const float EnemyDrop = 0.3f, EnemyQuiet = 0.6f;
 
         public override void FixedUpdate()
         {
@@ -503,7 +506,8 @@ namespace DeadlockOfRain.States
                 characterBody.isSprinting = false;
                 characterMotor.moveDirection = Vector3.zero;
                 if (inputBank && inputBank.jump.justPressed || Bot && fixedAge >= nextLeap && Mathf.Repeat(fixedAge, 3f) < Time.fixedDeltaTime * 2f) leapQueued = true;
-                bool grounded = characterMotor.isGrounded;
+                // on an enemy's head counts as ground too (creator, 2026-11-02): it hops off again instead of sliding about up there
+                bool grounded = characterMotor.isGrounded || characterMotor.velocity.y <= 0f && PocketParts.OnEnemy(characterBody);
                 if (grounded)
                 {
                     var v = characterMotor.velocity; characterMotor.velocity = new Vector3(v.x * 0.5f, v.y, v.z * 0.5f);
@@ -566,11 +570,15 @@ namespace DeadlockOfRain.States
         }
 
         /// <summary>The server's landings, from how the body really moves (a joined player's frog is moved on their PC): in the
-        /// air a moment, then on the ground again. A landing from high enough above the take-off is a high leap.</summary>
+        /// air a moment, then on the ground again. A landing from high enough above the take-off is a high leap. Coming down onto
+        /// an enemy is a landing too (creator, 2026-11-02: "if they land on top of an enemy it still does the damage and stun
+        /// aoe"); sliding off it onto the floor straight after is not a second one.</summary>
         void ServerLandings()
         {
-            bool grounded = PocketParts.Grounded(characterBody);
             float y = characterBody.footPosition.y;
+            bool grounded = PocketParts.Grounded(characterBody);
+            bool onEnemy = !grounded && sAir && y < sTop - EnemyDrop && fixedAge - sAirSince >= 0.15f && PocketParts.OnEnemy(characterBody);
+            if (onEnemy) grounded = true;
             if (!grounded)
             {
                 if (!sAir) { sAir = true; sAirSince = fixedAge; sTake = y; sTop = y; }
@@ -580,6 +588,9 @@ namespace DeadlockOfRain.States
             if (!sAir) return;
             sAir = false;
             if (fixedAge - sAirSince < 0.15f) return;
+            // just slid off the enemy it landed on (it never rose again): no second slam
+            if (!onEnemy && fixedAge < sQuietUntil && sTop - sTake < EnemyDrop * 2f) return;
+            if (onEnemy) sQuietUntil = fixedAge + EnemyQuiet;
             bool high = sTop - sTake > (row.Speed + row.LaunchHeight) * 0.5f;
             Slam(characterBody.footPosition, high);
         }

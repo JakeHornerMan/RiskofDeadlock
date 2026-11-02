@@ -1627,7 +1627,7 @@
         "none"
       ],
       "tint": "none",
-      "notes": "Nox Nostra (2026-11-02, bats only: \"too many vfx ... it doesnt even look like bat anymore\"): bats bursting up and lifting her with a red flash and shockwave; the owner's aim circle with Deadlock's marker; then 30 big dark Deadlock bats with red eyes flapping down a cone from her to the circle, slow enough to see (NoxStreamFx); on the ground only the marker and a soft red glow, a small ring and puff of smoke on every bite, a small red burst on at most 3 enemies hit; a big slam where it ends"
+      "notes": "Nox Nostra (2026-11-02, bats only: \"too many vfx ... it doesnt even look like bat anymore\"): bats bursting up and lifting her with a red flash and shockwave; the owner's aim circle with Deadlock's marker; then a tight stream of 48 big dark Deadlock bats with red eyes and a red glow flapping down a cone from her, fanning out over the circle as they land (NoxStreamFx; 2026-11-02 at 30: \"there is no stream of bats\"); on the ground only the marker and a soft red glow, a small ring and puff of smoke on every bite, a small red burst on at most 3 enemies hit; a big slam where it ends"
     },
     {
       "id": "mina_mist",
@@ -1809,7 +1809,7 @@
         "enchanted_satchel_case"
       ],
       "tint": "none",
-      "notes": "Deadlock's Enchanter's Satchel suitcase (75 cm wide) with its own rattling clip, for the Satchel and Frog Form"
+      "notes": "Deadlock's Enchanter's Satchel suitcase (75 cm wide) with its own rattling clip, for the Satchel and Frog Form; never sinks into the floor (CaseFloorGuard, 2026-11-02)"
     },
     {
       "id": "pocket_frog_prop",

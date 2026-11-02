@@ -7,6 +7,7 @@
 
 ## 2026-11-02 (main, not released)
 - Nox Nostra bats only (30 dark bats, no beam/mist/sparks/lights/flash/shake per bite); Frog Form opening: the case pops, the frog jumps out (no giant frog); Pocket's hair near-black with a sheen (`heroes.tintMaterials`/`tintColor`/`tintGloss`).
+- Later: the bat stream a tight column of 48 glowing bats; `CaseFloorGuard` keeps suitcase props out of the floor; Frog Form slams on top of an enemy (`PocketParts.OnEnemy`); `tools/r2modman_install.py` / `--r2modman-install`.
 - `tools/compare_builds.py`: the own all-heroes DLL build against the Melty cache, 11/11 heroes the same. Thunderstore given up; the single-hero Mo & Krill test build deleted.
 
 ## Own hero DLL build (2026-11-01, the creator's PC only)

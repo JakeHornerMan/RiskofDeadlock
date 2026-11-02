@@ -15,6 +15,9 @@
 # own profile; the version is the build time, so every import is newer). Same plugin id as Risk of Deadlock: disable that one
 # in the profile. Never upload the zip: the DLL holds Deadlock's files.
 #   bash tools/build_local_hero.sh all charactersFinal --r2modman   (2026-11-01: "a zip ... with all my edited characters")
+#   bash tools/build_local_hero.sh all charactersFinal --r2modman-install   (2026-11-02): the zip, then tools/r2modman_install.py
+#   puts it in the r2modman profile (R2PROFILE, default Deadlock) in place of every older Risk of Deadlock package; r2modman and
+#   the game must be closed.
 # "all" runs steps 1-3 for every <id>Files folder in the given folder (--cache-only), merges their mod-caches into
 # build/local-all/cache (sounds.json joined, files shared by heroes kept once, sheet icons no hero owns taken from the normal
 # cache), builds one DLL with every hero in it and compares it with the Melty build's cache (tools/compare_builds.py).
@@ -36,8 +39,8 @@ if [ "$1" = "--uninstall" ]; then
   exit 0
 fi
 
-ID="$1"; F="$2"; INSTALL=""; R2=""; CACHE_ONLY=""
-for a in "${@:3}"; do case "$a" in --install) INSTALL=1;; --r2modman) R2=1;; --cache-only) CACHE_ONLY=1;; *) echo "unknown option $a"; exit 1;; esac; done
+ID="$1"; F="$2"; INSTALL=""; R2=""; R2I=""; CACHE_ONLY=""
+for a in "${@:3}"; do case "$a" in --install) INSTALL=1;; --r2modman) R2=1;; --r2modman-install) R2=1; R2I=1;; --cache-only) CACHE_ONLY=1;; *) echo "unknown option $a"; exit 1;; esac; done
 [ -n "$ID" ] && [ -n "$F" ] || { sed -n 5,7p "$0"; exit 1; }
 F="$(cd "$F" && pwd)"
 [ -f "$EXE" ] || { echo "No $EXE: publish the extractor first (docs/01 §6.7)"; exit 1; }
@@ -221,4 +224,9 @@ with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
     z.write(dll, 'DeadlockOfRain.dll')
 print(f'== r2modman zip: {zpath}')
 EOF
+  # 7. (--r2modman-install) straight into the r2modman profile, every older Risk of Deadlock package removed first
+  if [ -n "$R2I" ]; then
+    Z=$(ls -t "$F/r2modman"/*.zip | head -1)
+    python "$ROOT/tools/r2modman_install.py" "$Z" ${R2PROFILE:+--profile "$R2PROFILE"}
+  fi
 fi

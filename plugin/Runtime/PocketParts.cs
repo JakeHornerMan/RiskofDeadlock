@@ -55,6 +55,27 @@ namespace DeadlockOfRain
             return body && Physics.Raycast(body.footPosition + Vector3.up * 0.3f, Vector3.down, 0.7f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore);
         }
 
+        /// <summary>The body is coming down onto an enemy (Frog Form, creator 2026-11-02: "if they land on top of an enemy it still does
+        /// the damage and stun aoe"): an enemy's hurtbox within StandReach under its feet. Characters never stand on each other, so
+        /// the world-only <see cref="Grounded"/> misses it.</summary>
+        public static bool OnEnemy(CharacterBody body)
+        {
+            if (!body) return false;
+            var team = body.teamComponent ? body.teamComponent.teamIndex : TeamIndex.None;
+            foreach (var h in Physics.SphereCastAll(body.footPosition + Vector3.up * StandProbe, StandProbe, Vector3.down, StandReach,
+                         LayerIndex.entityPrecise.mask, QueryTriggerInteraction.Collide))
+            {
+                var hb = h.collider ? h.collider.GetComponent<HurtBox>() : null;
+                var hc = hb ? hb.healthComponent : null;
+                if (!hc || !hc.alive || !hc.body || hc.body == body) continue;
+                if (hc.body.teamComponent && hc.body.teamComponent.teamIndex != team) return true;
+            }
+            return false;
+        }
+
+        /// <summary>OnEnemy's probe: a sphere this big from this high above the feet, swept this far down.</summary>
+        const float StandProbe = 0.5f, StandReach = 0.9f;
+
         /// <summary>A Body-machine move that keeps him walking (Flying Cloak's throw): on the owner, as the main state would.</summary>
         public static void KeepWalking(CharacterBody body, CharacterMotor motor, CharacterDirection dir, InputBankTest ib)
         {
@@ -83,6 +104,7 @@ namespace DeadlockOfRain
                 built.Anim.Play(clips[0]);
             }
             if (built != null) root.AddComponent<CaseLid>();
+            root.AddComponent<CaseFloorGuard>();
             return root;
         }
 
@@ -173,6 +195,37 @@ namespace DeadlockOfRain
         {
             var l = caseRoot ? caseRoot.GetComponent<CaseLid>() : null;
             if (l) { l.Open = open; l.Speed = speed; }
+        }
+    }
+
+    /// <summary>Keeps a suitcase prop out of the floor (creator, 2026-11-02: "make the the suitcase is never clipping thorugh the
+    /// floor"): after whatever moves it this frame (thrown, swelling, jolting, tilting, floating), its lowest point is held at
+    /// least Clearance above the world under it, measured under its middle and its four bottom corners (slopes, steps).</summary>
+    public sealed class CaseFloorGuard : MonoBehaviour
+    {
+        const float Clearance = 0.02f, Probe = 3f;
+        Renderer[] rends;
+
+        void Start() => rends = GetComponentsInChildren<Renderer>(true);
+
+        void LateUpdate()
+        {
+            if (rends == null) return;
+            bool any = false; var b = new Bounds();
+            foreach (var r in rends)
+            {
+                if (!r || !r.enabled) continue;
+                if (!any) { b = r.bounds; any = true; } else b.Encapsulate(r.bounds);
+            }
+            if (!any) return;
+            float floor = float.MinValue, from = b.max.y + 0.5f, reach = b.size.y + 0.5f + Probe;
+            foreach (var xz in new[] { new Vector2(b.center.x, b.center.z), new Vector2(b.min.x, b.min.z), new Vector2(b.min.x, b.max.z),
+                                       new Vector2(b.max.x, b.min.z), new Vector2(b.max.x, b.max.z) })
+                if (Physics.Raycast(new Vector3(xz.x, from, xz.y), Vector3.down, out var hit, reach, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
+                    floor = Mathf.Max(floor, hit.point.y);
+            if (floor == float.MinValue) return;
+            float under = floor + Clearance - b.min.y;
+            if (under > 0f) transform.position += Vector3.up * under;
         }
     }
 

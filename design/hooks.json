@@ -454,7 +454,7 @@
       "id": "pocket_frog_landing",
       "method": "component",
       "target": "DeadlockOfRain.States.FrogForm.ServerLandings",
-      "purpose": "Frog Form's landings seen on the server from how the body moves (a ray under its feet: in the air, then down again), so a joined player's frog deals its splash; relayed slam visual and sound",
+      "purpose": "Frog Form's landings seen on the server from how the body moves (a ray under its feet: in the air, then down again; or coming down onto an enemy, PocketParts.OnEnemy, since 2026-11-02, a slide off it straight after not counting twice), so a joined player's frog deals its splash; relayed slam visual and sound",
       "reads": "skills.radius/nearRadius/damagePct/splashPct/knockback/speed/launchHeight",
       "side": "server"
     },

@@ -46,7 +46,7 @@ namespace DeadlockOfRain
         static BatFlock instance;
         static Mesh[] frames;
         static float meshSpan = 1f;
-        static Material dark, angry;
+        static Material dark, angry, lit;
         static bool baked, standIn;
         readonly List<Bat> free = new List<Bat>();
         readonly List<Bat> live = new List<Bat>();
@@ -72,6 +72,8 @@ namespace DeadlockOfRain
             // near-black with a faint red glow; Mist Form's furious ones darker red, glowing hard
             dark = BatMaterial("matDeadlockBat", new Color(0.16f, 0.03f, 0.05f), new Color(0.7f, 0.04f, 0.1f), 1.2f);
             angry = BatMaterial("matDeadlockBatAngry", new Color(0.4f, 0.03f, 0.06f), new Color(1f, 0.1f, 0.14f), 3f);
+            // Nox Nostra's stream (2026-11-02): dark bats with a stronger red glow, so they still stand out on a dark floor
+            lit = BatMaterial("matDeadlockBatLit", new Color(0.2f, 0.03f, 0.05f), new Color(0.95f, 0.08f, 0.12f), 2f);
 
             var asset = DeadlockCache.PropAsset(PropId);
             var keys = new List<Vector3[]>();
@@ -173,8 +175,9 @@ namespace DeadlockOfRain
             }
         }
 
-        /// <summary>n bats from the pool (made as needed), hidden until their owner places them.</summary>
-        public static List<Bat> Take(int n, bool furious = false, float size = 1f)
+        /// <summary>n bats from the pool (made as needed), hidden until their owner places them; glowing: the dark bat with a stronger
+        /// red glow (Nox Nostra's stream).</summary>
+        public static List<Bat> Take(int n, bool furious = false, float size = 1f, bool glowing = false)
         {
             Bake();
             var c = Instance;
@@ -187,7 +190,7 @@ namespace DeadlockOfRain
                 // no two bats in step: a random start in the wingbeat, a little faster or slower, a little bigger or smaller
                 b.Phase = Random.value; b.Size = size * Random.Range(0.8f, 1.15f); b.Rate = Random.Range(0.85f, 1.2f) * (furious ? 1.6f : 1f);
                 b.Angry = furious;
-                b.Renderer.sharedMaterial = furious ? angry : dark;
+                b.Renderer.sharedMaterial = furious ? angry : glowing ? lit : dark;
                 b.Go.transform.localScale = Vector3.one * Wingspan / meshSpan * b.Size;
                 b.Show(false);
                 b.Go.SetActive(true);

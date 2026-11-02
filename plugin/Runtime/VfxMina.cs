@@ -441,10 +441,13 @@ namespace DeadlockOfRain
         /// scatters the bats as it ends. Every machine draws its own.</summary>
         public sealed class NoxStreamFx : MonoBehaviour
         {
-            /// <summary>Bats down the stream, their size, and their speed (m/s): few, big and slow enough to read as bats.</summary>
-            const int Bats = 30;
-            const float BatSize = 1.4f;
-            const float Speed = 12f;
+            /// <summary>Bats down the stream, their size, and their speed (m/s): big and slow enough to read as bats, enough of them
+            /// to read as a stream (2026-11-02, after 30 at 1.4: "there is no stream of bats heading toward the area"). Spread is how
+            /// much of the cone's width they use at her (Start) and on the ground (End): a tight column that fans out as it lands.</summary>
+            const int Bats = 48;
+            const float BatSize = 2f;
+            const float Speed = 15f;
+            const float SpreadStart = 0.35f, SpreadEnd = 0.8f;
 
             sealed class Flier { public Bat Bat; public float T, Angle, R, Rate, Spin, Wobble; public Vector3 Out; }
             readonly List<Flier> fliers = new List<Flier>();
@@ -463,7 +466,7 @@ namespace DeadlockOfRain
                 if (mark) mark.transform.localPosition = Vector3.up * 0.1f;
                 // the first bats arrive: one shockwave
                 Ring(b + Vector3.up * 0.1f, minaRing, 0.5f, far * 1.2f, 0.5f, 0.4f);
-                foreach (var bat in BatFlock.Take(Bats, false, BatSize))
+                foreach (var bat in BatFlock.Take(Bats, false, BatSize, true))
                     fliers.Add(new Flier
                     {
                         Bat = bat, T = Random.value, Angle = Random.value * 360f, R = Mathf.Sqrt(Random.value), Rate = Random.Range(0.8f, 1.2f),
@@ -523,7 +526,7 @@ namespace DeadlockOfRain
                     bool wrapped = fl.T >= 1f;
                     if (wrapped) { fl.T -= 1f; fl.R = Mathf.Sqrt(Random.value); }
                     fl.Angle += fl.Spin * dt; fl.Wobble += dt * 5f;
-                    float w = Mathf.Lerp(near, far * 0.9f, fl.T) * fl.R;
+                    float w = Mathf.Lerp(near * SpreadStart, far * SpreadEnd, fl.T * fl.T) * fl.R;
                     float rad = fl.Angle * Mathf.Deg2Rad;
                     var want = from + axis * fl.T + (Mathf.Cos(rad) * side + Mathf.Sin(rad) * up) * w + up * Mathf.Sin(fl.Wobble) * 0.25f;
                     var face = !wrapped && (want - at).sqrMagnitude > 1e-4f ? (want - at).normalized : dir;
