@@ -3,7 +3,7 @@
 Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King or Billy** from Deadlock, with their real models, animations, guns, abilities, icons and voices.
 
 ## You need Deadlock installed
-- Built with Risk of Rain 2 build 25921972 and Deadlock build 6821 (v1.2.0, 2026-10-30).
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6839 (v1.5.0, 2026-11-02).
 Nothing from Deadlock is in this download. The heroes are read from **your own Deadlock install** (free on Steam):
 
 1. Install **Deadlock** on Steam (you never need to open it).

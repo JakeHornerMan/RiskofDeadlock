@@ -12,7 +12,7 @@ namespace DeadlockOfRain
     public sealed class Plugin : BaseUnityPlugin
     {
         public const string Guid = "melty.deadlockofrain";
-        public const string Version = "1.2.0";
+        public const string Version = "1.5.0";
         public static Plugin Instance;
         public static ConfigEntry<float> Volume;
         public static ConfigEntry<string> DeadlockFolder;

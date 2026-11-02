@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.0
+- Built with Risk of Rain 2 build 25921972 and Deadlock build 6839 (v1.5.0, 2026-11-02).
+- **Pocket joins**, the eleventh hero, matched to Bandit: **The Black Sheep** (a shotgun firing a hexagon of 7 pellets), **Barrage** (lock onto the enemy under your crosshair and his briefcase throws 4 bursts at it while you keep shooting; each burst stuns and makes you stronger for a while), **Flying Cloak** (his own coat flies where you aim, hitting everything it passes; press again to teleport to it), **Enchanter's Satchel** (hide in his floating suitcase, untouchable, draining and healing from every enemy around, then burst out) and the **Frog Form** ult (the suitcase pops open and you leap out as a frog for 8 s: every landing, on the ground or on an enemy, hits and stuns everything around; Jump for a high leap). One jump plus an air dash.
+- Every hero is now playable: no more locked "coming soon" tile.
+- Mina's **Nox Nostra** rebuilt: a cone of bats pours down onto the spot under your crosshair, with a ring on the ground showing the area to everyone.
+- Mina's umbrella now opens only while you hold Jump.
+- Players on 1.5.0 play together; earlier versions can't join them (new hero content).
+
 ## 1.2.0
 - Built with Risk of Rain 2 build 25921972 and Deadlock build 6821 (v1.2.0, 2026-10-30).
 - **Mina joins**, the tenth hero, matched to Huntress (150 health): **New Money** (a pistol, 90 % a bullet, 12 rounds; every hit leaves a Love Bite), **Rake** (an umbrella sweep through a 180° arc, 1000 %, heals for every enemy hit), **Sanguine Retreat** (burst into bats and fly 15 m where you look, untouchable; press again for a second hop), **Nox Nostra** (hang in the air for 5 s and pour a blood-red stream of bats onto the ground under your crosshair) and the **Mist Form** ult (8 s as a flock of furious bats, untouchable, flying freely). Hold Jump to float under her umbrella; **Love Bites** stack on enemies and bring her moves back sooner.

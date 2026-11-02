@@ -34,7 +34,7 @@ namespace DeadlockOfRain
         /// version number"). Raise it whenever two releases could disagree in a shared game: networked state (OnSerialize,
         /// Relay, Net), or the content catalogs (a new or removed buff, equipment, effect, skill or body shifts every index).
         /// "1.0.0" = the live 1.0.0 releases, so 1.0.1 joins them.</summary>
-        public const string CoopVersion = "1.2.0";
+        public const string CoopVersion = "1.5.0";
 
         /// <summary>RoR2 refuses players whose mod list differs (KICK_REASON_MOD_MISMATCH). Our entry names the co-op version and the
         /// heroes actually built, because bodies and equipment are numbered by catalog position: a player with other heroes
