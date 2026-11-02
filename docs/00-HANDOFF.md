@@ -288,7 +288,8 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 - The Steam copy had the other window's hand install (INSTALL.txt Part A): its `JakeHornerMan-Risk_of_Deadlock` 1.5.2 package is in
   `build/steam-plugins-backup-1102/`; RoR2BepInExPack stays in `plugins/` (Newtonsoft.Json for the mod). Main's dev build goes back after the release.
 - Melty test `bcd21d65-…` failed only on two Distant Roost test checks (Dust Devil underground, Telekinesis damage); published on the creator's word.
-- Open: harden those checks; rebuild the r2modman package with the shader fix; watch `install_outcomes` / `player_logs` for 1.5.0; share Pocket's page.
+- r2modman 1.5.4 installed with the shader fix (Viscous's dlm differs from today's Deadlock read: the creator's own copy).
+- Open: harden those checks; watch `install_outcomes` / `player_logs` for 1.5.0; share Pocket's page.
 
 ## 9-prev37. Nox Nostra rebuilt, umbrella only with Jump held (2026-11-02, evening)
 - `NoxStreamFx`: bats fill a true cone (2.5 a metre, 50-110), dive into the floor and shrink; a ground-hugging `LineRenderer` ring at

@@ -2,6 +2,12 @@
 
 JakeHornerMan's own build: one version line, one number up per build. Newest first.
 
+## 1.5.4
+- {BUILT_WITH}
+- Effects fixed alongside RoR2BepInExPack: it makes Unity's `Sprites/Default` shader lookup fail, so Viscous's goo, Mo & Krill's
+  aim cone, Mina's bites and Nox Nostra marks, Wraith's card symbols and Pocket's box broke or showed bright pink. This is why
+  effects looked worse here than on Melty. Same code as Melty 1.5.0.
+
 ## 1.5.3
 - {BUILT_WITH}
 - Laid out like a Thunderstore release: `manifest.json`, `icon.png`, `README.md` and `CHANGELOG.md` at the top; the DLL with
