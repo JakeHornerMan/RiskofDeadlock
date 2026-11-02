@@ -1587,3 +1587,8 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** preflight clean, plugin builds; `run_test.sh mina,pocket` **every check pass, 2/2 heroes** (devshots looked at: red bats pouring from Mina, the case on the floor lid open, the frog coming out). Steam copy = main's latest build. Zip rebuilt, compare 11/11 the same; the r2modman install stopped because r2modman was open. A game process found at `lab_restore` time was the test's own copy closing (Steam log ended with the test at 14:18; the r2modman log at 14:08).
 **Not done / open:** the r2modman install once r2modman is closed; the Frog Form ult bench (doc 05 §0); the hand-held briefcase (part of his model) if that is the one that clips.
 **Lessons:** a hero test's game can still be closing when `run_test.sh` returns: tell it from the creator's own game by its log (which copy, last write time) before `lab_restore`.
+
+### 2026-11-02 (later) · r2modman install on its own · main
+**Request (verbatim):** "you shoudl add this intop your process turning off modman and doing all this be independant", then "also when you are testing which version of the game are you testing???"
+**Done:** `tools/r2modman_install.py` closes r2modman itself (window close, forced after 15 s), installs, and starts it again through `Start-Process` (a plain child process died with the shell); stops only while the game runs. Run for real: package swapped to 1.261102.1420, r2modman back open, its list kept. CLAUDE.md standing rule, doc 03 §5c, memory.
+**Answered:** `run_test.sh` tests the Steam copy with main's normal build (the Melty-style DLL plus the cache read from Deadlock), not the r2modman DLL; `tools/compare_builds.py` shows both carry the same files and code.

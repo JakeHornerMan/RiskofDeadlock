@@ -9,8 +9,8 @@ Does what r2modman's Settings > Profile > Import local mod does, after removing 
   clashes; Thunderstore was given up on 2026-11-02);
 - r2modman's download cache of those packages goes too (the newest import is kept there, as r2modman keeps it);
 - the zip goes to BepInEx/plugins/Unknown-<name>/ with r2modman's mm_v2_manifest.json, and its entry is added to mods.yml.
-r2modman keeps mods.yml in memory and writes it back on any change, so r2modman and the game must both be closed; the script
-stops otherwise. Never upload the zip: its DLL holds Deadlock's files.
+r2modman keeps mods.yml in memory and writes it back on close, so the script closes r2modman first and starts it again at the end;
+it stops only while the game is running (the creator may be playing). Never upload the zip: its DLL holds Deadlock's files.
 """
 import json, os, re, shutil, subprocess, sys, time, zipfile
 
@@ -35,9 +35,25 @@ def running(name):
     return bool(out)
 
 
-for app, what in (('Risk of Rain 2', 'Risk of Rain 2'), ('r2modman', 'r2modman')):
-    if running(app):
-        print(f'{what} is open: close it, then run this again (r2modman writes its own mod list back on close).'); sys.exit(1)
+def ps(cmd):
+    return subprocess.run(['powershell', '-NoProfile', '-Command', cmd], capture_output=True, text=True).stdout.strip()
+
+
+# a running game means the creator is playing: never close it
+if running('Risk of Rain 2'):
+    print('Risk of Rain 2 is running (you may be playing): close the game, then run this again.'); sys.exit(1)
+# r2modman keeps mods.yml in memory and writes it back on close, so it is closed first (asked to close like its X button, so it
+# saves; forced after 15 s) and started again at the end (creator, 2026-11-02: "add this into your process turning off modman
+# and doing all this be independant")
+r2exe = ps("Get-Process -Name r2modman -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Path")
+if r2exe:
+    print('== Closing r2modman (it is started again when the install is done)')
+    ps("Get-Process -Name r2modman -ErrorAction SilentlyContinue | ForEach-Object { [void]$_.CloseMainWindow() }")
+    for _ in range(30):
+        if not running('r2modman'): break
+        time.sleep(0.5)
+    if running('r2modman'):
+        ps("Stop-Process -Name r2modman -Force -ErrorAction SilentlyContinue"); time.sleep(1)
 
 with zipfile.ZipFile(zpath) as z:
     manifest = json.loads(z.read('manifest.json').decode('utf-8-sig'))
@@ -103,4 +119,9 @@ keep = [b if b.endswith('\n') else b + '\n' for b in keep]
 shutil.copy2(mods_yml, mods_yml + '.before-risk-of-deadlock')
 open(mods_yml, 'w', encoding='utf-8', newline='\n').write(head + ''.join(keep) + entry)
 print(f'== r2modman profile "{profile}": removed {", ".join(gone) or "nothing"}; installed {full} {manifest["version_number"]}')
-print('   Open r2modman and press Start modded.')
+if r2exe:
+    # through PowerShell's Start-Process: a child of this script dies with the shell that ran it
+    ps(f"Start-Process -FilePath '{r2exe}'")
+    print('   r2modman started again: press Start modded.')
+else:
+    print('   Open r2modman and press Start modded.')

@@ -246,9 +246,12 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   does what Import local mod does: every package in the profile holding `DeadlockOfRain.dll` (or `.old`, disabled) is removed from
   `BepInEx/plugins` and `mods.yml` (the own-files builds and the old Thunderstore one alike), r2modman's cache of our older imports
   goes, the zip is unpacked into `plugins/Unknown-<name>/` and the cache with r2modman's `mm_v2_manifest.json`, and its entry is
-  added to `mods.yml` (a backup is kept as `mods.yml.before-risk-of-deadlock`). It stops while r2modman or the game is open
-  (r2modman keeps the list in memory and writes it back). The usual command is now
-  `bash tools/build_local_hero.sh all charactersFinal --r2modman-install`.
+  added to `mods.yml` (a backup is kept as `mods.yml.before-risk-of-deadlock`). r2modman keeps the list in memory and writes it
+  back on close, so the script **closes r2modman itself** (its window's close, forced after 15 s) and starts it again with
+  PowerShell's `Start-Process` at the end (creator, 2026-11-02: "add this into your process turning off modman and doing all this
+  be independant"); it stops only while the game runs (the creator may be playing). **Process:** after any change the creator will
+  play, run `bash tools/build_local_hero.sh all charactersFinal --r2modman-install` without asking, then tell them to press Start
+  modded. Checked 2026-11-02: r2modman closed, package swapped (1.261102.1420), r2modman back open with the new list.
 
 ## 5b. Daily watch: game updates and Melty breaks (since 2026-10-21)
 The full manual is **doc 10** (`docs/10-DAILY-WATCH.md`); this is the summary.
