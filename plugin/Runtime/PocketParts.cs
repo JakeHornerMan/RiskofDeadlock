@@ -415,23 +415,25 @@ namespace DeadlockOfRain
         }
     }
 
-    /// <summary>Frog Form's opening, for show on every machine: the suitcase flies from the thrower's hand (or falls from the sky) to
-    /// its spot in the first third, swells to giant size, its lid swings open and a giant copy of Deadlock's frog rises out of it with
-    /// its mouth opening wide by the end (the carrier leaps out of it then); then the frog sinks back, the case snaps shut and shrinks
-    /// away.</summary>
+    /// <summary>Frog Form's opening, for show on every machine (creator, 2026-11-02: "the animation of the entrance of the turning into
+    /// the frog does look bad"; picked "the case pops, the frog jumps out"): the suitcase flies from the thrower's hand in a low arc
+    /// with one slow flip (or falls from the sky) and lands upright; it swells a little and jolts Jolts times, the lid peeking open
+    /// each time, as if something inside wants out; at OpenAt of the opening the lid flips open in a green burst, and when the
+    /// opening ends the carrier leaps out of it as the frog (FrogForm.StartHopping); the lid then shuts and the case pops away.</summary>
     public sealed class FrogOpening : MonoBehaviour
     {
-        SkillRow row; Vector3 from, to, facing; float open, size, age, spin, nextJolt; bool landed, grew, rose, sank;
-        GameObject suitcase, giant; Transform lid, jaw; Quaternion lidRest, jawRest;
-        const float CaseScale = 1.6f, GrowTo = 4.5f;
+        SkillRow row; Vector3 from, to, facing; float open, size, age, peekUntil; int jolts; bool landed, burst, shut, falling;
+        GameObject suitcase;
+        const float CaseScale = 1.6f, SwellTo = 1.5f, FlyPart = 0.3f, OpenAt = 0.75f, PeekTime = 0.12f, ShutAfter = 0.25f, PopAfter = 0.5f;
+        const int Jolts = 3;
 
         public static FrogOpening Begin(SkillRow row, string casePropId, Vector3 from, Vector3 to, Vector3 facing, float openTime, float size)
         {
             var go = new GameObject("PocketFrogOpening");
             var o = go.AddComponent<FrogOpening>();
             o.row = row; o.from = from; o.to = to; o.facing = facing; o.open = Mathf.Max(0.6f, openTime); o.size = size;
+            o.falling = from.y > to.y + 10f;
             o.suitcase = PocketParts.CaseProp(casePropId, from, facing, CaseScale, false);
-            foreach (var t in o.suitcase.GetComponentsInChildren<Transform>(true)) if (t.name == "case_02") { o.lid = t; o.lidRest = t.localRotation; }
             return o;
         }
 
@@ -439,83 +441,63 @@ namespace DeadlockOfRain
         public void Finish()
         {
             if (suitcase) PocketParts.Pop(suitcase);
-            if (giant) PocketParts.Pop(giant);
+            suitcase = null;
             Destroy(gameObject, 0.3f);
         }
 
         void Update()
         {
             age += Time.deltaTime;
-            float tFly = open * 0.33f, tGrow = open * 0.6f, tRise = open;
-            if (suitcase)
+            if (!suitcase) return;
+            float tFly = open * FlyPart, tOpen = open * OpenAt;
+            var upright = Quaternion.LookRotation(facing);
+            if (age < tFly)
             {
-                if (age < tFly)
-                {
-                    float k = age / tFly;
-                    var p = Vector3.Lerp(from, to, k) + Vector3.up * Mathf.Sin(k * Mathf.PI) * (from.y > to.y + 10f ? 0f : 2.5f);
-                    suitcase.transform.position = p;
-                    suitcase.transform.rotation = Quaternion.LookRotation(facing) * Quaternion.Euler(k * 540f, 0f, 0f);
-                }
-                else
-                {
-                    if (!landed)
-                    {
-                        landed = true;
-                        suitcase.transform.SetPositionAndRotation(to, Quaternion.LookRotation(facing));
-                        Vfx.Play(row.Vfx, "land", to, size);
-                        Fx.Sound(row.Id, "hit", to);
-                    }
-                    if (age < tGrow)
-                    {
-                        // it spins, swells and rocks harder and harder, jolting up, as if something inside wants out
-                        float k = Mathf.SmoothStep(0f, 1f, (age - tFly) / (tGrow - tFly));
-                        suitcase.transform.localScale = Vector3.one * Mathf.Lerp(CaseScale, CaseScale * GrowTo, k) * ModelBuilder.GlobalScale;
-                        spin += Time.deltaTime * Mathf.Lerp(720f, 90f, k);
-                        float rock = 6f + 22f * k;
-                        var tilt = Quaternion.Euler(Mathf.Sin(age * 31f) * rock, spin, Mathf.Sin(age * 23f + 1f) * rock);
-                        suitcase.transform.SetPositionAndRotation(to + Vector3.up * Mathf.Abs(Mathf.Sin(age * 18f)) * 0.35f * k, Quaternion.LookRotation(facing) * tilt);
-                        if (age >= nextJolt) { nextJolt = age + Mathf.Lerp(0.25f, 0.1f, k); Vfx.Play(row.Vfx, "jolt", to, size); }
-                    }
-                    else if (!grew)
-                    {
-                        grew = true;
-                        suitcase.transform.localScale = Vector3.one * CaseScale * GrowTo * ModelBuilder.GlobalScale;
-                        suitcase.transform.SetPositionAndRotation(to, Quaternion.LookRotation(facing));
-                        // it bursts open: a big green treasure-chest explosion out of it
-                        Vfx.Play(row.Vfx, "burst", to, size * 2f);
-                        Fx.Sound(row.Id, "end", to);
-                        var built = PropModels.Build(row.Extra);
-                        giant = built != null ? built.Root : PocketParts.FrogStandIn();
-                        giant.transform.SetPositionAndRotation(to + Vector3.down * size, Quaternion.LookRotation(-facing));
-                        giant.transform.localScale = Vector3.one * PocketParts.FrogScale(size * 2.4f);
-                        foreach (var t in giant.GetComponentsInChildren<Transform>(true)) if (t.name == "Jaw") { jaw = t; jawRest = t.localRotation; }
-                        var clips = Sheet.Effect(row.Extra)?.Clips ?? new string[0];
-                        if (built != null && built.Anim && clips.Length > 0 && built.Anim[clips[0]]) { built.Anim[clips[0]].wrapMode = WrapMode.Loop; built.Anim.Play(clips[0]); }
-                    }
-                }
+                // the throw: a low arc and one slow flip (dropped from the sky: straight down, no flip)
+                float k = age / tFly;
+                var p = Vector3.Lerp(from, to, falling ? k * k : k) + Vector3.up * (falling ? 0f : Mathf.Sin(k * Mathf.PI) * 2f);
+                suitcase.transform.SetPositionAndRotation(p, upright * Quaternion.Euler(falling ? 0f : k * 360f, 0f, 0f));
+                return;
             }
-            // the lid bursts open as the frog comes out, and shuts again as it sinks back
-            if (grew) CaseLid.Set(suitcase, sank ? 0f : 1f, sank ? 3f : 8f);
-            if (giant)
+            if (!landed)
             {
-                float caseTop = 0.57f * CaseScale * GrowTo * ModelBuilder.GlobalScale * 0.6f;
-                if (age < tRise)
-                {
-                    float k = Mathf.SmoothStep(0f, 1f, (age - tGrow) / (tRise - tGrow));
-                    giant.transform.position = to + Vector3.up * Mathf.Lerp(-size, caseTop, k);
-                    if (jaw) jaw.localRotation = jawRest * Quaternion.Euler(0f, 0f, -35f * Mathf.Clamp01((k - 0.4f) / 0.6f));
-                }
-                else
-                {
-                    if (!rose) { rose = true; Vfx.Play(row.Vfx, "mouth", to + Vector3.up * (caseTop + size * 0.4f), size); }
-                    // hold the open mouth a moment, then sink back into the case
-                    float k = Mathf.Clamp01((age - tRise - open * 0.15f) / (open * 0.35f));
-                    giant.transform.position = to + Vector3.up * Mathf.Lerp(caseTop, -size, k);
-                    if (jaw) jaw.localRotation = jawRest * Quaternion.Euler(0f, 0f, -35f * (1f - k));
-                    if (k >= 1f) { sank = true; Destroy(giant); giant = null; }
-                }
+                landed = true;
+                Vfx.Play(row.Vfx, "land", to, size);
+                Fx.Sound(row.Id, "hit", to);
             }
-            if (sank && suitcase && age > tRise + open * 0.75f)
+            if (age < tOpen)
+            {
+                // it swells a little, and jolts Jolts times: a small hop and tilt, the lid peeking open
+                float k = (age - tFly) / (tOpen - tFly);
+                suitcase.transform.localScale = Vector3.one * CaseScale * Mathf.Lerp(1f, SwellTo, Mathf.SmoothStep(0f, 1f, k)) * ModelBuilder.GlobalScale;
+                float slot = k * Jolts;
+                int n = Mathf.Min(Jolts - 1, Mathf.FloorToInt(slot));
+                float j = slot - Mathf.Floor(slot);
+                if (n >= jolts && j > 0.5f)
+                {
+                    jolts = n + 1;
+                    peekUntil = age + PeekTime;
+                    CaseLid.Set(suitcase, 0.3f, 10f);
+                    Vfx.Play(row.Vfx, "jolt", to, size);
+                }
+                if (peekUntil > 0f && age >= peekUntil) { peekUntil = 0f; CaseLid.Set(suitcase, 0f, 10f); }
+                float hop = j > 0.5f ? Mathf.Sin((j - 0.5f) * 2f * Mathf.PI) : 0f;
+                float tilt = hop * 8f * (n % 2 == 0 ? 1f : -1f);
+                suitcase.transform.SetPositionAndRotation(to + Vector3.up * hop * 0.3f, upright * Quaternion.Euler(0f, 0f, tilt));
+                return;
+            }
+            if (!burst)
+            {
+                // the lid flips open in a green burst: the frog is coming out
+                burst = true;
+                suitcase.transform.localScale = Vector3.one * CaseScale * SwellTo * ModelBuilder.GlobalScale;
+                suitcase.transform.SetPositionAndRotation(to, upright);
+                CaseLid.Set(suitcase, 1f, 12f);
+                Vfx.Play(row.Vfx, "burst", to, size * 1.2f);
+                Fx.Sound(row.Id, "end", to);
+            }
+            if (!shut && age >= open + ShutAfter) { shut = true; CaseLid.Set(suitcase, 0f, 6f); }
+            if (age >= open + PopAfter)
             {
                 PocketParts.Pop(suitcase, 0.35f);
                 suitcase = null;
@@ -527,7 +509,6 @@ namespace DeadlockOfRain
         void OnDestroy()
         {
             if (suitcase) Destroy(suitcase);
-            if (giant) Destroy(giant);
         }
     }
 }

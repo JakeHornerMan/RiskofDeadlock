@@ -278,7 +278,7 @@ namespace DeadlockOfRain
                     return null;
                 case "burst":
                 {
-                    // the case bursts open: a treasure chest's green explosion and a column of light out of it
+                    // the lid flips open: a treasure chest's green explosion and a column of light out of it, the frog on its way out
                     var up = at + Vector3.up * radius * 0.25f;
                     Flash(up, treasure, radius * 3f, 0.6f, 8f);
                     Flash(up, gold, radius * 2f, 0.4f, 4f);
@@ -294,15 +294,6 @@ namespace DeadlockOfRain
                     Shake(at, 40f, 4f, 0.4f);
                     return null;
                 }
-                case "grow":
-                    Burst(at, "mat_smoke", pocketSmoke, 20, 0.9f, radius * 0.6f, radius * 0.25f, radius * 0.2f, flat: true);
-                    Ring(at + Vector3.up * 0.2f, pocketLilac, 0.5f, radius, 0.4f, 0.25f);
-                    Flash(at + Vector3.up, pocketViolet, radius * 2f, 0.3f, 4f);
-                    return null;
-                case "mouth":
-                    Burst(at, "mat_glow", new Color(0.9f, 1f, 0.55f), 14, 0.6f, 2f, 0.4f, 0.6f);
-                    Flash(at, new Color(0.8f, 1f, 0.5f), radius * 1.5f, 0.4f, 3f);
-                    return null;
                 case "slam":
                 {
                     // a very heavy landing: a flash, two shockwaves over the 10 m it damages and one to the 15 m ring it stuns, a column of

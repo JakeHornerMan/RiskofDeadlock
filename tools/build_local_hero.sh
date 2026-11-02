@@ -16,7 +16,9 @@
 # in the profile. Never upload the zip: the DLL holds Deadlock's files.
 #   bash tools/build_local_hero.sh all charactersFinal --r2modman   (2026-11-01: "a zip ... with all my edited characters")
 # "all" runs steps 1-3 for every <id>Files folder in the given folder (--cache-only), merges their mod-caches into
-# build/local-all/cache (sounds.json joined, files shared by heroes kept once) and builds one DLL with every hero in it.
+# build/local-all/cache (sounds.json joined, files shared by heroes kept once, sheet icons no hero owns taken from the normal
+# cache), builds one DLL with every hero in it and compares it with the Melty build's cache (tools/compare_builds.py).
+# The zip is named Risk_of_Deadlock (creator, 2026-11-02: Thunderstore given up; this is their own copy).
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 R="/c/Program Files (x86)/Steam/steamapps/common/Risk of Rain 2"
@@ -77,6 +79,23 @@ json.dump({'stamp': 'own files', 'deadlockBuild': 'your own files', 'heroes': he
           open(os.path.join(dst, 'ready.json'), 'w'), indent=2)
 print(f'== One cache with {len(heroes)} heroes: {", ".join(heroes)}')
 EOF
+  # icons the sheets use that no hero folder owns (2026-11-02: Seven's Static debuff icon was missing): from the normal cache
+  python - "$ROOT/design" "$L/cache" "$C" <<'EOF'
+import glob, os, re, shutil, sys
+design, normal, dst = sys.argv[1:4]
+icons = set()
+for f in glob.glob(os.path.join(design, '*.json')):
+    icons.update(re.findall(r'"([^"]+\.vtex)"', open(f, encoding='utf-8').read()))
+added, missing = [], []
+for k in sorted(icons):
+    rel = os.path.join('images', k.replace('.vtex', '').replace('/', '_') + '.png')
+    if os.path.exists(os.path.join(dst, rel)): continue
+    if os.path.exists(os.path.join(normal, rel)):
+        shutil.copy2(os.path.join(normal, rel), os.path.join(dst, rel)); added.append(os.path.basename(rel))
+    else: missing.append(os.path.basename(rel))
+if added: print('== Shared icons added from the normal cache: ' + ', '.join(added))
+if missing: print('   Not in the normal cache either (no icon shown there): ' + ', '.join(missing))
+EOF
 else
 C="$F/mod-cache"
 GLB="$F/edit/$ID.glb"
@@ -133,6 +152,8 @@ dotnet build "$ROOT/plugin" -c Release -v q -nologo -p:LocalHeroDir="$(cygpath -
   -p:IntermediateOutputPath="$(cygpath -w "$OUT/obj")\\" -o "$OUT" | grep -E "error|Error\(s\)" || true
 [ -f "$OUT/DeadlockOfRain.dll" ] || { echo "Build failed"; exit 1; }
 echo "   $OUT/DeadlockOfRain.dll ($(du -h "$OUT/DeadlockOfRain.dll" | cut -f1))"
+# 4b. (all) every hero the same as in the Melty build? (creator, 2026-11-02: "validate all heros are the saem from deadlock melty to the ddl version")
+if [ "$ID" = "all" ]; then python "$ROOT/tools/compare_builds.py" "$L/cache" "$C" || echo "   Differences listed above (tools/compare_builds.py)"; fi
 
 # 5. into the Steam copy
 if [ -n "$INSTALL" ]; then
@@ -152,14 +173,14 @@ dll, outdir, hid, root = sys.argv[1:5]
 rows = json.load(open(os.path.join(root, 'design', 'heroes.json'), encoding='utf-8'))['rows']
 if hid == 'all':
     ids = json.load(open(os.path.join(os.path.dirname(dll), 'cache', 'ready.json')))['heroes']
-    display, name = 'Every hero', 'Risk_of_Deadlock_Own_Files'
+    display, name = 'Every hero', 'Risk_of_Deadlock'
 else:
     ids = [hid]
     display = next(r for r in rows if r['id'] == hid)['displayName']
     name = ''.join(c if c.isalnum() else '_' for c in display.replace('&', 'and')).replace('__', '_') + '_Own_Files'
 version = time.strftime('1.%y%m%d.%H%M')
 manifest = {'name': name, 'version_number': version, 'website_url': '',
-            'description': f'{display} from my own edited files (built into the DLL, Deadlock not needed). My PC only.',
+            'description': f'{display} from my own edited files (built into the DLL, Deadlock not needed).',
             'dependencies': ['bbepis-BepInExPack-5.4.2122']}
 names = ', '.join(next(r['displayName'] for r in rows if r['id'] == h) for h in ids)
 readme = '\n'.join([f'# {display}, my own files', '',

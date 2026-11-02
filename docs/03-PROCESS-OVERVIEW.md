@@ -232,6 +232,15 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   `build/local-all/cache` (sounds.json merged, ready.json with every hero and prop), one DLL (~600 MB for 11 heroes; loads fine,
   mod start 4.2 s) and `<folder>/r2modman/Risk_of_Deadlock_Own_Files-<version>.zip` (~470 MB).
 - Never package or upload this DLL, the r2modman zip, `mod-cache` or the glb: they are Deadlock's files.
+- **2026-11-02:** Thunderstore given up (creator: "we are giving up on thunderstore!"); releases are Melty only, and the creator's
+  own copy is the `all` zip, now named `Risk_of_Deadlock-<version>.zip`, imported in r2modman. The single-hero Mo & Krill test build
+  was deleted at the creator's word ("it was a test build forget it ever happened"): `--uninstall`, `build/local-mokrill/` and its
+  zip removed; the Steam copy is main's dev build again. The `all` merge now also copies sheet icons no hero folder owns from the
+  normal cache (Seven's Static icon was missing), and ends with **`tools/compare_builds.py`** (also runs on its own: `python
+  tools/compare_builds.py [<melty cache> [<dll cache>]]`): every hero's files (its model and textures, plus the props, icons,
+  sounds and voice that `manifest_owners.json` gives it) byte for byte against the Melty build's Deadlock-read cache, sound events by
+  content, then every shared file; the code is the same `plugin/` (only `LocalHero.cs` decides where the files are). 2026-11-02:
+  11/11 heroes the same, shared files the same.
 
 ## 5b. Daily watch: game updates and Melty breaks (since 2026-10-21)
 The full manual is **doc 10** (`docs/10-DAILY-WATCH.md`); this is the summary.

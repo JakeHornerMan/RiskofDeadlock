@@ -113,6 +113,17 @@ namespace DeadlockOfRain
                 smr.rootBone = armature;
                 smr.updateWhenOffscreen = true;
                 var mat = MakeMaterial(asset, def, true);
+                // heroes.tintMaterials (Pocket's hair): one flat colour with a sheen instead of Deadlock's colours, which only its own
+                // lighting turns into the look of the game (creator, 2026-11-02)
+                if (hero.TintColor != "none" && System.Array.IndexOf(hero.TintMaterials, def.Name) >= 0)
+                {
+                    mat.mainTexture = Texture2D.whiteTexture;
+                    if (mat.HasProperty("_MainTex")) mat.SetTexture("_MainTex", Texture2D.whiteTexture);
+                    if (mat.HasProperty("_Color")) mat.SetColor("_Color", Sheet.Color(hero.TintColor));
+                    if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", hero.TintGloss);
+                    if (mat.HasProperty("_SpecularStrength")) mat.SetFloat("_SpecularStrength", hero.TintGloss);
+                    Log.Info($"{hero.Id}: {def.Name} drawn in {hero.TintColor}, gloss {hero.TintGloss}");
+                }
                 smr.sharedMaterial = mat;
                 smr.shadowCastingMode = ShadowCastingMode.On;
                 infos.Add(new CharacterModel.RendererInfo { renderer = smr, defaultMaterial = mat, defaultShadowCastingMode = ShadowCastingMode.On, ignoreOverlays = false });

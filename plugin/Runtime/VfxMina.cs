@@ -412,10 +412,9 @@ namespace DeadlockOfRain
                     return root;
                 }
                 case "hit":
-                    // what the stream catches bursts blood red
-                    Burst(at, "mat_spark", minaCrimson, 16, 0.35f, 9f, 0.08f, 0.2f);
-                    Burst(at, "mat_glow", minaBlood, 3, 0.25f, 0f, 1.3f);
-                    Burst(at, "mat_smoke", minaSmoke, 3, 0.5f, 1.2f, 0.6f, 0.2f);
+                    // what the stream catches bursts blood red (small: 2026-11-02, fewer effects)
+                    Burst(at, "mat_spark", minaCrimson, 6, 0.3f, 7f, 0.08f, 0.2f);
+                    Burst(at, "mat_glow", minaBlood, 1, 0.25f, 0f, 1.1f);
                     return null;
                 case "end":
                 {
@@ -434,97 +433,54 @@ namespace DeadlockOfRain
             return null;
         }
 
-        /// <summary>Nox Nostra's stream (creator, 2026-10-26: bats "streaming out of mina toward the target location" in a cone,
-        /// "really imact ful", blood red): furious red bats pour out of her down a cone that widens from Near at her to Far (the
-        /// circle's radius) on the ground, spiralling as they go, round a crimson beam, sparks and a churn of blood-red mist; where
-        /// they land the ground glows, smokes and throws sparks, and every bite pulses a shockwave (Pulse). The state moves both
-        /// ends every frame (Aim); Release scatters the bats as it ends. Every machine draws its own.</summary>
+        /// <summary>Nox Nostra's stream (creator, 2026-10-26: bats "streaming out of mina toward the target location" in a cone;
+        /// 2026-11-02: "too many vfx ... the game is slowing down and it doesnt even look like bat anymore"): bats only. Deadlock's
+        /// dark bats with their red eyes, big and slow enough to see them flap, pour out of her down a cone that widens from Near at
+        /// her to Far (the circle's radius) on the ground, spiralling as they go; on the ground only Deadlock's marker and a soft red
+        /// glow, and every bite a small ring and a puff of smoke (Pulse). The state moves both ends every frame (Aim); Release
+        /// scatters the bats as it ends. Every machine draws its own.</summary>
         public sealed class NoxStreamFx : MonoBehaviour
         {
-            /// <summary>Bats down the stream, and their speed (m/s).</summary>
-            const int Bats = 70;
-            const float Speed = 24f;
+            /// <summary>Bats down the stream, their size, and their speed (m/s): few, big and slow enough to read as bats.</summary>
+            const int Bats = 30;
+            const float BatSize = 1.4f;
+            const float Speed = 12f;
 
             sealed class Flier { public Bat Bat; public float T, Angle, R, Rate, Spin, Wobble; public Vector3 Out; }
             readonly List<Flier> fliers = new List<Flier>();
-            readonly List<KeyValuePair<Transform, float>> mist = new List<KeyValuePair<Transform, float>>();
-            float near = 1f, far = 10f, pulse;
+            float near = 1f, far = 10f;
             Vector3 from, to;
             bool released;
-            LineRenderer core, glow;
-            Transform mouth, impact, sparkT;
-            ParticleSystem sparks;
+            Transform impact;
 
             public void Build(Vector3 a, Vector3 b, float radius, float nearWidth)
             {
                 from = a; to = b; far = Mathf.Max(1f, radius); near = Mathf.Max(0.2f, nearWidth);
-                // the beam: a bright crimson core, and a wide dark-red glow round it that fans out to the circle
-                core = Beam(minaRose, 0.35f, 1.6f);
-                glow = Beam(new Color(minaBlood.r, minaBlood.g, minaBlood.b, 0.55f), near * 1.2f, far * 0.9f);
-                // blood-red mist and glow churning along the cone
-                foreach (var f in new[] { 0.15f, 0.35f, 0.55f, 0.75f, 0.92f })
-                {
-                    var go = new GameObject("mist"); go.transform.SetParent(transform, false);
-                    float w = Mathf.Lerp(near, far, f);
-                    Particles(go, "mat_smoke", minaSmoke, rate: 10f + 25f * f, life: 0.6f, speed: 0.6f, size: 0.6f + w * 0.18f, shapeRadius: w * 0.8f, world: true);
-                    Particles(go, "mat_glow", minaCrimson, rate: 10f, life: 0.3f, speed: 0f, size: 0.5f + w * 0.05f, shapeRadius: w * 0.7f, world: true);
-                    mist.Add(new KeyValuePair<Transform, float>(go.transform, f));
-                }
-                // sparks shooting out of her down the cone
-                var sg = new GameObject("sparks"); sg.transform.SetParent(transform, false); sparkT = sg.transform;
-                sparks = Particles(sg, "mat_spark", minaCrimson, rate: 90f, life: 0.5f, speed: Speed * 1.3f, size: 0.08f, world: true, stretch: 4f);
-                var sh = sparks.shape; sh.shapeType = ParticleSystemShapeType.Cone; sh.radius = near * 0.5f;
-                // her end: a hot glow under the umbrella
-                var mg = new GameObject("mouth"); mg.transform.SetParent(transform, false); mouth = mg.transform;
-                Light(mg, minaGlow, 6f, 3f, Vector3.zero);
-                Particles(mg, "mat_glow", minaRose, rate: 30f, life: 0.2f, speed: 0f, size: 0.9f, shapeRadius: 0.4f);
-                // the ground end: a glowing edge, smoke rolling out, sparks thrown up, a pool of red light, Deadlock's marker
+                // the ground end: Deadlock's marker and one soft red glow over the circle
                 var ig = new GameObject("impact"); ig.transform.SetParent(transform, false); impact = ig.transform;
-                Particles(ig, "mat_glow", minaCrimson, rate: 9f * far, life: 0.5f, speed: 0f, size: 0.8f, shapeRadius: far, ring: true);
-                Particles(ig, "mat_smoke", minaSmoke, rate: 5f * far, life: 1.2f, speed: 1.2f, size: 1.4f, shapeRadius: far * 0.9f, flat: true, world: true);
-                Particles(ig, "mat_spark", minaCrimson, rate: 60f, life: 0.6f, speed: 9f, size: 0.07f, shapeRadius: far * 0.6f, upward: true, world: true, gravity: 1f, stretch: 2f);
-                Particles(ig, "mat_glow", minaBlood, rate: 6f, life: 0.8f, speed: 0f, size: far * 0.6f, shapeRadius: far * 0.3f);
+                Particles(ig, "mat_glow", minaBlood, rate: 3f, life: 0.9f, speed: 0f, size: far * 0.6f, shapeRadius: far * 0.3f);
                 var mark = SymbolQuad(ig, "mina_marker_tex", new Color(minaCrimson.r, minaCrimson.g, minaCrimson.b, 0.7f), far * 1.1f, false);
                 if (mark) mark.transform.localPosition = Vector3.up * 0.1f;
-                Light(ig, minaGlow, far * 1.6f, 3f, Vector3.up * 1.5f).gameObject.AddComponent<Flicker>();
-                // the first bats hit: a shockwave, a flash and a shake
+                // the first bats arrive: one shockwave
                 Ring(b + Vector3.up * 0.1f, minaRing, 0.5f, far * 1.2f, 0.5f, 0.4f);
-                Flash(b + Vector3.up, minaGlow, far * 2f, 0.4f, 8f);
-                Shake(b, far * 3f, 2f, 0.35f);
-                foreach (var bat in BatFlock.Take(Bats, true, 0.9f))
+                foreach (var bat in BatFlock.Take(Bats, false, BatSize))
                     fliers.Add(new Flier
                     {
-                        Bat = bat, T = Random.value, Angle = Random.value * 360f, R = Mathf.Sqrt(Random.value), Rate = Random.Range(0.8f, 1.25f),
-                        Spin = Random.Range(90f, 260f) * (Random.value < 0.5f ? -1f : 1f), Wobble = Random.value * 6f,
+                        Bat = bat, T = Random.value, Angle = Random.value * 360f, R = Mathf.Sqrt(Random.value), Rate = Random.Range(0.8f, 1.2f),
+                        Spin = Random.Range(40f, 120f) * (Random.value < 0.5f ? -1f : 1f), Wobble = Random.value * 6f,
                     });
                 Place();
-            }
-
-            LineRenderer Beam(Color c, float w0, float w1)
-            {
-                var go = new GameObject("beam"); go.transform.SetParent(transform, false);
-                var lr = go.AddComponent<LineRenderer>();
-                lr.useWorldSpace = true;
-                lr.sharedMaterial = Mat("mat_tracer", c);
-                lr.startColor = lr.endColor = c;
-                lr.positionCount = 2;
-                lr.widthCurve = new AnimationCurve(new Keyframe(0f, w0), new Keyframe(1f, w1));
-                return lr;
             }
 
             /// <summary>Both ends, every frame: under her umbrella and the ground under the crosshair.</summary>
             public void Aim(Vector3 a, Vector3 b) { from = a; to = b; }
 
-            /// <summary>A bite: a shockwave, sparks and smoke where the bats land, the beam swells, a small shake.</summary>
+            /// <summary>A bite: a small ring and a puff of smoke where the bats land.</summary>
             public void Pulse()
             {
                 if (released) return;
-                pulse = 1f;
-                Ring(to + Vector3.up * 0.1f, minaRing, far * 0.3f, far * 1.15f, 0.4f, 0.3f);
-                Burst(to, "mat_spark", minaCrimson, 30, 0.5f, 12f, 0.09f, far * 0.5f, upward: true);
-                Burst(to, "mat_smoke", minaSmoke, 6, 0.8f, 3f, 1.6f, far * 0.6f, flat: true);
-                Flash(to + Vector3.up, minaGlow, far * 1.5f, 0.2f, 6f);
-                Shake(to, far * 2.5f, 0.8f, 0.15f);
+                Ring(to + Vector3.up * 0.1f, minaRing, far * 0.3f, far * 1.1f, 0.35f, 0.25f);
+                Burst(to, "mat_smoke", minaSmoke, 4, 0.7f, 2f, 1.2f, far * 0.5f, flat: true);
             }
 
             /// <summary>It ends: the bats scatter from the stream and go back to the pool when the visual goes.</summary>
@@ -538,28 +494,12 @@ namespace DeadlockOfRain
 
             void Place()
             {
-                var axis = to - from;
-                float len = Mathf.Max(0.5f, axis.magnitude);
-                var dir = axis / len;
-                float swell = 1f + pulse * 0.6f;
-                if (core) { core.SetPosition(0, from); core.SetPosition(1, to); core.widthMultiplier = swell; }
-                if (glow) { glow.SetPosition(0, from); glow.SetPosition(1, to); glow.widthMultiplier = swell; }
-                foreach (var m in mist) m.Key.position = from + axis * m.Value;
-                if (mouth) mouth.position = from;
                 if (impact) impact.position = to;
-                if (sparkT)
-                {
-                    sparkT.position = from;
-                    sparkT.rotation = Quaternion.LookRotation(dir);
-                    var sh = sparks.shape; sh.angle = Mathf.Clamp(Mathf.Atan2(far - near, len) * Mathf.Rad2Deg, 2f, 60f);
-                    var main = sparks.main; main.startLifetime = len / (Speed * 1.3f);
-                }
             }
 
             void Update()
             {
                 float dt = Time.deltaTime;
-                pulse = Mathf.Max(0f, pulse - dt * 4f);
                 if (!released) Place();
                 var axis = to - from;
                 float len = Mathf.Max(0.5f, axis.magnitude);

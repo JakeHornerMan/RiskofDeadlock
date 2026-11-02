@@ -5,8 +5,12 @@
 - Deadlock ClientVersion 6817 (build 26143760, 2026-10-22 evening; no clip, mesh or sound change for our heroes); 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
-## Own Mo & Krill build (2026-11-01, the creator's PC only)
-- `charactersFinal/mokrillFiles/mod-cache` embedded in the DLL (`LocalHero.cs`, `tools/build_local_hero.sh`): only Mo & Krill, Deadlock not read.
+## 2026-11-02 (main, not released)
+- Nox Nostra bats only (30 dark bats, no beam/mist/sparks/lights/flash/shake per bite); Frog Form opening: the case pops, the frog jumps out (no giant frog); Pocket's hair near-black with a sheen (`heroes.tintMaterials`/`tintColor`/`tintGloss`).
+- `tools/compare_builds.py`: the own all-heroes DLL build against the Melty cache, 11/11 heroes the same. Thunderstore given up; the single-hero Mo & Krill test build deleted.
+
+## Own hero DLL build (2026-11-01, the creator's PC only)
+- `charactersFinal/<hero>Files/mod-cache` embedded in the DLL (`LocalHero.cs`, `tools/build_local_hero.sh`), Deadlock not read; `all` puts every hero in one DLL.
   Extractor `--keep-glb` / `--import-glb` (glb from Blender -> dlm; unedited round trip byte-identical). Doc 03 §5c.
 
 ## 1.2.0 (2026-10-30)

@@ -429,7 +429,8 @@ namespace DeadlockOfRain.States
             if (inside.Count > 0)
             {
                 Fx.Sound(row.Id, "hit", target);
-                foreach (var hb in inside.Take(6)) Vfx.Play(row.Vfx, "hit", hb.transform.position);
+                // at most three bursts a bite (2026-11-02: fewer effects on screen)
+                foreach (var hb in inside.Take(3)) Vfx.Play(row.Vfx, "hit", hb.transform.position);
                 if (!reported)
                 {
                     reported = true;

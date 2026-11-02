@@ -1,6 +1,6 @@
 {
   "sheet": "heroes",
-  "about": "One row per Deadlock hero playable as a Risk of Rain 2 survivor. Heights are the hero's body-mesh height in metres as exported from the player's own Deadlock install (VRF glTF, 1 Source unit = 0.0254 m), measured 2026-10-12 on Deadlock ClientVersion 6774. heightScale keeps Deadlock's relative sizes: every hero is scaled by one global factor (anchorHero's height -> Commando's model height), so heightScale = sourceHeight / anchor sourceHeight. passiveName/passiveDescription/passiveIcon: the hero's passive on the character select screen (what the gun already does on hit), or none. damageHealBack/damageHealBackTime: the passive heals back that fraction of every hit taken over that many seconds (Abrams' Infernal Resilience), 0 = none. debuffResist: timed debuffs on the hero last that fraction less. modelScale: an extra even scale on the model only (1 = Deadlock's relative size; Mo & Krill are scaled up to Abrams' height), so heightScale = sourceHeight x modelScale / anchor sourceHeight. capsuleFrom: a vanilla body whose movement capsule the hero copies instead of scaling Commando's (none = scaled), so a huge model still fits through every stage. cameraFrom / cameraScale / cameraRight: a vanilla body whose camera settings are copied (none = Commando's scaled by height), pushed back by cameraScale and to the right by cameraRight metres. interactRange: multiplies the reach for chests, shrines and the teleporter. immuneToForce: the hero can't be pushed, pulled or knocked back by enemy hits (vanilla ImmuneToPhysicsForces). riderBone: a bone carrying a second character on the model (Krill), hidden by scaling it to 0 while a buff with melee=true is on (he is away), or none. noFallDamage: the hero never takes fall damage (Viscous: goo lands soft). landShake: the amplitude of the screen shake after a heavy landing (2 = the usual; Viscous 0.2). voiceGain: the hero's voice lines' loudness on top of the usual (1 = the usual; Viscous 1.2). splitMeshes: meshes the extractor keeps as parts of their own instead of merging them into their material (Rat King's ammo belt, one mesh per round count, extractor 1.6.0+), or none. airJumpMult: the vertical speed of the jumps after the first is multiplied by this (Rat King's King's Leap: 1.3; 1 = the usual). gooMaterials/glassMaterials: model parts drawn as living goo / a clear glass helmet instead of the game material. airDodges / dodgeDistance / dodgeTime / dodgePct: Billy's G.O.A.T. passive: he has one jump, and pressing jump again in the air dodges dodgeDistance metres in dodgeTime seconds (Deadlock's air dash: along the held keys, or at the crosshair with none held, pitch included), goring every enemy he passes through once for dodgePct % damage; airDodges per trip in the air, all back on landing and when Rising Ram launches him (0 = no dodge). readSeconds: about how long the first start takes to read this hero from Deadlock (extractor 1.8.0 on the creator's PC, 2026-10-25, x1.5 rounded up); the Thunderstore hero picker adds them up, plus sharedReadSeconds for the effect models, icons and sounds. vertexColorMaterials: the hero's materials that keep Deadlock's vertex colours (extractor 1.8.1+; a material Deadlock paints in vertex colours on a plain white texture, like Wraith's face), [\"none\"] for the rest; no other Deadlock material setting reaches a hero. floatFallSpeed / floatHold / floatAirControl / floatMoveSpeedMult: Mina's umbrella (v1.1.0a, Runtime/MinaParts.cs; since 2026-10-26 one rule): Jump held in the air opens it (after floatHold seconds, 0 = at once), after a jump or not, and it stays open while Jump is held; she then falls at floatFallSpeed m/s with floatAirControl as her air control (0.8 = 80 % of her grip on the ground; 0 = unchanged) and floatMoveSpeedMult times her move speed (0 = unchanged), no fall damage, until she lets go or lands (0 = no umbrella).",
+  "about": "One row per Deadlock hero playable as a Risk of Rain 2 survivor. Heights are the hero's body-mesh height in metres as exported from the player's own Deadlock install (VRF glTF, 1 Source unit = 0.0254 m), measured 2026-10-12 on Deadlock ClientVersion 6774. heightScale keeps Deadlock's relative sizes: every hero is scaled by one global factor (anchorHero's height -> Commando's model height), so heightScale = sourceHeight / anchor sourceHeight. passiveName/passiveDescription/passiveIcon: the hero's passive on the character select screen (what the gun already does on hit), or none. damageHealBack/damageHealBackTime: the passive heals back that fraction of every hit taken over that many seconds (Abrams' Infernal Resilience), 0 = none. debuffResist: timed debuffs on the hero last that fraction less. modelScale: an extra even scale on the model only (1 = Deadlock's relative size; Mo & Krill are scaled up to Abrams' height), so heightScale = sourceHeight x modelScale / anchor sourceHeight. capsuleFrom: a vanilla body whose movement capsule the hero copies instead of scaling Commando's (none = scaled), so a huge model still fits through every stage. cameraFrom / cameraScale / cameraRight: a vanilla body whose camera settings are copied (none = Commando's scaled by height), pushed back by cameraScale and to the right by cameraRight metres. interactRange: multiplies the reach for chests, shrines and the teleporter. immuneToForce: the hero can't be pushed, pulled or knocked back by enemy hits (vanilla ImmuneToPhysicsForces). riderBone: a bone carrying a second character on the model (Krill), hidden by scaling it to 0 while a buff with melee=true is on (he is away), or none. noFallDamage: the hero never takes fall damage (Viscous: goo lands soft). landShake: the amplitude of the screen shake after a heavy landing (2 = the usual; Viscous 0.2). voiceGain: the hero's voice lines' loudness on top of the usual (1 = the usual; Viscous 1.2). splitMeshes: meshes the extractor keeps as parts of their own instead of merging them into their material (Rat King's ammo belt, one mesh per round count, extractor 1.6.0+), or none. airJumpMult: the vertical speed of the jumps after the first is multiplied by this (Rat King's King's Leap: 1.3; 1 = the usual). gooMaterials/glassMaterials: model parts drawn as living goo / a clear glass helmet instead of the game material. airDodges / dodgeDistance / dodgeTime / dodgePct: Billy's G.O.A.T. passive: he has one jump, and pressing jump again in the air dodges dodgeDistance metres in dodgeTime seconds (Deadlock's air dash: along the held keys, or at the crosshair with none held, pitch included), goring every enemy he passes through once for dodgePct % damage; airDodges per trip in the air, all back on landing and when Rising Ram launches him (0 = no dodge). readSeconds: about how long the first start takes to read this hero from Deadlock (extractor 1.8.0 on the creator's PC, 2026-10-25, x1.5 rounded up); the Thunderstore hero picker adds them up, plus sharedReadSeconds for the effect models, icons and sounds. vertexColorMaterials: the hero's materials that keep Deadlock's vertex colours (extractor 1.8.1+; a material Deadlock paints in vertex colours on a plain white texture, like Wraith's face), [\"none\"] for the rest; no other Deadlock material setting reaches a hero. tintMaterials / tintColor / tintGloss: the hero's materials drawn in one flat colour instead of Deadlock's (tintColor, hex), with tintGloss as the shader's smoothness and specular strength (0-1) so the light picks out its shape; for a part Deadlock shades with its own lighting that RoR2 lacks (Pocket's hair: grey-brown vertex colours that Deadlock's lighting makes near-black; creator, 2026-11-02: \"Pocket hair does not match image of the deadlock game\"), [\"none\"] / none / 0 for the rest; it wins over vertexColorMaterials (Pocket's hair stays listed there so the extractor's manifest is unchanged). floatFallSpeed / floatHold / floatAirControl / floatMoveSpeedMult: Mina's umbrella (v1.1.0a, Runtime/MinaParts.cs; since 2026-10-26 one rule): Jump held in the air opens it (after floatHold seconds, 0 = at once), after a jump or not, and it stays open while Jump is held; she then falls at floatFallSpeed m/s with floatAirControl as her air control (0.8 = 80 % of her grip on the ground; 0 = unchanged) and floatMoveSpeedMult times her move speed (0 = unchanged), no fall damage, until she lets go or lands (0 = no umbrella).",
   "anchorHero": "haze",
   "sharedReadSeconds": 60,
   "anchorRoR2Body": "CommandoBody",
@@ -48,6 +48,9 @@
     "dodgePct",
     "readSeconds",
     "vertexColorMaterials",
+    "tintMaterials",
+    "tintColor",
+    "tintGloss",
     "floatFallSpeed",
     "floatHold",
     "floatAirControl",
@@ -110,6 +113,11 @@
       "vertexColorMaterials": [
         "none"
       ],
+      "tintMaterials": [
+        "none"
+      ],
+      "tintColor": "none",
+      "tintGloss": 0,
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
@@ -171,6 +179,11 @@
       "vertexColorMaterials": [
         "none"
       ],
+      "tintMaterials": [
+        "none"
+      ],
+      "tintColor": "none",
+      "tintGloss": 0,
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
@@ -233,6 +246,11 @@
       "vertexColorMaterials": [
         "none"
       ],
+      "tintMaterials": [
+        "none"
+      ],
+      "tintColor": "none",
+      "tintGloss": 0,
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
@@ -296,6 +314,11 @@
       "vertexColorMaterials": [
         "none"
       ],
+      "tintMaterials": [
+        "none"
+      ],
+      "tintColor": "none",
+      "tintGloss": 0,
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
@@ -357,6 +380,11 @@
       "vertexColorMaterials": [
         "none"
       ],
+      "tintMaterials": [
+        "none"
+      ],
+      "tintColor": "none",
+      "tintGloss": 0,
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
@@ -417,6 +445,11 @@
       "vertexColorMaterials": [
         "none"
       ],
+      "tintMaterials": [
+        "none"
+      ],
+      "tintColor": "none",
+      "tintGloss": 0,
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
@@ -515,6 +548,11 @@
       "vertexColorMaterials": [
         "none"
       ],
+      "tintMaterials": [
+        "none"
+      ],
+      "tintColor": "none",
+      "tintGloss": 0,
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
@@ -575,6 +613,11 @@
       "vertexColorMaterials": [
         "none"
       ],
+      "tintMaterials": [
+        "none"
+      ],
+      "tintColor": "none",
+      "tintGloss": 0,
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
@@ -636,6 +679,11 @@
       "vertexColorMaterials": [
         "wraith_head"
       ],
+      "tintMaterials": [
+        "none"
+      ],
+      "tintColor": "none",
+      "tintGloss": 0,
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
@@ -697,6 +745,11 @@
       "vertexColorMaterials": [
         "none"
       ],
+      "tintMaterials": [
+        "none"
+      ],
+      "tintColor": "none",
+      "tintGloss": 0,
       "floatFallSpeed": 2.5,
       "floatHold": 0,
       "floatAirControl": 0.8,
@@ -759,6 +812,11 @@
       "vertexColorMaterials": [
         "pocket_hair"
       ],
+      "tintMaterials": [
+        "pocket_hair"
+      ],
+      "tintColor": "#2A2522",
+      "tintGloss": 0.55,
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,

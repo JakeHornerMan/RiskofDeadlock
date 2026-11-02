@@ -329,8 +329,8 @@ namespace DeadlockOfRain.States
 
     // ---------------- Pocket's item: Frog Form (Q, any survivor) ----------------
     /// <summary>The opening (minDuration): the carrier vanishes (hidden, untouchable, held still) while the suitcase is thrown
-    /// (Pocket) or drops from the sky beside them (anyone else), grows huge and a giant frog rises from it opening its mouth
-    /// (<see cref="FrogOpening"/>). Then the carrier, hidden behind Deadlock's frog at their size, hops every interval for duration:
+    /// (Pocket) or drops from the sky beside them (anyone else), swells a little, jolts and pops open (<see cref="FrogOpening"/>),
+    /// and the carrier leaps out of it as the frog. Then the carrier, hidden behind Deadlock's frog at their size, hops every interval for duration:
     /// range metres along the held keys (camera-relative; a short hop with none), speed metres high; Space makes the next a high leap
     /// (launchHeight up, reach far, once every floatTime). Each landing (seen by the server from how the body moves, so a joined
     /// player's frog counts too) deals damagePct within radius, a high leap splashPct within nearRadius, pushing non-bosses
@@ -421,7 +421,7 @@ namespace DeadlockOfRain.States
             frog.transform.position = characterBody.footPosition;
             if (isAuthority && characterMotor)
             {
-                // out of the giant frog's mouth: up at the case and the first hop forward
+                // out of the open case: up at it and the first hop forward
                 var feet = caseAt + Vector3.up * 0.6f;
                 TeleportHelper.TeleportBody(characterBody, feet, false);
                 characterMotor.airControl = 0f;
