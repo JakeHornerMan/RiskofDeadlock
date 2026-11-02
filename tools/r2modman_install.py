@@ -1,7 +1,7 @@
 """Put the creator's own DLL build into their r2modman profile, in place of every older Risk of Deadlock package (creator,
 2026-11-02: "can we automate this process where we delete the old package and import the new dll in r2modman").
 
-    python tools/r2modman_install.py <zip> [--profile Deadlock]
+    python tools/r2modman_install.py <zip> [--profile Deadlock] [--wait]
 
 Does what r2modman's Settings > Profile > Import local mod does, after removing the old ones by hand:
 - every package in the profile that holds DeadlockOfRain.dll (or its disabled .old copy) is removed, from BepInEx/plugins and
@@ -16,6 +16,9 @@ import json, os, re, shutil, subprocess, sys, time, zipfile
 
 args = sys.argv[1:]
 profile = 'Deadlock'
+# --wait: if the game is running (the creator is playing), wait for it to close instead of stopping
+wait = '--wait' in args
+if wait: args.remove('--wait')
 if '--profile' in args:
     i = args.index('--profile'); profile = args[i + 1]; del args[i:i + 2]
 if len(args) != 1 or not args[0].endswith('.zip'):
@@ -41,7 +44,11 @@ def ps(cmd):
 
 # a running game means the creator is playing: never close it
 if running('Risk of Rain 2'):
-    print('Risk of Rain 2 is running (you may be playing): close the game, then run this again.'); sys.exit(1)
+    if not wait:
+        print('Risk of Rain 2 is running (you may be playing): close the game, then run this again (or pass --wait).'); sys.exit(1)
+    print('== Risk of Rain 2 is running: installing as soon as it closes', flush=True)
+    while running('Risk of Rain 2'): time.sleep(10)
+    time.sleep(5)
 # r2modman keeps mods.yml in memory and writes it back on close, so it is closed first (asked to close like its X button, so it
 # saves; forced after 15 s) and started again at the end (creator, 2026-11-02: "add this into your process turning off modman
 # and doing all this be independant")
@@ -58,7 +65,9 @@ if r2exe:
 with zipfile.ZipFile(zpath) as z:
     manifest = json.loads(z.read('manifest.json').decode('utf-8-sig'))
 name = manifest['name']
-full = 'Unknown-' + name
+# the author (creator, 2026-11-02: "make the mod by JakeHornerMan"); an import without one is r2modman's Unknown
+author = manifest.get('author') or 'Unknown'
+full = author + '-' + name
 major, minor, patch = (int(x) for x in manifest['version_number'].split('.'))
 
 # 1. every package holding our plugin goes (folder and mods.yml entry)
@@ -73,14 +82,14 @@ keep = [b for b in blocks if not (re.search(r'(?m)^  name: (.+)$', b) and re.sea
 
 # 2. r2modman's cache: our older imports and the gone packages (the new one is put back below)
 cache = os.path.join(GAME, 'cache')
-old_imports = [d for d in (os.listdir(cache) if os.path.isdir(cache) else []) if d.startswith('Unknown-') and
+old_imports = [d for d in (os.listdir(cache) if os.path.isdir(cache) else []) if (d.startswith('Unknown-') or d.startswith(author + '-')) and
                any('DeadlockOfRain.dll' in fs for _, _, fs in os.walk(os.path.join(cache, d)))]
 for d in set(gone + old_imports + [full]):
     if os.path.isdir(os.path.join(cache, d)): shutil.rmtree(os.path.join(cache, d))
 
 # 3. the new package, as r2modman's import lays it out
 now = int(time.time() * 1000)
-mm = {'manifestVersion': 1, 'name': full, 'authorName': 'Unknown', 'websiteUrl': manifest.get('website_url', ''),
+mm = {'manifestVersion': 1, 'name': full, 'authorName': author, 'websiteUrl': manifest.get('website_url', ''),
       'displayName': name, 'description': manifest.get('description', ''), 'gameVersion': '', 'networkMode': '',
       'packageType': '', 'installMode': '', 'installedAtTime': now, 'loaders': [],
       'dependencies': manifest.get('dependencies', []), 'incompatibilities': [], 'optionalDependencies': [],
@@ -94,7 +103,7 @@ deps = ''.join(f'\n    - {d}' for d in mm['dependencies']) or ' []'
 desc = mm['description'].replace("'", "''")
 entry = f"""- manifestVersion: 1
   name: {full}
-  authorName: Unknown
+  authorName: {author}
   websiteUrl: ''
   displayName: {name}
   description: '{desc}'

@@ -252,6 +252,11 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   be independant"); it stops only while the game runs (the creator may be playing). **Process:** after any change the creator will
   play, run `bash tools/build_local_hero.sh all charactersFinal --r2modman-install` without asking, then tell them to press Start
   modded. Checked 2026-11-02: r2modman closed, package swapped (1.261102.1420), r2modman back open with the new list.
+  `--wait` (`R2WAIT=1` from the build script): while the game runs, it waits for it to close and then installs (run it in the
+  background), instead of stopping. **Author and version** (creator, 2026-11-02): the package is `JakeHornerMan-Risk_of_Deadlock`
+  (manifest `author`; r2modman's folder and `mods.yml` name), zip `JakeHornerMan-Risk_of_Deadlock-<version>.zip`, and the version
+  is one line, **1.5.x**: `build_local_hero.sh` bumps the patch in `tools/r2modman_version.txt` (committed) on every build. The
+  install removes every other package holding our DLL, so the old `Unknown-Risk_of_Deadlock` goes with the first 1.5.x.
 
 ## 5b. Daily watch: game updates and Melty breaks (since 2026-10-21)
 The full manual is **doc 10** (`docs/10-DAILY-WATCH.md`); this is the summary.

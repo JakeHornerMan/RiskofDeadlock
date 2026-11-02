@@ -64,7 +64,10 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 - **The Steam copy is always main's dev build** (creator, 2026-10-27: "EVERYTIME YOU DO A RELEASE YOU REMOVE MY MOD DEVELOPMENT ENVIRONMENT FROM MY STEAM CLIENT!!!"). `tools/steam_dev_guard.sh` runs as a Stop hook and every 5 minutes as the Windows task "DeadlockOfRain dev guard" (the Melty app restores its release whenever it starts) and puts it back, cache included; to test the release cut across turns, create `%LOCALAPPDATA%\DeadlockOfRain\keep-release-cut` and delete it afterwards. **Exception:** while `%LOCALAPPDATA%\DeadlockOfRain\local-hero.txt` exists the creator has their own hero build installed (`tools/build_local_hero.sh --install`, doc 03 §5c); leave it, and test other heroes only after asking (`--uninstall`). Never release from the usual folder's branch and leave it there: go back to `main` after a release.
 - **The creator plays through r2modman** (2026-11-02; Thunderstore given up): after a change they will play, put it in their
   r2modman profile yourself with `bash tools/build_local_hero.sh all charactersFinal --r2modman-install` (closes and restarts
-  r2modman, swaps the package, checks every hero against the Melty build; doc 03 §5c), without asking. It never closes the game.
+  r2modman, swaps the package, checks every hero against the Melty build; doc 03 §5c), without asking. It never closes the game;
+  while the creator plays, run it with `R2WAIT=1` in the background so it installs the moment they close the game. The package is
+  **`JakeHornerMan-Risk_of_Deadlock`**, one version line **1.5.x**, one patch up per build (creator, 2026-11-02: "make the mod by
+  JakeHornerMan ... this is 1.5 version we keep updating it with that number incrementally"; the last one in `tools/r2modman_version.txt`).
 - **Commit after each logical step; do not push unless asked.** Ask the creator before `publish` on Melty. The one
   exception is the **daily watch** (`tools/watch/`, doc 03 §5b): its unattended fix run may publish a fix on its own, but
   only after every check and Melty's `test_release` pass, and only when `main` holds no unreleased work besides the fix (doc 10 §3.4).

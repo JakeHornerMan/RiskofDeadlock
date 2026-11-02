@@ -181,8 +181,14 @@ else:
     ids = [hid]
     display = next(r for r in rows if r['id'] == hid)['displayName']
     name = ''.join(c if c.isalnum() else '_' for c in display.replace('&', 'and')).replace('__', '_') + '_Own_Files'
-version = time.strftime('1.%y%m%d.%H%M')
-manifest = {'name': name, 'version_number': version, 'website_url': '',
+# one version line, one patch up a build (creator, 2026-11-02: "this is 1.5 version we keep updating it with that number
+# incrementally now like 1.5.1 1.5.2"); the last one used is in tools/r2modman_version.txt (committed)
+vfile = os.path.join(root, 'tools', 'r2modman_version.txt')
+last = open(vfile).read().strip() if os.path.exists(vfile) else '1.5.0'
+major, minor, patch = (int(x) for x in last.split('.'))
+version = f'{major}.{minor}.{patch + 1}'
+open(vfile, 'w').write(version + '\n')
+manifest = {'name': name, 'author': 'JakeHornerMan', 'version_number': version, 'website_url': '',
             'description': f'{display} from my own edited files (built into the DLL, Deadlock not needed).',
             'dependencies': ['bbepis-BepInExPack-5.4.2122']}
 names = ', '.join(next(r['displayName'] for r in rows if r['id'] == h) for h in ids)
@@ -216,7 +222,7 @@ buf = io.BytesIO(); icon.convert('RGB').save(buf, 'PNG')
 os.makedirs(outdir, exist_ok=True)
 for f in os.listdir(outdir):
     if f.endswith('.zip'): os.remove(os.path.join(outdir, f))
-zpath = os.path.join(outdir, f'{name}-{version}.zip')
+zpath = os.path.join(outdir, f"{manifest['author']}-{name}-{version}.zip")
 with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
     z.writestr('manifest.json', json.dumps(manifest, indent=2))
     z.writestr('README.md', readme)
@@ -227,6 +233,6 @@ EOF
   # 7. (--r2modman-install) straight into the r2modman profile, every older Risk of Deadlock package removed first
   if [ -n "$R2I" ]; then
     Z=$(ls -t "$F/r2modman"/*.zip | head -1)
-    python "$ROOT/tools/r2modman_install.py" "$Z" ${R2PROFILE:+--profile "$R2PROFILE"}
+    python "$ROOT/tools/r2modman_install.py" "$Z" ${R2PROFILE:+--profile "$R2PROFILE"} ${R2WAIT:+--wait}
   fi
 fi
