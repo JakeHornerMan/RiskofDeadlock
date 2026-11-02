@@ -1613,3 +1613,11 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** Part A works from Steam's Play button. Part B's files and list are right; its in-game start was stopped by the creator. 1.5.3 in r2modman.
 **Not done / open:** the Steam copy still has the hand install (1.5.2) and the dev guard is paused (`keep-release-cut`): putting the dev build back needs the Deadlock cache read again (~8 min); the creator to say when.
 **Lessons:** a guide is only right once it has been followed on a clean PC: two of its steps were wrong on paper (RoR2BepInExPack missing; its folder name deleted by BepInExPack). r2modman copies a profile's top files into the game folder on Start modded: keep nothing of ours there.
+
+### 2026-11-02 (later): a record of the package's files on every build
+**Asked:** "ok can update this everytime we build apackage [the table of the 1.5.3 package's files] just for my own record... also open a vs code window with all these file pls!"
+**Asked back:** nothing.
+**Done:** `tools/r2modman_package.py` now writes, beside the zip in `charactersFinal/r2modman/`, `PACKAGE-CONTENTS.md` (every file of the zip, its size and what it is, read back from the zip itself; the changelog's versions and the manifest's packs filled in) and `package/` (the zip's files minus the 598 MB DLL, laid out as in the zip), replacing the loose guide copies. `--contents <zip>` writes both again for an existing zip; run on 1.5.3. Opened VS Code on `charactersFinal/r2modman` with every file. Doc 03 §5c.
+**Results:** the 1.5.3 record lists 10 files (zip 450 MB). No rebuild, nothing new in r2modman.
+**Not done / open:** as before (the Steam copy's dev build and the paused guard).
+**Lessons:** a new file in the package needs a line in the script's `WHAT`, or the record shows "(new file: describe it in WHAT)".

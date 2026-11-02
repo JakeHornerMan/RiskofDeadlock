@@ -11,9 +11,67 @@ thunderstore ... like a proper release every time ... make all the documents nee
     plugins/DeadlockOfRain.dll, LICENSE.txt, THIRD-PARTY-NOTICES.txt, built-with.txt
 r2modman puts the top files and plugins/' files together in BepInEx/plugins/JakeHornerMan-Risk_of_Deadlock/
 (tools/r2modman_install.py does the same). The version is one up from tools/r2modman_version.txt, used only once the
-changelog has its section. The guides are also copied beside the zip. Never upload the zip: the DLL holds Deadlock's files.
+changelog has its section. Never upload the zip: the DLL holds Deadlock's files.
+
+Beside the zip, for the creator's own record (creator, 2026-11-02: "can update this everytime we build a package ... just for my
+own record"): package/ holds every file of the zip as laid out in it, except the DLL, and PACKAGE-CONTENTS.md lists every file
+with its size and what it is, read back from the zip itself. To write those two again for an existing zip:
+    python tools/r2modman_package.py --contents <zip>
 """
 import io, json, os, shutil, sys, time, zipfile
+
+WHAT = {  # what each file in the package is (PACKAGE-CONTENTS.md)
+    'manifest.json': lambda m, c: f"{m['name']} by {m['author']}, {m['version_number']}, a description, and its required packs "
+                                  f"({', '.join(d.rsplit('-', 1)[0] for d in m['dependencies'])})",
+    'icon.png': lambda m, c: "the picture r2modman shows: the heroes' own in-game renders",
+    'README.md': lambda m, c: 'the mod page r2modman shows, written like the Thunderstore page: requirements with a "Built with" line, '
+                              "installation, hero pages, every hero's kit, community, credits",
+    'CHANGELOG.md': lambda m, c: f"Thunderstore-style sections for {', '.join(c)}, each with its \"Built with\" line",
+    'INSTALL.txt': lambda m, c: 'by hand (Part A), r2modman (Part B), updating, removing everything, problems',
+    'README.txt': lambda m, c: "what the package is, what's in it, where things go on the PC",
+    'plugins/DeadlockOfRain.dll': lambda m, c: "the mod (BepInEx 5 plugin), with every hero's files inside (only in the zip)",
+    'plugins/LICENSE.txt': lambda m, c: "the mod's licence, as in the Thunderstore zip",
+    'plugins/THIRD-PARTY-NOTICES.txt': lambda m, c: 'the libraries the project uses and their licences, as in the Thunderstore zip',
+    'plugins/built-with.txt': lambda m, c: 'the Risk of Rain 2 build, the version, the date and the author',
+}
+
+def size(n):
+    return f'{n / 1048576:.0f} MB' if n >= 1048576 else f'{n / 1024:.1f} KB' if n >= 1024 else f'{n} bytes'
+
+def write_contents(zpath):
+    """package/ (the zip's files minus the DLL) and PACKAGE-CONTENTS.md beside the zip, both read back from the zip."""
+    import re
+    outdir = os.path.dirname(os.path.abspath(zpath))
+    unpacked = os.path.join(outdir, 'package')
+    shutil.rmtree(unpacked, ignore_errors=True)
+    with zipfile.ZipFile(zpath) as z:
+        infos = [i for i in z.infolist() if not i.is_dir()]
+        m = json.loads(z.read('manifest.json'))
+        c = re.findall(r'^## (\S+)', z.read('CHANGELOG.md').decode('utf-8'), re.M)
+        built = dict(l.split('=', 1) for l in z.read('plugins/built-with.txt').decode('utf-8').splitlines() if '=' in l)
+        for i in infos:
+            if i.filename.endswith('.dll'): continue
+            out = os.path.join(unpacked, *i.filename.split('/'))
+            os.makedirs(os.path.dirname(out), exist_ok=True)
+            with z.open(i) as src, open(out, 'wb') as dst: shutil.copyfileobj(src, dst)
+    zname = os.path.basename(zpath)
+    rows = [(i.filename, size(i.file_size), WHAT[i.filename](m, c) if i.filename in WHAT else '(new file: describe it in WHAT)')
+            for i in infos]
+    w = max(len(r[0]) for r in rows) + 2
+    lines = [f"# {m['author']}-{m['name']} {m['version_number']}", '',
+             f"Built {built.get('date', '?')} with Risk of Rain 2 build {built.get('ror2', '?')} and "
+             f"{built.get('heroes', '?')}. Zip: `{zname}` ({size(os.path.getsize(zpath))}).",
+             'Written by tools/r2modman_package.py on every build, from the zip itself. For my own record: never upload the zip.', '',
+             '| File | Size | What it is |', '|---|---|---|']
+    lines += [f'| `{f}` | {sz} | {what} |' for f, sz, what in rows]
+    lines += ['', "Every file except the DLL is also unpacked in `package/` beside this file, laid out as in the zip.",
+              f"r2modman (and INSTALL.txt step A6) puts all of them, `plugins/` included, in one folder: "
+              f"`BepInEx\\plugins\\{m['author']}-{m['name']}\\`.", '']
+    open(os.path.join(outdir, 'PACKAGE-CONTENTS.md'), 'w', encoding='utf-8').write('\n'.join(lines))
+    print(f'== package record: {os.path.join(outdir, "PACKAGE-CONTENTS.md")} and {unpacked}')
+
+if sys.argv[1] == '--contents':
+    write_contents(sys.argv[2]); sys.exit(0)
 
 dll, outdir, hid = sys.argv[1:4]
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -85,8 +143,9 @@ with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
     z.write(os.path.join(ROOT, 'LICENSE.txt'), 'plugins/LICENSE.txt')
     z.write(os.path.join(ROOT, 'THIRD-PARTY-NOTICES.txt'), 'plugins/THIRD-PARTY-NOTICES.txt')
     z.writestr('plugins/built-with.txt', built_txt)
-# the guides beside the zip too (the folder keeps only the newest zip; nothing else in it is touched)
+# the old loose guide copies beside the zip now live in package/
 for f in ('README.md', 'CHANGELOG.md', 'INSTALL.txt', 'README.txt'):
-    open(os.path.join(outdir, f), 'w', encoding='utf-8').write(top[f])
+    if os.path.exists(os.path.join(outdir, f)): os.remove(os.path.join(outdir, f))
+write_contents(zpath)
 open(vfile, 'w').write(version + '\n')
 print(f'== r2modman zip ({len(ids)} heroes: {", ".join(names)}): {zpath}')
