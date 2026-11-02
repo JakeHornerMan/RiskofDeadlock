@@ -103,7 +103,7 @@ namespace DeadlockOfRain
                         tex.SetPixel(x, y, new Color(0.05f, 0.03f, 0.03f, Mathf.Clamp01(1f - d * d) * 0.85f));
                     }
                 tex.Apply();
-                markMat = new Material(Shader.Find("Sprites/Default")) { mainTexture = tex, renderQueue = 2990 };
+                markMat = new Material(SpriteShader()) { mainTexture = tex, renderQueue = 2990 };
             }
             var root = Root(at + normal * 0.02f, 4f, null);
             var q = GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -147,7 +147,7 @@ namespace DeadlockOfRain
             var tex = new Texture2D(src.width, src.height, TextureFormat.RGBA32, true);
             tex.SetPixels(outPx); tex.Apply();
             tex.wrapMode = TextureWrapMode.Clamp;
-            biteMat = new Material(Shader.Find("Sprites/Default")) { mainTexture = tex, renderQueue = 3100 };
+            biteMat = new Material(SpriteShader()) { mainTexture = tex, renderQueue = 3100 };
             return biteMat;
         }
 

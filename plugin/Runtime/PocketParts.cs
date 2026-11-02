@@ -141,7 +141,7 @@ namespace DeadlockOfRain
             Object.Destroy(box.GetComponent<Collider>());
             box.transform.SetParent(root.transform, false);
             box.transform.localScale = size; box.transform.localPosition = Vector3.up * size.y * 0.5f;
-            box.GetComponent<MeshRenderer>().sharedMaterial = new Material(Shader.Find("Sprites/Default")) { color = c };
+            box.GetComponent<MeshRenderer>().sharedMaterial = new Material(Vfx.SpriteShader()) { color = c };
             return root;
         }
 

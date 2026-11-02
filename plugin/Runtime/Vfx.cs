@@ -1181,7 +1181,7 @@ namespace DeadlockOfRain
                 var row = Sheet.Effect(id);
                 try { if (row != null && row.Addressable != "none") b = Addressables.LoadAssetAsync<Material>(row.Addressable).WaitForCompletion(); }
                 catch (System.Exception e) { Log.Warn($"vfx material {id}: {e.Message}"); }
-                if (!b) b = new Material(Shader.Find("Sprites/Default"));
+                if (!b) b = new Material(SpriteShader());
                 baseMats[id] = b;
             }
             m = new Material(b);
@@ -1267,12 +1267,28 @@ namespace DeadlockOfRain
             foreach (var l in root.GetComponentsInChildren<Light>(true)) l.color = c;
         }
 
+        static Shader spriteShader;
+
+        /// <summary>Unity's built-in Sprites/Default, taken from a SpriteRenderer's default material rather than looked up by name:
+        /// RoR2BepInExPack (which r2modman always installs) sends Shader.Find to RoR2's LegacyShaderAPI, which throws for built-in
+        /// names, so every material made with Shader.Find("Sprites/Default") came out missing or magenta (doc 02 §12).</summary>
+        internal static Shader SpriteShader()
+        {
+            if (spriteShader) return spriteShader;
+            var probe = new GameObject("dlrSpriteShaderProbe");
+            try { var sr = probe.AddComponent<SpriteRenderer>(); if (sr.sharedMaterial) spriteShader = sr.sharedMaterial.shader; }
+            catch (System.Exception e) { Log.Warn($"sprite shader probe: {e.Message}"); }
+            finally { UnityEngine.Object.DestroyImmediate(probe); }
+            if (!spriteShader) { try { spriteShader = Shader.Find("Sprites/Default"); } catch (System.Exception e) { Log.Warn($"sprite shader: {e.Message}"); } }
+            return spriteShader;
+        }
+
         /// <summary>A plain alpha-blended colour (Unity's built-in sprite shader) for lines that must read on bright ground.</summary>
         static Material Solid(Color tint)
         {
             string key = "solid|" + ColorUtility.ToHtmlStringRGBA(tint);
             if (tinted.TryGetValue(key, out var m) && m) return m;
-            m = new Material(Shader.Find("Sprites/Default")) { color = tint };
+            m = new Material(SpriteShader()) { color = tint };
             tinted[key] = m;
             return m;
         }

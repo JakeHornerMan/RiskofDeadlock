@@ -6,6 +6,8 @@
 - Every hero is now playable: no more locked "coming soon" tile.
 - Mina's **Nox Nostra** rebuilt: a cone of bats pours down onto the spot under your crosshair, with a ring on the ground showing the area to everyone.
 - Mina's umbrella now opens only while you hold Jump.
+- Works with Deadlock's update of 2026-11-02 (build 6839): every hero reads.
+- Fixed effects that broke or showed bright pink alongside the RoR2 BepInEx pack other mod managers install (Viscous's goo, Mo & Krill's aim cone, Mina's bites, Wraith's card symbols).
 - Players on 1.5.0 play together; earlier versions can't join them (new hero content).
 
 ## 1.2.0

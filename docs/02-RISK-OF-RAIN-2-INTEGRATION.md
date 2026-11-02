@@ -1188,5 +1188,12 @@ the other is the **host** (only the host writes checks). How to run it: doc 03 Â
     line ("RoR2's quit command" via `CCQuit`); a start whose trail has no `closing` line is reported by the next start as
     "ended without closing" (killed from outside or crashed). Our own lab scripts close their copies the same way, so after a
     test that warning is expected.
+40. **Never `Shader.Find` a built-in Unity shader** (1.5.0): RoR2BepInExPack (r2modman always installs it, and the creator's
+    hand-installed Steam copy has it) detours `Shader.Find` to RoR2's `LegacyShaderAPI.Find`, which throws "No GUID record is
+    available for shader name" for `Sprites/Default`. Every material we made that way failed: Viscous's goo threw in `Start`
+    (then `GooedFx.Update` null references), Mo & Krill's aim cone, Mina's bite and Nox Nostra marks, Wraith's card symbols,
+    Pocket's box, and a big magenta area showed in Melty's footage. Melty players had no RoR2BepInExPack, so only the r2modman/DLL
+    copy looked wrong ("effects look great on Melty but terrible on the DLL"). `Vfx.SpriteShader()` takes the shader from a
+    `SpriteRenderer`'s default material instead; use it for any unlit sprite material.
 
 33. **Never `WaitForCompletion()` while the game loads** (`LoadStaticContentAsync`, `Survivors.Build`, `Fx.Preload`): RoR2 loads its own content beside ours from the same bundles, and a blocking wait holds the main thread, so a slow drive makes Windows call the game frozen (a 1.0.1 player hung 66 s in, before `hero material template`). Start the loads and `yield return null` until `IsDone` (1.0.2); the log says `content load started` and how long the Commando template took (a warning past 10 s). Later lookups (`Fx.Prefab`, `Vfx.Mat`) then find the assets already loaded.

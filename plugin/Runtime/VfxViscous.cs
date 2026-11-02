@@ -27,7 +27,7 @@ namespace DeadlockOfRain
         /// <summary>The one material every CelGoo mesh uses: unlit, alpha-blended, coloured by its vertex colours.</summary>
         static Material CelMat()
         {
-            if (!celMat) celMat = new Material(Shader.Find("Sprites/Default")) { name = "matDlrCelGoo", color = Color.white };
+            if (!celMat) celMat = new Material(SpriteShader()) { name = "matDlrCelGoo", color = Color.white };
             return celMat;
         }
 
@@ -53,7 +53,7 @@ namespace DeadlockOfRain
                     }
                 dropTex.Apply();
             }
-            m = new Material(Shader.Find("Sprites/Default")) { name = "matDlrGooDrop", mainTexture = dropTex, color = Color.white };
+            m = new Material(SpriteShader()) { name = "matDlrGooDrop", mainTexture = dropTex, color = Color.white };
             tinted[key] = m;
             return m;
         }

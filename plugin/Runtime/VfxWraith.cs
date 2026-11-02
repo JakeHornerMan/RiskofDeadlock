@@ -50,7 +50,7 @@ namespace DeadlockOfRain
             var tex = row != null ? DeadlockCache.Image(row.Addressable) : null;
             if (tex)
             {
-                m = new Material(Shader.Find("Sprites/Default")) { mainTexture = tex, color = tint, renderQueue = 3100 };
+                m = new Material(SpriteShader()) { mainTexture = tex, color = tint, renderQueue = 3100 };
             }
             symbolMats[key] = m;
             return m;
