@@ -1829,6 +1829,43 @@ namespace DeadlockOfRain
             if (m) m.velocity = Vector3.zero;
             yield return new WaitForSeconds(0.5f);
 
+            // 3b. (screenshots only) Nox Nostra aimed 20 m out, so the shots show a long cone of bats onto the circle (2026-11-02:
+            // the skill test's target sits right under her)
+            if (DevShots)
+            {
+                KillTargets();
+                var far = spot + fwd * 20f;
+                if (Physics.Raycast(far + Vector3.up * 5f, Vector3.down, out var gh, 20f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) far = gh.point;
+                var ft = Summon(body, far + Vector3.up * 0.5f);
+                if (ft) targets.Add(ft);
+                States.NoxStream.TestTarget = far;
+                var sp = body.skillLocator.special;
+                sp.Reset();
+                if (body.inputBank) body.inputBank.aimDirection = (far - body.corePosition).normalized;
+                bool fired = sp.ExecuteIfReady();
+                Log.Info($"Melty test: {hero.Id} nox far: fired {fired}, target {far} ({Vector3.Distance(body.footPosition, far):F1} m from her), stock {sp.stock}");
+                float t1 = Time.time;
+                bool shot1 = false, shot2 = false;
+                while (Time.time - t1 < 4f)
+                {
+                    if (body.inputBank) body.inputBank.aimDirection = (far - body.corePosition).normalized;
+                    if (!shot1 && Time.time - t1 > 1.6f)
+                    {
+                        shot1 = true; Shot(hero.Id + "_nox_far");
+                        var st = EntityStateMachine.FindByCustomName(body.gameObject, "Body")?.state;
+                        Log.Info($"Melty test: {hero.Id} nox far shot: state {st?.GetType().Name}, her feet {body.footPosition}");
+                    }
+                    if (!shot2 && Time.time - t1 > 3.6f) { shot2 = true; Shot(hero.Id + "_nox_far_2"); }
+                    yield return null;
+                }
+                States.NoxStream.TestTarget = null;
+                yield return new WaitForSeconds(2.5f);
+                KillTargets();
+                TeleportHelper.TeleportBody(body, spot + Vector3.up * 0.5f, false);
+                if (m) m.velocity = Vector3.zero;
+                yield return new WaitForSeconds(0.5f);
+            }
+
             // 4. seen in the skill tests: Sanguine Retreat's recast (test mode recasts by itself inside its window), Nox Nostra's
             // stream catching an enemy, Rake's sweep landing
             if (!seen.Contains("bat-blink-recast")) why[0] += "sanguine retreat: no recast seen; ";

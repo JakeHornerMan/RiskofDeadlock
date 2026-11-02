@@ -390,18 +390,10 @@ namespace DeadlockOfRain
                 }
                 case "aim":
                 {
-                    // the circle where the bats land (the owner's): Deadlock's marker in the middle, a dark-red glowing edge and a faint dome
+                    // the owner's target: Deadlock's marker (the ring, the dome and the glow are the stream's, seen by everyone)
                     var root = Root(at, 0f, null);
                     var mark = SymbolQuad(root, "mina_marker_tex", new Color(minaCrimson.r, minaCrimson.g, minaCrimson.b, 0.8f), 2.2f, false);
                     if (mark) mark.transform.localPosition = Vector3.up * 0.1f;
-                    var edge = Particles(root, "mat_glow", minaCrimson, rate: 9f * radius, life: 0.5f, speed: 0f, size: 0.6f, shapeRadius: radius, ring: true);
-                    var sh = edge.shape; sh.radiusThickness = 0f;
-                    Particles(root, "mat_smoke", minaDark, rate: 3f * radius, life: 0.9f, speed: 0.2f, size: 0.5f, shapeRadius: radius, ring: true, upward: false);
-                    var dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    Object.Destroy(dome.GetComponent<Collider>());
-                    dome.transform.SetParent(root.transform, false);
-                    dome.transform.localScale = new Vector3(radius * 2f, radius * 0.5f, radius * 2f);
-                    dome.GetComponent<MeshRenderer>().sharedMaterial = Mat("mat_area", new Color(minaBlood.r, minaBlood.g, minaBlood.b, 0.5f));
                     return root;
                 }
                 case "stream":
@@ -433,50 +425,76 @@ namespace DeadlockOfRain
             return null;
         }
 
-        /// <summary>Nox Nostra's stream (creator, 2026-10-26: bats "streaming out of mina toward the target location" in a cone;
-        /// 2026-11-02: "too many vfx ... the game is slowing down and it doesnt even look like bat anymore"): bats only. Deadlock's
-        /// dark bats with their red eyes, big and slow enough to see them flap, pour out of her down a cone that widens from Near at
-        /// her to Far (the circle's radius) on the ground, spiralling as they go; on the ground only Deadlock's marker and a soft red
-        /// glow, and every bite a small ring and a puff of smoke (Pulse). The state moves both ends every frame (Aim); Release
-        /// scatters the bats as it ends. Every machine draws its own.</summary>
+        /// <summary>Nox Nostra's stream (creator, 2026-11-02: "we need a stream of bats coming out as a cone hitting the floor where we
+        /// are directing it, there should be a clear indication of the circle", the floor smoke "less solid ... and should disappear
+        /// over time"; "Bats only", no cone shape): bats fill a true cone from her (near wide) to the circle (ConeEnd of its radius),
+        /// spiralling down it, and in the last part of the trip each dives into the floor and shrinks, then starts again at her;
+        /// their number grows with the cone's length. On the floor, seen by everyone: a crisp crimson ring at the circle's radius that
+        /// hugs the ground, a faint dome and soft glow that fade as the move's time runs out (TimeLeft), and on each bite a small ring
+        /// and puff (Pulse). The state moves both ends every frame (Aim); Release scatters the bats as it ends.</summary>
         public sealed class NoxStreamFx : MonoBehaviour
         {
-            /// <summary>Bats down the stream, their size, and their speed (m/s): big and slow enough to read as bats, enough of them
-            /// to read as a stream (2026-11-02, after 30 at 1.4: "there is no stream of bats heading toward the area"). Spread is how
-            /// much of the cone's width they use at her (Start) and on the ground (End): a tight column that fans out as it lands.</summary>
-            const int Bats = 48;
-            const float BatSize = 2f;
-            const float Speed = 15f;
-            const float SpreadStart = 0.35f, SpreadEnd = 0.8f;
+            /// <summary>Bats a metre of cone (at least MinBats, at most MaxBats), their size and speed (m/s); the cone's width on the
+            /// floor (ConeEnd of the circle's radius); where on the trip they start diving into the floor (DiveFrom) and how small
+            /// they get there (DiveShrink).</summary>
+            const float BatsPerMetre = 2.5f, BatSize = 2f, Speed = 15f, ConeEnd = 0.95f, DiveFrom = 0.88f, DiveShrink = 0.75f;
+            const int MinBats = 50, MaxBats = 110;
+            /// <summary>The circle's ring: points, width (m), height over the floor (m), how often (s) it measures the floor under each
+            /// point; the dome's and glow's strength at the start (they fade to nothing with the time left).</summary>
+            const int RingPoints = 64;
+            const float RingWidth = 0.16f, RingLift = 0.08f, RingEvery = 0.1f, DomeAlpha = 0.25f, GlowRate = 3f;
 
-            sealed class Flier { public Bat Bat; public float T, Angle, R, Rate, Spin, Wobble; public Vector3 Out; }
+            sealed class Flier { public Bat Bat; public float T, Angle, R, Rate, Spin, Wobble; public Vector3 Out, Scale; }
             readonly List<Flier> fliers = new List<Flier>();
-            float near = 1f, far = 10f;
+            float near = 1f, far = 10f, left = 1f, nextRing;
             Vector3 from, to;
             bool released;
             Transform impact;
+            LineRenderer ring;
+            readonly float[] ringY = new float[RingPoints];
+            Material domeMat;
+            Color domeColor;
+            ParticleSystem glow;
 
             public void Build(Vector3 a, Vector3 b, float radius, float nearWidth)
             {
                 from = a; to = b; far = Mathf.Max(1f, radius); near = Mathf.Max(0.2f, nearWidth);
-                // the ground end: Deadlock's marker and one soft red glow over the circle
                 var ig = new GameObject("impact"); ig.transform.SetParent(transform, false); impact = ig.transform;
-                Particles(ig, "mat_glow", minaBlood, rate: 3f, life: 0.9f, speed: 0f, size: far * 0.6f, shapeRadius: far * 0.3f);
-                var mark = SymbolQuad(ig, "mina_marker_tex", new Color(minaCrimson.r, minaCrimson.g, minaCrimson.b, 0.7f), far * 1.1f, false);
-                if (mark) mark.transform.localPosition = Vector3.up * 0.1f;
+                // a soft glow and a faint dome over the circle, fading with the time left
+                glow = Particles(ig, "mat_glow", minaBlood, rate: GlowRate, life: 0.9f, speed: 0f, size: far * 0.6f, shapeRadius: far * 0.3f);
+                var dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                Object.Destroy(dome.GetComponent<Collider>());
+                dome.transform.SetParent(ig.transform, false);
+                dome.transform.localScale = new Vector3(far * 2f, far * 0.5f, far * 2f);
+                domeColor = new Color(minaBlood.r, minaBlood.g, minaBlood.b, DomeAlpha);
+                domeMat = new Material(Mat("mat_area", domeColor));
+                dome.GetComponent<MeshRenderer>().sharedMaterial = domeMat;
+                // the circle: a crisp crimson ring at its radius, laid on the floor
+                var rg = new GameObject("ring"); rg.transform.SetParent(transform, false);
+                ring = rg.AddComponent<LineRenderer>();
+                ring.useWorldSpace = true; ring.loop = true; ring.positionCount = RingPoints;
+                ring.sharedMaterial = Mat("mat_tracer", minaCrimson);
+                ring.startColor = ring.endColor = minaCrimson;
+                ring.widthMultiplier = RingWidth;
+                ring.numCornerVertices = 2;
                 // the first bats arrive: one shockwave
                 Ring(b + Vector3.up * 0.1f, minaRing, 0.5f, far * 1.2f, 0.5f, 0.4f);
-                foreach (var bat in BatFlock.Take(Bats, false, BatSize, true))
+                int n = Mathf.Clamp(Mathf.RoundToInt((b - a).magnitude * BatsPerMetre), MinBats, MaxBats);
+                foreach (var bat in BatFlock.Take(n, false, BatSize, true))
                     fliers.Add(new Flier
                     {
-                        Bat = bat, T = Random.value, Angle = Random.value * 360f, R = Mathf.Sqrt(Random.value), Rate = Random.Range(0.8f, 1.2f),
-                        Spin = Random.Range(40f, 120f) * (Random.value < 0.5f ? -1f : 1f), Wobble = Random.value * 6f,
+                        Bat = bat, T = Random.value, Angle = Random.value * 360f, R = Mathf.Sqrt(Random.value), Rate = Random.Range(0.85f, 1.15f),
+                        Spin = Random.Range(30f, 90f) * (Random.value < 0.5f ? -1f : 1f), Wobble = Random.value * 6f,
+                        Scale = bat.Go.transform.localScale,
                     });
                 Place();
             }
 
             /// <summary>Both ends, every frame: under her umbrella and the ground under the crosshair.</summary>
             public void Aim(Vector3 a, Vector3 b) { from = a; to = b; }
+
+            /// <summary>The fraction of the move's time left (1 at the start, 0 at the end): the dome and glow fade with it.</summary>
+            public void TimeLeft(float k) => left = Mathf.Clamp01(k);
 
             /// <summary>A bite: a small ring and a puff of smoke where the bats land.</summary>
             public void Pulse()
@@ -491,13 +509,42 @@ namespace DeadlockOfRain
             {
                 if (released) return;
                 released = true;
+                if (ring) ring.enabled = false;
                 foreach (var fl in fliers)
+                {
                     fl.Out = (Random.onUnitSphere + Vector3.up * 0.4f).normalized * Random.Range(6f, 14f);
+                    if (fl.Bat != null && fl.Bat.Go) fl.Bat.Go.transform.localScale = fl.Scale;
+                }
             }
 
             void Place()
             {
                 if (impact) impact.position = to;
+                if (domeMat)
+                {
+                    var c = domeColor; c.a = DomeAlpha * left;
+                    if (domeMat.HasProperty("_TintColor")) domeMat.SetColor("_TintColor", c);
+                    if (domeMat.HasProperty("_Color")) domeMat.SetColor("_Color", c);
+                }
+                if (glow) { var em = glow.emission; em.rateOverTime = GlowRate * left; }
+                if (!ring) return;
+                // the floor under each point of the ring, measured now and then; the ring itself moves with the target every frame
+                if (Time.time >= nextRing)
+                {
+                    nextRing = Time.time + RingEvery;
+                    for (int i = 0; i < RingPoints; i++)
+                    {
+                        float ang = i * Mathf.PI * 2f / RingPoints;
+                        var p = to + new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)) * far;
+                        ringY[i] = Physics.Raycast(p + Vector3.up * 4f, Vector3.down, out var hit, 10f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)
+                            ? hit.point.y - to.y : 0f;
+                    }
+                }
+                for (int i = 0; i < RingPoints; i++)
+                {
+                    float ang = i * Mathf.PI * 2f / RingPoints;
+                    ring.SetPosition(i, to + new Vector3(Mathf.Cos(ang) * far, ringY[i] + RingLift, Mathf.Sin(ang) * far));
+                }
             }
 
             void Update()
@@ -521,14 +568,17 @@ namespace DeadlockOfRain
                         if (fl.Out.sqrMagnitude > 0.01f) fl.Bat.Pose(at + fl.Out * dt, Quaternion.LookRotation(fl.Out.normalized));
                         continue;
                     }
-                    // down the cone, spiralling round it and wider the further they go; back out of her once they land
+                    // down the cone (as wide as the cone where it is), spiralling round it; at the end it dives into the floor
                     fl.T += dt * Speed * fl.Rate / len;
                     bool wrapped = fl.T >= 1f;
                     if (wrapped) { fl.T -= 1f; fl.R = Mathf.Sqrt(Random.value); }
                     fl.Angle += fl.Spin * dt; fl.Wobble += dt * 5f;
-                    float w = Mathf.Lerp(near * SpreadStart, far * SpreadEnd, fl.T * fl.T) * fl.R;
+                    float w = Mathf.Lerp(near, far * ConeEnd, fl.T) * fl.R;
                     float rad = fl.Angle * Mathf.Deg2Rad;
-                    var want = from + axis * fl.T + (Mathf.Cos(rad) * side + Mathf.Sin(rad) * up) * w + up * Mathf.Sin(fl.Wobble) * 0.25f;
+                    var want = from + axis * fl.T + (Mathf.Cos(rad) * side + Mathf.Sin(rad) * up) * w + up * Mathf.Sin(fl.Wobble) * 0.2f;
+                    float dive = Mathf.Clamp01((fl.T - DiveFrom) / (1f - DiveFrom));
+                    if (dive > 0f) want.y = Mathf.Lerp(want.y, to.y - 0.2f, dive * dive);
+                    fl.Bat.Go.transform.localScale = fl.Scale * (1f - DiveShrink * dive);
                     var face = !wrapped && (want - at).sqrMagnitude > 1e-4f ? (want - at).normalized : dir;
                     fl.Bat.Pose(want, Quaternion.LookRotation(face, Vector3.up));
                 }
@@ -537,9 +587,15 @@ namespace DeadlockOfRain
             void OnDestroy()
             {
                 var list = new List<Bat>();
-                foreach (var fl in fliers) if (fl.Bat != null) list.Add(fl.Bat);
+                foreach (var fl in fliers)
+                {
+                    if (fl.Bat == null) continue;
+                    if (fl.Bat.Go) fl.Bat.Go.transform.localScale = fl.Scale;
+                    list.Add(fl.Bat);
+                }
                 BatFlock.Give(list);
                 fliers.Clear();
+                if (domeMat) Object.Destroy(domeMat);
             }
         }
 

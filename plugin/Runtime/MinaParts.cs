@@ -122,8 +122,6 @@ namespace DeadlockOfRain
         public bool Floating { get; private set; }
         /// <summary>Test mode: Jump counts as held (there is no player to hold it).</summary>
         public bool TestHold;
-        /// <summary>The umbrella opens by itself until she lands (after Nox Nostra's flight and Mist Form, which end in the air).</summary>
-        public bool AutoFloat;
         float held, baseAir = -1f;
         bool pressOpen, noFallSet;
 
@@ -158,14 +156,16 @@ namespace DeadlockOfRain
         void OwnerFloat()
         {
             var m = body.characterMotor;
-            if (m.isGrounded) { gainedThisTrip = false; held = 0f; pressOpen = false; AutoFloat = false; }
+            if (m.isGrounded) { gainedThisTrip = false; held = 0f; pressOpen = false; }
             if (hero.FloatFallSpeed <= 0f) return;
             bool down = JumpDown;
             if (down && !m.isGrounded) held += Time.fixedDeltaTime;
             else { held = 0f; pressOpen = false; }
             // one clear rule (creator, 2026-10-26): Jump held in the air opens it, after a jump or not, and it stays open as long
-            // as Jump is held (floatHold 0: at once); let go and it closes
-            bool open = !m.isGrounded && (down && (held >= hero.FloatHold || pressOpen) || AutoFloat) && InMain() && body.healthComponent && body.healthComponent.alive;
+            // as Jump is held (floatHold 0: at once); let go and it closes. Never without Jump held, even after a move that ends in
+            // the air (creator, 2026-11-02: "ONLY FLOAT WITH THE UMBRELLA WHEN THE SPACE KEY IS DOWN"; Nox Nostra and Mist Form
+            // opened it by themselves until she landed)
+            bool open = !m.isGrounded && down && (held >= hero.FloatHold || pressOpen) && InMain() && body.healthComponent && body.healthComponent.alive;
             if (open != Floating) SetFloat(open);
             if (Floating)
             {

@@ -279,6 +279,8 @@ namespace DeadlockOfRain.States
     {
         /// <summary>Resuming after a Sanguine Retreat: the time left.</summary>
         public float Left;
+        /// <summary>Test mode only: where the cone lands, for the far-aim screenshot (MeltyTest.TestMina).</summary>
+        public static Vector3? TestTarget;
         const float RiseTime = 0.6f;
         float length, nextTick;
         bool ended, floating, toBlink, resumed, reported;
@@ -333,6 +335,7 @@ namespace DeadlockOfRain.States
         Vector3 Target()
         {
             if (DpsBench.PackCentre is Vector3 pc) return pc;
+            if (MeltyTest.Active && TestTarget is Vector3 tt) return tt;
             var aim = GetAimRay();
             var point = aim.origin + aim.direction * row.Range;
             if (Physics.Raycast(aim, out var hit, row.Range * 1.5f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) point = hit.point;
@@ -387,7 +390,7 @@ namespace DeadlockOfRain.States
                 var util = skillLocator ? skillLocator.utility : null;
                 var urow = Survivors.RowFor(util);
                 // (test mode blinks once by itself, to check it carries on after it; the bench presses keys like a player)
-                bool shift = inputBank && inputBank.skill3.justPressed || MeltyTest.Active && fixedAge >= 2.5f && fixedAge < 2.6f;
+                bool shift = inputBank && inputBank.skill3.justPressed || MeltyTest.Active && TestTarget == null && fixedAge >= 2.5f && fixedAge < 2.6f;
                 if (shift && (resumed || fixedAge >= RiseTime) && urow != null && urow.Kind == "bat_blink" && util.stock > 0 && fixedAge < length - 0.3f)
                 {
                     util.DeductStock(1);
@@ -408,7 +411,12 @@ namespace DeadlockOfRain.States
                 streamFx = stream ? stream.GetComponent<Vfx.NoxStreamFx>() : null;
                 Fx.Sound(row.Id, "reload", characterBody.corePosition);
             }
-            if (streamFx) streamFx.Aim(Mouth, target);
+            if (streamFx)
+            {
+                streamFx.Aim(Mouth, target);
+                // the floor's dome and glow fade with the move's time left (creator, 2026-11-02)
+                streamFx.TimeLeft((length - fixedAge) / Mathf.Max(0.1f, row.Duration));
+            }
             if (fixedAge >= nextTick)
             {
                 nextTick += row.Interval;
@@ -468,9 +476,8 @@ namespace DeadlockOfRain.States
             {
                 Sound("end");
                 if (streamed) Vfx.Play(row.Vfx, "end", target, row.Radius);
-                // it is over: her umbrella opens and she drifts down (no fall damage until she lands)
-                var mr = characterBody.GetComponent<MinaRuntime>();
-                if (mr && isAuthority) mr.AutoFloat = true;
+                // it is over: she drops (no fall damage until she lands); the umbrella opens only if Space is held (creator,
+                // 2026-11-02: "ONLY FLOAT WITH THE UMBRELLA WHEN THE SPACE KEY IS DOWN")
                 if (!Survivors.NoFallDamage(characterBody) && characterBody.GetComponent<SoftLanding>() == null) characterBody.gameObject.AddComponent<SoftLanding>();
             }
             base.OnExit();
@@ -628,10 +635,8 @@ namespace DeadlockOfRain.States
         public override void OnExit()
         {
             Reform();
-            // reformed in the air: no fall damage from the drop, for anyone; Mina's umbrella opens
+            // reformed in the air: no fall damage from the drop, for anyone; Mina's umbrella opens only if Space is held (2026-11-02)
             if (!Survivors.NoFallDamage(characterBody) && characterBody.GetComponent<SoftLanding>() == null) characterBody.gameObject.AddComponent<SoftLanding>();
-            var mr = characterBody.GetComponent<MinaRuntime>();
-            if (mr && isAuthority && characterMotor && !characterMotor.isGrounded) mr.AutoFloat = true;
             base.OnExit();
         }
     }
