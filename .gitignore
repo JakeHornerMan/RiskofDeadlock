@@ -9,3 +9,5 @@ tools/dev/
 character/
 characterRip/
 charactersFinal/
+# the creator's own r2modman packages (the DLL holds Deadlock's files: never commit or upload)
+DllBuilds/

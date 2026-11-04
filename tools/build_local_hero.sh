@@ -11,7 +11,7 @@
 # is newer than the hero's .dlm it is converted back into mod-cache (DeadlockExtract --import-glb).
 # --install copies the DLL into the Steam copy and writes $LOCALAPPDATA/DeadlockOfRain/local-hero.txt: while that file exists the
 # dev guard leaves the Steam copy alone and lab_restore.sh puts this DLL back instead of main's.
-# --r2modman (2026-11-01) also writes <folder>/r2modman/<Name>-<version>.zip for r2modman's "Import local mod" (the creator's
+# --r2modman (2026-11-01) also writes DllBuilds/<Name>-<version>.zip (at the repo root since 2026-11-04) for r2modman's "Import local mod" (the creator's
 # own profile; the version is the build time, so every import is newer). Same plugin id as Risk of Deadlock: disable that one
 # in the profile. Never upload the zip: the DLL holds Deadlock's files.
 #   bash tools/build_local_hero.sh all charactersFinal --r2modman   (2026-11-01: "a zip ... with all my edited characters")
@@ -171,10 +171,10 @@ fi
 # 6. a zip for r2modman's "Import local mod"
 if [ -n "$R2" ]; then
   # laid out like a Thunderstore release (tools/r2modman_package.py; creator, 2026-11-02)
-  python "$ROOT/tools/r2modman_package.py" "$OUT/DeadlockOfRain.dll" "$F/r2modman" "$ID" || exit 1
+  python "$ROOT/tools/r2modman_package.py" "$OUT/DeadlockOfRain.dll" "$ROOT/DllBuilds" "$ID" || exit 1
   # 7. (--r2modman-install) straight into the r2modman profile, every older Risk of Deadlock package removed first
   if [ -n "$R2I" ]; then
-    Z=$(ls -t "$F/r2modman"/*.zip | head -1)
+    Z=$(ls -t "$ROOT/DllBuilds"/*.zip | head -1)
     python "$ROOT/tools/r2modman_install.py" "$Z" ${R2PROFILE:+--profile "$R2PROFILE"} ${R2WAIT:+--wait}
   fi
 fi

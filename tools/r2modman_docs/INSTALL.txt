@@ -10,7 +10,7 @@ Then: PART C updating, PART D removing everything, PART E problems.
 You need:
   - Windows, Steam, and Risk of Rain 2 bought and installed on Steam.
   - The package zip: JakeHornerMan-Risk_of_Deadlock-1.5.x.zip
-    (made by the build, in charactersFinal\r2modman\ of the RiskofDeadlock repo).
+    (made by the build, in DllBuilds\ of the RiskofDeadlock repo).
   - Deadlock is NOT needed: every hero's files are inside the DLL.
 Never upload or share the zip or the DLL: they contain Deadlock's files.
 
@@ -103,7 +103,7 @@ B6. Check it loaded: r2modman > Settings > Locations > Browse profile folder, th
 
 B (the quick way, with the RiskofDeadlock repo): one command does B3 to B4 for you, closing r2modman first and
     starting it again after (it waits if the game is running):
-        python tools/r2modman_install.py charactersFinal/r2modman/JakeHornerMan-Risk_of_Deadlock-1.5.x.zip --wait
+        python tools/r2modman_install.py DllBuilds/JakeHornerMan-Risk_of_Deadlock-1.5.x.zip --wait
     or build a new version and install it in one go:
         bash tools/build_local_hero.sh all charactersFinal --r2modman-install
 

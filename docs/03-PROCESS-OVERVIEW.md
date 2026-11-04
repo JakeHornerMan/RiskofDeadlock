@@ -261,7 +261,7 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   release every time"): **`tools/r2modman_package.py`** (run by `--r2modman`) writes `manifest.json` (author JakeHornerMan, both
   dependencies: bbepis-BepInExPack 5.4.2122 and RiskofThunder-RoR2BepInExPack 1.49.0), `icon.png`, `README.md` and `CHANGELOG.md`
   (from `tools/r2modman_docs/`, `{BUILT_WITH}` filled in), `INSTALL.txt` and `README.txt` at the top, and `plugins/DeadlockOfRain.dll`,
-  `LICENSE.txt`, `THIRD-PARTY-NOTICES.txt`, `built-with.txt`. **The source is `charactersFinal/r2modman/package/`** (creator,
+  `LICENSE.txt`, `THIRD-PARTY-NOTICES.txt`, `built-with.txt`. **The source is `DllBuilds/package/`** (creator,
   2026-11-04: "have these files here be the default and then pull in the info every time"): every file in it goes into the zip as
   laid out there (a file added there is packed too); the build only sets the manifest's `version_number`, README's "Built with" line,
   the new CHANGELOG section's "Built with" bullet (`{BUILT_WITH}`, or added first when missing, so older sections keep theirs), writes

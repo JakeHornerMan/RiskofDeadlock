@@ -4,7 +4,7 @@ thunderstore ... like a proper release every time ... make all the documents nee
     python tools/r2modman_package.py <dll> <outdir> <hero id or all>      (run by tools/build_local_hero.sh --r2modman)
     python tools/r2modman_package.py --contents <zip>                    (write PACKAGE-CONTENTS.md again for a zip)
 
-THE SOURCE IS <outdir>/package/ (charactersFinal/r2modman/package/; creator, 2026-11-04: "can we just have these files here be
+THE SOURCE IS <outdir>/package/ (DllBuilds/package/; creator, 2026-11-04: "can we just have these files here be
 the default and then pull in the info every time"). Every file in it goes into the zip as laid out there, so editing a file there
 (or adding one) changes the next package. The build only fills in:
     manifest.json            version_number (one up from tools/r2modman_version.txt); everything else is as written

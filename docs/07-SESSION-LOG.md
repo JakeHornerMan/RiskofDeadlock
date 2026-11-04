@@ -1638,3 +1638,4 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** no new package built; 1.5.4 stays in r2modman.
 **Not done / open:** the Steam copy's dev build and the paused guard, as before.
 **Lessons:** a `{BUILT_WITH}` placeholder in every changelog section stamped old sections with the newest build; fill only the new section and write it back.
+**Then:** "i renamed to DllBuilds can you move this to the root of the project": moved `charactersFinal/DllBuilds` (the creator's rename of `charactersFinal/r2modman`) to the repo root `DllBuilds/` and gitignored it (the zip holds Deadlock's files). `build_local_hero.sh` writes the zip there and installs from there; `r2modman_package.py`, INSTALL.txt (both copies), doc 03 and the creator's `charactersFinal/build&install.md` point to it.
