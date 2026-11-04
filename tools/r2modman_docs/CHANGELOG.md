@@ -3,13 +3,13 @@
 JakeHornerMan's own build: one version line, one number up per build. Newest first.
 
 ## 1.5.4
-- {BUILT_WITH}
+- Built with Risk of Rain 2 build 25921972 and my own hero files (v1.5.4, 2026-11-02).
 - Effects fixed alongside RoR2BepInExPack: it makes Unity's `Sprites/Default` shader lookup fail, so Viscous's goo, Mo & Krill's
   aim cone, Mina's bites and Nox Nostra marks, Wraith's card symbols and Pocket's box broke or showed bright pink. This is why
   effects looked worse here than on Melty. Same code as Melty 1.5.0.
 
 ## 1.5.3
-- {BUILT_WITH}
+- Built with Risk of Rain 2 build 25921972 and my own hero files (v1.5.3, 2026-11-02).
 - Laid out like a Thunderstore release: `manifest.json`, `icon.png`, `README.md` and `CHANGELOG.md` at the top; the DLL with
   `LICENSE.txt`, `THIRD-PARTY-NOTICES.txt` and `built-with.txt` in `plugins/` (r2modman puts them in the mod's folder).
 - README.md in the Thunderstore page's style, for all eleven heroes; INSTALL.txt and README.txt stay in the package.

@@ -261,11 +261,15 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   release every time"): **`tools/r2modman_package.py`** (run by `--r2modman`) writes `manifest.json` (author JakeHornerMan, both
   dependencies: bbepis-BepInExPack 5.4.2122 and RiskofThunder-RoR2BepInExPack 1.49.0), `icon.png`, `README.md` and `CHANGELOG.md`
   (from `tools/r2modman_docs/`, `{BUILT_WITH}` filled in), `INSTALL.txt` and `README.txt` at the top, and `plugins/DeadlockOfRain.dll`,
-  `LICENSE.txt`, `THIRD-PARTY-NOTICES.txt`, `built-with.txt`. Beside the zip in `charactersFinal/r2modman/`, for the creator's record
-  (2026-11-02: "update this everytime we build a package ... just for my own record"), every build writes `PACKAGE-CONTENTS.md` (each
-  file, its size and what it is, read back from the zip; a new file needs a line in the script's `WHAT`) and `package/` (the zip's files
-  minus the DLL, as laid out in it); `--contents <zip>` writes both again for an existing zip.
-  Like `package.py` it **refuses to build without a `## <version>` section** in `tools/r2modman_docs/CHANGELOG.md`, so write the next
+  `LICENSE.txt`, `THIRD-PARTY-NOTICES.txt`, `built-with.txt`. **The source is `charactersFinal/r2modman/package/`** (creator,
+  2026-11-04: "have these files here be the default and then pull in the info every time"): every file in it goes into the zip as
+  laid out there (a file added there is packed too); the build only sets the manifest's `version_number`, README's "Built with" line,
+  the new CHANGELOG section's "Built with" bullet (`{BUILT_WITH}`, or added first when missing, so older sections keep theirs), writes
+  `plugins/built-with.txt` and adds the DLL; `icon.png` is made only when missing. After a build those values are written back into
+  `package/` and its text files and manifest are copied to `tools/r2modman_docs/` (git history; charactersFinal is gitignored), which
+  also rebuilds `package/` on a fresh clone. Beside it every build writes `PACKAGE-CONTENTS.md` (each file, its size and what it is,
+  read back from the zip; `--contents <zip>` writes it again).
+  Like `package.py` it **refuses to build without a `## <version>` section** in `package/CHANGELOG.md`, so write the next
   version's section first; the version number is used only once it builds. `r2modman_install.py` unpacks `plugins/` straight into the
   mod's folder, as r2modman does. INSTALL.txt was followed on a cleared PC (2026-11-02): Part A by hand works once RoR2BepInExPack is
   in `plugins\RiskofThunder-RoR2BepInExPack` (BepInExPack 5.4.2122 deletes `plugins\RoR2BepInExPack` on every start; without the pack

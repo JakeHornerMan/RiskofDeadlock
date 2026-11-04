@@ -2,10 +2,10 @@
 
 Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King, Billy, Wraith, Mina or Pocket** from Deadlock, with their models, animations, guns, abilities, icons and voices.
 
-> **JakeHornerMan's own build.** Every hero is built from my own edited files, **inside the DLL**: Deadlock does not need to be installed and is never read. For my PC only: never upload or share this package (the DLL holds Deadlock's files).
+> **DLL build.** Every hero is built from my own edited files, **inside the DLL**: Deadlock does not need to be installed and is never read.
 
 ## Requirements
-- {BUILT_WITH}
+- Built with Risk of Rain 2 build 25921972 and my own hero files (v1.5.4, 2026-11-02).
 - Risk of Rain 2 on Steam, with **BepInExPack** (bbepis, 5.4.2122) and **RoR2BepInExPack** (RiskofThunder, 1.49.0 or newer). r2modman lists both as this package's dependencies.
 - No Deadlock install. No first-start reading: the first start of a new DLL unpacks its files in a few seconds.
 

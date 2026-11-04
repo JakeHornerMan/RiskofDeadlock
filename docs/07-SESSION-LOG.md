@@ -1630,3 +1630,11 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** the 1.5.3 record lists 10 files (zip 450 MB). No rebuild, nothing new in r2modman.
 **Not done / open:** as before (the Steam copy's dev build and the paused guard).
 **Lessons:** a new file in the package needs a line in the script's `WHAT`, or the record shows "(new file: describe it in WHAT)".
+
+### 2026-11-04: the package's files in charactersFinal/r2modman/package are the source
+**Asked:** "can you opnme up the file explorer with these files!" / "ok so every time we build do we just pull the files form here?" / "can we do it the other way around can we just have these file here be the default and then pull in the info every time?"
+**Asked back:** nothing.
+**Done:** opened File Explorer on `charactersFinal/r2modman`. `tools/r2modman_package.py` now builds the zip from `package/`: every file there as laid out (new files included), filling in only the version, README's and the new CHANGELOG section's "Built with" lines and `plugins/built-with.txt`, and the DLL; the filled values are written back, and the text files and manifest copied to `tools/r2modman_docs/` (manifest.json added there) for git. The creator's own edits in `package/` (README's "DLL build" note, the manifest description) are kept and now in the repo copies. Fixed 1.5.3's changelog line, which the 1.5.4 build had stamped with 1.5.4. Tested on a scratch copy (fake DLL, a 1.5.5 section, an extra file): zip, record and write-back right; repo restored after. Doc 03 §5c.
+**Results:** no new package built; 1.5.4 stays in r2modman.
+**Not done / open:** the Steam copy's dev build and the paused guard, as before.
+**Lessons:** a `{BUILT_WITH}` placeholder in every changelog section stamped old sections with the newest build; fill only the new section and write it back.
