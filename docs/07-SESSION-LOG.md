@@ -1639,3 +1639,9 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Not done / open:** the Steam copy's dev build and the paused guard, as before.
 **Lessons:** a `{BUILT_WITH}` placeholder in every changelog section stamped old sections with the newest build; fill only the new section and write it back.
 **Then:** "i renamed to DllBuilds can you move this to the root of the project": moved `charactersFinal/DllBuilds` (the creator's rename of `charactersFinal/r2modman`) to the repo root `DllBuilds/` and gitignored it (the zip holds Deadlock's files). `build_local_hero.sh` writes the zip there and installs from there; `r2modman_package.py`, INSTALL.txt (both copies), doc 03 and the creator's `charactersFinal/build&install.md` point to it.
+
+### 2026-11-04: new heroes go to Melty first, the DllBuilds package only when asked
+**Asked:** "so in our claude.md ro somewhere in docs we have a process??? i think? can we add when we make new characters we first build for melty and then after we when instructed build for dllbuild for my r2modman!"
+**Asked back:** nothing.
+**Done:** doc 08 §6b (order of builds) and a line in its definition of done; CLAUDE.md's r2modman rule gets the new-hero exception and the `DllBuilds/` location; memory.
+**Results / open:** nothing built.

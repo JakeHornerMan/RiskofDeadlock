@@ -65,7 +65,9 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 - **The creator plays through r2modman** (2026-11-02; Thunderstore given up): after a change they will play, put it in their
   r2modman profile yourself with `bash tools/build_local_hero.sh all charactersFinal --r2modman-install` (closes and restarts
   r2modman, swaps the package, checks every hero against the Melty build; doc 03 §5c), without asking. It never closes the game;
-  while the creator plays, run it with `R2WAIT=1` in the background so it installs the moment they close the game. The package is
+  while the creator plays, run it with `R2WAIT=1` in the background so it installs the moment they close the game. **Exception, new heroes**
+  (creator, 2026-11-04): a new hero is built for **Melty first**; build the DllBuilds package for r2modman only when the creator asks (doc 08 §6b).
+  The package lands in `DllBuilds/` at the repo root (gitignored); its files come from `DllBuilds/package/` (doc 03 §5c). The package is
   **`JakeHornerMan-Risk_of_Deadlock`**, one version line **1.5.x**, one patch up per build (creator, 2026-11-02: "make the mod by
   JakeHornerMan ... this is 1.5 version we keep updating it with that number incrementally"; the last one in `tools/r2modman_version.txt`).
 - **Commit after each logical step; do not push unless asked.** Ask the creator before `publish` on Melty. The one

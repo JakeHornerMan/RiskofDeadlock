@@ -116,6 +116,17 @@ Tell the creator the count first: normally **3 launches** (test, bench, portrait
    entry; run it; **publish the new hero page as a new artifact**, put its link in `LINKS` and doc 06, regenerate, and
    republish all pages (each page's nav lists every hero).
 
+## 6b. Order of builds: Melty first, the DllBuilds package only when asked
+(creator, 2026-11-04: "when we make new characters we first build for melty and then after, when instructed, build for dllbuild
+for my r2modman")
+1. **Melty first.** Everything in §0-§7 is the Melty build: the hero read from the player's Deadlock install, tested, benched,
+   its page published, and released on Melty when the creator says so (doc 03 §6).
+2. **Then, only when the creator asks**, the DLL build for their r2modman: put the hero's edited files in
+   `charactersFinal/<hero>Files/`, write the next `## 1.5.x` section in `DllBuilds/package/CHANGELOG.md`, and run
+   `bash tools/build_local_hero.sh all charactersFinal --r2modman-install` (doc 03 §5c). The zip lands in `DllBuilds/`.
+   For a new hero, do not build or install the DllBuilds package on your own, even though other playable changes go into
+   r2modman without asking (CLAUDE.md).
+
 ## 7. Docs (same commit as the work)
 - Doc 06: the hero's section (moves, numbers, DPS), the sounds table rows, the voice summary.
 - Doc 05: the bench result; doc 02: new kinds, vfx table rows, hooks; doc 01: the hero's paths and the hero table.
@@ -185,3 +196,4 @@ Tell the creator the count first: normally **3 launches** (test, bench, portrait
 - [ ] Co-op check passed (or skipped with the creator's OK, recorded as open).
 - [ ] Hero page published and linked; all pages regenerated.
 - [ ] Docs, doc 07 entry, doc 00 refreshed; committed; game closed, `winhttp.dll` back; the creator told it's ready.
+- [ ] DllBuilds package for r2modman: **not** part of done; only when the creator asks (§6b).
