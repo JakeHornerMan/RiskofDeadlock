@@ -1,5 +1,5 @@
-RISK OF DEADLOCK - JakeHornerMan's own build
-============================================
+RISK OF DEADLOCK
+================
 
 What this is
 ------------
@@ -7,9 +7,8 @@ Risk of Deadlock puts Deadlock's heroes into Risk of Rain 2 as survivors: Haze, 
 Mo & Krill, Viscous, Rat King, Billy, Wraith, Mina and Pocket, each with their model, animations, sounds,
 voice lines and abilities.
 
-This package is my own copy (JakeHornerMan). Every hero's files are built INTO the DLL, so Deadlock does not
-need to be installed and nothing is read from it when the game starts. It is for my PC only: never upload or
-share this zip, the DLL holds Deadlock's files.
+Every hero's files are built INTO the DLL, so Deadlock does not need to be installed and nothing is read
+from it when the game starts.
 
 What is in this package (laid out like a Thunderstore release)
 --------------------------------------------------------------
@@ -39,9 +38,9 @@ Where things go on the PC
   Files the mod unpacks    %LOCALAPPDATA%\DeadlockOfRain\embedded\  (written on the first start of each new DLL, a few seconds)
   The log                  <the BepInEx folder in use>\LogOutput.log  (look for "Playing ... from your own files")
 
-Where the build comes from
---------------------------
-My edited hero files are in charactersFinal\<hero>Files\ of the RiskofDeadlock repo. To make a new package:
+Building a new package
+----------------------
+The hero files are in charactersFinal\<hero>Files\ of the RiskofDeadlock repo. To make a new package:
     bash tools/build_local_hero.sh all charactersFinal --r2modman
 (add --r2modman-install to also put it straight into r2modman). The full rebuild guide is
-charactersFinal\build&install.md. Never delete the charactersFinal folder.
+charactersFinal\build&install.md.

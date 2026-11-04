@@ -2,12 +2,12 @@
 
 Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King, Billy, Wraith, Mina or Pocket** from Deadlock, with their models, animations, guns, abilities, icons and voices.
 
-> **DLL build.** Every hero is built from my own edited files, **inside the DLL**: Deadlock does not need to be installed and is never read.
+> Every hero's files are built **into the DLL**: Deadlock does not need to be installed.
 
 ## Requirements
-- Built with Risk of Rain 2 build 25921972 and my own hero files (v1.5.4, 2026-11-02).
+- Built with Risk of Rain 2 build 25921972 (2026-11-04).
 - Risk of Rain 2 on Steam, with **BepInExPack** (bbepis, 5.4.2122) and **RoR2BepInExPack** (RiskofThunder, 1.49.0 or newer). r2modman lists both as this package's dependencies.
-- No Deadlock install. No first-start reading: the first start of a new DLL unpacks its files in a few seconds.
+- No Deadlock install needed. The first start of a new DLL unpacks its files in a few seconds.
 
 ## Installation
 - **r2modman:** Settings → Profile → **Import local mod** → this zip (author JakeHornerMan), then **Start modded**. Remove any older Risk of Deadlock first: only one copy.
@@ -41,9 +41,9 @@ Every hero's abilities, numbers and measured damage next to their Risk of Rain 2
 - Deadlock voice lines at the right moments; co-op with up to 4 players (everyone needs the same build).
 
 ## Community
-The **[Risk of Deadlock Discord](https://discord.gg/sNByetmcqc)**. Source: https://github.com/JakeHornerMan/RiskofDeadlock (the build tools; the hero files stay on my PC).
+The **[Risk of Deadlock Discord](https://discord.gg/sNByetmcqc)**. Source: https://github.com/JakeHornerMan/RiskofDeadlock.
 
 ## Credits
 - Made by **JakeHornerMan**, on Melty (melty.gg) and in the RiskofDeadlock repo.
-- Risk of Rain 2 © Gearbox Software / Hopoo Games. Deadlock © Valve Corporation. Unofficial fan mod; this personal build is never shared.
+- Risk of Rain 2 © Gearbox Software / Hopoo Games. Deadlock © Valve Corporation. Unofficial fan mod.
 - Licenses: `plugins/LICENSE.txt` and `plugins/THIRD-PARTY-NOTICES.txt`.

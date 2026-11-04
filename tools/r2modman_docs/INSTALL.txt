@@ -1,18 +1,16 @@
-RISK OF DEADLOCK - INSTALL GUIDE (JakeHornerMan's own build)
-===========================================================
+RISK OF DEADLOCK - INSTALL GUIDE
+================================
 
 Two ways to install. Pick ONE and keep only one copy of the mod at a time:
   PART A  By hand, into the Steam copy of Risk of Rain 2   (started with Steam's Play button)
   PART B  With r2modman                                    (started with r2modman's "Start modded")
 Then: PART C updating, PART D removing everything, PART E problems.
-(These steps were followed one by one on a cleared PC on 2026-11-02 and the mod loaded both ways.)
 
 You need:
   - Windows, Steam, and Risk of Rain 2 bought and installed on Steam.
   - The package zip: JakeHornerMan-Risk_of_Deadlock-1.5.x.zip
     (made by the build, in DllBuilds\ of the RiskofDeadlock repo).
   - Deadlock is NOT needed: every hero's files are inside the DLL.
-Never upload or share the zip or the DLL: they contain Deadlock's files.
 
 
 -------------------------------------------------------------------------------------------------------
@@ -67,24 +65,20 @@ A7. Start it: press Play on Steam.
 A8. Check it loaded (if anything looks wrong): open GAME FOLDER\BepInEx\LogOutput.log and look for
         Playing abrams, billy, haze, ... from your own files (built into this DLL); Deadlock is not read
 
-    Note for this PC: two things here can change the Steam copy behind your back.
-    - The Melty app puts its own Risk of Deadlock release back when it starts (it renames winhttp.dll to
-      winhttp.dll.melty-off). Close the Melty app, or use PART B.
-    - The scheduled task "DeadlockOfRain dev guard" puts the developer build back every 5 minutes. To keep a
-      hand install, disable that task in Task Scheduler (or create the empty file
-      %LOCALAPPDATA%\DeadlockOfRain\keep-release-cut while you use it).
+    If you also use the Melty app: it puts its own Risk of Deadlock release back when it starts (it renames
+    winhttp.dll to winhttp.dll.melty-off). Close the Melty app, or use PART B.
 
 
 -------------------------------------------------------------------------------------------------------
 PART B - INSTALL WITH r2modman
 -------------------------------------------------------------------------------------------------------
 B1. Install r2modman once: https://thunderstore.io/c/riskofrain2/p/ebkr/r2modman/ (or r2modman.com),
-    run the installer, open it, pick Risk of Rain 2, and pick (or create) a profile. Mine is "Deadlock".
+    run the installer, open it, pick Risk of Rain 2, and pick (or create) a profile.
 
 B2. The two packs the mod needs, in the profile: in r2modman's "Online" tab search and install
       - "BepInExPack" by bbepis (5.4.2122)
       - "RoR2BepInExPack" by RiskofThunder (1.49.0 or newer): without it the mod does not load (Newtonsoft.Json).
-    Both show under "Installed" afterwards. (Both already there in my Deadlock profile.)
+    Both show under "Installed" afterwards.
 
 B3. Remove any old Risk of Deadlock first: "Installed" tab > Risk_of_Deadlock (any version, any author)
     > Uninstall. Only one copy may be installed.
@@ -122,7 +116,7 @@ The first start of the new DLL unpacks its files again (a few seconds).
 -------------------------------------------------------------------------------------------------------
 PART D - REMOVING EVERYTHING (start from scratch)
 -------------------------------------------------------------------------------------------------------
-Close the game and r2modman first. Never delete charactersFinal: that is where my edited heroes live.
+Close the game and r2modman first.
 D1. r2modman: Installed > Risk_of_Deadlock > Uninstall (every copy). Optional: delete its download cache
     folders %APPDATA%\r2modmanPlus-local\RiskOfRain2\cache\JakeHornerMan-Risk_of_Deadlock (and any
     Unknown-Risk_of_Deadlock / Risk_of_Deadlock-Risk_of_Deadlock).
@@ -130,7 +124,6 @@ D1. r2modman: Installed > Risk_of_Deadlock > Uninstall (every copy). Optional: d
 D2. Steam copy, in the GAME FOLDER delete: the BepInEx folder (RoR2BepInExPack and the mod go with it),
     winhttp.dll, winhttp.dll.melty-off, doorstop_config.ini, .doorstop_version. The game then starts unmodded.
 D3. The mod's own files: delete %LOCALAPPDATA%\DeadlockOfRain\embedded, \cache, \extract and any \cache.* folder.
-    Keep discord-update-webhook.txt there (the Discord update link).
 D4. Optional: Steam > Risk of Rain 2 > Properties > Installed Files > Verify integrity, to be sure the game is clean.
 
 

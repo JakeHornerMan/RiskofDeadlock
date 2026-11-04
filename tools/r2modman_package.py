@@ -38,6 +38,7 @@ WHAT = {  # what each file in the package is (PACKAGE-CONTENTS.md)
     'CHANGELOG.md': lambda m, c: f"Thunderstore-style sections for {', '.join(c)}, each with its \"Built with\" line",
     'INSTALL.txt': lambda m, c: 'by hand (Part A), r2modman (Part B), updating, removing everything, problems',
     'README.txt': lambda m, c: "what the package is, what's in it, where things go on the PC",
+    'Join Discord.txt': lambda m, c: 'the invite link to the Risk of Deadlock Discord',
     'plugins/DeadlockOfRain.dll': lambda m, c: "the mod (BepInEx 5 plugin), with every hero's files inside (only in the zip)",
     'plugins/LICENSE.txt': lambda m, c: "the mod's licence, as in the Thunderstore zip",
     'plugins/THIRD-PARTY-NOTICES.txt': lambda m, c: 'the libraries the project uses and their licences, as in the Thunderstore zip',
@@ -180,19 +181,23 @@ version = f'{major}.{minor}.{patch + 1}'
 
 bw = json.load(open(os.path.join(ROOT, 'thunderstore', 'built-with.json'), encoding='utf-8'))
 date = time.strftime('%Y-%m-%d')
-built_with = f'Built with Risk of Rain 2 build {bw["ror2"]} and my own hero files (v{version}, {date}).'
+built_with = f'Built with Risk of Rain 2 build {bw["ror2"]} ({date}).'
 
 changelog = read('CHANGELOG.md')
 head = re.search(rf'^## {re.escape(version)}[ \t]*\n', changelog, re.M)
 if not head:
-    raise SystemExit(f'{SRC}\\CHANGELOG.md has no "## {version}" section: write what changed first (as for Thunderstore)')
+    # no section written (the creator edits CHANGELOG only for a new character, DllBuilds/CLAUDE.md): add one above the newest
+    first = re.search(r'^## ', changelog, re.M)
+    at = first.start() if first else len(changelog)
+    changelog = changelog[:at] + f'## {version}\n\n' + changelog[at:]
+    head = re.search(rf'^## {re.escape(version)}[ \t]*\n', changelog, re.M)
 end = re.search(r'^## ', changelog[head.end():], re.M)
 end = head.end() + (end.start() if end else len(changelog[head.end():]))
 section = changelog[head.end():end]
 if '{BUILT_WITH}' in section:
     section = section.replace('{BUILT_WITH}', built_with)
 elif 'Built with' not in section:
-    section = f'- {built_with}\n' + section.lstrip('\n')
+    section = f'- {built_with}\n' + (section.lstrip('\n') or '\n')
 changelog = changelog[:head.end()] + section + changelog[end:]
 
 readme = re.sub(r'^- Built with Risk of Rain 2 build .*$', '- {BUILT_WITH}', read('README.md'), flags=re.M)
