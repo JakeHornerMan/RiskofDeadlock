@@ -265,7 +265,8 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   2026-11-04: "have these files here be the default and then pull in the info every time"): every file in it goes into the zip as
   laid out there (a file added there is packed too); the build only sets the manifest's `version_number`, README's "Built with" line,
   the new CHANGELOG section's "Built with" bullet (`{BUILT_WITH}`, or added first when missing, so older sections keep theirs), writes
-  `plugins/built-with.txt` and adds the DLL; `icon.png` is made only when missing. After a build those values are written back into
+  `plugins/built-with.txt` and adds the DLL; `icon.png` is made only when missing (`--icon` draws it again: our own renders in three
+  rows like a group photo, each row higher and smaller, tall heroes at the back and wide ones in front, so every face shows; 2026-11-04). After a build those values are written back into
   `package/` and its text files and manifest are copied to `tools/r2modman_docs/` (git history; charactersFinal is gitignored), which
   also rebuilds `package/` on a fresh clone. Beside it every build writes `PACKAGE-CONTENTS.md` (each file, its size and what it is,
   read back from the zip; `--contents <zip>` writes it again).

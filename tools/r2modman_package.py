@@ -13,7 +13,8 @@ the default and then pull in the info every time"). Every file in it goes into t
                              when the section has none, is filled in and written back, so older sections keep their own line
     plugins/built-with.txt   always written by the build (the RoR2 build, version, date, author)
     plugins/DeadlockOfRain.dll  the DLL just built (never kept in package/)
-    icon.png                 only when package/ has none: our own in-game renders of the heroes (build/pages/img)
+    icon.png                 only when package/ has none: our own in-game renders of the heroes in rows (build/pages/img);
+                             python tools/r2modman_package.py --icon draws it again
 After a successful build the values filled in are written back into package/, and the text files and manifest are copied to
 tools/r2modman_docs/ so git keeps their history (charactersFinal is gitignored). If package/ is missing (a fresh clone) it is
 made from tools/r2modman_docs/ and the repo's LICENSE.txt and THIRD-PARTY-NOTICES.txt.
@@ -69,8 +70,66 @@ def write_contents(zpath):
     open(os.path.join(outdir, 'PACKAGE-CONTENTS.md'), 'w', encoding='utf-8').write('\n'.join(lines))
     print(f'== package record: {os.path.join(outdir, "PACKAGE-CONTENTS.md")}')
 
+def make_icon(ids, path, size=256):
+    """icon.png: our own in-game renders (build/pages/img/<id>.webp, tools/portraits.py) in rows like a group photo, each row
+    a little higher and smaller than the one in front, so every face shows (creator, 2026-11-04: "each character render in rows
+    and have each row slightly above the other so you can at least see everyone's face"). Back row first, front row last."""
+    from PIL import Image, ImageFilter
+    S = 4 * size  # drawn large, scaled down at the end
+    icon = Image.new('RGBA', (S, S))
+    px = icon.load()
+    for y in range(S):
+        for x in range(S):
+            d = min(1.0, (((x - S / 2) / (S * 0.59)) ** 2 + ((y - S * 0.47) / (S * 0.51)) ** 2) ** 0.5)
+            k = (1 - d) ** 1.6
+            px[x, y] = (int(40 + 200 * k), int(30 + 130 * k), int(26 + 70 * k), 255)
+    img = lambda h: os.path.join(ROOT, 'build', 'pages', 'img', h + '.webp')
+    heroes = [h for h in ids if os.path.exists(img(h))]
+    # narrow (tall) renders at the back, wide (short) ones like Mo & Krill and Rat King in front, so no one hides a face
+    def aspect(h):
+        bb = Image.open(img(h)).getbbox()
+        return (bb[2] - bb[0]) / (bb[3] - bb[1])
+    heroes.sort(key=aspect)
+    n = len(heroes)
+    nrows = 1 if n <= 3 else 2 if n <= 6 else 3
+    # fewer in the back rows: 11 -> 3, 4, 4 (back to front)
+    counts = [n // nrows] * nrows
+    for i in range(n - sum(counts)): counts[nrows - 1 - i] += 1
+    rows, k = [], 0
+    for c in counts: rows.append(heroes[k:k + c]); k += c
+    for r, row in enumerate(rows):  # r = 0 is the back row
+        front = r - (nrows - 1)          # 0 for the front row, -1, -2 behind it
+        tall = S * (0.47 + 0.05 * front) if nrows > 1 else S * 0.78
+        base = S * (1.02 + 0.27 * front) if nrows > 1 else S
+        margin = S * 0.07
+        slot = (S - 2 * margin) / len(row)
+        shift = (slot / 4) * (1 if (nrows - 1 - r) % 2 else -1) if nrows > 1 else 0  # heads in the gaps of the row in front
+        for j, h in enumerate(row):
+            im = Image.open(img(h)).convert('RGBA')
+            im = im.crop(im.getbbox())
+            t = tall
+            w = im.width * t / im.height
+            if w > slot * 1.35: w, t = slot * 1.35, im.height * slot * 1.35 / im.width
+            im = im.resize((round(w), round(t)), Image.LANCZOS)
+            cx = margin + slot * (j + 0.5) + shift
+            cx = min(max(cx, w / 2 + S * 0.01), S - w / 2 - S * 0.01)  # never cut off at the sides
+            x, y = round(cx - w / 2), round(base - t)
+            # a soft dark edge so the rows read apart
+            shadow = Image.new('RGBA', im.size, (0, 0, 0, 0))
+            shadow.putalpha(im.getchannel('A').point(lambda v: min(255, v * 2)))
+            pad = Image.new('RGBA', (im.width + 40, im.height + 40), (0, 0, 0, 0))
+            pad.alpha_composite(shadow, (20, 20))
+            pad = pad.filter(ImageFilter.GaussianBlur(8))
+            icon.alpha_composite(pad, (x - 20, y - 20 + 6))
+            icon.alpha_composite(im, (x, y))
+    icon.resize((size, size), Image.LANCZOS).convert('RGB').save(path, 'PNG')
+    print(f'== icon: {path} ({n} heroes in rows of {", ".join(map(str, counts))})')
+
 if sys.argv[1] == '--contents':
     write_contents(sys.argv[2]); sys.exit(0)
+if sys.argv[1] == '--icon':  # python tools/r2modman_package.py --icon [out.png]: draw the icon again (all heroes)
+    order = [r['id'] for r in json.load(open(os.path.join(ROOT, 'design', 'heroes.json'), encoding='utf-8'))['rows']]
+    make_icon(order, sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, 'DllBuilds', 'package', 'icon.png')); sys.exit(0)
 
 dll, outdir, hid = sys.argv[1:4]
 SRC = os.path.join(outdir, 'package')
@@ -128,29 +187,7 @@ filled = {'manifest.json': json.dumps(manifest, indent=2) + '\n', 'README.md': r
           'plugins/built-with.txt': built_txt}
 
 if not os.path.exists(os.path.join(SRC, 'icon.png')):
-    from PIL import Image
-    icon = Image.new('RGBA', (256, 256))
-    px = icon.load()
-    for y in range(256):
-        for x in range(256):
-            d = min(1.0, (((x - 128) / 150) ** 2 + ((y - 120) / 130) ** 2) ** 0.5)
-            k = (1 - d) ** 1.6
-            px[x, y] = (int(24 + 190 * k), int(18 + 120 * k), int(16 + 60 * k), 255)
-    # our own in-game renders (tools/portraits.py) side by side, the outer ones smaller and drawn first (as package.py's icon)
-    renders = [h for h in ids if os.path.exists(os.path.join(ROOT, 'build', 'pages', 'img', h + '.webp'))]
-    n = len(renders)
-    placed = []
-    for j, h in enumerate(renders):
-        mid = abs(j - (n - 1) / 2) / max(1, (n - 1) / 2)
-        placed.append((mid, h, round(256 * (j + 0.5) / n), round((200 if n == 1 else 170) - 40 * mid)))
-    for _, h, cx, tall in sorted(placed, reverse=True):
-        im = Image.open(os.path.join(ROOT, 'build', 'pages', 'img', h + '.webp')).convert('RGBA')
-        im = im.crop(im.getbbox())
-        w = round(im.width * tall / im.height)
-        if w > 240: w, tall = 240, round(im.height * 240 / im.width)
-        im = im.resize((w, tall), Image.LANCZOS)
-        icon.alpha_composite(im, (cx - w // 2, 256 - tall))
-    icon.convert('RGB').save(os.path.join(SRC, 'icon.png'), 'PNG')
+    make_icon(ids, os.path.join(SRC, 'icon.png'))
 
 # every file in package/ as laid out there, with the filled-in ones swapped in; the DLL always the one just built
 files = []

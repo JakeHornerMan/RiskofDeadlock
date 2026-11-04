@@ -1645,3 +1645,8 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Asked back:** nothing.
 **Done:** doc 08 §6b (order of builds) and a line in its definition of done; CLAUDE.md's r2modman rule gets the new-hero exception and the `DllBuilds/` location; memory.
 **Results / open:** nothing built.
+
+### 2026-11-04: the DllBuilds icon in rows
+**Asked:** "ok for generatiing the icon of the ddl build can please have each character rendre in rows and have each row slightly obove the other! bso you can at least see everyones face in the pcture regenerate the picture please!"
+**Done:** `make_icon` in `tools/r2modman_package.py`: the 11 renders in rows of 3, 4, 4, each row back a little higher and smaller, rows staggered so heads sit in the gaps, a soft dark edge per figure, narrow renders at the back and wide ones (Mo & Krill, Rat King) in front, none cut off at the sides; drawn at 1024 and scaled to 256. `--icon` writes `DllBuilds/package/icon.png`; done. Three previews: the first two hid Mo & Krill's face and cut off the edge figures.
+**Open:** the new icon goes into the next package build (1.5.4 in r2modman still has the old one).
