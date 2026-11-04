@@ -39,6 +39,10 @@ WHAT = {  # what each file in the package is (PACKAGE-CONTENTS.md)
     'INSTALL.txt': lambda m, c: 'by hand (Part A), r2modman (Part B), updating, removing everything, problems',
     'README.txt': lambda m, c: "what the package is, what's in it, where things go on the PC",
     'Join Discord.txt': lambda m, c: 'the invite link to the Risk of Deadlock Discord',
+    'plugins/CHANGELOG.txt': lambda m, c: f"package/CHANGELOG.md: what changed in {', '.join(c)}, each with its \"Built with\" line",
+    'plugins/INSTALL.txt': lambda m, c: 'by hand (Part A), r2modman (Part B), updating, removing everything, problems',
+    'plugins/About this package.txt': lambda m, c: "package/README.txt: what the package is, what's in it, where things go on the PC",
+    'plugins/Join Discord.txt': lambda m, c: 'the invite link to the Risk of Deadlock Discord',
     'plugins/DeadlockOfRain.dll': lambda m, c: "the mod (BepInEx 5 plugin), with every hero's files inside (only in the zip)",
     'plugins/LICENSE.txt': lambda m, c: "the mod's licence, as in the Thunderstore zip",
     'plugins/THIRD-PARTY-NOTICES.txt': lambda m, c: 'the libraries the project uses and their licences, as in the Thunderstore zip',
@@ -55,7 +59,8 @@ def write_contents(zpath):
         infos = [i for i in z.infolist() if not i.is_dir()]
         m = json.loads(z.read('manifest.json'))
         m.setdefault('author', os.path.basename(zpath).split('-')[0])  # not in the zip's manifest: from the zip's name
-        c = re.findall(r'^## (\S+)', z.read('CHANGELOG.md').decode('utf-8'), re.M)
+        cl = next((f for f in ('plugins/CHANGELOG.txt', 'CHANGELOG.md') if f in z.namelist()), None)
+        c = re.findall(r'^## (\S+)', z.read(cl).decode('utf-8'), re.M) if cl else []
         built = dict(l.split('=', 1) for l in z.read('plugins/built-with.txt').decode('utf-8').splitlines() if '=' in l)
     rows = [(i.filename, size(i.file_size), WHAT[i.filename](m, c) if i.filename in WHAT else '(a file you added in package/)')
             for i in infos]
@@ -225,15 +230,28 @@ os.makedirs(outdir, exist_ok=True)
 for f in os.listdir(outdir):
     if f.endswith('.zip'): os.remove(os.path.join(outdir, f))
 zpath = os.path.join(outdir, f"{manifest['author']}-{manifest['name']}-{version}.zip")
+# the top of the zip holds exactly the Thunderstore build's files (manifest.json, icon.png, README.md, CHANGELOG.md); every
+# other top file of package/ goes into plugins/ (r2modman puts both in the same folder anyway). README.txt beside README.md
+# broke the creator's Thunderstore-style check ("manifest.json, icon.png, and README.md files must have the correct file
+# extensions", 2026-11-04), so in the zip it is plugins/About this package.txt.
+TOP = ('manifest.json', 'icon.png', 'README.md')
+SKIP = ()
+# creator, 2026-11-04: "remove .md if we don't need them" / "we need a change log for .txt": README.md is the only .md in the
+# zip; the changelog goes in as plugins/CHANGELOG.txt
+RENAME = {'readme.txt': 'About this package.txt', 'changelog.md': 'CHANGELOG.txt'}
+def arc(rel):
+    if '/' in rel or rel in TOP: return rel
+    return 'plugins/' + RENAME.get(rel.lower(), rel)
 with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
     for rel in files:
+        if rel in SKIP: continue
         if rel == 'manifest.json':
             # the zip's manifest has exactly Thunderstore's fields (no "author": Thunderstore takes it from the team and its
             # validator refuses others; creator, 2026-11-04, for their own EC2 project); the author is in the zip's name
             z.writestr(rel, json.dumps({k: manifest[k] for k in ('name', 'version_number', 'website_url', 'description',
                                                                  'dependencies')}, indent=2) + '\n')
-        elif rel in filled: z.writestr(rel, filled[rel])
-        else: z.write(os.path.join(SRC, *rel.split('/')), rel)
+        elif rel in filled: z.writestr(arc(rel), filled[rel])
+        else: z.write(os.path.join(SRC, *rel.split('/')), arc(rel))
         if rel == 'plugins/built-with.txt': z.write(dll, 'plugins/DeadlockOfRain.dll')
 
 # built: the filled-in values back into package/, the text files to tools/r2modman_docs (git history), the version used

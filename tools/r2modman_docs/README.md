@@ -12,7 +12,7 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat
 ## Installation
 - **r2modman:** Settings → Profile → **Import local mod** → this zip (author JakeHornerMan), then **Start modded**. Remove any older Risk of Deadlock first: only one copy.
 - **By hand (Steam's Play button):** BepInExPack in the game folder, RoR2BepInExPack in `BepInEx\plugins\RiskofThunder-RoR2BepInExPack`, then this package in `BepInEx\plugins\JakeHornerMan-Risk_of_Deadlock`.
-- Every step, updating and removing everything: **INSTALL.txt** in this package. What's inside it: **README.txt**.
+- Every step, updating and removing everything: **plugins/INSTALL.txt** in this package. What's inside it: **plugins/About this package.txt**. What changed in each version: **plugins/CHANGELOG.txt**. The Discord invite: **plugins/Join Discord.txt**.
 
 ## Hero pages
 Every hero's abilities, numbers and measured damage next to their Risk of Rain 2 match:
