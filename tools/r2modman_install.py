@@ -72,7 +72,9 @@ if zpath:
         manifest = json.loads(z.read('manifest.json').decode('utf-8-sig'))
     name = manifest['name']
     # the author (creator, 2026-11-02: "make the mod by JakeHornerMan"); an import without one is r2modman's Unknown
-    author = manifest.get('author') or 'Unknown'
+    # the zip's manifest has no author (Thunderstore's fields only), so take it from the zip's name <author>-<name>-<version>.zip
+    zn = os.path.basename(zpath)
+    author = manifest.get('author') or (zn.split('-')[0] if zn.count('-') >= 2 and zn.split('-')[1] == name else 'Unknown')
     full = author + '-' + name
     major, minor, patch = (int(x) for x in manifest['version_number'].split('.'))
 else:

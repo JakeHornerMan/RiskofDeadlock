@@ -54,6 +54,7 @@ def write_contents(zpath):
     with zipfile.ZipFile(zpath) as z:
         infos = [i for i in z.infolist() if not i.is_dir()]
         m = json.loads(z.read('manifest.json'))
+        m.setdefault('author', os.path.basename(zpath).split('-')[0])  # not in the zip's manifest: from the zip's name
         c = re.findall(r'^## (\S+)', z.read('CHANGELOG.md').decode('utf-8'), re.M)
         built = dict(l.split('=', 1) for l in z.read('plugins/built-with.txt').decode('utf-8').splitlines() if '=' in l)
     rows = [(i.filename, size(i.file_size), WHAT[i.filename](m, c) if i.filename in WHAT else '(a file you added in package/)')
@@ -226,7 +227,12 @@ for f in os.listdir(outdir):
 zpath = os.path.join(outdir, f"{manifest['author']}-{manifest['name']}-{version}.zip")
 with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
     for rel in files:
-        if rel in filled: z.writestr(rel, filled[rel])
+        if rel == 'manifest.json':
+            # the zip's manifest has exactly Thunderstore's fields (no "author": Thunderstore takes it from the team and its
+            # validator refuses others; creator, 2026-11-04, for their own EC2 project); the author is in the zip's name
+            z.writestr(rel, json.dumps({k: manifest[k] for k in ('name', 'version_number', 'website_url', 'description',
+                                                                 'dependencies')}, indent=2) + '\n')
+        elif rel in filled: z.writestr(rel, filled[rel])
         else: z.write(os.path.join(SRC, *rel.split('/')), rel)
         if rel == 'plugins/built-with.txt': z.write(dll, 'plugins/DeadlockOfRain.dll')
 
