@@ -71,16 +71,17 @@ def write_contents(zpath):
     print(f'== package record: {os.path.join(outdir, "PACKAGE-CONTENTS.md")}')
 
 def make_icon(ids, path, size=256):
-    """icon.png: our own in-game renders (build/pages/img/<id>.webp, tools/portraits.py) in rows like a group photo, each row
-    a little higher and smaller than the one in front, so every face shows (creator, 2026-11-04: "each character render in rows
-    and have each row slightly above the other so you can at least see everyone's face"). Back row first, front row last."""
-    from PIL import Image, ImageFilter
+    """icon.png: a class photo of our own in-game renders (build/pages/img/<id>.webp, tools/portraits.py), standing on curved
+    steps, each row a step higher and a little smaller than the one in front, so every face shows (creator, 2026-11-04: "each
+    character render in rows and have each row slightly above the other" / "make it more like a class photo and arc with steps
+    above each"). The steps curve like bleachers: the middle of each row stands higher, the ends come forward. Back row first."""
+    from PIL import Image, ImageDraw, ImageFilter
     S = 4 * size  # drawn large, scaled down at the end
     icon = Image.new('RGBA', (S, S))
     px = icon.load()
     for y in range(S):
         for x in range(S):
-            d = min(1.0, (((x - S / 2) / (S * 0.59)) ** 2 + ((y - S * 0.47) / (S * 0.51)) ** 2) ** 0.5)
+            d = min(1.0, (((x - S / 2) / (S * 0.62)) ** 2 + ((y - S * 0.35) / (S * 0.55)) ** 2) ** 0.5)
             k = (1 - d) ** 1.6
             px[x, y] = (int(40 + 200 * k), int(30 + 130 * k), int(26 + 70 * k), 255)
     img = lambda h: os.path.join(ROOT, 'build', 'pages', 'img', h + '.webp')
@@ -92,18 +93,35 @@ def make_icon(ids, path, size=256):
     heroes.sort(key=aspect)
     n = len(heroes)
     nrows = 1 if n <= 3 else 2 if n <= 6 else 3
-    # fewer in the back rows: 11 -> 3, 4, 4 (back to front)
-    counts = [n // nrows] * nrows
+    counts = [n // nrows] * nrows          # fewer at the back: 11 -> 3, 4, 4 (back to front)
     for i in range(n - sum(counts)): counts[nrows - 1 - i] += 1
     rows, k = [], 0
     for c in counts: rows.append(heroes[k:k + c]); k += c
+
+    ARC = S * 0.05                         # how much higher the middle of a row stands than its ends
+    TREAD, RISE = S * 0.035, S * 0.20      # a step's top surface and the height of its front
+    def feet(row_base, x):                 # where a row's feet are at x: an arc, the middle higher
+        u = (x - S / 2) / (S / 2)
+        return row_base - ARC * (1 - u * u)
+    def step(row_base, shade):
+        # the step this row stands on: a curved tread (lit) and its front face (darker) down past the next row's feet
+        xs = [S * i / 64 for i in range(65)]
+        top = [(x, feet(row_base, x) - TREAD * 0.5) for x in xs]
+        lip = [(x, feet(row_base, x) + TREAD * 0.5) for x in xs]
+        bottom = [(x, feet(row_base, x) + RISE) for x in xs]
+        d = ImageDraw.Draw(icon)
+        d.polygon(lip + bottom[::-1], fill=(int(58 * shade), int(40 * shade), int(30 * shade), 255))
+        d.polygon(top + lip[::-1], fill=(int(140 * shade), int(102 * shade), int(72 * shade), 255))
+        d.line(lip, fill=(int(190 * shade), int(150 * shade), int(110 * shade), 255), width=max(2, S // 256))
+
     for r, row in enumerate(rows):  # r = 0 is the back row
         front = r - (nrows - 1)          # 0 for the front row, -1, -2 behind it
-        tall = S * (0.47 + 0.05 * front) if nrows > 1 else S * 0.78
-        base = S * (1.02 + 0.27 * front) if nrows > 1 else S
+        tall = S * (0.44 + 0.045 * front) if nrows > 1 else S * 0.70
+        base = S * (0.93 + 0.235 * front) if nrows > 1 else S * 0.93
+        step(base, 0.75 + 0.12 * (r / max(1, nrows - 1)))
         margin = S * 0.07
         slot = (S - 2 * margin) / len(row)
-        shift = (slot / 4) * (1 if (nrows - 1 - r) % 2 else -1) if nrows > 1 else 0  # heads in the gaps of the row in front
+        shift = (slot / 4) * (1 if (nrows - 1 - r) % 2 else -1) if nrows > 1 and counts.count(len(row)) > 1 else 0
         for j, h in enumerate(row):
             im = Image.open(img(h)).convert('RGBA')
             im = im.crop(im.getbbox())
@@ -113,8 +131,8 @@ def make_icon(ids, path, size=256):
             im = im.resize((round(w), round(t)), Image.LANCZOS)
             cx = margin + slot * (j + 0.5) + shift
             cx = min(max(cx, w / 2 + S * 0.01), S - w / 2 - S * 0.01)  # never cut off at the sides
-            x, y = round(cx - w / 2), round(base - t)
-            # a soft dark edge so the rows read apart
+            x, y = round(cx - w / 2), round(feet(base, cx) - t + TREAD * 0.2)
+            # a soft dark edge so the rows read apart, and a shadow on the step
             shadow = Image.new('RGBA', im.size, (0, 0, 0, 0))
             shadow.putalpha(im.getchannel('A').point(lambda v: min(255, v * 2)))
             pad = Image.new('RGBA', (im.width + 40, im.height + 40), (0, 0, 0, 0))
@@ -123,7 +141,7 @@ def make_icon(ids, path, size=256):
             icon.alpha_composite(pad, (x - 20, y - 20 + 6))
             icon.alpha_composite(im, (x, y))
     icon.resize((size, size), Image.LANCZOS).convert('RGB').save(path, 'PNG')
-    print(f'== icon: {path} ({n} heroes in rows of {", ".join(map(str, counts))})')
+    print(f'== icon: {path} ({n} heroes on {nrows} curved steps, {", ".join(map(str, counts))} back to front)')
 
 if sys.argv[1] == '--contents':
     write_contents(sys.argv[2]); sys.exit(0)
