@@ -43,7 +43,8 @@
     "refreshAll",
     "jumpEvery",
     "markCrit",
-    "damageAdd"
+    "damageAdd",
+    "attackSpeedBaseAdd"
   ],
   "rows": [
     {
@@ -88,7 +89,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "smoke",
@@ -132,7 +134,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "bullet_dance",
@@ -176,7 +179,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "siphon",
@@ -220,7 +224,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "thunderhead",
@@ -264,7 +269,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "afterburn_buildup",
@@ -308,7 +314,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "napalm",
@@ -352,7 +359,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "fixation_slow",
@@ -396,7 +404,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "static",
@@ -440,7 +449,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "napalm_slow",
@@ -484,7 +494,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "flame_dash",
@@ -528,7 +539,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "burrowed",
@@ -572,7 +584,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "burrow_slow",
@@ -616,7 +629,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "sanded",
@@ -660,7 +674,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "dust_devil",
@@ -704,7 +719,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "krill_away",
@@ -748,7 +764,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "tag_team_health",
@@ -792,7 +809,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "gooed",
@@ -836,7 +854,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "slick",
@@ -880,7 +899,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "cube_exit",
@@ -924,7 +944,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "goo_ball",
@@ -968,7 +989,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "scrap_slow",
@@ -1012,7 +1034,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "scrap_slow_big",
@@ -1056,7 +1079,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "fullauto",
@@ -1100,7 +1124,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "lovebites",
@@ -1144,7 +1169,8 @@
       "refreshAll": true,
       "jumpEvery": 5,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "wraithmark",
@@ -1188,7 +1214,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": true,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "pocket_amp",
@@ -1232,7 +1259,8 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0.04
+      "damageAdd": 0.04,
+      "attackSpeedBaseAdd": 0
     },
     {
       "id": "pocket_frog",
@@ -1276,7 +1304,188 @@
       "refreshAll": false,
       "jumpEvery": 0,
       "markCrit": false,
-      "damageAdd": 0
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
+    },
+    {
+      "id": "pain",
+      "name": "Pain",
+      "icon": "panorama/images/hud/abilities/frank/frank_pain_battery_psd.vtex",
+      "color": "#B8306A",
+      "canStack": true,
+      "isDebuff": false,
+      "isHidden": false,
+      "maxStacks": 10,
+      "duration": 10,
+      "moveSpeedAdd": 0,
+      "attackSpeedAdd": 0,
+      "armorAdd": 0,
+      "regenAdd": 0,
+      "damageTakenFromOwnerPerStack": 0,
+      "cloak": false,
+      "evasionChance": 0,
+      "dotDamagePct": 0,
+      "critStacks": 0,
+      "triggerStacks": 0,
+      "triggerClears": false,
+      "triggerDamagePct": 0,
+      "triggerTargets": 0,
+      "triggerRadius": 0,
+      "triggerStun": 0,
+      "triggerBuff": "none",
+      "withBuff": "none",
+      "slowResist": 0,
+      "linearSlow": false,
+      "bossStatCut": 0,
+      "accelerationAdd": 0,
+      "jumpPowerAdd": 0,
+      "jumpCountAdd": 0,
+      "vfx": "none",
+      "maxHealthAdd": 0,
+      "disarm": false,
+      "noGun": false,
+      "melee": false,
+      "notes": "Victor's Pain: one stack per enemy hit he takes (heroes.hitsPerStack), each on its own 10 s timer, up to 10; +15% attack speed each, added to the same term as Soldier's Syringe (attackSpeedBaseAdd). Pain Battery spends the 3 oldest; Aura of Suffering adds them and grows with them.",
+      "refreshAll": false,
+      "jumpEvery": 0,
+      "markCrit": false,
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0.15
+    },
+    {
+      "id": "victor_shock",
+      "name": "Pain Battery shock",
+      "icon": "panorama/images/hud/abilities/frank/frank_pain_battery_psd.vtex",
+      "color": "#9B6BFF",
+      "canStack": false,
+      "isDebuff": true,
+      "isHidden": false,
+      "maxStacks": 1,
+      "duration": 2,
+      "moveSpeedAdd": -0.4,
+      "attackSpeedAdd": 0,
+      "armorAdd": 0,
+      "regenAdd": 0,
+      "damageTakenFromOwnerPerStack": 0,
+      "cloak": false,
+      "evasionChance": 0,
+      "dotDamagePct": 0,
+      "critStacks": 0,
+      "triggerStacks": 0,
+      "triggerClears": false,
+      "triggerDamagePct": 0,
+      "triggerTargets": 0,
+      "triggerRadius": 0,
+      "triggerStun": 0,
+      "triggerBuff": "none",
+      "withBuff": "none",
+      "slowResist": 0,
+      "linearSlow": true,
+      "bossStatCut": 0,
+      "accelerationAdd": 0,
+      "jumpPowerAdd": 0,
+      "jumpCountAdd": 0,
+      "vfx": "none",
+      "maxHealthAdd": 0,
+      "disarm": false,
+      "noGun": false,
+      "melee": false,
+      "notes": "Pain Battery: everything the bolt and its 3 m blast hit is slowed 40% for 2 s.",
+      "refreshAll": false,
+      "jumpEvery": 0,
+      "markCrit": false,
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
+    },
+    {
+      "id": "victor_aura",
+      "name": "Aura of Suffering",
+      "icon": "panorama/images/hud/abilities/frank/frank_aura_of_suffering_psd.vtex",
+      "color": "#B8306A",
+      "canStack": false,
+      "isDebuff": false,
+      "isHidden": false,
+      "maxStacks": 1,
+      "duration": 0,
+      "moveSpeedAdd": 0,
+      "attackSpeedAdd": 0,
+      "armorAdd": 0,
+      "regenAdd": 0,
+      "damageTakenFromOwnerPerStack": 0,
+      "cloak": false,
+      "evasionChance": 0,
+      "dotDamagePct": 0,
+      "critStacks": 0,
+      "triggerStacks": 0,
+      "triggerClears": false,
+      "triggerDamagePct": 0,
+      "triggerTargets": 0,
+      "triggerRadius": 0,
+      "triggerStun": 0,
+      "triggerBuff": "none",
+      "withBuff": "none",
+      "slowResist": 0,
+      "linearSlow": false,
+      "bossStatCut": 0,
+      "accelerationAdd": 0,
+      "jumpPowerAdd": 0,
+      "jumpCountAdd": 0,
+      "vfx": "none",
+      "maxHealthAdd": 0,
+      "disarm": false,
+      "noGun": false,
+      "melee": false,
+      "notes": "Aura of Suffering is on (a toggle: R switches it on and off). The server keeps it; every player draws the field from it.",
+      "refreshAll": false,
+      "jumpEvery": 0,
+      "markCrit": false,
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
+    },
+    {
+      "id": "reanimation_charged",
+      "name": "Shocking Reanimation",
+      "icon": "panorama/images/hud/abilities/frank/frank_shocking_reanimation_psd.vtex",
+      "color": "#8FD8FF",
+      "canStack": false,
+      "isDebuff": false,
+      "isHidden": false,
+      "maxStacks": 1,
+      "duration": 20,
+      "moveSpeedAdd": 0,
+      "attackSpeedAdd": 0,
+      "armorAdd": 0,
+      "regenAdd": 0,
+      "damageTakenFromOwnerPerStack": 0,
+      "cloak": false,
+      "evasionChance": 0,
+      "dotDamagePct": 0,
+      "critStacks": 0,
+      "triggerStacks": 0,
+      "triggerClears": false,
+      "triggerDamagePct": 0,
+      "triggerTargets": 0,
+      "triggerRadius": 0,
+      "triggerStun": 0,
+      "triggerBuff": "none",
+      "withBuff": "none",
+      "slowResist": 0,
+      "linearSlow": false,
+      "bossStatCut": 0,
+      "accelerationAdd": 0,
+      "jumpPowerAdd": 0,
+      "jumpCountAdd": 0,
+      "vfx": "none",
+      "maxHealthAdd": 0,
+      "disarm": false,
+      "noGun": false,
+      "melee": false,
+      "notes": "Shocking Reanimation charge: for 20 s the carrier has the power of 10 Ukuleles and 10 Unstable Tesla Coils (copied in code, no real items), on top of their own.",
+      "refreshAll": false,
+      "jumpEvery": 0,
+      "markCrit": false,
+      "damageAdd": 0,
+      "attackSpeedBaseAdd": 0
     }
   ]
 }

@@ -465,6 +465,38 @@
       "purpose": "Flying Cloak: holds the utility recharge at 0 while the cloak flies and turns Shift again into the teleport (CloakPort on the Body machine)",
       "reads": "skills.duration",
       "side": "owner"
+    },
+    {
+      "id": "victor_pain_hits",
+      "method": "event",
+      "target": "GlobalEventManager.onServerDamageDealt",
+      "purpose": "Pain: every enemy hit on a hero with heroes.passiveBuff adds a stack per hitsPerStack hits (Victor); his own aura damage does not count",
+      "reads": "heroes.passiveBuff/hitsPerStack, buffs (pain)",
+      "side": "server"
+    },
+    {
+      "id": "victor_charged_onhit",
+      "method": "event",
+      "target": "GlobalEventManager.onServerDamageDealt",
+      "purpose": "Shocking Reanimation charge: Ukulele rolls on every hit the carrier deals while reanimation_charged is on (10 + their own Ukuleles)",
+      "reads": "skills.chainPct/chainCount/seekRange/tickProc",
+      "side": "server"
+    },
+    {
+      "id": "victor_aura_component",
+      "method": "component",
+      "target": "DeadlockOfRain.States.VictorAura",
+      "purpose": "Aura of Suffering: the toggled field (server: ticks, siphon, self-drain, Pain every 5 s, cut-off; every machine: the field drawn from the victor_aura buff)",
+      "reads": "skills (aura_toggle row)",
+      "side": "all"
+    },
+    {
+      "id": "victor_tesla_component",
+      "method": "component",
+      "target": "DeadlockOfRain.States.ReanimationCharge",
+      "purpose": "Shocking Reanimation charge: a Tesla Coil pulse every interval at enemies within range (10 + the carrier's own Tesla Coils)",
+      "reads": "skills (ult_reanimation row)",
+      "side": "server"
     }
   ]
 }

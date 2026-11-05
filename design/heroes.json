@@ -54,7 +54,10 @@
     "floatFallSpeed",
     "floatHold",
     "floatAirControl",
-    "floatMoveSpeedMult"
+    "floatMoveSpeedMult",
+    "localOnly",
+    "passiveBuff",
+    "hitsPerStack"
   ],
   "rows": [
     {
@@ -121,7 +124,10 @@
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
-      "floatMoveSpeedMult": 0
+      "floatMoveSpeedMult": 0,
+      "localOnly": false,
+      "passiveBuff": "none",
+      "hitsPerStack": 0
     },
     {
       "id": "abrams",
@@ -187,7 +193,10 @@
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
-      "floatMoveSpeedMult": 0
+      "floatMoveSpeedMult": 0,
+      "localOnly": false,
+      "passiveBuff": "none",
+      "hitsPerStack": 0
     },
     {
       "id": "seven",
@@ -254,7 +263,10 @@
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
-      "floatMoveSpeedMult": 0
+      "floatMoveSpeedMult": 0,
+      "localOnly": false,
+      "passiveBuff": "none",
+      "hitsPerStack": 0
     },
     {
       "id": "infernus",
@@ -322,7 +334,10 @@
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
-      "floatMoveSpeedMult": 0
+      "floatMoveSpeedMult": 0,
+      "localOnly": false,
+      "passiveBuff": "none",
+      "hitsPerStack": 0
     },
     {
       "id": "mokrill",
@@ -388,7 +403,10 @@
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
-      "floatMoveSpeedMult": 0
+      "floatMoveSpeedMult": 0,
+      "localOnly": false,
+      "passiveBuff": "none",
+      "hitsPerStack": 0
     },
     {
       "id": "viscous",
@@ -453,7 +471,10 @@
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
-      "floatMoveSpeedMult": 0
+      "floatMoveSpeedMult": 0,
+      "localOnly": false,
+      "passiveBuff": "none",
+      "hitsPerStack": 0
     },
     {
       "id": "ratking",
@@ -556,7 +577,10 @@
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
-      "floatMoveSpeedMult": 0
+      "floatMoveSpeedMult": 0,
+      "localOnly": false,
+      "passiveBuff": "none",
+      "hitsPerStack": 0
     },
     {
       "id": "billy",
@@ -621,7 +645,10 @@
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
-      "floatMoveSpeedMult": 0
+      "floatMoveSpeedMult": 0,
+      "localOnly": false,
+      "passiveBuff": "none",
+      "hitsPerStack": 0
     },
     {
       "id": "wraith",
@@ -687,7 +714,10 @@
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
-      "floatMoveSpeedMult": 0
+      "floatMoveSpeedMult": 0,
+      "localOnly": false,
+      "passiveBuff": "none",
+      "hitsPerStack": 0
     },
     {
       "id": "mina",
@@ -753,7 +783,10 @@
       "floatFallSpeed": 2.5,
       "floatHold": 0,
       "floatAirControl": 0.8,
-      "floatMoveSpeedMult": 1.5
+      "floatMoveSpeedMult": 1.5,
+      "localOnly": false,
+      "passiveBuff": "none",
+      "hitsPerStack": 0
     },
     {
       "id": "pocket",
@@ -820,7 +853,78 @@
       "floatFallSpeed": 0,
       "floatHold": 0,
       "floatAirControl": 0,
-      "floatMoveSpeedMult": 0
+      "floatMoveSpeedMult": 0,
+      "localOnly": false,
+      "passiveBuff": "none",
+      "hitsPerStack": 0
+    },
+    {
+      "id": "victor",
+      "displayName": "Victor",
+      "deadlockKey": "hero_frank",
+      "vmdl": "models/heroes_wip/frank/frank.vmdl",
+      "meshInclude": [
+        "frank",
+        "weapon"
+      ],
+      "splitMeshes": [
+        "none"
+      ],
+      "imageSmall": "panorama/images/heroes/frank_sm_psd.vtex",
+      "imageCard": "panorama/images/heroes/frank_card_psd.vtex",
+      "soundevents": "soundevents/hero/frank.vsndevts",
+      "sourceHeight": 2.413,
+      "heightScale": 1.0,
+      "modelScale": 1.0,
+      "widthScale": 1.0,
+      "capsuleFrom": "none",
+      "cameraFrom": "none",
+      "cameraScale": 1.0,
+      "cameraRight": 0.0,
+      "interactRange": 1.0,
+      "immuneToForce": false,
+      "noFallDamage": false,
+      "airJumpMult": 1.0,
+      "landShake": 0.4,
+      "voiceGain": 1.0,
+      "gooMaterials": [
+        "none"
+      ],
+      "glassMaterials": [
+        "none"
+      ],
+      "riderBone": "none",
+      "primaryColor": "#B8306A",
+      "sortPosition": 101.2,
+      "roR2Analog": "TreebotBody",
+      "subtitle": "The Pain-Powered Bruiser",
+      "passiveName": "Pain",
+      "passiveDescription": "Every hit you take from an enemy adds a <style=cIsDamage>Pain</style> stack, up to <style=cIsDamage>10</style>; each gives <style=cIsDamage>+15% attack speed</style> (added like Soldier's Syringe) and lasts <style=cIsUtility>10s</style> on its own timer. Pain Battery spends it; Aura of Suffering grows with it.",
+      "passiveIcon": "panorama/images/hud/abilities/frank/frank_pain_battery_psd.vtex",
+      "damageHealBack": 0,
+      "damageHealBackTime": 0,
+      "debuffResist": 0,
+      "lore": "A stitched-together brute run on a faulty heart and stored pain. Every blow he takes winds him up: heavier punches, a faster-spinning Memento Mori, a wider Aura of Suffering, and charge for the Pain Battery in his barbed-wire arm.",
+      "airDodges": 0,
+      "dodgeDistance": 7,
+      "dodgeTime": 0.25,
+      "dodgePct": 0,
+      "readSeconds": 17,
+      "vertexColorMaterials": [
+        "pocket_hair"
+      ],
+      "tintMaterials": [
+        "pocket_hair"
+      ],
+      "tintColor": "#2A2522",
+      "tintGloss": 0.55,
+      "floatFallSpeed": 0,
+      "floatHold": 0,
+      "floatAirControl": 0,
+      "floatMoveSpeedMult": 0,
+      "localOnly": true,
+      "passiveBuff": "pain",
+      "hitsPerStack": 1
     }
   ]
 }

@@ -473,6 +473,11 @@ namespace DeadlockOfRain
             // (Commando: the Preon Accumulator) once, for the "just for fun" table
             var sl = body.skillLocator;
             foreach (var gs in new[] { sl.primary, sl.secondary, sl.utility, sl.special }) if (gs) gs.Reset();
+            // Victor: nothing carries over from the last pass (the toggled aura has no end, Pain and the ult charge last a while)
+            var vh = Sheet.Hero(Survivors.HeroOf(body));
+            if (vh != null && vh.PassiveBuff != "none") Buffs.Clear(body, vh.PassiveBuff);
+            Buffs.Clear(body, States.VictorAura.Buff);
+            foreach (var ur in SkillRow.All) if (ur.Kind == "ult_reanimation") Buffs.Clear(body, ur.Buff);
             bool useEquip = mode == "equipment";
             var inv = body.inventory;
             if (inv)
@@ -514,10 +519,23 @@ namespace DeadlockOfRain
                     // a primary that fires on release (Captain's Vulcan Shotgun charges while held) is let go for one frame every 0.6 s
                     bool hold = mode == "all" || mode == "primary";
                     if (ReleasePrimary.Contains(body.name.Replace("(Clone)", "")) && frame % 36 == 0) hold = false;
+                    bool m2 = (mode == "all" || mode == "secondary") && tap;
+                    // Victor: the gun is on M2 (held like a gun); in "all" he punches while an enemy is within reach, else he shoots
+                    var gunSlot = Survivors.GunSlot(body);
+                    if (gunSlot && sl && gunSlot == sl.secondary)
+                    {
+                        var punch = Survivors.RowFor(sl.primary);
+                        bool near = aimAt && punch != null && Mathf.Sqrt(best) <= punch.Reach + body.radius + aimAt.radius + 0.5f;
+                        if (mode == "all") { hold = near; m2 = !near; }
+                        else m2 = mode == "secondary";
+                    }
+                    // a toggled R (Victor's Aura of Suffering) is switched on once and left on
+                    bool r = (mode == "all" || mode == "special") && tap;
+                    if (r && Survivors.RowFor(sl ? sl.special : null)?.Kind == "aura_toggle" && Buffs.Count(body, States.VictorAura.Buff) > 0) r = false;
                     ib.skill1.PushState(hold);
-                    ib.skill2.PushState((mode == "all" || mode == "secondary") && tap);
+                    ib.skill2.PushState(m2);
                     ib.skill3.PushState((mode == "all" || mode == "utility") && tap);
-                    ib.skill4.PushState((mode == "all" || mode == "special") && tap);
+                    ib.skill4.PushState(r);
                     ib.activateEquipment.PushState(useEquip && tap);
                 }
                 // dashes and leaps carry the survivor off the spot: once they are back in their main state, put them back

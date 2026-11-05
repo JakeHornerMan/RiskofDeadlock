@@ -5,6 +5,13 @@
 - Deadlock ClientVersion 6817 (build 26143760, 2026-10-22 evening; no clip, mesh or sound change for our heroes); 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
+## Victor (2026-11-05, the creator's own DLL build only)
+- Twelfth hero from the creator's own files (`charactersFinal/victorFiles`), matched to REX: Pain (1 stack per enemy hit, +15 % attack
+  speed like Syringe), Heavy Melee on M1, Memento Mori on M2 (a spinning gun; guns may now sit on M2: `Survivors.GunSlot/GunRow`), Pain
+  Battery (spends 3 Pain), Aura of Suffering (a toggle), Shocking Reanimation (any carrier; 10 Ukuleles and Tesla Coils copied in code).
+  New columns `heroes.localOnly/passiveBuff/hitsPerStack`, `buffs.attackSpeedBaseAdd`, `skills.selfDamagePct/selfDrainPct/stopBelowPct/buffEvery`;
+  `extractor/manifest-local.json`. Gotcha: `--import-glb` rebuilds `heroes/<id>/` from the glb alone; a glb without packed textures leaves none.
+
 ## 1.5.0 (2026-11-02)
 - Pocket released on Melty: all 11 heroes playable, no coming-soon tile; Mina's rebuilt Nox Nostra and Jump-only umbrella; built with Deadlock 6839 (cache 11/11).
   Release-cut test 11/11 32/32, BREAK 20/20; Melty release `503d0c88-…`. The Steam copy's hand-installed BepInEx needs RoR2BepInExPack for Newtonsoft.Json.

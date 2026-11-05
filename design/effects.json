@@ -1839,6 +1839,104 @@
       ],
       "tint": "none",
       "notes": "Flying Cloak: Pocket's own coat alone (mesh coat_scarf of his model) with his lift_loop clip, as Deadlock's cloak particle draws his model in its lift pose"
+    },
+    {
+      "id": "tracer_victor",
+      "kind": "tracer",
+      "addressable": "RoR2/Base/Commando/TracerCommandoDefault.prefab",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "#E0507F",
+      "notes": "Memento Mori's tracers, Commando's tracer in Victor's red-violet"
+    },
+    {
+      "id": "victor_punch",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Heavy melee: a red-violet smear along the swing, a thud of dust, sparks and a short light where the fist lands; from 5 Pain an electric crackle on every hit"
+    },
+    {
+      "id": "victor_gun",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Memento Mori: a hot red muzzle flash and smoke that grow as the barrel spins up; small red sparks where each round lands"
+    },
+    {
+      "id": "victor_battery",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Pain Battery: a jagged violet-white arc from his barbed-wire arm to the hit, a crackling burst and a 3 m ring of sparks there"
+    },
+    {
+      "id": "victor_aura",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Aura of Suffering: a crackling red-violet field on the ground around him, its edge pulsing like a faulty heartbeat, growing and shrinking with Pain; thin red threads drawing health from every enemy inside"
+    },
+    {
+      "id": "victor_wire",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Pain: the barbed wire on his left arm crackles with electricity from 3 Pain (Pain Battery ready)"
+    },
+    {
+      "id": "victor_reanimation",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shocking Reanimation: crackling lightning as the user rises, a bolt striking down at the peak, a ball of lightning bursting out to 30 m, then a 20 s crackle around them; Tesla and Ukulele arcs to enemies"
     }
   ]
 }

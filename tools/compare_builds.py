@@ -70,6 +70,10 @@ for h in heroes:
     else:
         print(f'  {h:9} same: {same} files, {len(events)} sound events')
 
+# heroes only the DLL build has (heroes.json localOnly: Victor, the creator's own files, never in the Melty build)
+for h in dll_heroes:
+    if h not in heroes: print(f'  {h:9} own files only (not in the Melty build)')
+
 # everything else both builds share (icons of buffs and items, shared props)
 extra = []
 for base, _, fs in os.walk(melty):

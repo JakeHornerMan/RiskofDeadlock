@@ -162,6 +162,13 @@ Melty runs the extractor again, which rebuilds because the stamp differs.
 
 ---
 
+**Local-only heroes (2026-11-05).** A hero with `heroes.localOnly` (Victor: the creator's own files, their DLL build only) is
+left out of `extractor/manifest.json` with every entry only it uses, so the Melty extractor never reads it. `gen.py` writes the
+full manifest to `extractor/manifest-local.json`; `tools/build_local_hero.sh` passes that one to `--keep-glb` / `--import-glb`.
+`manifest_owners.json` keeps its entries (the local build's file check reads them). Careful: `--import-glb` rebuilds
+`heroes/<id>/` from the glb alone, so a glb without embedded textures leaves the hero with none (2026-11-05: Victor's had to be
+put back from `dealockRip/victorFiles/files/heroes/victor/`); the build only imports when the glb is newer than the dlm.
+
 **Release subsets (2026-10-19).** `gen.py` also writes `extractor/manifest_owners.json`: each image, sound event, sound
 event file and voice group → the hero(es) whose sheet rows use it (sound rows like `mokrill_gun/step` count for their
 base skill's hero; shared buff icons have no owner and are always kept). `package.py --thunderstore` uses it to cut the

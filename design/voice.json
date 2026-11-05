@@ -1405,6 +1405,114 @@
       "gap": 0,
       "chain": 0,
       "skipTakes": "none"
+    },
+    {
+      "id": "victor_select",
+      "hero": "victor",
+      "trigger": "select",
+      "skill": "none",
+      "kills": 0,
+      "group": "frank/frank_select",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "victor_unselect",
+      "hero": "victor",
+      "trigger": "unselect",
+      "skill": "none",
+      "kills": 0,
+      "group": "frank/frank_unselect",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "victor_battery_vo",
+      "hero": "victor",
+      "trigger": "skill",
+      "skill": "victor_battery",
+      "kills": 0,
+      "group": "frank/frank_use_power1",
+      "chance": 0.3,
+      "gap": 10,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "victor_aura_vo",
+      "hero": "victor",
+      "trigger": "skill",
+      "skill": "victor_aura",
+      "kills": 0,
+      "group": "frank/frank_use_power3",
+      "chance": 0.5,
+      "gap": 10,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "victor_reanimation_vo",
+      "hero": "victor",
+      "trigger": "skill",
+      "skill": "victor_reanimation",
+      "kills": 0,
+      "group": "frank/frank_use_power4",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "victor_streak4",
+      "hero": "victor",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 4,
+      "group": "frank/frank_killstreak_start",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "victor_streak7",
+      "hero": "victor",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 7,
+      "group": "frank/frank_killstreak_mid",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "victor_streak10",
+      "hero": "victor",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 10,
+      "group": "frank/frank_killstreak_high",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "victor_hunt",
+      "hero": "victor",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "frank/frank_hunt",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     }
   ]
 }

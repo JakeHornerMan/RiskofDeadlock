@@ -114,7 +114,7 @@ for h in heroes:
 for r in skills.values():
     if r['slot'] not in SLOTS: bad(f'skills[{r["id"]}].slot: "{r["slot"]}" unknown')
     # a move that spends the gun's rounds instead (Splatter, ammoCost) may have none
-    if r['slot'] in ('secondary', 'utility', 'special') and r['cooldown'] <= 0 and r['ammoCost'] <= 0:
+    if not r['kind'].startswith('gun_') and r['slot'] in ('secondary', 'utility', 'special') and r['cooldown'] <= 0 and r['ammoCost'] <= 0:
         bad(f'skills[{r["id"]}]: ability needs a cooldown (or an ammoCost)')
     if r['ammoCost'] > 0 and not any(g['hero'] == r['hero'] and g['slot'] == 'primary' and g['clipSize'] >= r['ammoCost'] for g in skills.values()):
         bad(f'skills[{r["id"]}].ammoCost: the gun of this hero has no magazine that big')
@@ -150,12 +150,24 @@ def gun_dps(r):
     if r['kind'] == 'gun_burst':
         cycles = shots / r['burst']
         fire_time = cycles * (r['interval'] + (r['burst'] - 1) * r['duration'])
+    elif r['kind'] == 'gun_spin':
+        # Memento Mori: the rate climbs evenly from 1/interval to 1/minDuration over duration seconds, then stays there
+        r0, r1 = 1 / r['interval'], 1 / r['minDuration']
+        spun = (r0 + r1) / 2 * r['duration']
+        fire_time = r['duration'] + (shots - spun) / r1 if shots > spun else shots / r0
     else:
         fire_time = shots * r['interval']
     dmg = shots * r['pellets'] * r['damagePct']
     return dmg / (fire_time + r['reloadTime'])
 for r in skills.values():
-    if r['slot'] == 'primary':
+    if r['slot'] == 'primary' and not r['kind'].startswith('gun_'):
+        # a melee M1 (Victor's punches): one hit of damagePct every interval
+        dps = r['damagePct'] / r['interval']
+        if abs(dps - r['targetDps']) > 0.1 * r['targetDps']:
+            bad(f'skills[{r["id"]}].targetDps: row computes {dps:.0f} %/s, sheet says {r["targetDps"]}')
+        if not (240 <= dps <= 600):
+            bad(f'skills[{r["id"]}]: sustained DPS {dps:.0f} %/s outside RoR2 primary band 240-600')
+    elif r['kind'].startswith('gun_'):
         dps = gun_dps(r)
         if abs(dps - r['targetDps']) > 0.1 * r['targetDps']:
             bad(f'skills[{r["id"]}].targetDps: row computes {dps:.0f} %/s, sheet says {r["targetDps"]}')
@@ -171,6 +183,7 @@ for r in skills.values():
         elif r['kind'] == 'ult_chains': total = r['chainCount'] * r['damagePct']  # chainCount chains of damagePct, one per enemy (bosses up to bossMult)
         elif r['kind'] == 'ult_mist': total = r['splashPct'] + r['duration'] / r['interval'] * r['damagePct']  # the reform burst, plus a pass through the same enemy every re-hit interval for the whole flight
         elif r['kind'] == 'ult_frog': total = r['duration'] / r['interval'] * r['damagePct']  # a landing splash every hop for the whole form (high leaps are extra)
+        elif r['kind'] == 'ult_reanimation': total = r['duration'] / r['interval'] * r['damagePct']  # a Tesla bolt every interval for the whole charge (Ukulele chains are extra)
         elif r['kind'] == 'ult_swarm': total = r['chainCount'] * 15 / r['interval'] * r['damagePct']  # chainCount rats on one enemy biting until it dies (no time limit): counted over 15 s
         else: total = r['damagePct']
         if total < 6000:
@@ -207,29 +220,39 @@ for r in skills.values():
     if k in seen_icons: bad(f'skills[{r["id"]}].icon: same icon as {seen_icons[k]}')
     else: seen_icons[k] = r['id']
 
+# localOnly heroes (Victor, 2026-11-05) are the creator's own files, built only into their DLL: their names are never checked
+# against the Deadlock listings (creator: "DO NOT VALIDATE THIS AGAINST ANY FILE"); the build checks its own folder has them
+LOCAL = {h['id'] for h in heroes.values() if h['localOnly']}
+local_skills = {r['id'] for r in skills.values() if r['hero'] in LOCAL}
+LOCAL_BUFFS = {r[c] for r in skills.values() if r['hero'] in LOCAL for c in ('buff', 'debuff')} | {h['passiveBuff'] for h in heroes.values() if h['id'] in LOCAL}
+LOCAL_BUFFS -= {r[c] for r in skills.values() if r['hero'] not in LOCAL for c in ('buff', 'debuff')} | {'none'}
 if vpk:
     files = set(l.strip() for l in open(vpk, encoding='utf-8'))
     def has(path, col):
         if path + '_c' not in files: bad(f'{col}: "{path}" not in Deadlock install')
     for h in heroes.values():
+        if h['id'] in LOCAL: continue
         for c in ['vmdl', 'imageSmall', 'imageCard', 'soundevents']: has(h[c], f'heroes[{h["id"]}].{c}')
         if h['passiveIcon'] != 'none': has(h['passiveIcon'], f'heroes[{h["id"]}].passiveIcon')
     for t in sheets['teasers']['rows']: has(t['imageSmall'], f'teasers[{t["id"]}].imageSmall')
-    for r in skills.values(): has(r['icon'].replace('.vtex', '.vtex'), f'skills[{r["id"]}].icon')
+    for r in skills.values():
+        if r['hero'] not in LOCAL: has(r['icon'], f'skills[{r["id"]}].icon')
     # any numbered take will do (Viscous' use_power4 takes start at _11)
     takes = {re.sub(r'_[0-9]+\.vsnd_c$', '', f) for f in files if f.startswith('sounds/vo/') and re.search(r'_[0-9]+\.vsnd_c$', f)}
     for r in sheets['voice']['rows']:
+        if r['hero'] in LOCAL: continue
         if f"sounds/vo/{r['group']}" not in takes: bad(f'voice[{r["id"]}].group: no sounds/vo/{r["group"]}_NN.vsnd in Deadlock install')
     for e in effects.values():
-        if e['kind'] in ('prop', 'texture'): has(e['addressable'], f'effects[{e["id"]}].addressable')
+        if e['kind'] in ('prop', 'texture') and not any(e['id'].startswith(x + '_') for x in LOCAL): has(e['addressable'], f'effects[{e["id"]}].addressable')
     for b in buffs.values():
-        if b['icon'] != 'none': has(b['icon'], f'buffs[{b["id"]}].icon')
+        if b['icon'] != 'none' and b['id'] not in LOCAL_BUFFS: has(b['icon'], f'buffs[{b["id"]}].icon')
 else:
     bad('dev listing tools/dev/vpk_files.txt missing: Deadlock asset paths unverified')
 ev = dev('sound_events.txt')
 if ev:
     events = set(l.strip() for l in open(ev, encoding='utf-8'))
     for r in sheets['sounds']['rows']:
+        if r['skill'].split('/')[0] in local_skills: continue
         for c in ['cast', 'loop', 'hit', 'end', 'reload', 'castLayer', 'hitLayer', 'tick', 'tickFinal']:
             if r[c] != 'none' and r[c] not in events: bad(f'sounds[{r["skill"]}].{c}: event "{r[c]}" not in Deadlock soundevents')
 else:
@@ -245,7 +268,7 @@ an = dev('anim_names.json')
 if an:
     a = json.load(open(an, encoding='utf-8'))
     for h in heroes:
-        if h not in a: bad(f'dev listing tools/dev/anim_names.json has no "{h}": re-export every hero glb and regenerate it (docs/01 §8)')
+        if h not in a and h not in LOCAL: bad(f'dev listing tools/dev/anim_names.json has no "{h}": re-export every hero glb and regenerate it (docs/01 §8)')
     for r in sheets['animations']['rows']:
         if r['hero'] not in a: continue
         names = set(a[r['hero']]['anims'])

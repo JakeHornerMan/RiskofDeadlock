@@ -42,7 +42,7 @@ namespace DeadlockOfRain.States
             }
             if (t >= nextShot && burstLeft == 0 && isAuthority)
             {
-                if (!(inputBank && inputBank.skill1.down) && !MeltyTest.WantsFire(characterBody)) { outer.SetNextStateToMain(); return; }
+                if (!Held && !MeltyTest.WantsFire(characterBody)) { outer.SetNextStateToMain(); return; }
                 // Burrowed or spinning (a noGun buff): no shots, but a held button keeps the state for when it ends
                 if (HeroRuntime.NoGun(characterBody)) return;
                 // Billy's bat just swung: the gun waits a moment (the two never act at once)
@@ -56,7 +56,7 @@ namespace DeadlockOfRain.States
                 }
                 // rounds from a goo puddle fire even while the magazine is empty or reloading
                 if (rt != null && !rt.CanFire) { StartReload(); return; }
-                nextShot = t + row.Interval / attackSpeedStat;
+                nextShot = t + ShotInterval() / attackSpeedStat;
                 int burst = (int)Mathf.Max(1, row.Burst);
                 if (row.Kind == "gun_burst" && burst > 1)
                 {
@@ -67,6 +67,15 @@ namespace DeadlockOfRain.States
                 else FireOne();
             }
         }
+
+        /// <summary>The key this gun is held on: M1, or M2 for a gun in the secondary slot (Victor's Memento Mori).</summary>
+        protected bool Held => inputBank && (skillLocator && activatorSkillSlot == skillLocator.secondary ? inputBank.skill2.down : inputBank.skill1.down);
+
+        /// <summary>Seconds between shots before attack speed (a spinning gun shortens it as it spins up).</summary>
+        protected virtual float ShotInterval() => row.Interval;
+
+        /// <summary>The bullets' cone in degrees (a spinning gun widens it as it spins up).</summary>
+        protected virtual float Spread() => row.SpreadDeg;
 
         void StartReload()
         {
@@ -85,7 +94,7 @@ namespace DeadlockOfRain.States
         /// here too: the server's copy deals the damage, the other players' copies are only seen.</param>
         public static void ShotFx(CharacterBody body, bool left, Vector3 aim = default)
         {
-            var row = Survivors.RowFor(body.skillLocator ? body.skillLocator.primary : null);
+            var row = Survivors.GunRow(body);
             if (row == null) return;
             if (row.MeleePct > 0 && HeroRuntime.Melee(body)) { PunchFx(body, row, left); return; }
             var anim = DeadlockAnimator.Of(body);
@@ -118,7 +127,7 @@ namespace DeadlockOfRain.States
 
         public static void ReloadFx(CharacterBody body)
         {
-            var row = Survivors.RowFor(body.skillLocator ? body.skillLocator.primary : null);
+            var row = Survivors.GunRow(body);
             if (row == null) return;
             var anim = DeadlockAnimator.Of(body);
             if (anim) anim.Gesture("reload", 1f);
@@ -318,7 +327,7 @@ namespace DeadlockOfRain.States
                     origin = aim.origin,
                     aimVector = aim.direction,
                     minSpread = 0f,
-                    maxSpread = row.SpreadDeg,
+                    maxSpread = Spread(),
                     bulletCount = (uint)Mathf.Max(1, row.Pellets),
                     damage = damageStat * Coef,
                     procCoefficient = row.ProcCoefficient,
@@ -435,7 +444,7 @@ namespace DeadlockOfRain.States
             var victim = r?.victimBody;
             if (info == null || !owner || !victim || info.damageType.damageSource != DamageSource.Primary || info.inflictor != owner.gameObject) return;
             if (victim.teamComponent.teamIndex == owner.teamComponent.teamIndex) return;
-            var row = Survivors.RowFor(owner.skillLocator ? owner.skillLocator.primary : null);
+            var row = Survivors.GunRow(owner);
             if (row == null || !row.Kind.StartsWith("gun_")) return;
             // Mo's Frenzy punch (a melee buff is on): the enemy is thrown away from him, bosses a quarter as far
             if (row.MeleeKnock > 0 && HeroRuntime.Melee(owner))

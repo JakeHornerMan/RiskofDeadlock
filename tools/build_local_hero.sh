@@ -110,14 +110,14 @@ OUT="$ROOT/build/local-$ID"
 if [ ! -f "$GLB" ]; then
   echo "== Making $GLB from Deadlock (first time only, about a minute)"
   "$EXE" --deadlock "C:/Program Files (x86)/Steam/steamapps/common/Deadlock" --out "$OUT/from-deadlock" \
-    --manifest "$ROOT/extractor/manifest.json" --heroes "$ID" --force --keep-glb "$GLB" >/dev/null
+    --manifest "$ROOT/extractor/manifest-local.json" --heroes "$ID" --force --keep-glb "$GLB" >/dev/null
   touch -r "$GLB" "$DLM"   # the dlm in mod-cache already matches this glb
 fi
 
 # 2. an edited model back into the mod's format
 if [ "$GLB" -nt "$DLM" ]; then
   echo "== Converting your edited $GLB"
-  "$EXE" --import-glb "$GLB" --hero "$ID" --out "$C" --manifest "$ROOT/extractor/manifest.json" | grep -E "^  $ID:|clips not found"
+  "$EXE" --import-glb "$GLB" --hero "$ID" --out "$C" --manifest "$ROOT/extractor/manifest-local.json" | grep -E "^  $ID:|clips not found"
   rm -f "$C/extract.log"
 fi
 

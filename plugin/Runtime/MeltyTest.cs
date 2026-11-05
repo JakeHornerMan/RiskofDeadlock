@@ -385,6 +385,8 @@ namespace DeadlockOfRain
                         if (gunRow.MeleeKnock > 0 && punch.Knocked < 2f) kitWhy += $"{row.Id}: punched target moved only {punch.Knocked:F1} m; ";
                     }
                 }
+                // a toggled aura (Victor's Aura of Suffering) is switched off again so the next checks start clean
+                if (Sheet.SkillsOf(hero.Id).Any(s => s.Kind == "aura_toggle")) { States.VictorAura.Off(master.GetBody()); yield return new WaitForSeconds(0.3f); }
                 // Heavyweight (immuneToForce): a big push moves the hero less than 0.2 m
                 if (hero.ImmuneToForce)
                 {
@@ -494,6 +496,13 @@ namespace DeadlockOfRain
                     yield return TestBillyAir(master, hero, why);
                     kitWhy += why[0];
                 }
+                // Victor's Pain (heroes.passiveBuff, hitsPerStack): enemy hits taken add stacks, each +attackSpeedBaseAdd attack speed
+                if (hero.PassiveBuff != "none" && hero.HitsPerStack > 0)
+                {
+                    var why = new string[1];
+                    yield return TestPain(master, hero, why);
+                    if (why[0] != "") { passive = false; passiveWhy += why[0]; }
+                }
                 // a heal-back passive (Abrams' Infernal Resilience) gives part of a hit back over the next seconds
                 if (hero.DamageHealBack > 0f)
                 {
@@ -517,7 +526,7 @@ namespace DeadlockOfRain
                 {
                     body = master.GetBody();
                     var hr = body.GetComponent<HeroRuntime>();
-                    var gunRow = Survivors.RowFor(body.skillLocator.primary);
+                    var gunRow = Survivors.GunRow(body);
                     if (!hr || gunRow == null) { kitWhy += $"{pr.Id}: no magazine; "; continue; }
                     // no other puddle in play (Puddle Punch's test just left one at his feet)
                     foreach (var old in DlrPuddle.Live.ToArray()) if (old) UnityEngine.Object.Destroy(old.gameObject);
@@ -561,7 +570,7 @@ namespace DeadlockOfRain
                 {
                     body = master.GetBody();
                     var hr = body ? body.GetComponent<HeroRuntime>() : null;
-                    var gunRow = body ? Survivors.RowFor(body.skillLocator.primary) : null;
+                    var gunRow = body ? Survivors.GunRow(body) : null;
                     if (hr && gunRow != null && gunRow.ClipSize > 0)
                     {
                         hr.Reloading = false; hr.Ammo = Mathf.Max(1, (int)gunRow.ClipSize - 3);
@@ -1176,15 +1185,19 @@ namespace DeadlockOfRain
                 else
                 {
                     var gs = row.Slot == "secondary" ? body.skillLocator.secondary : row.Slot == "utility" ? body.skillLocator.utility : body.skillLocator.special;
+                    // a gun on M2 (Victor's Memento Mori) is held down like M1
+                    if (row.Kind.StartsWith("gun_")) { fireBody = body; fireUntil = Time.time + 6f; }
+                    // Pain Battery spends Pain: give it what one bolt costs
+                    if (row.Kind == "pain_battery") { States.VictorPain.Add(body, row.Buff, (int)row.BuffStacks); yield return new WaitForFixedUpdate(); }
                     var hr = body.GetComponent<HeroRuntime>();
-                    var gunRow = Survivors.RowFor(body.skillLocator.primary);
+                    var gunRow = Survivors.GunRow(body);
                     if (row.AmmoCost > 0 && hr && gunRow != null) { hr.Reloading = false; hr.Ammo = (int)gunRow.ClipSize; }
                     gs.Reset();
                     gs.ExecuteIfReady();
                 }
 
                 // Storm Cloud can't be cut short (skills locked, he flies the whole time): wait it out before the next skill
-                float window = row.Slot == "primary" ? 6f : row.Kind == "storm_flight" || row.Kind == "nox_stream" || row.Kind == "ult_mist" ? row.Duration + 1.5f :
+                float window = row.Slot == "primary" || row.Kind.StartsWith("gun_") ? 6f : row.Kind == "storm_flight" || row.Kind == "nox_stream" || row.Kind == "ult_mist" ? row.Duration + 1.5f :
                     row.Kind == "ult_frog" ? row.MinDuration + row.Duration + 1f : Mathf.Clamp(row.Duration + 1.5f, 2.5f, 7f);
                 float t0 = Time.time;
                 int shots = 0;
@@ -1321,7 +1334,7 @@ namespace DeadlockOfRain
             why[0] = "";
             var body = master.GetBody();
             var rt = body ? body.GetComponent<HeroRuntime>() : null;
-            var gunRow = body ? Survivors.RowFor(body.skillLocator.primary) : null;
+            var gunRow = body ? Survivors.GunRow(body) : null;
             var fa = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "full_auto");
             if (!rt || gunRow == null) { why[0] = "wraith: no runtime or gun; "; yield break; }
             // her face: Deadlock paints it in vertex colours (heroes.vertexColorMaterials), so the head's mesh carries colours
@@ -1654,7 +1667,7 @@ namespace DeadlockOfRain
             why[0] = "";
             var body = master.GetBody();
             var rt = body ? body.GetComponent<HeroRuntime>() : null;
-            var gunRow = body ? Survivors.RowFor(body.skillLocator.primary) : null;
+            var gunRow = body ? Survivors.GunRow(body) : null;
             var barrage = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "barrage");
             if (!rt || gunRow == null || barrage == null) { why[0] = "pocket: no runtime, gun or Barrage; "; yield break; }
             KillTargets();
@@ -1740,7 +1753,7 @@ namespace DeadlockOfRain
             var body = master.GetBody();
             var mr = body ? body.GetComponent<MinaRuntime>() : null;
             var rt = body ? body.GetComponent<HeroRuntime>() : null;
-            var gunRow = body ? Survivors.RowFor(body.skillLocator.primary) : null;
+            var gunRow = body ? Survivors.GunRow(body) : null;
             if (!mr || !rt || gunRow == null) { why[0] = "mina: no runtime or gun; "; yield break; }
             var fwd = arenaForward;
             var spot = arena != Vector3.zero ? arena : body.footPosition;
@@ -1944,7 +1957,7 @@ namespace DeadlockOfRain
             var rt = body ? body.GetComponent<HeroRuntime>() : null;
             var ram = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "rising_ram");
             var bat = Sheet.SkillsOf(hero.Id).FirstOrDefault(s => s.Kind == "bat_combo");
-            var gunRow = body ? Survivors.RowFor(body.skillLocator.primary) : null;
+            var gunRow = body ? Survivors.GunRow(body) : null;
             if (!rt || ram == null || bat == null || gunRow == null) { why[0] = "billy air: no runtime, ram or bat; "; yield break; }
             KillTargets();
             var rest = EntityStateMachine.FindByCustomName(body.gameObject, "Weapon");
@@ -2150,10 +2163,58 @@ namespace DeadlockOfRain
 
         /// <summary>How far in front of the hero the test's targets stand: guns, the leap, the blink and Tag Team's throw
         /// from 10 m, Billy's bat and Bashdown 3.5 m, everything else 6 m.</summary>
+        /// <summary>Victor's Pain: hits from an enemy add a stack per hitsPerStack hits, up to the cap, each raising attack speed by
+        /// attackSpeedBaseAdd of the base; his own damage (the aura's) adds none; Pain Battery takes the 3 oldest. why[0] = "" on success.</summary>
+        IEnumerator TestPain(CharacterMaster master, HeroRow hero, string[] why)
+        {
+            why[0] = "";
+            var body = master.GetBody();
+            var buff = Sheet.Buff(hero.PassiveBuff);
+            var enemy = body ? Summon(body, body.footPosition + body.transform.forward * 6f + Vector3.up * 0.5f) : null;
+            if (!body || buff == null || !enemy) { why[0] = "pain: no body, buff or enemy; "; yield break; }
+            targets.Add(enemy);
+            Buffs.Clear(body, hero.PassiveBuff);
+            yield return new WaitForFixedUpdate();
+            body.RecalculateStats();
+            float baseSpeed = body.attackSpeed;
+            var hc = body.healthComponent;
+            hc.godMode = false;
+            int hitsWanted = (int)hero.HitsPerStack * 4;
+            for (int i = 0; i < hitsWanted; i++)
+            {
+                hc.TakeDamage(new DamageInfo { attacker = enemy.gameObject, inflictor = enemy.gameObject, damage = 1f, position = body.corePosition, damageType = DamageType.NonLethal, procCoefficient = 0f });
+                yield return new WaitForFixedUpdate();
+            }
+            // his own damage counts for nothing
+            hc.TakeDamage(new DamageInfo { attacker = body.gameObject, inflictor = body.gameObject, damage = 1f, position = body.corePosition, damageType = DamageType.NonLethal, procCoefficient = 0f });
+            hc.godMode = true;
+            yield return new WaitForFixedUpdate();
+            body.RecalculateStats();
+            int stacks = Buffs.Count(body, hero.PassiveBuff);
+            float want = baseSpeed + (body.baseAttackSpeed + body.levelAttackSpeed * (body.level - 1f)) * buff.AttackSpeedBaseAdd * stacks;
+            Log.Info($"Melty test: {hero.Id} Pain: {hitsWanted} enemy hits + 1 own -> {stacks} stacks (want 4), attack speed {baseSpeed:F2} -> {body.attackSpeed:F2} (want {want:F2})");
+            if (stacks != 4) why[0] += $"pain: {stacks} stacks after {hitsWanted} hits, want 4; ";
+            if (Mathf.Abs(body.attackSpeed - want) > 0.02f) why[0] += $"pain: attack speed {body.attackSpeed:F2}, want {want:F2}; ";
+            // the cap
+            States.VictorPain.Add(body, hero.PassiveBuff, 20);
+            yield return new WaitForFixedUpdate();
+            int capped = Buffs.Count(body, hero.PassiveBuff);
+            if (capped != (int)buff.MaxStacks) why[0] += $"pain: {capped} stacks at the cap, want {buff.MaxStacks}; ";
+            States.VictorPain.RemoveOldest(body, hero.PassiveBuff, 3);
+            yield return new WaitForFixedUpdate();
+            int spent = Buffs.Count(body, hero.PassiveBuff);
+            if (spent != capped - 3) why[0] += $"pain: {spent} stacks after spending 3 of {capped}; ";
+            Log.Info($"Melty test: {hero.Id} Pain cap {capped}, after spending 3: {spent}");
+            Buffs.Clear(body, hero.PassiveBuff);
+            KillTargets();
+        }
+
         internal static float TargetDistance(SkillRow row) =>
-            row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "krill_hop" || row.Kind == "banner_leap" || row.Kind == "mind_port" ? 10f :
+            row.Slot == "primary" && row.Kind != "victor_punch" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "krill_hop" || row.Kind == "banner_leap" || row.Kind == "mind_port" ? 10f :
             // Billy's bat and Bashdown reach a few metres (Bashdown locks on within 5 m)
             row.Kind == "bat_combo" || row.Kind == "bashdown" ? 3.5f :
+            // Victor's punches reach 4 m (the aura starts at 6 m)
+            row.Kind == "victor_punch" || row.Kind == "aura_toggle" ? 3f :
             // Rake's arc reaches 10 m
             row.Kind == "rake_arc" ? 5f : 6f;
 

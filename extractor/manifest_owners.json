@@ -49,6 +49,51 @@
     "abrams",
     "ratking"
   ],
+  "Frank.Footstep": [
+    "victor"
+  ],
+  "Frank.JumpLand": [
+    "victor"
+  ],
+  "Frank.Melee.Swing.Charged": [
+    "victor"
+  ],
+  "Frank.Pain.Aura.Cast": [
+    "victor"
+  ],
+  "Frank.Pain.Aura.Deactivate": [
+    "victor"
+  ],
+  "Frank.Pain.Aura.Lp": [
+    "victor"
+  ],
+  "Frank.Pain.Battery.Cast": [
+    "victor"
+  ],
+  "Frank.Pain.Battery.Hit": [
+    "victor"
+  ],
+  "Frank.Reanimation.Explosion": [
+    "victor"
+  ],
+  "Frank.Reanimation.Start": [
+    "victor"
+  ],
+  "Frank.Wpn.Charge": [
+    "victor"
+  ],
+  "Frank.Wpn.Fire.Main": [
+    "victor"
+  ],
+  "Frank.Wpn.Impact": [
+    "victor"
+  ],
+  "Frank.Wpn.Reload.End": [
+    "victor"
+  ],
+  "Frank.Wpn.Reload.Start": [
+    "victor"
+  ],
   "Gigawatt.LightningBall.Cast": [
     "seven"
   ],
@@ -204,6 +249,9 @@
   ],
   "Mods.Tech.TormentPulse.Proc": [
     "infernus"
+  ],
+  "Player.Melee.Hit.Physics": [
+    "victor"
   ],
   "Pocket.Affliction.Cast": [
     "pocket"
@@ -675,6 +723,33 @@
   "billy_nail_prop": [
     "billy"
   ],
+  "frank/frank_hunt": [
+    "victor"
+  ],
+  "frank/frank_killstreak_high": [
+    "victor"
+  ],
+  "frank/frank_killstreak_mid": [
+    "victor"
+  ],
+  "frank/frank_killstreak_start": [
+    "victor"
+  ],
+  "frank/frank_select": [
+    "victor"
+  ],
+  "frank/frank_unselect": [
+    "victor"
+  ],
+  "frank/frank_use_power1": [
+    "victor"
+  ],
+  "frank/frank_use_power3": [
+    "victor"
+  ],
+  "frank/frank_use_power4": [
+    "victor"
+  ],
   "gigawatt/gigawatt_happy": [
     "seven"
   ],
@@ -840,6 +915,12 @@
   "panorama/images/heroes/digger_sm_psd.vtex": [
     "mokrill"
   ],
+  "panorama/images/heroes/frank_card_psd.vtex": [
+    "victor"
+  ],
+  "panorama/images/heroes/frank_sm_psd.vtex": [
+    "victor"
+  ],
   "panorama/images/heroes/gigawatt_card_psd.vtex": [
     "seven"
   ],
@@ -851,6 +932,9 @@
   ],
   "panorama/images/heroes/guns/digger_gun_psd.vtex": [
     "mokrill"
+  ],
+  "panorama/images/heroes/guns/frank_gun_psd.vtex": [
+    "victor"
   ],
   "panorama/images/heroes/guns/gigawatt_gun_psd.vtex": [
     "seven"
@@ -938,6 +1022,18 @@
   ],
   "panorama/images/hud/abilities/bull_jump_psd.vtex": [
     "abrams"
+  ],
+  "panorama/images/hud/abilities/frank/frank_aura_of_suffering_psd.vtex": [
+    "victor"
+  ],
+  "panorama/images/hud/abilities/frank/frank_jump_start_psd.vtex": [
+    "victor"
+  ],
+  "panorama/images/hud/abilities/frank/frank_pain_battery_psd.vtex": [
+    "victor"
+  ],
+  "panorama/images/hud/abilities/frank/frank_shocking_reanimation_psd.vtex": [
+    "victor"
   ],
   "panorama/images/hud/abilities/giga_ball_psd.vtex": [
     "seven"
@@ -1166,6 +1262,9 @@
   ],
   "soundevents/hero/abrams.vsndevts": [
     "abrams"
+  ],
+  "soundevents/hero/frank.vsndevts": [
+    "victor"
   ],
   "soundevents/hero/gigawatt.vsndevts": [
     "seven"

@@ -3,6 +3,8 @@
   plugin/Generated/Sheets.g.cs   one C# class per sheet, one static instance per row (built from that row's columns)
   extractor/manifest.json        what the extractor reads from the player's Deadlock install
   extractor/manifest_owners.json which hero uses each manifest entry (package.py cuts a release down to its heroes)
+  extractor/manifest-local.json  the full manifest with the localOnly heroes too (Victor: the creator's own DLL build only,
+                                 2026-11-05); manifest.json, which ships, leaves them and everything only they use out
 
 Run tools/preflight.py first; gen refuses to run on a sheet with problems.
 """
@@ -140,5 +142,15 @@ for e in effects:
 json.dump({k: sorted(v) for k, v in sorted(owners.items())}, open(os.path.join(ROOT, 'extractor', 'manifest_owners.json'), 'w', encoding='utf-8'), indent=2)
 # extractor 1.8.0 reads the owners from the manifest itself to read only the heroes a player picks (--heroes)
 manifest['owners'] = {k: sorted(v) for k, v in sorted(owners.items())}
+# the full manifest, localOnly heroes included: build_local_hero.sh converts their edited glb with it
+json.dump(manifest, open(os.path.join(ROOT, 'extractor', 'manifest-local.json'), 'w', encoding='utf-8'), indent=2)
+# the shipped manifest: no localOnly hero (heroes.json localOnly: the creator's own DLL build only), and nothing only they use
+local = {hero['id'] for hero in h['rows'] if hero['localOnly']}
+def theirs(k): return k in owners and owners[k] <= local
+manifest['heroes'] = [x for x in manifest['heroes'] if x['id'] not in local]
+for key in ['images', 'soundEvents', 'soundEventFiles', 'voiceGroups', 'voiceAllTakes']:
+    manifest[key] = [k for k in manifest[key] if not theirs(k)]
+manifest['props'] = [x for x in manifest['props'] if not theirs(x['id'])]
+manifest['owners'] = {k: v for k, v in manifest['owners'].items() if not theirs(k)}
 json.dump(manifest, open(os.path.join(ROOT, 'extractor', 'manifest.json'), 'w', encoding='utf-8'), indent=2)
-print(f'gen: wrote plugin/Generated/Sheets.g.cs and extractor/manifest.json ({len(manifest["images"])} images, {len(manifest["soundEvents"])} sound events, {len(manifest["voiceGroups"])} voice groups, {len(manifest["props"])} props)')
+print(f'gen: wrote plugin/Generated/Sheets.g.cs and extractor/manifest.json ({len(local)} local-only hero(es) left out; {len(manifest["images"])} images, {len(manifest["soundEvents"])} sound events, {len(manifest["voiceGroups"])} voice groups, {len(manifest["props"])} props)')

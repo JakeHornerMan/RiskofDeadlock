@@ -234,6 +234,22 @@ New 2026-10-27 (v1.2.0a, not released) from the creator's spec. Deadlock's model
 | R | **Enchanter's Satchel** | Hide in Deadlock's suitcase up to 2 s (untouchable, cloaked): siphons everything within 12 m for 50 %/s and heals you for it; any key but movement ends it; bursts out within 12 m. | **450 %** burst (spec 600; lever 2), siphon 50 %/s (proc 0.3) | 10 s after it ends | **514** |
 | Q | **Frog Form** (equipment, **any survivor**) | The suitcase is thrown (dropped from the sky for others), lands, jolts three times and pops open in a green burst, and you leap out of it as the frog (since 2026-11-02; no giant frog); then 8 s as a hopping frog: every landing (on the floor or **on top of an enemy**, since 2026-11-02) **1000 %** within 8 m, Space for a high leap **2000 %** within 12 m (every 2 s); +200 armor, no fall damage, Q again ends it. | 1000 / 2000 % | 120 s | not ult-benched yet |
 
+## Victor: the pain-powered bruiser (**the creator's own DLL build only**, not on Melty; main moves at once: **not measured yet** (doc 05 §0); match REX 1738 (library))
+
+New 2026-11-05 from the creator's spec. Built only into the creator's r2modman DLL from their own files in
+`charactersFinal/victorFiles/` (`heroes.localOnly`: never in the Melty or dev build, never in the shipped extractor manifest). REX's
+damage, armor and speed (12 +2.4 damage, 20 armor, 7 m/s, 1 jump) with **160 +48 health** (REX 130). **Buttons swapped** at the
+creator's word: Left Click punches, Right Click shoots. Red-violet pain and white-violet electricity effects.
+
+| Key | Ability | What it does | Numbers | Cooldown | DPS alone (%/s) |
+|---|---|---|---|---|---|
+| Passive | **Pain** | **Every enemy hit taken adds a stack** (creator: 1 hit per stack), up to 10, each on its own 10 s timer; **+15 % attack speed** each, added to the same sum as Soldier's Syringe (punches, fire rate, reload). His own aura damage gives none. From 3 Pain the barbed-wire arm crackles (Pain Battery ready). | +15 %/stack, max 10 (2.5x) | – | – |
+| M1 | **Heavy Melee** | Hold: heavy punches, alternating arms, after a 0.4 s wind-up; everything in a 90° arc within 4 m; hit-stop and camera kick; from 5 Pain sparks on every hit. Mid-swing the gun waits. | **350 %**, 1/s (2.5/s at 10 Pain), small knockback (not bosses), proc 1.0 | – | ⚠ retest |
+| M2 | **Memento Mori** | Hold: spins up from 3 to 6 rounds a second over 1.67 s (spread widens with it); let go and press within 0.5 s and it is still spun up. Ammo counter over the M2 icon. | **70 %**, 24 rounds, 2 s reload, full to 20 m, 40 % at 58 m, proc 0.8 | – | ⚠ retest |
+| Shift | **Pain Battery** | Spends the **3 oldest Pain** on an instant bolt along the crosshair (40 m): the first thing it meets and everything within **3 m** (creator: keep the blast) take the hit and a **40 % slow** for 2 s. Fewer than 3 Pain: nothing happens, the charge stays. Never hurts him. | **1000 %**, proc 1.0 | 2 s | ⚠ retest |
+| R | **Aura of Suffering** | **Toggle.** On: a jolt of 8 % max health and +1 Pain, then +1 Pain every 5 s and 2 % max health a second drained; enemies within **6 m + 0.8 m per Pain** take damage ramping **30 → 120 %/s** over 4 s (ticks every 0.25 s) and he **heals 40 %** of it. Off by itself at 10 % health. R again switches it off. | 30 → 120 %/s, proc 0.2 a tick | 5 s after switching off | ⚠ retest |
+| Q | **Shocking Reanimation** (equipment, **any survivor**) | Rise 8 m over 3 s, untouchable (Victor rides his zipline clip; anyone else is frozen in their pose); lightning strikes the carrier (no damage) and a ball of lightning **stuns every enemy within 30 m for 3 s** (creator: stun only); drop with no fall damage; then **20 s** with the power of **10 Ukuleles** (25 % x proc, 80 % chain, 21 targets, 38 m, proc 0.2) and **10 Unstable Tesla Coils** (200 % at up to 21 enemies within 35 m every 0.5 s, through walls, proc 0.3). Victor fills to 10 Pain. Copied in code (no real items to scrap, print or steal); the carrier's own Ukuleles and Tesla Coils keep working on top. | 8,000 % per enemy from the Tesla bolts | 120 s | – |
+
 ## Sounds (every hero)
 Every sound is the hero's own Deadlock sound, read from the player's install (doc 01 §6.5) and played by our mixer
 (doc 02, sound). The source of truth is `design/sounds.json`; this table mirrors it. **Start** plays when the move starts, **loop** while

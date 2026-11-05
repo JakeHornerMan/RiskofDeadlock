@@ -277,6 +277,13 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   in `plugins\RiskofThunder-RoR2BepInExPack` (BepInExPack 5.4.2122 deletes `plugins\RoR2BepInExPack` on every start; without the pack
   the mod fails on Newtonsoft.Json 12); Part B through `r2modman_install.py` (its in-game start was not run: the creator stopped it).
 
+- **Local-only heroes** (2026-11-05, creator: "make a new character for our custome ddl build for victor"; "DLL build only"):
+  a `heroes.json` row with `localOnly` true (Victor) exists only in the creator's own DLL build, from `charactersFinal/<id>Files/mod-cache`.
+  The Melty and dev builds leave it out (`Survivors.Released`, no tile), the shipped `extractor/manifest.json` has none of it (gen.py
+  writes it to `extractor/manifest-local.json`, which this script uses), preflight doesn't check its names against the Deadlock
+  listings (the creator: "DO NOT VALIDATE THIS AGAINST ANY FILE"), and `compare_builds.py` lists it as "own files only".
+  Test it with `build_local_hero.sh <id> charactersFinal/<id>Files --install`, `run_test.sh <id>`, then `--uninstall`.
+
 ## 5b. Daily watch: game updates and Melty breaks (since 2026-10-21)
 The full manual is **doc 10** (`docs/10-DAILY-WATCH.md`); this is the summary.
 
@@ -594,6 +601,8 @@ doc 02 §11. In short:
 | Wraith rework, Deadlock particle textures (2026-10-25, v1.0.1a) | The creator's Wraith feedback (steered card, 4 cards with a fan over her head, Rake hits speed the next card, Telekinesis 100 s thrown at full rise with cliff kills paid, Project Mind in the air and only where she can see, a coat that moves, "a nice vfx overhaul" from Deadlock's purple card effects; The Rake +20 %). Answers: the card steers with the live crosshair; all three coat items (springs on the whole coat and ponytail, the full card-trick clip, a flare on each throw); everyone sees the cards, Backup Magazine adds more; **read Deadlock's card textures**. The extractor's icon export already reads any `.vtex`, so the textures became effects rows of kind `texture` listed as images: **no new extractor version**. Their particle systems (`.vpcf`) are still never read. Texture rows are appended at the end of `effects.json` so no relayed effect index moves (co-op with released builds) |
 | Mina, the tenth hero (2026-10-26, v1.1.0a) | The creator's pasted spec (matched to Huntress), with "the bat and red vfx just like deadlock ... the umbrella and it animation trigging the floating state ... the skirt of the character dymanically moving" and "what ever question you have just go with best recommened". Deadlock's gun fires single shots, so New Money does too (the spec: "If Deadlock's burst isn't 3 rounds, match it"). Bats are Deadlock's own model, which flaps by morph targets: extractor 1.9.0 writes each pose. The spec's numbers measured 849 %/s; tuned into the band as asked (New Money 90 %, swarm 150 %, Nox Nostra 15 s), mean 1475 vs Huntress 1921. Open questions in the spec answered with its own defaults (burst 15 m for everyone, Rake's 10 health flat, Love Bites no damage, one plant per cast, no float time limit). |
 | Pocket, the eleventh hero (2026-10-27, v1.2.0a-c) | The creator's pasted spec (matched to Bandit) and "TAKE ALL THE MODEL FORM DEADLOCK AND ALL THE ANIMATIONS, REBUILD THE VFX IN ROR2 AND GET THE CORRECT SFX". Models come through the extractor, never shipped (the spec's Source 2 Viewer → Blender → Unity route would ship Deadlock files). Answers: every launch allowed, Deadlock's frog scaled up for the giant frog, merge into main. The spec's numbers measured 2,709 once the bench counted the amp; its own levers applied (amp 4 %, Satchel 450 %). First play: Barrage a lock-on "set and forget" he shoots through ("Yes, keep shooting"), the cloak his own coat as Deadlock draws it, Frog Form 60 s with a 10 m slam and a 5 m stun ring. |
+
+| Victor, a twelfth hero for the creator's own DLL build only (2026-11-05) | The creator made their own Victor (model, textures, animations, sounds) and asked for him "for our custome ddl build" from their spec. Answers: DLL build only (no Melty, no page), Pain 1 hit per stack, the ult burst stuns only, Pain Battery keeps its 3 m blast. Their files are used as given, never checked against anything. New `heroes.localOnly` keeps him out of everything Melty ships. |
 
 ## 10. Known open items and ideas
 

@@ -60,6 +60,8 @@ namespace DeadlockOfRain
                         return Mina(id, moment, at, radius, follow, to, life);
                     case "pocket_gun": case "pocket_dodge": case "pocket_barrage": case "pocket_cloak": case "pocket_satchel": case "pocket_frog":
                         return Pocket(id, moment, at, radius, follow, to, angle);
+                    case "victor_punch": case "victor_gun": case "victor_battery": case "victor_aura": case "victor_wire": case "victor_reanimation":
+                        return Victor(id, moment, at, radius, follow, to, angle);
                 }
             }
             catch (System.Exception e) { Log.Warn($"vfx {id}/{moment}: {e.Message}"); }

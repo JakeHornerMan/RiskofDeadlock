@@ -963,6 +963,97 @@
       "tick": "none",
       "tickFinal": "none",
       "gain": 1.0
+    },
+    {
+      "skill": "victor_punch",
+      "cast": "Frank.Melee.Swing.Charged",
+      "loop": "none",
+      "hit": "Player.Melee.Hit.Physics",
+      "end": "none",
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "victor_punch/step",
+      "cast": "Frank.Footstep",
+      "loop": "none",
+      "hit": "none",
+      "end": "none",
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 0.4
+    },
+    {
+      "skill": "victor_punch/land",
+      "cast": "none",
+      "loop": "none",
+      "hit": "Frank.JumpLand",
+      "end": "none",
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "victor_gun",
+      "cast": "Frank.Wpn.Fire.Main",
+      "loop": "none",
+      "hit": "Frank.Wpn.Impact",
+      "end": "Frank.Wpn.Reload.End",
+      "reload": "Frank.Wpn.Reload.Start",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "Frank.Wpn.Charge",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "victor_battery",
+      "cast": "Frank.Pain.Battery.Cast",
+      "loop": "none",
+      "hit": "Frank.Pain.Battery.Hit",
+      "end": "none",
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "victor_aura",
+      "cast": "Frank.Pain.Aura.Cast",
+      "loop": "Frank.Pain.Aura.Lp",
+      "hit": "none",
+      "end": "Frank.Pain.Aura.Deactivate",
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
+    },
+    {
+      "skill": "victor_reanimation",
+      "cast": "Frank.Reanimation.Start",
+      "loop": "none",
+      "hit": "Frank.Reanimation.Explosion",
+      "end": "none",
+      "reload": "none",
+      "castLayer": "none",
+      "hitLayer": "none",
+      "tick": "none",
+      "tickFinal": "none",
+      "gain": 1.0
     }
   ]
 }

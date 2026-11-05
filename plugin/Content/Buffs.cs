@@ -278,10 +278,12 @@ namespace DeadlockOfRain
             float moveAdd = 0, attackAdd = 0, armorAdd = 0, regenAdd = 0, slowResist = 0, healthAdd = 0;
             // linearSlow buffs (Gooed) take their fraction straight off the speed; acceleration, jump power and extra jumps (Goo Ball)
             float linearMove = 0, accelAdd = 0, jumpAdd = 0, jumpCount = 0, damageAdd = 0;
+            // attackSpeedBaseAdd (Victor's Pain): added to the same sum as Soldier's Syringe, so they stack additively
+            float attackBaseAdd = 0;
             foreach (var row in BuffRow.All)
             {
                 if (row.MoveSpeedAdd == 0 && row.AttackSpeedAdd == 0 && row.ArmorAdd == 0 && row.RegenAdd == 0 && row.SlowResist == 0 && row.MaxHealthAdd == 0
-                    && row.AccelerationAdd == 0 && row.JumpPowerAdd == 0 && row.JumpCountAdd == 0 && row.DamageAdd == 0) continue;
+                    && row.AccelerationAdd == 0 && row.JumpPowerAdd == 0 && row.JumpCountAdd == 0 && row.DamageAdd == 0 && row.AttackSpeedBaseAdd == 0) continue;
                 var d = Buffs.Get(row.Id);
                 if (!d) continue;
                 int n = b.GetBuffCount(d);
@@ -290,7 +292,7 @@ namespace DeadlockOfRain
                 // bosses feel bossStatCut less of the move and attack speed (Gooed: half)
                 float speedK = k * (b.isChampion ? 1f - row.BossStatCut : 1f);
                 if (row.LinearSlow) linearMove += row.MoveSpeedAdd * speedK; else moveAdd += row.MoveSpeedAdd * speedK;
-                attackAdd += row.AttackSpeedAdd * speedK; armorAdd += row.ArmorAdd * k; regenAdd += row.RegenAdd * k;
+                attackAdd += row.AttackSpeedAdd * speedK; attackBaseAdd += row.AttackSpeedBaseAdd * speedK; armorAdd += row.ArmorAdd * k; regenAdd += row.RegenAdd * k;
                 healthAdd += row.MaxHealthAdd * k;
                 accelAdd += row.AccelerationAdd * k; jumpAdd += row.JumpPowerAdd * k; jumpCount += row.JumpCountAdd * k;
                 damageAdd += row.DamageAdd * k;
@@ -317,7 +319,7 @@ namespace DeadlockOfRain
                 var hero = Sheet.Hero(Survivors.HeroOf(b));
                 if (hero != null && hero.FloatMoveSpeedMult > 0f) Set(b, "moveSpeed", b.moveSpeed * hero.FloatMoveSpeedMult);
             }
-            if (moveAdd == 0 && attackAdd == 0 && armorAdd == 0 && regenAdd == 0 && slowResist == 0 && linearMove == 0) return;
+            if (moveAdd == 0 && attackAdd == 0 && attackBaseAdd == 0 && armorAdd == 0 && regenAdd == 0 && slowResist == 0 && linearMove == 0) return;
             // move speed: positive adds like vanilla speed buffs, negative like slows
             float ms = b.moveSpeed;
             if (moveAdd > 0) ms *= 1f + moveAdd;
@@ -330,7 +332,9 @@ namespace DeadlockOfRain
                 if (ms < floor) ms += (floor - ms) * slowResist;
             }
             Set(b, "moveSpeed", ms);
-            Set(b, "attackSpeed", b.attackSpeed * Mathf.Max(0.1f, 1f + attackAdd));
+            // vanilla: attack speed = (base + level growth) x (1 + 0.15 per Syringe + ...); a flat add joins that sum
+            float levelAttack = b.baseAttackSpeed + b.levelAttackSpeed * (b.level - 1f);
+            Set(b, "attackSpeed", (b.attackSpeed + levelAttack * attackBaseAdd) * Mathf.Max(0.1f, 1f + attackAdd));
             Set(b, "armor", b.armor + armorAdd);
             // regen scales with level like vanilla regen
             Set(b, "regen", b.regen + regenAdd * (1f + 0.2f * (b.level - 1f)));

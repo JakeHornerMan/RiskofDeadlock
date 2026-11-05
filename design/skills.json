@@ -76,7 +76,11 @@
     "refundSeconds",
     "turnRate",
     "launchArcDeg",
-    "tickProc"
+    "tickProc",
+    "selfDamagePct",
+    "selfDrainPct",
+    "stopBelowPct",
+    "buffEvery"
   ],
   "rows": [
     {
@@ -158,7 +162,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "haze_sleep_dagger",
@@ -238,7 +246,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "haze_smoke_bomb",
@@ -318,7 +330,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "haze_phantom_strike",
@@ -399,7 +415,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "haze_bullet_dance",
@@ -479,7 +499,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "abrams_gun",
@@ -558,7 +582,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "abrams_siphon",
@@ -638,7 +666,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "abrams_charge",
@@ -719,7 +751,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "abrams_haymaker",
@@ -798,7 +834,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "abrams_seismic",
@@ -879,7 +919,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "seven_gun",
@@ -960,7 +1004,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "seven_lightning_ball",
@@ -1040,7 +1088,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "seven_static_charge",
@@ -1120,7 +1172,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "seven_storm_cloud",
@@ -1200,7 +1256,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "seven_thunderhead",
@@ -1280,7 +1340,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "infernus_gun",
@@ -1361,7 +1425,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "infernus_napalm",
@@ -1441,7 +1509,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "infernus_flame_dash",
@@ -1522,7 +1594,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "infernus_torment_pulse",
@@ -1603,7 +1679,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "infernus_combustion",
@@ -1683,7 +1763,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "mokrill_gun",
@@ -1762,7 +1846,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "mokrill_sand_blast",
@@ -1843,7 +1931,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "mokrill_burrow",
@@ -1926,7 +2018,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "mokrill_tag_team",
@@ -2006,7 +2102,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "mokrill_dust_devil",
@@ -2087,7 +2187,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "viscous_gun",
@@ -2167,7 +2271,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "viscous_splatter",
@@ -2247,7 +2355,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "viscous_cube",
@@ -2330,7 +2442,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "viscous_punch",
@@ -2411,7 +2527,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "viscous_gooball",
@@ -2493,7 +2613,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "ratking_gun",
@@ -2572,7 +2696,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "ratking_scrap",
@@ -2652,7 +2780,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "ratking_ring",
@@ -2731,7 +2863,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "ratking_banner",
@@ -2812,7 +2948,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "ratking_swarm",
@@ -2891,7 +3031,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "billy_gun",
@@ -2970,7 +3114,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "billy_bat",
@@ -3049,7 +3197,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "billy_bashdown",
@@ -3129,7 +3281,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "billy_ram",
@@ -3211,7 +3367,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "billy_chains",
@@ -3292,7 +3452,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "wraith_gun",
@@ -3371,7 +3535,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "wraith_card",
@@ -3450,7 +3618,11 @@
       "refundSeconds": 1,
       "turnRate": 540,
       "launchArcDeg": 25,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "wraith_mind",
@@ -3529,7 +3701,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "wraith_fullauto",
@@ -3608,7 +3784,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "wraith_telekinesis",
@@ -3689,7 +3869,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "mina_gun",
@@ -3769,7 +3953,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "mina_rake",
@@ -3849,7 +4037,11 @@
       "refundSeconds": 3,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "mina_retreat",
@@ -3930,7 +4122,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "mina_nox",
@@ -4010,7 +4206,11 @@
       "refundSeconds": 10,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "mina_mist",
@@ -4091,7 +4291,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "pocket_gun",
@@ -4170,7 +4374,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "pocket_barrage",
@@ -4251,7 +4459,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "pocket_cloak",
@@ -4331,7 +4543,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "pocket_satchel",
@@ -4412,7 +4628,11 @@
       "refundSeconds": 0,
       "turnRate": 0,
       "launchArcDeg": 0,
-      "tickProc": 0.3
+      "tickProc": 0.3,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     },
     {
       "id": "pocket_frog",
@@ -4492,7 +4712,432 @@
       "refundSeconds": 0,
       "turnRate": 30,
       "launchArcDeg": 0,
-      "tickProc": 0
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
+    },
+    {
+      "id": "victor_punch",
+      "hero": "victor",
+      "slot": "primary",
+      "deadlockAbility": "citadel_ability_melee_heavy",
+      "name": "Heavy Melee",
+      "description": "Hold to throw <style=cIsDamage>heavy punches</style>, alternating arms, for <style=cIsDamage>350% damage</style> to everything in a 90 degree arc 4m in front, about one a second. Pain makes them faster.",
+      "kind": "victor_punch",
+      "icon": "panorama/images/hud/abilities/frank/frank_jump_start_psd.vtex",
+      "damagePct": 350,
+      "procCoefficient": 1.0,
+      "cooldown": 0,
+      "stocks": 1,
+      "duration": 1.0,
+      "minDuration": 0.4,
+      "interval": 1.0,
+      "radius": 0,
+      "range": 0,
+      "speed": 0,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 0,
+      "spreadDeg": 45,
+      "burst": 0,
+      "stunDuration": 0,
+      "knockback": 6,
+      "healFraction": 0,
+      "moveSpeedMult": 1.0,
+      "chainCount": 0,
+      "buffStacks": 0,
+      "buff": "none",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "victor_punch",
+      "extra": "none",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 1.0,
+      "reach": 4,
+      "seekRange": 0,
+      "gravity": 0,
+      "falloffStart": 0,
+      "falloffEnd": 0,
+      "falloffMinPct": 0,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 0,
+      "damageMinPct": 0,
+      "splashPct": 0,
+      "meleePct": 0,
+      "meleeRate": 0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 0,
+      "deadlockDamage": 116,
+      "targetDps": 350,
+      "expect": [
+        "enemy_damage"
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0,
+      "nearHang": 0,
+      "nearRadius": 0,
+      "hitsPerRefund": 0,
+      "refundSeconds": 0,
+      "turnRate": 0,
+      "launchArcDeg": 0,
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
+    },
+    {
+      "id": "victor_gun",
+      "hero": "victor",
+      "slot": "secondary",
+      "deadlockAbility": "citadel_weapon_frank_set",
+      "name": "Memento Mori",
+      "description": "Hold to fire: the gun <style=cIsUtility>spins up</style> from 3 to 6 rounds a second over 1.67s, each for <style=cIsDamage>70% damage</style>. Full damage to 20m, falling to 40% at 58m. 24-round magazine, 2s reload. Pain speeds up the fire rate and the reload.",
+      "kind": "gun_spin",
+      "icon": "panorama/images/heroes/guns/frank_gun_psd.vtex",
+      "damagePct": 70,
+      "procCoefficient": 0.8,
+      "cooldown": 0,
+      "stocks": 1,
+      "duration": 1.67,
+      "minDuration": 0.1667,
+      "interval": 0.3333,
+      "radius": 0,
+      "range": 100,
+      "speed": 0,
+      "clipSize": 24,
+      "reloadTime": 2.0,
+      "pellets": 1,
+      "spreadDeg": 2.0,
+      "burst": 1,
+      "stunDuration": 0,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 1.0,
+      "chainCount": 0,
+      "buffStacks": 0,
+      "buff": "none",
+      "dot": "none",
+      "effect": "tracer_victor",
+      "vfx": "victor_gun",
+      "extra": "none",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 1.0,
+      "reach": 0,
+      "seekRange": 0,
+      "gravity": 0,
+      "falloffStart": 20,
+      "falloffEnd": 58,
+      "falloffMinPct": 40,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 0,
+      "damageMinPct": 0,
+      "splashPct": 0,
+      "meleePct": 0,
+      "meleeRate": 0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 0,
+      "deadlockDamage": 7,
+      "targetDps": 262,
+      "expect": [
+        "enemy_damage"
+      ],
+      "airMult": 0,
+      "hangTime": 0.5,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0,
+      "recoil": 5,
+      "aimKick": 0.6,
+      "dotTime": 0,
+      "nearHang": 0,
+      "nearRadius": 0,
+      "hitsPerRefund": 0,
+      "refundSeconds": 0,
+      "turnRate": 0,
+      "launchArcDeg": 0,
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
+    },
+    {
+      "id": "victor_battery",
+      "hero": "victor",
+      "slot": "utility",
+      "deadlockAbility": "frank_pain_battery",
+      "name": "Pain Battery",
+      "description": "Spend <style=cIsDamage>3 Pain</style> to fire a bolt of stored pain where you aim: the first thing it meets takes <style=cIsDamage>1000% damage</style> and everything within 3m is <style=cIsUtility>slowed 40%</style> for 2s. Needs 3 Pain; never hurts you.",
+      "kind": "pain_battery",
+      "icon": "panorama/images/hud/abilities/frank/frank_pain_battery_psd.vtex",
+      "damagePct": 1000,
+      "procCoefficient": 1.0,
+      "cooldown": 2,
+      "stocks": 1,
+      "duration": 0,
+      "minDuration": 0,
+      "interval": 0,
+      "radius": 3,
+      "range": 40,
+      "speed": 0,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 0,
+      "spreadDeg": 0,
+      "burst": 0,
+      "stunDuration": 0,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 1.0,
+      "chainCount": 0,
+      "buffStacks": 3,
+      "buff": "pain",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "victor_battery",
+      "extra": "none",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "victor_shock",
+      "bossMult": 1.0,
+      "reach": 0,
+      "seekRange": 0,
+      "gravity": 0,
+      "falloffStart": 0,
+      "falloffEnd": 0,
+      "falloffMinPct": 0,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 0,
+      "damageMinPct": 0,
+      "splashPct": 0,
+      "meleePct": 0,
+      "meleeRate": 0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 0,
+      "deadlockDamage": 0,
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "enemy_debuff:victor_shock"
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0,
+      "nearHang": 0,
+      "nearRadius": 0,
+      "hitsPerRefund": 0,
+      "refundSeconds": 0,
+      "turnRate": 0,
+      "launchArcDeg": 0,
+      "tickProc": 0,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
+    },
+    {
+      "id": "victor_aura",
+      "hero": "victor",
+      "slot": "special",
+      "deadlockAbility": "frank_aura_of_suffering",
+      "name": "Aura of Suffering",
+      "description": "Toggle. Switching on jolts you for <style=cIsHealth>8% max health</style> and gives <style=cIsDamage>1 Pain</style>, then 1 more every 5s; it drains <style=cIsHealth>2% max health</style> a second. Enemies within <style=cIsUtility>6m (+0.8m per Pain)</style> take <style=cIsDamage>30% rising to 120% damage</style> a second over 4s, and you <style=cIsHealing>heal 40%</style> of it. Switches off at 10% health. 5s before it can go on again.",
+      "kind": "aura_toggle",
+      "icon": "panorama/images/hud/abilities/frank/frank_aura_of_suffering_psd.vtex",
+      "damagePct": 120,
+      "procCoefficient": 0.2,
+      "cooldown": 5,
+      "stocks": 1,
+      "duration": 4,
+      "minDuration": 0,
+      "interval": 0.25,
+      "radius": 6,
+      "range": 0,
+      "speed": 0,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 0,
+      "spreadDeg": 0,
+      "burst": 0,
+      "stunDuration": 0,
+      "knockback": 0,
+      "healFraction": 0.4,
+      "moveSpeedMult": 1.0,
+      "chainCount": 0,
+      "buffStacks": 1,
+      "buff": "pain",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "victor_aura",
+      "extra": "none",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 1.0,
+      "reach": 0.8,
+      "seekRange": 0,
+      "gravity": 0,
+      "falloffStart": 0,
+      "falloffEnd": 0,
+      "falloffMinPct": 0,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 0,
+      "damageMinPct": 30,
+      "splashPct": 0,
+      "meleePct": 0,
+      "meleeRate": 0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 0,
+      "deadlockDamage": 0,
+      "targetDps": 0,
+      "expect": [
+        "enemy_damage",
+        "self_heal",
+        "self_buff:pain",
+        "self_buff:victor_aura"
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 0,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0,
+      "nearHang": 0,
+      "nearRadius": 0,
+      "hitsPerRefund": 0,
+      "refundSeconds": 0,
+      "turnRate": 0,
+      "launchArcDeg": 0,
+      "tickProc": 0.2,
+      "selfDamagePct": 8,
+      "selfDrainPct": 2,
+      "stopBelowPct": 10,
+      "buffEvery": 5
+    },
+    {
+      "id": "victor_reanimation",
+      "hero": "victor",
+      "slot": "equipment",
+      "deadlockAbility": "frank_shocking_reanimation",
+      "name": "Shocking Reanimation",
+      "description": "Rise <style=cIsUtility>8m</style> over 3s, untouchable, until lightning strikes you: a ball of lightning <style=cIsUtility>stuns</style> every enemy within <style=cIsUtility>30m</style> for 3s. Then for <style=cIsUtility>20s</style> you carry the power of <style=cIsDamage>10 Ukuleles</style> and <style=cIsDamage>10 Unstable Tesla Coils</style>. Never hurts you. Victor also fills to 10 Pain.",
+      "kind": "ult_reanimation",
+      "icon": "panorama/images/hud/abilities/frank/frank_shocking_reanimation_psd.vtex",
+      "damagePct": 200,
+      "procCoefficient": 0.3,
+      "cooldown": 120,
+      "stocks": 1,
+      "duration": 20,
+      "minDuration": 3,
+      "interval": 0.5,
+      "radius": 30,
+      "range": 35,
+      "speed": 0,
+      "clipSize": 0,
+      "reloadTime": 0,
+      "pellets": 0,
+      "spreadDeg": 0,
+      "burst": 0,
+      "stunDuration": 3,
+      "knockback": 0,
+      "healFraction": 0,
+      "moveSpeedMult": 1.0,
+      "chainCount": 21,
+      "buffStacks": 10,
+      "buff": "reanimation_charged",
+      "dot": "none",
+      "effect": "none",
+      "vfx": "victor_reanimation",
+      "extra": "none",
+      "pattern": "none",
+      "cooldownOnEnd": false,
+      "debuff": "none",
+      "bossMult": 1.0,
+      "reach": 0,
+      "seekRange": 38,
+      "gravity": 0,
+      "falloffStart": 0,
+      "falloffEnd": 0,
+      "falloffMinPct": 0,
+      "ammoCost": 0,
+      "puddleMult": 0,
+      "puddleAmmo": 0,
+      "puddleShrink": 0,
+      "launchHeight": 8,
+      "damageMinPct": 0,
+      "splashPct": 0,
+      "meleePct": 0,
+      "meleeRate": 0,
+      "meleeKnock": 0,
+      "deadlockCooldown": 0,
+      "deadlockDamage": 0,
+      "targetDps": 0,
+      "expect": [
+        "enemy_stun",
+        "enemy_damage",
+        "self_buff:reanimation_charged"
+      ],
+      "airMult": 0,
+      "hangTime": 0,
+      "refillPct": 0,
+      "lockRange": 0,
+      "floatTime": 0,
+      "hitRefund": 0,
+      "chainPct": 80,
+      "recoil": 0,
+      "aimKick": 0,
+      "dotTime": 0,
+      "nearHang": 0,
+      "nearRadius": 0,
+      "hitsPerRefund": 0,
+      "refundSeconds": 0,
+      "turnRate": 0,
+      "launchArcDeg": 0,
+      "tickProc": 0.2,
+      "selfDamagePct": 0,
+      "selfDrainPct": 0,
+      "stopBelowPct": 0,
+      "buffEvery": 0
     }
   ]
 }

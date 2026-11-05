@@ -133,6 +133,17 @@
       "enigmaCompatible": true,
       "randomTrigger": true,
       "figure": "all"
+    },
+    {
+      "id": "eq_victor_reanimation",
+      "hero": "victor",
+      "skill": "victor_reanimation",
+      "pickupText": "Rise into a lightning strike that stuns everything within 30m, then carry 10 Ukuleles and 10 Tesla Coils for 20s.",
+      "lore": "The heart stops. Something with a lot of volts starts it again, and everybody nearby regrets being close.",
+      "canDrop": true,
+      "enigmaCompatible": true,
+      "randomTrigger": true,
+      "figure": "all"
     }
   ]
 }

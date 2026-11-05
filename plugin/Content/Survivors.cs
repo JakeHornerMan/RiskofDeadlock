@@ -57,10 +57,11 @@ namespace DeadlockOfRain
                 // the creator's own hero files in the DLL: only those heroes (LocalHero)
                 if (LocalHero.Heroes != null) return released = HeroRow.All.Where(h => LocalHero.Heroes.Contains(h.Id)).ToArray();
                 var file = System.IO.Path.Combine(Plugin.PluginDir ?? "", "heroes.txt");
-                if (!System.IO.File.Exists(file)) return released = HeroRow.All;
+                // a localOnly hero (Victor) is the creator's own files, built only into their DLL: never in the Melty or dev build
+                if (!System.IO.File.Exists(file)) return released = HeroRow.All.Where(h => !h.LocalOnly).ToArray();
                 var ids = new HashSet<string>(System.IO.File.ReadAllLines(file).Select(l => l.Trim()).Where(l => l.Length > 0));
                 foreach (var h in HeroRow.All) if (!ids.Contains(h.Id)) Log.Info($"{h.DisplayName}: not in this release (heroes.txt)");
-                return released = HeroRow.All.Where(h => ids.Contains(h.Id)).ToArray();
+                return released = HeroRow.All.Where(h => ids.Contains(h.Id) && !h.LocalOnly).ToArray();
             }
         }
 
@@ -110,7 +111,9 @@ namespace DeadlockOfRain
             kind == "dash_charge" || kind == "dash_trail" || kind == "ult_leap" || kind == "phantom_strike" || kind == "heavy_melee" || kind == "burrow" || kind == "ult_devil" || kind == "goo_cube" || kind == "banner_leap" || kind == "storm_flight" || kind == "bashdown" || kind == "rising_ram" || kind == "ult_chains" ||
             kind == "bat_blink" || kind == "nox_stream" || kind == "ult_mist" ||
             // Pocket: the cloak's throw and the Satchel on Body, so Barrage (Weapon) runs on through them; Frog Form steers the body
-            kind == "flying_cloak" || kind == "satchel" || kind == "ult_frog" ? "Body" : "Weapon";
+            kind == "flying_cloak" || kind == "satchel" || kind == "ult_frog" ||
+            // Victor: Shocking Reanimation lifts the body (punch, gun, battery and the aura switch stay on Weapon)
+            kind == "ult_reanimation" ? "Body" : "Weapon";
 
         /// <summary>The hero never takes fall damage (heroes.json noFallDamage: Viscous). Moves that switch fall damage off for a while
         /// (Seismic Impact, Goo Ball) leave it off for such a hero when they end.</summary>
@@ -342,8 +345,10 @@ namespace DeadlockOfRain
             if (!kinds.TryGetValue(row.Kind, out var type)) { Log.Error("no state for kind " + row.Kind); type = typeof(Idle); }
             def.activationState = new SerializableEntityStateType(type);
             def.activationStateMachineName = MachineFor(row.Kind);
-            bool primary = row.Slot == "primary", special = row.Slot == "special";
-            def.interruptPriority = primary ? InterruptPriority.Any : special ? InterruptPriority.PrioritySkill : InterruptPriority.Skill;
+            bool special = row.Slot == "special";
+            // a gun on M2 (Victor's Memento Mori) is held like a primary: no cooldown, no stock, fires while the key is down
+            bool primary = row.Slot == "primary" || row.Kind.StartsWith("gun_");
+            def.interruptPriority = row.Slot == "primary" ? InterruptPriority.Any : special ? InterruptPriority.PrioritySkill : InterruptPriority.Skill;
             def.baseRechargeInterval = primary ? 0f : row.Cooldown;
             def.baseMaxStock = (int)Mathf.Max(1, row.Stocks);
             def.rechargeStock = 1;
@@ -392,6 +397,25 @@ namespace DeadlockOfRain
         }
 
         public static SkillRow RowFor(GenericSkill gs) => gs && gs.skillDef && RowOfSkill.TryGetValue(gs.skillDef, out var r) ? r : null;
+
+        /// <summary>The skill slot holding the hero's gun: M1 for every hero but Victor, whose punches are M1 and Memento Mori M2
+        /// (creator, 2026-11-05: the buttons swapped). The primary when neither holds a gun kind.</summary>
+        public static GenericSkill GunSlot(CharacterBody b)
+        {
+            var sl = b ? b.skillLocator : null;
+            if (!sl) return null;
+            var p = RowFor(sl.primary);
+            if (p != null && p.Kind.StartsWith("gun_")) return sl.primary;
+            var s = RowFor(sl.secondary);
+            return s != null && s.Kind.StartsWith("gun_") ? sl.secondary : sl.primary;
+        }
+
+        /// <summary>The row of the hero's gun (<see cref="GunSlot"/>).</summary>
+        public static SkillRow GunRow(CharacterBody b) => RowFor(GunSlot(b));
+
+        /// <summary>The gun row of a hero by id, from the sheet: the gun kind among its M1 and M2, else its M1.</summary>
+        public static SkillRow GunRowOf(string hero) =>
+            Sheet.SkillsOf(hero).FirstOrDefault(r => (r.Slot == "primary" || r.Slot == "secondary") && r.Kind.StartsWith("gun_")) ?? Sheet.SkillOf(hero, "primary");
     }
 
     /// <summary>Per-body runtime state for the hero kits: magazine and reload, queued heals, smoke timer; Heavyweight, the
@@ -404,6 +428,8 @@ namespace DeadlockOfRain
         public float SmokeUntil;
         /// <summary>Gun bullets landed on enemies toward the secondary's next hitsPerRefund refund (Wraith's Card Trick; owner side).</summary>
         public int RefundHits;
+        /// <summary>Memento Mori's spin (Victor): how far it is spun up (0-1) and when the trigger was last let go (owner side).</summary>
+        public float Spin, SpinReleasedAt = -99f;
         float reloadEnd;
         int clip;
         CharacterBody body;
@@ -430,6 +456,8 @@ namespace DeadlockOfRain
             if (Sheet.SkillsOf(hero.Id).Any(s => s.Kind == "card_trick") && !GetComponent<WraithCardHalo>()) gameObject.AddComponent<WraithCardHalo>();
             // Mina: Love Bites and the umbrella (every machine; the owner counts and floats)
             if (MinaRuntime.Wanted(hero) && !GetComponent<MinaRuntime>()) gameObject.AddComponent<MinaRuntime>();
+            // Victor: the barbed-wire arm and the Aura of Suffering (every machine; the server runs the aura)
+            if (Sheet.SkillsOf(hero.Id).Any(s => s.Kind == "aura_toggle") && !GetComponent<States.VictorAura>()) gameObject.AddComponent<States.VictorAura>();
             steps = gun != null ? Sheet.Sound(gun.Id + "/step") : null;
             lands = gun != null ? Sheet.Sound(gun.Id + "/land") ?? steps : null;
             var model = body.modelLocator ? body.modelLocator.modelTransform : null;
@@ -451,7 +479,7 @@ namespace DeadlockOfRain
             if (!b) return false;
             foreach (var r in BuffRow.All) if (r.NoGun && Buffs.Count(b, r.Id) > 0) return true;
             // every skill locked (The Cube, Goo Ball, the DisableAllSkills debuff): a gun still held down stops too
-            var gun = b.skillLocator ? b.skillLocator.primary : null;
+            var gun = Survivors.GunSlot(b);
             return gun && gun.skillDef && gun.skillDef == CharacterBody.CommonAssets.disabledSkill;
         }
 
