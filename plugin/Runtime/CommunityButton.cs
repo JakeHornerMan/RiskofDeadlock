@@ -13,7 +13,7 @@ namespace DeadlockOfRain
     /// hover and click sound) in Discord blurple, in the bottom-right corner of the title screen (creator: "put it in the bottom
     /// right!"; the top right holds RoR2's profile box and event banner), as wide as a menu button and about twice as tall, with Discord's logo (`Assets/discord.png`, drawn by `tools/discord_logo.py`) on the left. It lives in the
     /// title screen, so it goes away with it. The invite never expires and gives everyone who joins through it the
-    /// "Risk of Deadlock Player" role (doc 03 §9). Hidden in test mode.
+    /// "Risk of Deadlock Player" role (doc 03 §9). Hidden in test mode. Left out of the DLL build (LocalHero), where the pages' button sits in the corner instead.
     /// Above it, the same kind of button in the hero pages' brass opens the balance overview, the hero sheets' hub (every hero's
     /// damage next to its Risk of Rain match, with links to each kit sheet; creator, 2026-10-24: "a button ... just above the
     /// discord button that bring them to the characters sheet artifacts the link should open up the damage comparisons").</summary>
@@ -43,13 +43,16 @@ namespace DeadlockOfRain
             var menu = MainMenuController.instance;
             if (!menu || !menu.titleMenuScreen || MeltyTest.Active) return;
             var screen = menu.titleMenuScreen.transform;
-            if (screen.Find("DeadlockOfRainDiscord") && screen.Find("DeadlockOfRainPages")) return;
+            // the DLL build (hero files inside, DllBuilds/r2modman) has no Discord button (creator, 2026-11-05: "for the ddl version
+            // we need to remove the button on the home page to join the discord!"); the hero pages' button takes its corner
+            bool discord = LocalHero.Dir == null;
+            if ((!discord || screen.Find("DeadlockOfRainDiscord")) && screen.Find("DeadlockOfRainPages")) return;
             var template = screen.GetComponentsInChildren<HGButton>(true).FirstOrDefault(b => b.GetComponentInChildren<LanguageTextMeshController>(true)
                 && !b.name.StartsWith("DeadlockOfRain"));
             if (!template) return;
             // the Discord button in the corner, the hero pages' button one button-height plus a gap above it
-            if (!screen.Find("DeadlockOfRainDiscord")) Build(screen, template, "DeadlockOfRainDiscord", "DLR_DISCORD_JOIN", "DLR_DISCORD_HOVER", Invite, Blurple, 0, Embedded("discord.png"));
-            if (!screen.Find("DeadlockOfRainPages")) Build(screen, template, "DeadlockOfRainPages", "DLR_PAGES_OPEN", "DLR_PAGES_HOVER", Pages, Brass, 1, Embedded("heroes.png"));
+            if (discord && !screen.Find("DeadlockOfRainDiscord")) Build(screen, template, "DeadlockOfRainDiscord", "DLR_DISCORD_JOIN", "DLR_DISCORD_HOVER", Invite, Blurple, 0, Embedded("discord.png"));
+            if (!screen.Find("DeadlockOfRainPages")) Build(screen, template, "DeadlockOfRainPages", "DLR_PAGES_OPEN", "DLR_PAGES_HOVER", Pages, Brass, discord ? 1 : 0, Embedded("heroes.png"));
         }
 
         static void Build(Transform screen, HGButton template, string name, string token, string hover, string url, Color colour, int row, Sprite icon)

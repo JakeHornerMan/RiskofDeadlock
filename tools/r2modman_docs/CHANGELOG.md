@@ -2,6 +2,9 @@
 
 One version line, one number up per build. Newest first.
 
+## 1.5.6
+- Built with Risk of Rain 2 build 25921972 (2026-11-05).
+
 ## 1.5.5
 - Built with Risk of Rain 2 build 25921972 (2026-11-04).
 - New package icon: every hero as a class photo on curved steps.

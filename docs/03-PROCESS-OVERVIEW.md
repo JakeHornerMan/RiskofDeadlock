@@ -90,7 +90,7 @@ tools/quit_test.sh        run_test.sh, then close the game like a player and rep
 tools/lab_restore.sh      put the PC back the way Melty set it up
 tools/steam_dev_watch.vbs runs the guard hidden for the 5-minute Windows task
 tools/steam_dev_guard.sh  Stop hook and 5-minute task: after every Claude turn, puts main's dev build back on the Steam copy if a release left its cut (§5)
-tools/kit_pages.py        builds the hero kit pages + balance page (claude.ai Artifacts, links in doc 06) into build/pages/
+tools/kit_pages.py        builds the hero kit pages + balance page (claude.ai Artifacts, links in doc 06) into build/pages/; the balance page has a Discord logo button at the left of its nav bar and a big "Join the Discord" banner under it (2026-11-05)
 tools/wiki_portraits.py   downloads each hero's deadlock.wiki hero-select card for the pages' portraits (build/pages/img, gitignored)
 tools/run_bench.sh        DPS benchmark (Monsoon, 12-enemy pack, 30 s passes) -> build/bench_results.txt; closes the game itself (doc 05)
 tools/dlm_*.py            DLM debugging (skinning check, triangles, submeshes, gun pose per clip)

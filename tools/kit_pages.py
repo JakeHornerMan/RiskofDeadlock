@@ -766,6 +766,30 @@ def analysis(h):
     if parts: out.append(f"Each move alone ({E(h['displayName'])} vs {E(v['name'])}, %/s): " + ', '.join(parts) + '.')
     return out + ANALYSIS.get(hid, [])
 
+# ------------------------------------------------------------------ Discord (balance page only; creator, 2026-11-05: "a big button in
+# the top left of the balance page nav bar ... the discord logo" and "a big button in the top of the page promoting someone to join!")
+DISCORD = 'https://discord.gg/sNByetmcqc'
+DISCORD_SVG = ('<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.74 19.74 0 0 0 3.677 4.37a.07.07 0 0 0-.032.028C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>')
+DISCORD_CSS = '''
+.topbar { display: flex; align-items: center; gap: 18px; }
+.dc-logo { flex: none; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 14px; background: #5865f2; color: #fff; transition: transform .15s, background .15s; }
+.dc-logo:hover { background: #4752c4; transform: translateY(-2px); }
+.dc-logo svg { width: 34px; height: 34px; }
+.dc-join { display: flex; align-items: center; gap: 22px; padding: 22px 26px; border-radius: 10px; background: linear-gradient(120deg, #5865f2, #3c45a5); color: #fff; text-decoration: none; box-shadow: 0 10px 30px rgba(88,101,242,.25); transition: transform .15s, box-shadow .15s; }
+.dc-join:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(88,101,242,.4); }
+.dc-join svg { flex: none; width: 64px; height: 64px; }
+.dc-join .t { font: 400 clamp(24px, 3.4vw, 32px)/1.1 var(--display); letter-spacing: .03em; }
+.dc-join .s { font-size: 15px; opacity: .9; margin-top: 4px; }
+.dc-join .go { margin-left: auto; flex: none; font: 700 15px/1 var(--cond); letter-spacing: .16em; text-transform: uppercase; background: #fff; color: #3c45a5; padding: 14px 22px; border-radius: 999px; }
+@media (max-width: 620px) { .dc-join { flex-wrap: wrap; } .dc-join .go { margin-left: 0; } }
+'''
+def discord_bar(nav_html):
+    return (f'<div class="topbar"><a class="dc-logo" href="{DISCORD}" target="_blank" rel="noopener" aria-label="Join the Risk of Deadlock Discord" '
+            f'title="Join the Risk of Deadlock Discord">{DISCORD_SVG}</a>{nav_html}</div>')
+def discord_join():
+    return (f'<a class="dc-join" href="{DISCORD}" target="_blank" rel="noopener">{DISCORD_SVG}<div><div class="t">Join the Risk of Deadlock Discord</div>'
+            '<div class="s">Hero requests, balance talk, FAQ and news from the mod’s maker.</div></div><span class="go">Join</span></a>')
+
 # ------------------------------------------------------------------ pages
 def nav(current):
     items = [('overview', 'Balance overview')] + [(h['id'], h['displayName']) for h in HEROES]
@@ -946,9 +970,11 @@ def overview_page():
 .hcard.inside .hband {{ background: var(--good); }} .hcard.above .hband, .hcard.below .hband {{ background: var(--bad); }}
 .hcard.unknown .hband {{ background: var(--muted); }}
 @media (max-width: 420px) {{ .hgrid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }} }}
+{DISCORD_CSS}
 </style>
 <main class="wrap">
-  {nav("overview")}
+  {discord_bar(nav("overview"))}
+  {discord_join()}
   <header class="id" style="gap:14px">
     <div class="eyebrow">Risk of Deadlock · {VERSION} · Balance</div>
     <h1>Each hero <span style="color:var(--brass)">vs</span> their Risk of Rain match</h1>
