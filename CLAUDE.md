@@ -68,6 +68,7 @@ Deadlock's assets from the player's own install; nothing from either game ships.
   while the creator plays, run it with `R2WAIT=1` in the background so it installs the moment they close the game. **Exception, new heroes**
   (creator, 2026-11-04): a new hero is built for **Melty first**; build the DllBuilds package for r2modman only when the creator asks (doc 08 §6b).
   The package lands in `DllBuilds/` at the repo root (gitignored); its files come from `DllBuilds/package/` (doc 03 §5c).
+  **Title-screen Discord button: Melty build yes, DLL build no** (creator, 2026-11-05: "the melty can have the discord button in the gaim main menu the ddl cannot"); `CommunityButton` skips it when `LocalHero.Dir` is set, so keep that check (doc 02).
   **Read `DllBuilds/CLAUDE.md` first:** edit only `package/CHANGELOG.md` and `package/README.md`, only for a new character; when asked
   to build, just build (no checking the files; the build adds the changelog's version section itself). The package is
   **`JakeHornerMan-Risk_of_Deadlock`**, one version line **1.5.x**, one patch up per build (creator, 2026-11-02: "make the mod by
