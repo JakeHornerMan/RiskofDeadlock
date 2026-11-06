@@ -60,7 +60,7 @@ namespace DeadlockOfRain
                         return Mina(id, moment, at, radius, follow, to, life);
                     case "pocket_gun": case "pocket_dodge": case "pocket_barrage": case "pocket_cloak": case "pocket_satchel": case "pocket_frog":
                         return Pocket(id, moment, at, radius, follow, to, angle);
-                    case "victor_punch": case "victor_gun": case "victor_battery": case "victor_aura": case "victor_wire": case "victor_reanimation":
+                    case "victor_jumpstart": case "victor_gun": case "victor_battery": case "victor_aura": case "victor_wire": case "victor_reanimation":
                         return Victor(id, moment, at, radius, follow, to, angle);
                 }
             }
@@ -1430,7 +1430,8 @@ namespace DeadlockOfRain
 
         /// <summary>A jagged lightning bolt between two points that flickers and fades.</summary>
         /// <param name="recolor">draw it in c through <see cref="Remapped"/> (the lightning material is otherwise blue: Seven's yellow)</param>
-        public static void Bolt(Vector3 a, Vector3 b, Color c, float width, float life, int segments = 8, float jitter = 0f, bool recolor = false)
+        /// <param name="flat">kinks only sideways, never up or down (Victor's aura strikes run along the floor)</param>
+        public static void Bolt(Vector3 a, Vector3 b, Color c, float width, float life, int segments = 8, float jitter = 0f, bool recolor = false, bool flat = false)
         {
             var root = Root(a, life, null);
             var lr = Line(root.transform, c, width, Vector3.zero, b - a, "mat_lightning");
@@ -1439,7 +1440,7 @@ namespace DeadlockOfRain
             lr.SetPosition(0, a); lr.SetPosition(1, b);
             var bolt = lr.gameObject.AddComponent<BoltFx>();
             bolt.A = a; bolt.B = b; bolt.Segments = segments; bolt.Jitter = jitter > 0f ? jitter : Mathf.Max(0.3f, Vector3.Distance(a, b) * 0.08f);
-            bolt.Life = life; bolt.Width = width;
+            bolt.Life = life; bolt.Width = width; bolt.Flat = flat;
         }
 
         public static void Flash(Vector3 at, Color c, float range, float life, float intensity = 4f)
@@ -1667,7 +1668,7 @@ namespace DeadlockOfRain
 
         sealed class BoltFx : MonoBehaviour
         {
-            public Vector3 A, B; public int Segments; public float Jitter, Life, Width;
+            public Vector3 A, B; public int Segments; public float Jitter, Life, Width; public bool Flat;
             float age, next; LineRenderer lr;
             void Awake() => lr = GetComponent<LineRenderer>();
             void Update()
@@ -1678,13 +1679,14 @@ namespace DeadlockOfRain
                 next = age + 0.04f;
                 lr.positionCount = Segments + 1;
                 var side = Vector3.Cross(B - A, Vector3.up).normalized;
+                if (Flat) side.y = 0f;
                 if (side.sqrMagnitude < 0.01f) side = Vector3.right;
                 var up = Vector3.Cross(side, B - A).normalized;
                 for (int i = 0; i <= Segments; i++)
                 {
                     float t = (float)i / Segments;
                     var p = Vector3.Lerp(A, B, t);
-                    if (i > 0 && i < Segments) p += (side * Random.Range(-1f, 1f) + up * Random.Range(-1f, 1f)) * Jitter * Mathf.Sin(t * Mathf.PI);
+                    if (i > 0 && i < Segments) p += (side * Random.Range(-1f, 1f) + (Flat ? Vector3.zero : up * Random.Range(-1f, 1f))) * Jitter * Mathf.Sin(t * Mathf.PI);
                     lr.SetPosition(i, p);
                 }
             }

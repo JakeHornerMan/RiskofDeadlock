@@ -899,7 +899,7 @@
       "roR2Analog": "TreebotBody",
       "subtitle": "The Pain-Powered Bruiser",
       "passiveName": "Pain",
-      "passiveDescription": "Every hit you take from an enemy adds a <style=cIsDamage>Pain</style> stack, up to <style=cIsDamage>10</style>; each gives <style=cIsDamage>+15% attack speed</style> (added like Soldier's Syringe) and lasts <style=cIsUtility>10s</style> on its own timer. Pain Battery spends it; Aura of Suffering grows with it.",
+      "passiveDescription": "Every hit you take from an enemy adds a <style=cIsDamage>Pain</style> stack, up to <style=cIsDamage>10</style>; each gives <style=cIsDamage>+15% attack speed</style> (added like Soldier's Syringe) for as long as he has it. <style=cIsUtility>One stack fades every 10s</style>. Pain Battery spends it; Aura of Suffering grows with it.",
       "passiveIcon": "panorama/images/hud/abilities/frank/frank_pain_battery_psd.vtex",
       "damageHealBack": 0,
       "damageHealBackTime": 0,

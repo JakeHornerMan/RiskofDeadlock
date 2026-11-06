@@ -1855,7 +1855,7 @@
       "notes": "Memento Mori's tracers, Commando's tracer in Victor's red-violet"
     },
     {
-      "id": "victor_punch",
+      "id": "victor_jumpstart",
       "kind": "custom",
       "addressable": "none",
       "scaleWithRadius": false,
@@ -1866,7 +1866,7 @@
         "none"
       ],
       "tint": "none",
-      "notes": "Heavy melee: a red-violet smear along the swing, a thud of dust, sparks and a short light where the fist lands; from 5 Pain an electric crackle on every hit"
+      "notes": "Jumpstart: a white-violet jolt across his chest from the defibrillator, sparks off the barbed-wire arm and a short flash"
     },
     {
       "id": "victor_gun",
@@ -1894,7 +1894,7 @@
         "none"
       ],
       "tint": "none",
-      "notes": "Pain Battery: a jagged violet-white arc from his barbed-wire arm to the hit, a crackling burst and a 3 m ring of sparks there"
+      "notes": "Pain Battery: a jagged green-white arc from his barbed-wire arm to the hit, a crackling burst and a 3 m ring of sparks there"
     },
     {
       "id": "victor_aura",
@@ -1908,7 +1908,7 @@
         "none"
       ],
       "tint": "none",
-      "notes": "Aura of Suffering: a crackling red-violet field on the ground around him, its edge pulsing like a faulty heartbeat, growing and shrinking with Pain; thin red threads drawing health from every enemy inside"
+      "notes": "Aura of Suffering: a green electric field on the ground around him, its edge pulsing like a faulty heartbeat, growing with Pain; on every beat wavy green strikes burst out of his chest across the ground to the edge (creator's reference), small strikes between beats; thin red threads drawing health from every enemy inside"
     },
     {
       "id": "victor_wire",

@@ -965,20 +965,20 @@
       "gain": 1.0
     },
     {
-      "skill": "victor_punch",
-      "cast": "Frank.Melee.Swing.Charged",
+      "skill": "victor_jumpstart",
+      "cast": "Frank.Pain.Battery.Hit",
       "loop": "none",
-      "hit": "Player.Melee.Hit.Physics",
+      "hit": "none",
       "end": "none",
       "reload": "none",
       "castLayer": "none",
       "hitLayer": "none",
       "tick": "none",
       "tickFinal": "none",
-      "gain": 1.0
+      "gain": 0.7
     },
     {
-      "skill": "victor_punch/step",
+      "skill": "victor_gun/step",
       "cast": "Frank.Footstep",
       "loop": "none",
       "hit": "none",
@@ -991,7 +991,7 @@
       "gain": 0.4
     },
     {
-      "skill": "victor_punch/land",
+      "skill": "victor_gun/land",
       "cast": "none",
       "loop": "none",
       "hit": "Frank.JumpLand",

@@ -25,7 +25,7 @@ def sheet(name):
 HEROES = sheet('heroes'); STATS = {r['hero']: r for r in sheet('stats')}
 SKILLS = sheet('skills'); BUFFS = {r['id']: r for r in sheet('buffs')}
 EQUIP = {r['hero']: r for r in sheet('equipment')}
-LINKS = {'pocket': 'https://claude.ai/artifact/Mc8uRq1qWykkkLncPtNCD5', 'haze': 'https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p', 'abrams': 'https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG',
+LINKS = {'victor': 'https://claude.ai/artifact/XP4ssbDWBk2WrV1gaKYBZh', 'pocket': 'https://claude.ai/artifact/Mc8uRq1qWykkkLncPtNCD5', 'haze': 'https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p', 'abrams': 'https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG',
          'seven': 'https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m', 'infernus': 'https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF',
          'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'viscous': 'https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC', 'ratking': 'https://claude.ai/artifact/Kw4rTyRrvXTb2eEyT9oTYa', 'billy': 'https://claude.ai/artifact/7m271DJLqzAvMZDrqU6QjL', 'wraith': 'https://claude.ai/artifact/2Bdxqd6iUwp89iEEPELgBb', 'mina': 'https://claude.ai/artifact/NWZWgZoK8DRusJpTVzbYoe', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
 SLOTS = ['primary', 'secondary', 'utility', 'special']
@@ -88,6 +88,10 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
+ 'victor': [('2026-11-05', ['New hero: Victor, matched to REX, from the creator’s own model, animations and sounds; in the creator’s own DLL build only (not on Melty)',
+                        'Pain: every enemy hit adds a stack (+15 % attack speed each, like Soldier’s Syringe), up to 10; one stack fades every 10 s',
+                        'Redesign the same day: the punches are gone; Memento Mori moves to M1 at 100 % a round, and M2 is Jumpstart (10 health to himself for 1 Pain and +30 % move speed for 5 s, every 4 s)',
+                        'Aura of Suffering grows from 9 m (+0.5 m per Pain, 14 m at 10); Pain Battery spends 3 Pain on a 1,000 % bolt with a 3 m blast; Shocking Reanimation (Q) stuns everything within 30 m, then 20 s of 10 Ukuleles and 10 Tesla Coils'])],
  'pocket': [('2026-11-02', ['Frog Form: the case lands, jolts three times and pops open in a green burst, and you leap out of it as the frog (no giant frog, no wild spinning)',
                         'Hair near-black with a sheen, closer to Deadlock’s', 'Frog Form: landing on top of an enemy slams too (damage and the stun ring), and the frog hops off it', 'The suitcase never sinks into the floor']),
             ('v1.2.0c', ['Flying Cloak: only his coat flies (no Pocket inside it), collar to the sky',
@@ -243,6 +247,11 @@ PAPER = {
 }
 
 ANALYSIS = {
+ 'victor': ['Three runs after the same-day redesign (gun on M1 at 100 %, Jumpstart on M2, aura from 9 m): 2,957, 2,898 and 2,832 %/s with every main move, mean 2,896 against REX’s 1,738. That is +1,158: above the ±500 band.',
+            'Aura of Suffering carries him: 1,096 %/s alone (1,070–1,134). At 9 m plus 0.5 m a Pain stack it reaches all 12 of the bench’s pack, which stands 10–15 m away, so once ramped it deals 120 %/s to each. The spec expected it to barely reach them at 6 m. Memento Mori 367 alone (paper 353).',
+            'Together the moves feed each other: Jumpstart (0 alone) and the aura hand out Pain, Pain speeds up the gun, and Pain Battery spends it on 1,000 % bolts with a 3 m blast into the pack. Alone, Pain Battery has no Pain to spend, so it measures 0.',
+            'Levers, the creator’s call: the aura 120 → 60 %/s (about −550 together), a smaller start radius (9 → 6 m, the pack would then sit mostly outside it), or Pain Battery 1,000 → 600 %.',
+            'In the creator’s own DLL build only (r2modman), not on Melty. Shocking Reanimation (Q) did 71,200–74,200 % to the 12-enemy pack in one use on this bench; the ult bench (30 enemies and a Beetle Queen) hasn’t been run for it. It isn’t in the all-together number.'],
  'pocket': ['Three runs at v1.2.0c (lock-on Barrage he shoots through): 2,411, 2,197 and 2,291 %/s with every main move, mean 2,300 against Bandit’s 1,919. That is +381: inside the ±500 band. (v1.2.0a: 2,423.)',
             'Barrage still carries him (about 1,316 %/s alone: four 250 % bursts, each a stun, on the enemy it locked) and its amp (+4 % a burst that hits, up to +16 %) raises everything else. The Black Sheep 591, the Satchel 529, Flying Cloak 383.',
             'The spec’s numbers measured about 2,709 counted honestly (the bench used to divide the amp back out of the damage), so its two levers were used: amp 6 → 4 % a burst, then the Satchel burst 600 → 450 %.',
@@ -380,6 +389,12 @@ def maths(r):
             cyc = shots / r['burst'] * (r['interval'] + (r['burst'] - 1) * r['duration'])
             return [f"{n(shots)} rounds × {per} = {n(shots * d * r['pellets'])} %",
                     f"fired in {cyc:.2f} s ({n(r['burst'])}-round bursts) + {n(r['reloadTime'])} s reload"], gun_dps(r)
+        if k == 'gun_spin':
+            r0, r1 = 1 / r['interval'], 1 / r['minDuration']; spun = (r0 + r1) / 2 * r['duration']
+            fire = r['duration'] + (shots - spun) / r1 if shots > spun else shots / r0
+            dps_ = shots * d / (fire + r['reloadTime'])
+            return [f"{n(shots)} rounds × {per} = {n(shots * d)} %", f"spinning up {r0:.0f} → {r1:.0f} rounds/s over {n(r['duration'])} s: fired in {fire:.1f} s + {n(r['reloadTime'])} s reload",
+                    "faster with every Pain stack (attack speed)"], dps_
         fire = shots * r['interval']
         unit = 'shells' if r['pellets'] > 1 else 'rounds'
         return [f"{n(shots)} {unit} × {per} = {n(shots * d * r['pellets'])} %", f"fired in {fire:.2f} s + {n(r['reloadTime'])} s reload"], gun_dps(r)
@@ -471,6 +486,18 @@ def maths(r):
     if k == 'ult_frog':
         hops = r['duration'] / r['interval']
         return [f"about {n(hops)} landings × {n(d)} % within {n(r['radius'])} m = {n(hops * d)} % per enemy, a high leap {n(r['splashPct'])} % within {n(r['nearRadius'])} m"], None
+    if k == 'jumpstart':
+        b = BUFFS.get(r['buff'], {})
+        return [f"no damage: {n(r['selfDamageFlat'])} health to himself for {n(r['buffStacks'])} Pain (+{n(BUFFS['pain']['attackSpeedBaseAdd'] * 100)} % attack speed)",
+                f"and +{n(b.get('moveSpeedAdd', 0) * 100)} % move speed for {n(b.get('duration', 0))} s, every {n(cd)} s"], 0
+    if k == 'pain_battery':
+        return [f"{n(d)} % to the enemy hit and everything within {n(r['radius'])} m, slowed {n(-BUFFS[r['debuff']]['moveSpeedAdd'] * 100)} %",
+                f"costs {n(r['buffStacks'])} Pain; {n(cd)} s cooldown"], None
+    if k == 'aura_toggle':
+        return [f"{n(r['damageMinPct'])} → {n(d)} %/s over {n(r['duration'])} s to every enemy within {n(r['radius'])} m + {n(r['reach'])} m per Pain",
+                f"heals him {n(r['healFraction'] * 100)} % of it; costs {n(r['selfDamagePct'])} % max health to switch on, then {n(r['selfDrainPct'])} % a second"], d
+    if k == 'ult_reanimation':
+        return [], None
     if k == 'self_buff':
         return ['no damage: invisibility and speed'], 0
     return [], None
@@ -711,14 +738,22 @@ def passive_card(h):
     b = None
     for r in SKILLS:
         if r['hero'] == h['id'] and r['slot'] == 'primary' and r['buff'] != 'none': b = BUFFS.get(r['buff'])
+    if h.get('passiveBuff', 'none') != 'none': b = BUFFS.get(h['passiveBuff'])
     t = []
     if b:
         if b['maxStacks']: t.append(('Max stacks', n(b['maxStacks'])))
-        if b['duration']: t.append(('Lasts', f"{n(b['duration'])} s"))
+        if b['duration']: t.append(('Lasts', f"{n(b['duration'])} s") if not b.get('attackSpeedBaseAdd') else ('One fades every', f"{n(b['duration'])} s"))
         if b['triggerStacks']: t.append(('Bursts at', f"{n(b['triggerStacks'])} stacks"))
         if b['triggerDamagePct']: t.append(('Burst', f"{n(b['triggerDamagePct'])} %"))
     # trophies (Mo & Krill): max health per kill, for the stage
     math = '<p class="note">A passive has no number of its own: it is counted inside the moves that trigger it.</p>'
+    if b and b.get('attackSpeedBaseAdd'):
+        t = [('Per hit taken', f"{n(h.get('hitsPerStack', 1))} stack" if h.get('hitsPerStack', 1) == 1 else f"1 per {n(h['hitsPerStack'])} hits"),
+             ('Per stack', f"+{n(b['attackSpeedBaseAdd'] * 100)} % attack speed")] + t
+        math = (f'<div class="work"><span>each stack: +{n(b["attackSpeedBaseAdd"] * 100)} % attack speed, added like Soldier’s Syringe</span>'
+                f'<span>up to {n(b["maxStacks"])} stacks = +{n(b["attackSpeedBaseAdd"] * b["maxStacks"] * 100)} % ({n(1 + b["attackSpeedBaseAdd"] * b["maxStacks"])}×), one stack fades every {n(b["duration"])} s</span>'
+                '<span class="eq">from enemy hits, Jumpstart and the aura; Pain Battery spends 3</span></div>'
+                '<p class="note">His own damage (Jumpstart, the aura) never counts as a hit; those moves hand out their stacks directly.</p>')
     for r in SKILLS:
         tb = BUFFS.get(r['debuff']) if r['hero'] == h['id'] and r['kind'] == 'krill_hop' else None
         if not tb or not tb['maxHealthAdd']: continue
@@ -1006,9 +1041,11 @@ def overview_page():
 </main>
 '''
 
+HEAD = ('<!DOCTYPE html>' + chr(10) + '<html lang="en"><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width, initial-scale=1">' + chr(10))
 for h in HEROES:
-    open(os.path.join(OUT, f'{h["id"]}-kit.html'), 'w', encoding='utf-8').write(hero_page(h))
-open(os.path.join(OUT, 'balance-vs-commando.html'), 'w', encoding='utf-8').write(overview_page())
+    open(os.path.join(OUT, f'{h["id"]}-kit.html'), 'w', encoding='utf-8').write(HEAD + hero_page(h))
+open(os.path.join(OUT, 'balance-vs-commando.html'), 'w', encoding='utf-8').write(HEAD + overview_page())
 for f in sorted(os.listdir(OUT)):
     p = os.path.join(OUT, f)
     if os.path.isfile(p): print(f, os.path.getsize(p) // 1024, 'KB')

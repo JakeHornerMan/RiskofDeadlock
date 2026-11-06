@@ -604,6 +604,8 @@ doc 02 §11. In short:
 
 | Victor, a twelfth hero for the creator's own DLL build only (2026-11-05) | The creator made their own Victor (model, textures, animations, sounds) and asked for him "for our custome ddl build" from their spec. Answers: DLL build only (no Melty, no page), Pain 1 hit per stack, the ult burst stuns only, Pain Battery keeps its 3 m blast. Their files are used as given, never checked against anything. New `heroes.localOnly` keeps him out of everything Melty ships. |
 
+| 2026-11-05 | **Victor redesign, and his kit page after all** | The creator pasted a "SLIGHT REDESIGN" of the spec (punches out, gun on M1, Jumpstart on M2, aura 9 m + 0.5 m/Pain) and asked "DO A DPS TEST AND THEN ALSO UPDATE TEHE BALANCE ARTIFACT AND MAKE THE VICTOR PAGE!". Earlier answers kept (Pain 1 hit per stack; the pasted text still says 5). He gets a kit page and a place on the balance overview, marked "DLL build only"; the Melty listing is not touched. |
+
 ## 10. Known open items and ideas
 
 - **Haze leans forward a lot** when aiming steeply down: the whole aim is taken by the spine. Possible fix: give part of the pitch to the clavicles or arms.

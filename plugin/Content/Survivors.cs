@@ -112,7 +112,7 @@ namespace DeadlockOfRain
             kind == "bat_blink" || kind == "nox_stream" || kind == "ult_mist" ||
             // Pocket: the cloak's throw and the Satchel on Body, so Barrage (Weapon) runs on through them; Frog Form steers the body
             kind == "flying_cloak" || kind == "satchel" || kind == "ult_frog" ||
-            // Victor: Shocking Reanimation lifts the body (punch, gun, battery and the aura switch stay on Weapon)
+            // Victor: Shocking Reanimation lifts the body (gun, Jumpstart, battery and the aura switch stay on Weapon, so Jumpstart pauses the gun)
             kind == "ult_reanimation" ? "Body" : "Weapon";
 
         /// <summary>The hero never takes fall damage (heroes.json noFallDamage: Viscous). Moves that switch fall damage off for a while
@@ -346,7 +346,7 @@ namespace DeadlockOfRain
             def.activationState = new SerializableEntityStateType(type);
             def.activationStateMachineName = MachineFor(row.Kind);
             bool special = row.Slot == "special";
-            // a gun on M2 (Victor's Memento Mori) is held like a primary: no cooldown, no stock, fires while the key is down
+            // a gun on M2 is held like a primary: no cooldown, no stock, fires while the key is down
             bool primary = row.Slot == "primary" || row.Kind.StartsWith("gun_");
             def.interruptPriority = row.Slot == "primary" ? InterruptPriority.Any : special ? InterruptPriority.PrioritySkill : InterruptPriority.Skill;
             def.baseRechargeInterval = primary ? 0f : row.Cooldown;
@@ -398,8 +398,8 @@ namespace DeadlockOfRain
 
         public static SkillRow RowFor(GenericSkill gs) => gs && gs.skillDef && RowOfSkill.TryGetValue(gs.skillDef, out var r) ? r : null;
 
-        /// <summary>The skill slot holding the hero's gun: M1 for every hero but Victor, whose punches are M1 and Memento Mori M2
-        /// (creator, 2026-11-05: the buttons swapped). The primary when neither holds a gun kind.</summary>
+        /// <summary>The skill slot holding the hero's gun: M1, or M2 when only M2 holds a gun kind (Victor had Memento Mori there
+        /// before his 2026-11-05 redesign; kept so a gun can sit on either button). The primary when neither holds a gun kind.</summary>
         public static GenericSkill GunSlot(CharacterBody b)
         {
             var sl = b ? b.skillLocator : null;

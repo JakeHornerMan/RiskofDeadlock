@@ -481,6 +481,20 @@ namespace DeadlockOfRain
 
         public bool HasClip(string logicalName) => Clip(logicalName) != null;
 
+        /// <summary>How much faster than its own speed the run plays: while Jumpstart's buff (a jumpstart skill's buff, +30 % move
+        /// speed) is on, the stride speeds up with it, so the feet match the ground. 1 for everyone else (sprint keeps its pace).</summary>
+        static float StrideMult(CharacterBody b)
+        {
+            var id = Survivors.HeroOf(b);
+            if (id == null) return 1f;
+            if (!strideBuffs.TryGetValue(id, out var buffs))
+                strideBuffs[id] = buffs = Sheet.SkillsOf(id).Where(r => r.Kind == "jumpstart" && r.Buff != "none").Select(r => Sheet.Buff(r.Buff)).Where(r => r != null).ToArray();
+            float m = 1f;
+            foreach (var r in buffs) if (Buffs.Count(b, r.Id) > 0) m *= 1f + r.MoveSpeedAdd;
+            return m;
+        }
+        static readonly System.Collections.Generic.Dictionary<string, BuffRow[]> strideBuffs = new System.Collections.Generic.Dictionary<string, BuffRow[]>();
+
         /// <summary>The clip's length in seconds at speed 1 (0 when the hero has none): a move fits its clip to its own time.</summary>
         public float ClipLength(string logicalName)
         {
@@ -572,7 +586,7 @@ namespace DeadlockOfRain
                     if (body && body.isSprinting && f > 0) next = Clip("sprint") ?? rows.RunN;
                     else if (Mathf.Abs(f) >= Mathf.Abs(r)) next = f >= 0 ? rows.RunN : rows.RunS;
                     else next = r >= 0 ? rows.RunE : rows.RunW;
-                    float baseSpeed = body ? Mathf.Max(1f, body.moveSpeed) : 7f;
+                    float baseSpeed = body ? Mathf.Max(1f, body.moveSpeed / StrideMult(body)) : 7f;
                     speed = Mathf.Clamp(v.magnitude / baseSpeed, 0.6f, 1.8f);
                 }
                 if (grounded && !wasGrounded)

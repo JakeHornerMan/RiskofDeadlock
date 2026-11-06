@@ -1,6 +1,6 @@
 # Risk of Deadlock
 
-Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King, Billy, Wraith, Mina or Pocket** from Deadlock, with their models, animations, guns, abilities, icons and voices.
+Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King, Billy, Wraith, Mina, Pocket or Victor**, with their models, animations, guns, abilities, icons and voices.
 
 > Every hero's files are built **into the DLL**: Deadlock does not need to be installed.
 
@@ -25,7 +25,7 @@ Every hero's abilities, numbers and measured damage next to their Risk of Rain 2
 - [Balance overview](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3)
 
 ## Features
-- Eleven new survivors, each with Risk of Rain 2's four skills built from their Deadlock kit, plus their ultimate as equipment:
+- Twelve new survivors, each with Risk of Rain 2's four skills built from their Deadlock kit, plus their ultimate as equipment:
   - **Left Click:** their Deadlock gun, with its magazine and reload (the rounds show above the skill bar).
   - **Right Click and Shift:** two Deadlock abilities.
   - **R:** a fourth move from their Deadlock kit, items or melee.
@@ -41,6 +41,7 @@ Every hero's abilities, numbers and measured damage next to their Risk of Rain 2
 - **Wraith:** The Rake, Card Trick, Project Mind, Full Auto; Q Telekinesis.
 - **Mina:** New Money, Rake, Sanguine Retreat, **Nox Nostra** (a cone of bats pours onto a ringed circle under your crosshair); Q Mist Form. Hold Jump to float under her umbrella; Love Bites bring her moves back sooner.
 - **Pocket:** The Black Sheep, Barrage, Flying Cloak, Enchanter's Satchel; Q **Frog Form** (the case pops open and you leap out as a frog; every landing, on the ground or on an enemy, slams and stuns). One jump plus an air dash.
+- **Victor:** **Memento Mori** on Left Click (a gun that spins up while you hold it), **Jumpstart** on Right Click (shock yourself for 10 health: +1 Pain and +30 % move speed for 5 s), Pain Battery, **Aura of Suffering** (a toggle that hurts you and siphons everything near you, growing with Pain); Q **Shocking Reanimation** (rise into a lightning strike that stuns everything within 30 m, then 20 s of 10 Ukuleles and 10 Tesla Coils). Every enemy hit you take adds a **Pain** stack: +15 % attack speed each, up to 10.
 - Deadlock voice lines at the right moments; co-op with up to 4 players (everyone needs the same build).
 
 ## Community

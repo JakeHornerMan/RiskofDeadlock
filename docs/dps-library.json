@@ -1812,9 +1812,94 @@
      "max": 1000
     }
    }
+  },
+  "DeadlockVictor": {
+   "name": "Victor",
+   "stats": {
+    "health": 160.0,
+    "healthPerLevel": 48.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 20.0,
+    "damage": 12.0,
+    "damagePerLevel": 2.4,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Memento Mori",
+    "secondary": "Jumpstart",
+    "utility": "Pain Battery",
+    "special": "Aura of Suffering"
+   },
+   "hero": true,
+   "measuredOn": "v1.3.0a",
+   "dps": {
+    "all": {
+     "runs": [
+      2957,
+      2898,
+      2832
+     ],
+     "mean": 2896,
+     "min": 2832,
+     "max": 2957
+    },
+    "primary": {
+     "runs": [
+      367,
+      367,
+      367
+     ],
+     "mean": 367,
+     "min": 367,
+     "max": 367
+    },
+    "secondary": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "utility": {
+     "runs": [
+      0,
+      0,
+      0
+     ],
+     "mean": 0,
+     "min": 0,
+     "max": 0
+    },
+    "special": {
+     "runs": [
+      1070,
+      1134,
+      1083
+     ],
+     "mean": 1096,
+     "min": 1070,
+     "max": 1134
+    },
+    "equipment": {
+     "runs": [
+      2447,
+      2473,
+      2373
+     ],
+     "mean": 2431,
+     "min": 2373,
+     "max": 2473
+    }
+   }
   }
  },
  "about": "Stored DPS library (Risk of Deadlock). Main moves and each move alone, % of damage stat per second, measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, 30 s per pass, perfect aim, every move used when ready, no equipment except the \"equipment\" pass). \"all\" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are tagged with the build they were measured on. Built by tools/dps_library.py.",
- "updated": "2026-10-28",
+ "updated": "2026-11-05",
  "runsPerSurvivor": 3
 }

@@ -389,15 +389,13 @@
         "weapon"
       ],
       "clips": [
+        "ability_jumpstart",
         "ability_pain_battery",
         "ability_reanimation",
         "cast_channeling_start",
         "cast_end",
         "dash_air_forward",
         "in_air_loop_apex",
-        "melee_hit",
-        "melee_quick_1",
-        "melee_quick_2",
         "out_of_combat_run_n",
         "reload_idle",
         "weapon_run_e",
@@ -535,7 +533,6 @@
     "Abrams.Wpn.Impact",
     "Frank.Footstep",
     "Frank.JumpLand",
-    "Frank.Melee.Swing.Charged",
     "Frank.Pain.Aura.Cast",
     "Frank.Pain.Aura.Deactivate",
     "Frank.Pain.Aura.Lp",
@@ -600,7 +597,6 @@
     "Mods.Tech.Stasis.Active",
     "Mods.Tech.Stasis.End",
     "Mods.Tech.TormentPulse.Proc",
-    "Player.Melee.Hit.Physics",
     "Pocket.Affliction.Cast",
     "Pocket.Affliction.Hit",
     "Pocket.Barrage.Fire",
@@ -1051,9 +1047,6 @@
     "Frank.JumpLand": [
       "victor"
     ],
-    "Frank.Melee.Swing.Charged": [
-      "victor"
-    ],
     "Frank.Pain.Aura.Cast": [
       "victor"
     ],
@@ -1245,9 +1238,6 @@
     ],
     "Mods.Tech.TormentPulse.Proc": [
       "infernus"
-    ],
-    "Player.Melee.Hit.Physics": [
-      "victor"
     ],
     "Pocket.Affliction.Cast": [
       "pocket"

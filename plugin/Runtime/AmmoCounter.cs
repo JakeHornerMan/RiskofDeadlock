@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace DeadlockOfRain
 {
-    /// <summary>The magazine as "rounds/clip" just above the gun's icon (M1; M2 for Victor) of the skill bar, for every hero whose gun has a clipSize
+    /// <summary>The magazine as "rounds/clip" just above the gun's icon (M1, or M2 if a gun sits there) of the skill bar, for every hero whose gun has a clipSize
     /// (just information: grey while a reload is under way); in a goo puddle Viscous's puddle rounds go in front ("20+5/20"). Rounds are kept by the owner (HeroRuntime.Ammo), so it shows only
     /// for the body this machine moves and is hidden for vanilla survivors and while spectating.</summary>
     [HarmonyPatch(typeof(SkillIcon), "LateUpdate")]
@@ -14,7 +14,7 @@ namespace DeadlockOfRain
     {
         static void Postfix(SkillIcon __instance)
         {
-            // the gun's icon: M1, or M2 for a gun there (Victor's Memento Mori)
+            // the gun's icon: M1, or M2 for a gun there
             if (__instance.targetSkillSlot != SkillSlot.Primary && __instance.targetSkillSlot != SkillSlot.Secondary) return;
             if (__instance.targetSkillSlot == SkillSlot.Secondary && !(Survivors.RowFor(__instance.targetSkill)?.Kind.StartsWith("gun_") ?? false)) return;
             var label = __instance.GetComponent<AmmoLabel>();

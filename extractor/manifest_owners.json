@@ -55,9 +55,6 @@
   "Frank.JumpLand": [
     "victor"
   ],
-  "Frank.Melee.Swing.Charged": [
-    "victor"
-  ],
   "Frank.Pain.Aura.Cast": [
     "victor"
   ],
@@ -249,9 +246,6 @@
   ],
   "Mods.Tech.TormentPulse.Proc": [
     "infernus"
-  ],
-  "Player.Melee.Hit.Physics": [
-    "victor"
   ],
   "Pocket.Affliction.Cast": [
     "pocket"

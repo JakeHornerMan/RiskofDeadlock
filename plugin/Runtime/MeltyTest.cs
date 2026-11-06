@@ -2164,7 +2164,7 @@ namespace DeadlockOfRain
         /// <summary>How far in front of the hero the test's targets stand: guns, the leap, the blink and Tag Team's throw
         /// from 10 m, Billy's bat and Bashdown 3.5 m, everything else 6 m.</summary>
         /// <summary>Victor's Pain: hits from an enemy add a stack per hitsPerStack hits, up to the cap, each raising attack speed by
-        /// attackSpeedBaseAdd of the base; his own damage (the aura's) adds none; Pain Battery takes the 3 oldest. why[0] = "" on success.</summary>
+        /// attackSpeedBaseAdd of the base; his own damage (the aura's) adds none; Pain Battery takes 3; one stack fades every buff duration. why[0] = "" on success.</summary>
         IEnumerator TestPain(CharacterMaster master, HeroRow hero, string[] why)
         {
             why[0] = "";
@@ -2205,16 +2205,25 @@ namespace DeadlockOfRain
             int spent = Buffs.Count(body, hero.PassiveBuff);
             if (spent != capped - 3) why[0] += $"pain: {spent} stacks after spending 3 of {capped}; ";
             Log.Info($"Melty test: {hero.Id} Pain cap {capped}, after spending 3: {spent}");
+            // the decay (creator: "1 of each stack will dissolve every 10 second"): one stack every buff duration, the bonus
+            // staying for the stacks left
+            yield return new WaitForSeconds(buff.Duration + 0.3f);
+            body.RecalculateStats();
+            int decayed = Buffs.Count(body, hero.PassiveBuff);
+            float wantSpeed = baseSpeed + (body.baseAttackSpeed + body.levelAttackSpeed * (body.level - 1f)) * buff.AttackSpeedBaseAdd * decayed;
+            Log.Info($"Melty test: {hero.Id} Pain after {buff.Duration + 0.3f:F1} s: {spent} -> {decayed} stacks (want {spent - 1}), attack speed {body.attackSpeed:F2} (want {wantSpeed:F2})");
+            if (decayed != spent - 1) why[0] += $"pain: {decayed} stacks {buff.Duration:F0} s after {spent}, want {spent - 1} (one fades every {buff.Duration:F0} s); ";
+            if (Mathf.Abs(body.attackSpeed - wantSpeed) > 0.02f) why[0] += $"pain: attack speed {body.attackSpeed:F2} after the decay, want {wantSpeed:F2}; ";
             Buffs.Clear(body, hero.PassiveBuff);
             KillTargets();
         }
 
         internal static float TargetDistance(SkillRow row) =>
-            row.Slot == "primary" && row.Kind != "victor_punch" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "krill_hop" || row.Kind == "banner_leap" || row.Kind == "mind_port" ? 10f :
+            row.Slot == "primary" || row.Kind == "ult_leap" || row.Kind == "phantom_strike" || row.Kind == "krill_hop" || row.Kind == "banner_leap" || row.Kind == "mind_port" ? 10f :
             // Billy's bat and Bashdown reach a few metres (Bashdown locks on within 5 m)
             row.Kind == "bat_combo" || row.Kind == "bashdown" ? 3.5f :
-            // Victor's punches reach 4 m (the aura starts at 6 m)
-            row.Kind == "victor_punch" || row.Kind == "aura_toggle" ? 3f :
+            // Victor's aura starts at 9 m
+            row.Kind == "aura_toggle" ? 3f :
             // Rake's arc reaches 10 m
             row.Kind == "rake_arc" ? 5f : 6f;
 

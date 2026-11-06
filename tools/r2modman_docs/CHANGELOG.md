@@ -2,6 +2,26 @@
 
 One version line, one number up per build. Newest first.
 
+## 1.5.8
+- Built with Risk of Rain 2 build 25921972 (2026-11-05).
+- **Victor redesigned:**
+  - **Left Click, Memento Mori:** the punches are gone; the spinning gun is back on Left Click, now 100 % a round.
+  - **Right Click, Jumpstart:** shock yourself for 10 health (never below 1): +1 Pain and +30 % move speed for 5 s, every 4 s. It pauses the gun for a moment and keeps it spun up; your run speeds up with it.
+  - **R, Aura of Suffering:** starts bigger, 9 m plus 0.5 m per Pain (14 m at 10).
+  - **Pain:** one stack fades every 10 s while you have any (9 → 8 → 7 ...); the attack speed always matches the stacks you have left.
+  - **Gun locked in his hands:** Memento Mori is held in both hands and always points where the camera aims.
+  - **Green lightning:** his electricity is green now; Aura of Suffering pulses wavy green strikes out of him along the floor on every heartbeat, and a flying enemy inside it gets a lightning bolt every time the aura hurts it.
+
+## 1.5.7
+- Built with Risk of Rain 2 build 25921972 (2026-11-05).
+- **Victor joins: the twelfth hero**, from my own Victor files. A pain-powered bruiser matched to REX (160 health, 20 armor).
+  - **Pain:** every enemy hit you take adds a stack, up to 10, each for 10 s: +15 % attack speed each, added like Soldier's Syringe.
+  - **Left Click, Heavy Melee:** heavy punches, alternating arms, 350 % in a 90° arc 4 m in front.
+  - **Right Click, Memento Mori:** hold to fire; it spins up from 3 to 6 rounds a second, 70 % a round, 24-round magazine.
+  - **Shift, Pain Battery:** spend 3 Pain on a bolt where you aim, 1000 % to it and everything within 3 m, slowed 40 %.
+  - **R, Aura of Suffering:** a toggle. It hurts you (8 % on, 2 % a second) and gives Pain; enemies near you take 30 rising to 120 % a second and you heal 40 % of it. It grows with Pain and switches off at 10 % health.
+  - **Q, Shocking Reanimation:** rise into a lightning strike that stuns everything within 30 m for 3 s, then 20 s with the power of 10 Ukuleles and 10 Tesla Coils. Victor also fills to 10 Pain. Anyone can carry it.
+
 ## 1.5.6
 - Built with Risk of Rain 2 build 25921972 (2026-11-05).
 

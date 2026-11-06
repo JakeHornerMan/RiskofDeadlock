@@ -520,15 +520,9 @@ namespace DeadlockOfRain
                     bool hold = mode == "all" || mode == "primary";
                     if (ReleasePrimary.Contains(body.name.Replace("(Clone)", "")) && frame % 36 == 0) hold = false;
                     bool m2 = (mode == "all" || mode == "secondary") && tap;
-                    // Victor: the gun is on M2 (held like a gun); in "all" he punches while an enemy is within reach, else he shoots
+                    // a gun on M2 is held down like M1 (no hero has one now; Victor's Memento Mori moved back to M1 on 2026-11-05)
                     var gunSlot = Survivors.GunSlot(body);
-                    if (gunSlot && sl && gunSlot == sl.secondary)
-                    {
-                        var punch = Survivors.RowFor(sl.primary);
-                        bool near = aimAt && punch != null && Mathf.Sqrt(best) <= punch.Reach + body.radius + aimAt.radius + 0.5f;
-                        if (mode == "all") { hold = near; m2 = !near; }
-                        else m2 = mode == "secondary";
-                    }
+                    if (gunSlot && sl && gunSlot == sl.secondary) m2 = mode == "all" || mode == "secondary";
                     // a toggled R (Victor's Aura of Suffering) is switched on once and left on
                     bool r = (mode == "all" || mode == "special") && tap;
                     if (r && Survivors.RowFor(sl ? sl.special : null)?.Kind == "aura_toggle" && Buffs.Count(body, States.VictorAura.Buff) > 0) r = false;

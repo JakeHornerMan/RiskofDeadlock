@@ -11,19 +11,21 @@ using UnityEngine.Networking;
 namespace DeadlockOfRain.States
 {
     // ================================================================== Victor (2026-11-05, the creator's own DLL build only)
-    // Pain-powered bruiser from the creator's spec: Pain stacks from hits taken speed up everything (buff pain, attackSpeedBaseAdd),
-    // Left Click punches, Right Click spins up Memento Mori (a gun on M2), Shift spends 3 Pain on an aimed bolt, R toggles the
-    // Aura of Suffering, Q is Shocking Reanimation (any carrier).
+    // Pain-powered bruiser from the creator's spec (redesigned the same day): Pain stacks from hits taken speed up everything (buff
+    // pain, attackSpeedBaseAdd), Left Click spins up Memento Mori, Right Click is Jumpstart (hurt himself for Pain and speed), Shift
+    // spends 3 Pain on an aimed bolt, R toggles the Aura of Suffering, Q is Shocking Reanimation (any carrier).
 
     /// <summary>Server side of Victor's kit that isn't a state: Pain from hits taken (heroes.passiveBuff / hitsPerStack), spending
     /// the oldest stacks, and the Ukulele rolls of a Shocking Reanimation charge.</summary>
     public static class VictorPain
     {
         static readonly Dictionary<CharacterBody, int> hits = new Dictionary<CharacterBody, int>();
-        static readonly AccessTools.FieldRef<CharacterBody, List<CharacterBody.TimedBuff>> timed =
-            AccessTools.FieldRefAccess<CharacterBody, List<CharacterBody.TimedBuff>>("timedBuffs");
 
-        public static void Init() => GlobalEventManager.onServerDamageDealt += OnDamage;
+        public static void Init()
+        {
+            GlobalEventManager.onServerDamageDealt += OnDamage;
+            RoR2Application.onFixedUpdate += Decay;
+        }
 
         static void OnDamage(DamageReport r)
         {
@@ -44,124 +46,98 @@ namespace DeadlockOfRain.States
             if (attacker && victim && attacker != victim) ReanimationCharge.OnHit(r);
         }
 
-        /// <summary>n stacks of a timed stacking buff (Pain), each on its own timer; at the cap the oldest makes room. Server only.</summary>
+        /// <summary>Bodies holding Pain and when their next stack drops (server).</summary>
+        static readonly Dictionary<CharacterBody, float> decayAt = new Dictionary<CharacterBody, float>();
+
+        /// <summary>n stacks of a decaying stacking buff (Pain), up to its cap. The stacks are plain (not timed): one drops every
+        /// buff duration (10 s) while any are left (creator, 2026-11-05: "1 of each stack will dissolve every 10 second ... the stack
+        /// goes from 9 to 8 meaning the buff is only 8x for the next 10 seconds"). The clock starts when he goes from 0 to 1 and is
+        /// not reset by new stacks. Server only.</summary>
         public static void Add(CharacterBody b, string id, int n)
         {
             var row = Sheet.Buff(id); var d = Buffs.Get(id);
             if (row == null || !d || !b || !NetworkServer.active) return;
             int max = Mathf.Max(1, (int)row.MaxStacks);
-            for (int i = 0; i < n; i++)
-            {
-                if (b.GetBuffCount(d) >= max) RemoveOldest(b, id, 1);
-                b.AddTimedBuff(d, row.Duration);
-            }
+            if (b.GetBuffCount(d) == 0) decayAt[b] = Time.fixedTime + row.Duration;
+            for (int i = 0; i < n && b.GetBuffCount(d) < max; i++) b.AddBuff(d);
+            if (!decayAt.ContainsKey(b)) decayAt[b] = Time.fixedTime + row.Duration;
             if (MeltyTest.Active) MeltyTest.Report("pain-stacks", true, b.baseNameToken);
         }
 
-        /// <summary>Takes away the n stacks closest to running out (Pain Battery spends the 3 oldest). Server only.</summary>
+        /// <summary>Takes away n stacks (Pain Battery spends 3). Server only.</summary>
         public static void RemoveOldest(CharacterBody b, string id, int n)
         {
             var d = Buffs.Get(id);
             if (!b || !d || !NetworkServer.active) return;
-            var list = timed(b);
-            for (int k = 0; k < n; k++)
+            for (int k = 0; k < n && b.HasBuff(d); k++) b.RemoveBuff(d);
+        }
+
+        /// <summary>Victor hurting himself (Jumpstart, the aura): attacker = himself, so it never counts as a hit for Pain; never
+        /// kills him (NonLethal) and goes through armor and blocks. Server only.</summary>
+        public static void HurtSelf(CharacterBody b, float amount)
+        {
+            var hc = b ? b.healthComponent : null;
+            if (!hc || !hc.alive || amount <= 0f || !NetworkServer.active) return;
+            hc.TakeDamage(new DamageInfo
             {
-                int at = -1; float least = float.MaxValue;
-                for (int i = 0; i < list.Count; i++) if (list[i].buffIndex == d.buffIndex && list[i].timer < least) { least = list[i].timer; at = i; }
-                if (at >= 0) list.RemoveAt(at);
-                if (b.HasBuff(d)) b.RemoveBuff(d);
+                attacker = b.gameObject, inflictor = b.gameObject, damage = amount, position = b.corePosition,
+                damageType = DamageType.NonLethal | DamageType.BypassArmor | DamageType.BypassBlock, procCoefficient = 0f, crit = false,
+                damageColorIndex = DamageColorIndex.Bleed,
+            });
+        }
+
+        /// <summary>The decay clock: one stack of each Pain holder's buff every buff duration. Server, every fixed update.</summary>
+        static void Decay()
+        {
+            if (!NetworkServer.active || decayAt.Count == 0) return;
+            float now = Time.fixedTime;
+            foreach (var b in decayAt.Keys.ToList())
+            {
+                var hero = b ? Sheet.Hero(Survivors.HeroOf(b)) : null;
+                var d = hero != null ? Buffs.Get(hero.PassiveBuff) : null;
+                var row = hero != null ? Sheet.Buff(hero.PassiveBuff) : null;
+                if (!b || !d || row == null || b.GetBuffCount(d) == 0) { decayAt.Remove(b); continue; }
+                if (now < decayAt[b]) continue;
+                b.RemoveBuff(d);
+                decayAt[b] = now + row.Duration;
             }
         }
     }
 
-    // ---------------------------------------------------------------- M1: Heavy melee
-    /// <summary>Hold Left Click: a wind-up (minDuration), then a heavy punch, alternating arms, hitting everything within reach in a
-    /// 2 x spreadDeg arc in front for damagePct; one every interval (both scaled by attack speed, so Pain speeds them up). A short
-    /// hit-stop and camera kick on a hit; from 5 Pain sparks on every hit. Server deals the damage along the aim the owner sent.</summary>
-    [Kind("victor_punch")]
-    public sealed class VictorPunch : DlrState
+    // ---------------------------------------------------------------- M2: Jumpstart
+    /// <summary>Right Click: Victor jolts himself with the defibrillator. selfDamageFlat health (non-lethal, his own damage so it is
+    /// never a hit for Pain), buffStacks Pain, and the buff (+30 % move speed, refreshed rather than stacked). The jolt clip plays
+    /// for duration seconds on the upper body while he keeps walking; it is on the Weapon machine, so it pauses Memento Mori for
+    /// that long and the held trigger picks the gun up again still spun up (gun hangTime is longer than the jolt).</summary>
+    [Kind("jumpstart")]
+    public sealed class Jumpstart : DlrState
     {
-        const float HitStop = 0.06f;
-        float swingStart, windup, cycle, stopUntil; bool struck, alt;
-
         public override void OnEnter()
         {
             base.OnEnter();
             if (row == null) return;
-            Swing();
-        }
-
-        void Swing()
-        {
-            swingStart = fixedAge;
-            windup = row.MinDuration / attackSpeedStat;
-            cycle = row.Interval / attackSpeedStat;
-            struck = false;
-            if (rt != null) { rt.AltMuzzle = !rt.AltMuzzle; alt = rt.AltMuzzle; }
-            if (anim) anim.Gesture(alt ? "melee_alt" : "melee", Mathf.Max(1f, attackSpeedStat));
-            characterBody.SetAimTimer(2f);
-            if (isAuthority) OwnerAim = GetAimRay().direction;
+            Sound("cast");
+            if (anim) anim.Gesture("secondary", Mathf.Max(1f, anim.ClipLength("secondary") / Mathf.Max(0.1f, row.Duration)));
+            Vfx.Play(row.Vfx, "cast", VictorAura.ArmPoint(characterBody), 1f, null, characterBody.corePosition);
+            if (!Server) return;
+            VictorPain.HurtSelf(characterBody, row.SelfDamageFlat);
+            Buffs.Clear(characterBody, row.Buff);
+            Buffs.AddTimed(characterBody, row.Buff, Sheet.Buff(row.Buff)?.Duration ?? 5f);
+            var hero = Sheet.Hero(Survivors.HeroOf(characterBody));
+            if (hero != null && hero.PassiveBuff != "none") VictorPain.Add(characterBody, hero.PassiveBuff, (int)Mathf.Max(1, row.BuffStacks));
         }
 
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (row == null) { if (isAuthority) outer.SetNextStateToMain(); return; }
-            if (anim && stopUntil > 0f && fixedAge >= stopUntil) { anim.enabled = true; stopUntil = 0f; }
-            float t = fixedAge - swingStart;
-            if (!struck && t >= windup) { struck = true; Strike(); }
-            if (t < cycle) return;
-            // held: the next punch at once (test mode holds it through WantsFire)
-            bool held = inputBank && inputBank.skill1.down || MeltyTest.WantsFire(characterBody);
-            if (held && isAuthority) Swing();
-            else if (isAuthority) outer.SetNextStateToMain();
+            if (isAuthority && (row == null || fixedAge >= row.Duration)) outer.SetNextStateToMain();
         }
 
-        void Strike()
-        {
-            var dir = ThrowDir; dir.y = 0;
-            if (dir.sqrMagnitude < 0.01f) dir = characterDirection ? characterDirection.forward : transform.forward;
-            dir.Normalize();
-            if (characterDirection) characterDirection.forward = dir;
-            var core = characterBody.corePosition;
-            Fx.Sound(row.Id, "cast", core);
-            Vfx.Play(row.Vfx, "cast", core + dir * 1.2f, 1f, null, core + dir * (row.Reach + 1f), alt ? -1f : 1f);
-            float cos = Mathf.Cos(row.SpreadDeg * Mathf.Deg2Rad);
-            bool hit = false, sparks = Buffs.Count(characterBody, "pain") >= 5;
-            foreach (var hb in Fx.Enemies(characterBody, core, row.Reach + characterBody.radius + 2f))
-            {
-                var b = hb.healthComponent.body;
-                if (!b) continue;
-                var to = b.corePosition - core; float flat = new Vector2(to.x, to.z).magnitude;
-                if (flat - b.radius > row.Reach + characterBody.radius) continue;
-                var tf = to; tf.y = 0;
-                if (tf.sqrMagnitude > 0.25f && Vector3.Dot(tf.normalized, dir) < cos) continue;
-                hit = true;
-                Fx.Sound(row.Id, "hit", b.corePosition);
-                Vfx.Play(row.Vfx, sparks ? "spark" : "hit", b.corePosition, 1f);
-                if (!Server) continue;
-                Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, b.corePosition, new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Primary });
-                if (!b.isChampion) Fx.KnockBack(characterBody, hb.healthComponent, dir, row.Knockback);
-            }
-            if (!hit) return;
-            MeltyTest.Report("punch", true, characterBody.baseNameToken);
-            // the heavy feel: a short freeze and a kick of the camera
-            if (anim) { anim.enabled = false; stopUntil = fixedAge + HitStop; }
-            if (isAuthority) AddRecoil(-1.2f, -1.6f, -0.5f, 0.5f);
-        }
-
-        public override void OnExit()
-        {
-            if (anim) anim.enabled = true;
-            base.OnExit();
-        }
-
-        // mid-swing nothing cuts in (the gun waits for the punch to end)
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.PrioritySkill;
     }
 
-    // ---------------------------------------------------------------- M2: Memento Mori
-    /// <summary>Hold Right Click: the gun spins up over duration seconds, its rate rising evenly from 1/interval to 1/minDuration
+    // ---------------------------------------------------------------- M1: Memento Mori
+    /// <summary>Hold Left Click: the gun spins up over duration seconds, its rate rising evenly from 1/interval to 1/minDuration
     /// shots a second and its spread from a third of spreadDeg to all of it. Let go and press again within hangTime and it is still
     /// spun up. Everything else (magazine, reload, falloff, tracers) is the shared gun.</summary>
     [Kind("gun_spin")]
@@ -258,7 +234,7 @@ namespace DeadlockOfRain.States
     // ---------------------------------------------------------------- R: Aura of Suffering (toggle)
     /// <summary>R switches the aura on (its buff, kept by the server) or off. Switching on gives the charge straight back so R can
     /// switch it off at once; switching off lets the cooldown (5 s) run. The aura itself is <see cref="VictorAura"/>, on its own
-    /// component, so it stays on while Victor punches and shoots.</summary>
+    /// component, so it stays on while Victor shoots and jolts himself.</summary>
     [Kind("aura_toggle")]
     public sealed class AuraToggle : DlrState
     {
@@ -338,15 +314,7 @@ namespace DeadlockOfRain.States
 
         void SelfHurt(float fraction)
         {
-            var hc = body.healthComponent;
-            if (!hc || !hc.alive || fraction <= 0f) return;
-            // his own damage (attacker = himself): never counted as a hit for Pain, never kills him
-            hc.TakeDamage(new DamageInfo
-            {
-                attacker = body.gameObject, inflictor = body.gameObject, damage = hc.fullCombinedHealth * fraction, position = body.corePosition,
-                damageType = DamageType.NonLethal | DamageType.BypassArmor | DamageType.BypassBlock, procCoefficient = 0f, crit = false,
-                damageColorIndex = DamageColorIndex.Bleed,
-            });
+            if (body && body.healthComponent) VictorPain.HurtSelf(body, body.healthComponent.fullCombinedHealth * fraction);
         }
 
         void Update()
@@ -397,8 +365,11 @@ namespace DeadlockOfRain.States
                 float before = victim.combinedHealth;
                 Fx.Hit(body, hb, coef, row.TickProc, vb ? vb.corePosition : hb.transform.position);
                 healed += Mathf.Max(0f, before - victim.combinedHealth) * row.HealFraction;
-                // a thin red thread from the enemy to Victor, now and then (every player sees it)
-                if (vb && Random.value < 0.35f) Relay.Vfx(row.Vfx, "hit", vb.corePosition, 1f, null, body.corePosition);
+                // a flying enemy (the strikes only run along the floor) gets one bolt from Victor every tick that hurts it (creator,
+                // 2026-11-05: "if there is a flying enemy in the aoe circle shoot 1 lightning bolt to them every time they are damaged");
+                // others a thin red thread to Victor now and then (every player sees both)
+                if (vb && vb.isFlying) Relay.Vfx(row.Vfx, "zap", vb.corePosition, 1f, null, body.corePosition + Vector3.up * 0.5f);
+                else if (vb && Random.value < 0.35f) Relay.Vfx(row.Vfx, "hit", vb.corePosition, 1f, null, body.corePosition);
             }
             if (healed > 0f) hc.Heal(healed, default);
         }

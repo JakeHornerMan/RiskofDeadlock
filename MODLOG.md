@@ -5,6 +5,14 @@
 - Deadlock ClientVersion 6817 (build 26143760, 2026-10-22 evening; no clip, mesh or sound change for our heroes); 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
+## Victor redesign (2026-11-05, same day)
+- The creator's "slight redesign": the punches are gone; Memento Mori back on M1 at 100 % a round; M2 is **Jumpstart** (kind `jumpstart`:
+  `skills.selfDamageFlat` 10 health to himself, +1 Pain, buff `victor_jumpstart` +30 % move speed 5 s; on the Weapon machine so it pauses
+  the gun 0.4 s and keeps the spin; `DeadlockAnimator.StrideMult` speeds the run up with it). Aura 9 m + 0.5 m per Pain. Kit page and the
+  balance overview now include him (still DLL build only). Same day: Pain is plain stacks with one shared decay clock (one fades
+  every 10 s; test checks 7 -> 6); the gun welded to his hand (`gunBone weaponPivot`: his rig hangs the gun off the root); green
+  electricity, floor-only aura strikes (`Vfx.Bolt flat`), a bolt to flying enemies on each aura tick. Bench 2896 %/s vs REX 1738 (above).
+
 ## Victor (2026-11-05, the creator's own DLL build only)
 - Twelfth hero from the creator's own files (`charactersFinal/victorFiles`), matched to REX: Pain (1 stack per enemy hit, +15 % attack
   speed like Syringe), Heavy Melee on M1, Memento Mori on M2 (a spinning gun; guns may now sit on M2: `Survivors.GunSlot/GunRow`), Pain
