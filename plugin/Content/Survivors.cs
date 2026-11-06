@@ -458,6 +458,8 @@ namespace DeadlockOfRain
             if (MinaRuntime.Wanted(hero) && !GetComponent<MinaRuntime>()) gameObject.AddComponent<MinaRuntime>();
             // Victor: the barbed-wire arm and the Aura of Suffering (every machine; the server runs the aura)
             if (Sheet.SkillsOf(hero.Id).Any(s => s.Kind == "aura_toggle") && !GetComponent<States.VictorAura>()) gameObject.AddComponent<States.VictorAura>();
+            // Paige: Plot Armor (every machine shows it; the server puts it on below passiveBelowPct health)
+            if (States.PaigeRuntime.Wanted(hero) && !GetComponent<States.PaigeRuntime>()) gameObject.AddComponent<States.PaigeRuntime>();
             steps = gun != null ? Sheet.Sound(gun.Id + "/step") : null;
             lands = gun != null ? Sheet.Sound(gun.Id + "/land") ?? steps : null;
             var model = body.modelLocator ? body.modelLocator.modelTransform : null;

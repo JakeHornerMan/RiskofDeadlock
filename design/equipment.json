@@ -144,6 +144,17 @@
       "enigmaCompatible": true,
       "randomTrigger": true,
       "figure": "all"
+    },
+    {
+      "id": "eq_paige_green_knight",
+      "hero": "paige",
+      "skill": "paige_ult",
+      "pickupText": "A giant green knight charges 100m, trampling everything for 6000-12000% damage and healing allies.",
+      "lore": "The last page of the story is always the same: the knight rides, and the heroine lives.",
+      "canDrop": true,
+      "enigmaCompatible": true,
+      "randomTrigger": true,
+      "figure": "all"
     }
   ]
 }

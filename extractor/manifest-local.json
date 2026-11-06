@@ -409,16 +409,54 @@
       "vertexColors": [
         "pocket_hair"
       ]
+    },
+    {
+      "id": "paige",
+      "name": "Paige",
+      "key": "hero_bookworm",
+      "vmdl": "models/heroes_wip/bookworm/bookworm.vmdl",
+      "meshes": [
+        "bookworm",
+        "head"
+      ],
+      "clips": [
+        "ability_excalibur_cast",
+        "ability_excalibur_cast_complete",
+        "ability_knights_charge",
+        "ability_knights_charge_cast",
+        "cast_start",
+        "dash_air_forward",
+        "in_air_loop_apex",
+        "out_of_combat_run_n",
+        "reload_idle",
+        "weapon_run_e",
+        "weapon_run_n",
+        "weapon_run_s",
+        "weapon_run_w",
+        "weapon_stand_idle"
+      ],
+      "split": [],
+      "vertexColors": []
     }
   ],
   "images": [
+    "materials/particle/abilities/bookworm/bookworm_excalibur_text.vtex",
+    "materials/particle/abilities/bookworm/bookworm_graphic_dragon.vtex",
+    "materials/particle/abilities/bookworm/bookworm_graphic_knight.vtex",
+    "materials/particle/abilities/bookworm/bookworm_graphic_sword.vtex",
     "materials/particle/abilities/vampirebat/vampirebat_blink_preview_marker_symbol_psd_7dd7528f.vtex",
     "materials/particle/abilities/vampirebat/vampirebat_lovebites_icon.vtex",
     "materials/particle/abilities/wraith/wraith_card_suit.vtex",
     "materials/particle/abilities/wraith/wraith_crosshair.vtex",
     "materials/particle/abilities/wraith/wraith_rapid_fire_ring_trans_psd_c28add01.vtex",
     "materials/particle/abilities/wraith/wraith_symbols.vtex",
+    "materials/particle/glyphs/astrological_ring.vtex",
+    "materials/particle/ground/ground_streak_bookworm_psd_5a44028c.vtex",
     "materials/particle/projected/vampirebat_steallife_preview_cone_projected_psd_4f7edd39.vtex",
+    "materials/particle/symbols/symbol_heptagram_psd_89a8c10c.vtex",
+    "materials/particle/text/text_atlas.vtex",
+    "panorama/images/heroes/bookworm_card_psd.vtex",
+    "panorama/images/heroes/bookworm_sm_psd.vtex",
     "panorama/images/heroes/bull_card_psd.vtex",
     "panorama/images/heroes/bull_sm_psd.vtex",
     "panorama/images/heroes/digger_card_psd.vtex",
@@ -427,6 +465,7 @@
     "panorama/images/heroes/frank_sm_psd.vtex",
     "panorama/images/heroes/gigawatt_card_psd.vtex",
     "panorama/images/heroes/gigawatt_sm_psd.vtex",
+    "panorama/images/heroes/guns/bookworm_gun_psd.vtex",
     "panorama/images/heroes/guns/bull_gun_psd.vtex",
     "panorama/images/heroes/guns/digger_gun_psd.vtex",
     "panorama/images/heroes/guns/frank_gun_psd.vtex",
@@ -455,6 +494,10 @@
     "panorama/images/heroes/viscous_sm_psd.vtex",
     "panorama/images/heroes/wraith_card_psd.vtex",
     "panorama/images/heroes/wraith_sm_psd.vtex",
+    "panorama/images/hud/abilities/bookworm/bookworm_blindinglight_psd.vtex",
+    "panorama/images/hud/abilities/bookworm/bookworm_charge_psd.vtex",
+    "panorama/images/hud/abilities/bookworm/bookworm_defendandfight_psd.vtex",
+    "panorama/images/hud/abilities/bookworm/bookworm_dragon_psd.vtex",
     "panorama/images/hud/abilities/bull_beef_psd.vtex",
     "panorama/images/hud/abilities/bull_charge_psd.vtex",
     "panorama/images/hud/abilities/bull_drain_psd.vtex",
@@ -512,7 +555,8 @@
     "panorama/images/items/vitality/phantom_strike_psd.vtex",
     "panorama/images/items/vitality/unstoppable_psd.vtex",
     "panorama/images/items/weapon/melee_charge_psd.vtex",
-    "panorama/images/items/weapon/tesla_bullets_psd.vtex"
+    "panorama/images/items/weapon/tesla_bullets_psd.vtex",
+    "panorama/images/minimap/bookworm_knight_psd.vtex"
   ],
   "soundEvents": [
     "Ability.Melee.Impact.Heavy.NPC",
@@ -531,6 +575,28 @@
     "Abrams.Melee.Swing.Charged",
     "Abrams.Wpn.Fire.Main",
     "Abrams.Wpn.Impact",
+    "Bookworm.AOEMagic.Buildup",
+    "Bookworm.AOEMagic.Cast",
+    "Bookworm.AOEMagic.End",
+    "Bookworm.AOEMagic.Root.Proc",
+    "Bookworm.Conjure.Dragon.Burn.Expire",
+    "Bookworm.Conjure.Dragon.Burn.Lp",
+    "Bookworm.Conjure.Dragon.Burn.Start",
+    "Bookworm.Conjure.Dragon.Cast",
+    "Bookworm.Conjure.Dragon.Expire",
+    "Bookworm.Conjure.Dragon.Impact",
+    "Bookworm.Conjure.Dragon.Lp",
+    "Bookworm.Footstep",
+    "Bookworm.JumpLand",
+    "Bookworm.Melee.Sweetener",
+    "Bookworm.Rallying.Charge.Cast",
+    "Bookworm.Rallying.Charge.Cast.Global",
+    "Bookworm.Rallying.Charge.Horse.Expire",
+    "Bookworm.Rallying.Charge.Horse.Lp",
+    "Bookworm.Wpn.Fire",
+    "Bookworm.Wpn.Reload.End",
+    "Bookworm.Wpn.Reload.Start",
+    "Bookworm.Wpn.Whizby",
     "Frank.Footstep",
     "Frank.JumpLand",
     "Frank.Pain.Aura.Cast",
@@ -743,6 +809,7 @@
   ],
   "soundEventFiles": [
     "soundevents/hero/abrams.vsndevts",
+    "soundevents/hero/bookworm.vsndevts",
     "soundevents/hero/frank.vsndevts",
     "soundevents/hero/gigawatt.vsndevts",
     "soundevents/hero/haze.vsndevts",
@@ -767,6 +834,16 @@
     "atlas/atlas_use_power2",
     "atlas/atlas_use_power4",
     "atlas/emote/atlas_effort_melee_big",
+    "bookworm/bookworm_happy",
+    "bookworm/bookworm_hunt",
+    "bookworm/bookworm_killstreak_high",
+    "bookworm/bookworm_killstreak_mid",
+    "bookworm/bookworm_killstreak_start",
+    "bookworm/bookworm_select",
+    "bookworm/bookworm_unselect",
+    "bookworm/bookworm_use_power1",
+    "bookworm/bookworm_use_power3",
+    "bookworm/bookworm_use_power4",
     "frank/frank_hunt",
     "frank/frank_killstreak_high",
     "frank/frank_killstreak_mid",
@@ -988,6 +1065,35 @@
       "clips": [
         "lift_loop"
       ]
+    },
+    {
+      "id": "paige_dragon",
+      "vmdl": "models/heroes_wip/bookworm/bookworm_dragon_fullbody.vmdl",
+      "meshes": [],
+      "clips": [
+        "dragon_fly",
+        "dragon_fly_fast_spawn"
+      ]
+    },
+    {
+      "id": "paige_knight",
+      "vmdl": "models/particle/bookworm_horse_knight.vmdl",
+      "meshes": [],
+      "clips": [
+        "bookworm_horse_knight_anims"
+      ]
+    },
+    {
+      "id": "paige_sword",
+      "vmdl": "models/heroes_wip/bookworm/bookworm_sword_large.vmdl",
+      "meshes": [],
+      "clips": []
+    },
+    {
+      "id": "paige_stone",
+      "vmdl": "models/heroes_wip/bookworm/bookworm_stone.vmdl",
+      "meshes": [],
+      "clips": []
     }
   ],
   "owners": {
@@ -1040,6 +1146,72 @@
     "Abrams.Wpn.Impact": [
       "abrams",
       "ratking"
+    ],
+    "Bookworm.AOEMagic.Buildup": [
+      "paige"
+    ],
+    "Bookworm.AOEMagic.Cast": [
+      "paige"
+    ],
+    "Bookworm.AOEMagic.End": [
+      "paige"
+    ],
+    "Bookworm.AOEMagic.Root.Proc": [
+      "paige"
+    ],
+    "Bookworm.Conjure.Dragon.Burn.Expire": [
+      "paige"
+    ],
+    "Bookworm.Conjure.Dragon.Burn.Lp": [
+      "paige"
+    ],
+    "Bookworm.Conjure.Dragon.Burn.Start": [
+      "paige"
+    ],
+    "Bookworm.Conjure.Dragon.Cast": [
+      "paige"
+    ],
+    "Bookworm.Conjure.Dragon.Expire": [
+      "paige"
+    ],
+    "Bookworm.Conjure.Dragon.Impact": [
+      "paige"
+    ],
+    "Bookworm.Conjure.Dragon.Lp": [
+      "paige"
+    ],
+    "Bookworm.Footstep": [
+      "paige"
+    ],
+    "Bookworm.JumpLand": [
+      "paige"
+    ],
+    "Bookworm.Melee.Sweetener": [
+      "paige"
+    ],
+    "Bookworm.Rallying.Charge.Cast": [
+      "paige"
+    ],
+    "Bookworm.Rallying.Charge.Cast.Global": [
+      "paige"
+    ],
+    "Bookworm.Rallying.Charge.Horse.Expire": [
+      "paige"
+    ],
+    "Bookworm.Rallying.Charge.Horse.Lp": [
+      "paige"
+    ],
+    "Bookworm.Wpn.Fire": [
+      "paige"
+    ],
+    "Bookworm.Wpn.Reload.End": [
+      "paige"
+    ],
+    "Bookworm.Wpn.Reload.Start": [
+      "paige"
+    ],
+    "Bookworm.Wpn.Whizby": [
+      "paige"
     ],
     "Frank.Footstep": [
       "victor"
@@ -1709,6 +1881,36 @@
     "billy_nail_prop": [
       "billy"
     ],
+    "bookworm/bookworm_happy": [
+      "paige"
+    ],
+    "bookworm/bookworm_hunt": [
+      "paige"
+    ],
+    "bookworm/bookworm_killstreak_high": [
+      "paige"
+    ],
+    "bookworm/bookworm_killstreak_mid": [
+      "paige"
+    ],
+    "bookworm/bookworm_killstreak_start": [
+      "paige"
+    ],
+    "bookworm/bookworm_select": [
+      "paige"
+    ],
+    "bookworm/bookworm_unselect": [
+      "paige"
+    ],
+    "bookworm/bookworm_use_power1": [
+      "paige"
+    ],
+    "bookworm/bookworm_use_power3": [
+      "paige"
+    ],
+    "bookworm/bookworm_use_power4": [
+      "paige"
+    ],
     "frank/frank_hunt": [
       "victor"
     ],
@@ -1865,6 +2067,18 @@
     "krill/krill_use_power4": [
       "mokrill"
     ],
+    "materials/particle/abilities/bookworm/bookworm_excalibur_text.vtex": [
+      "paige"
+    ],
+    "materials/particle/abilities/bookworm/bookworm_graphic_dragon.vtex": [
+      "paige"
+    ],
+    "materials/particle/abilities/bookworm/bookworm_graphic_knight.vtex": [
+      "paige"
+    ],
+    "materials/particle/abilities/bookworm/bookworm_graphic_sword.vtex": [
+      "paige"
+    ],
     "materials/particle/abilities/vampirebat/vampirebat_blink_preview_marker_symbol_psd_7dd7528f.vtex": [
       "mina"
     ],
@@ -1883,11 +2097,41 @@
     "materials/particle/abilities/wraith/wraith_symbols.vtex": [
       "wraith"
     ],
+    "materials/particle/glyphs/astrological_ring.vtex": [
+      "paige"
+    ],
+    "materials/particle/ground/ground_streak_bookworm_psd_5a44028c.vtex": [
+      "paige"
+    ],
     "materials/particle/projected/vampirebat_steallife_preview_cone_projected_psd_4f7edd39.vtex": [
       "mina"
     ],
+    "materials/particle/symbols/symbol_heptagram_psd_89a8c10c.vtex": [
+      "paige"
+    ],
+    "materials/particle/text/text_atlas.vtex": [
+      "paige"
+    ],
     "mina_bat_prop": [
       "mina"
+    ],
+    "paige_dragon": [
+      "paige"
+    ],
+    "paige_knight": [
+      "paige"
+    ],
+    "paige_stone": [
+      "paige"
+    ],
+    "paige_sword": [
+      "paige"
+    ],
+    "panorama/images/heroes/bookworm_card_psd.vtex": [
+      "paige"
+    ],
+    "panorama/images/heroes/bookworm_sm_psd.vtex": [
+      "paige"
     ],
     "panorama/images/heroes/bull_card_psd.vtex": [
       "abrams"
@@ -1912,6 +2156,9 @@
     ],
     "panorama/images/heroes/gigawatt_sm_psd.vtex": [
       "seven"
+    ],
+    "panorama/images/heroes/guns/bookworm_gun_psd.vtex": [
+      "paige"
     ],
     "panorama/images/heroes/guns/bull_gun_psd.vtex": [
       "abrams"
@@ -1996,6 +2243,18 @@
     ],
     "panorama/images/heroes/wraith_sm_psd.vtex": [
       "wraith"
+    ],
+    "panorama/images/hud/abilities/bookworm/bookworm_blindinglight_psd.vtex": [
+      "paige"
+    ],
+    "panorama/images/hud/abilities/bookworm/bookworm_charge_psd.vtex": [
+      "paige"
+    ],
+    "panorama/images/hud/abilities/bookworm/bookworm_defendandfight_psd.vtex": [
+      "paige"
+    ],
+    "panorama/images/hud/abilities/bookworm/bookworm_dragon_psd.vtex": [
+      "paige"
     ],
     "panorama/images/hud/abilities/bull_beef_psd.vtex": [
       "abrams"
@@ -2168,6 +2427,9 @@
     "panorama/images/items/weapon/tesla_bullets_psd.vtex": [
       "seven"
     ],
+    "panorama/images/minimap/bookworm_knight_psd.vtex": [
+      "paige"
+    ],
     "pocket_case_prop": [
       "pocket"
     ],
@@ -2248,6 +2510,9 @@
     ],
     "soundevents/hero/abrams.vsndevts": [
       "abrams"
+    ],
+    "soundevents/hero/bookworm.vsndevts": [
+      "paige"
     ],
     "soundevents/hero/frank.vsndevts": [
       "victor"

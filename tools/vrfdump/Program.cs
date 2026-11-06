@@ -2,6 +2,7 @@
 // the installed Deadlock (build 6795 broke CLI 20.0). Reads the VPK only; never writes to Deadlock. Not shipped.
 //   dotnet build tools/vrfdump -c Release -o build/vrfdump
 //   build/vrfdump/vrfdump.exe <pak01_dir.vpk> <mode> <path> [out] [materials]
+//   (<pak01_dir.vpk> may also be a folder of loose files, e.g. charactersFinal/paigeFiles/deadlock: packed to a temp vpk once)
 //   list   <text>          every VPK file whose path contains text (list "" = all: tools/dev/vpk_files.txt)
 //   glb    <x.vmdl> <out>  the model with every clip and mesh (anim_names.json, bones, heights); any 5th argument adds materials
 //   text   <x.vdata|x.vsndevts> <out>   decompiled to text (heroes.vdata, a hero's sound events)
@@ -15,7 +16,22 @@ using ValveResourceFormat.IO;
 using ValveResourceFormat.ResourceTypes;
 using System.Text;
 
-var vpk = args[0]; var mode = args[1]; var path = args[2]; var outp = args.Length > 3 ? args[3] : null;
+var vpk = args[0];
+// a folder of loose Deadlock-layout files (charactersFinal/<hero>Files/deadlock) is packed into a temporary vpk first
+if (Directory.Exists(vpk))
+{
+    var dir = Path.GetFullPath(vpk);
+    var tmpVpk = Path.Combine(Path.GetTempPath(), "vrfdump-loose-" + Math.Abs(dir.GetHashCode()) + "_dir.vpk");
+    if (!File.Exists(tmpVpk))
+    {
+        using var p = new Package();
+        foreach (var f in Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories))
+            p.AddFile(Path.GetRelativePath(dir, f).Replace('\\', '/'), File.ReadAllBytes(f));
+        p.Write(tmpVpk);
+    }
+    vpk = tmpVpk;
+}
+var mode = args[1]; var path = args[2]; var outp = args.Length > 3 ? args[3] : null;
 using var package = new Package();
 package.OptimizeEntriesForBinarySearch(StringComparison.OrdinalIgnoreCase);
 package.Read(vpk);

@@ -1513,6 +1513,138 @@
       "gap": 0,
       "chain": 0,
       "skipTakes": "none"
+    },
+    {
+      "id": "paige_select",
+      "hero": "paige",
+      "trigger": "select",
+      "skill": "none",
+      "kills": 0,
+      "group": "bookworm/bookworm_select",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "paige_unselect",
+      "hero": "paige",
+      "trigger": "unselect",
+      "skill": "none",
+      "kills": 0,
+      "group": "bookworm/bookworm_unselect",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "paige_bookwyrm_vo",
+      "hero": "paige",
+      "trigger": "skill",
+      "skill": "paige_bookwyrm",
+      "kills": 0,
+      "group": "bookworm/bookworm_use_power1",
+      "chance": 0.4,
+      "gap": 10,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "paige_read_vo",
+      "hero": "paige",
+      "trigger": "skill",
+      "skill": "paige_read",
+      "kills": 0,
+      "group": "bookworm/bookworm_use_power3",
+      "chance": 0.5,
+      "gap": 10,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "paige_charge_vo",
+      "hero": "paige",
+      "trigger": "skill",
+      "skill": "paige_charge",
+      "kills": 0,
+      "group": "bookworm/bookworm_use_power4",
+      "chance": 0.6,
+      "gap": 10,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "paige_ult_vo",
+      "hero": "paige",
+      "trigger": "skill",
+      "skill": "paige_ult",
+      "kills": 0,
+      "group": "bookworm/bookworm_use_power4",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "paige_streak4",
+      "hero": "paige",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 4,
+      "group": "bookworm/bookworm_killstreak_start",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "paige_streak7",
+      "hero": "paige",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 7,
+      "group": "bookworm/bookworm_killstreak_mid",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "paige_streak10",
+      "hero": "paige",
+      "trigger": "multikill",
+      "skill": "none",
+      "kills": 10,
+      "group": "bookworm/bookworm_killstreak_high",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "paige_hunt",
+      "hero": "paige",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "bookworm/bookworm_hunt",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
+    },
+    {
+      "id": "paige_happy",
+      "hero": "paige",
+      "trigger": "idle",
+      "skill": "none",
+      "kills": 0,
+      "group": "bookworm/bookworm_happy",
+      "chance": 1.0,
+      "gap": 0,
+      "chain": 0,
+      "skipTakes": "none"
     }
   ]
 }

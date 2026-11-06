@@ -1937,6 +1937,245 @@
       ],
       "tint": "none",
       "notes": "Shocking Reanimation: crackling lightning as the user rises, a bolt striking down at the peak, a ball of lightning bursting out to 30 m, then a 20 s crackle around them; Tesla and Ukulele arcs to enemies"
+    },
+    {
+      "id": "paige_gun",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Chapter's End: a glowing ghost-green spirit page bolt (a soft core with a trail of tumbling letters from Paige's own text atlas), the book flaring at the cover as it fires; a burst of letters and a green flash where it pierces an enemy"
+    },
+    {
+      "id": "paige_bookwyrm",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Bookwyrm: the book flares and pages swirl as she casts; the dragon graphic glows on the ground where the wyvern appears; Paige's own wyvern (paige_dragon, flying with its dragon_fly clip) rides the path as a see-through glowing green spirit, breathing a cone of green ghost fire onto the floor that leaves a burning trail of green flames, embers and the green text-streak scorch for 3 s"
+    },
+    {
+      "id": "paige_read",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Captivating Read: a ghost-green magic circle on the ground (her heptagram and astrological ring, slowly turning, edge brightening as it builds) with the Excalibur lettering rising; at 1.25 s her giant sword (paige_sword, see-through green) slams point-first into the centre with a shockwave, flash and her stone; rooted enemies get green glyph chains"
+    },
+    {
+      "id": "paige_knights",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Rallying Charge and The Green Knight: Paige's own horse knight (paige_knight, galloping with its own clip) as see-through glowing green spirits, a row of 5 (R) or one giant (Q), each with a trail of green spirit mist and hoof sparks on the ground; the knight graphic flares as she reads; a burst of green light on every enemy trampled and a heal glow on allies"
+    },
+    {
+      "id": "paige_plot_armor",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Plot Armor: a faint green glow and slowly circling letters around Paige while it is on"
+    },
+    {
+      "id": "paige_dragon",
+      "kind": "prop",
+      "addressable": "models/heroes_wip/bookworm/bookworm_dragon_fullbody.vmdl",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "dragon_fly",
+        "dragon_fly_fast_spawn"
+      ],
+      "tint": "none",
+      "notes": "Paige's wyvern for Bookwyrm, with its skeleton and fly clips (her own files)"
+    },
+    {
+      "id": "paige_knight",
+      "kind": "prop",
+      "addressable": "models/particle/bookworm_horse_knight.vmdl",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "bookworm_horse_knight_anims"
+      ],
+      "tint": "none",
+      "notes": "Paige's spectral horse knight for Rallying Charge and the ult, with its gallop (her own files)"
+    },
+    {
+      "id": "paige_sword",
+      "kind": "prop",
+      "addressable": "models/heroes_wip/bookworm/bookworm_sword_large.vmdl",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Paige's giant sword (5.2 m) for Captivating Read"
+    },
+    {
+      "id": "paige_stone",
+      "kind": "prop",
+      "addressable": "models/heroes_wip/bookworm/bookworm_stone.vmdl",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "The stone the sword lands in (Captivating Read)"
+    },
+    {
+      "id": "paige_text_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/text/text_atlas.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Paige's letter atlas (2 x 2: A, B, C, z): the letters trailing her pages and swirling from the book"
+    },
+    {
+      "id": "paige_dragon_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/bookworm/bookworm_graphic_dragon.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "The dragon graphic flaring on the ground for Bookwyrm"
+    },
+    {
+      "id": "paige_knight_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/bookworm/bookworm_graphic_knight.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "The knight graphic flaring for Rallying Charge"
+    },
+    {
+      "id": "paige_sword_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/bookworm/bookworm_graphic_sword.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "The sword-in-stone graphic for Captivating Read"
+    },
+    {
+      "id": "paige_excalibur_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/bookworm/bookworm_excalibur_text.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "The Excalibur lettering rising from the Captivating Read circle"
+    },
+    {
+      "id": "paige_heptagram_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/symbols/symbol_heptagram_psd_89a8c10c.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "The heptagram circle on the ground for Captivating Read"
+    },
+    {
+      "id": "paige_ring_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/glyphs/astrological_ring.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "The astrological ring turning around the Captivating Read circle"
+    },
+    {
+      "id": "paige_streak_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/ground/ground_streak_bookworm_psd_5a44028c.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "The green text streak scorched on the floor along the wyvern's burning trail"
     }
   ]
 }

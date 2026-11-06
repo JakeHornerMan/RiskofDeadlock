@@ -62,6 +62,8 @@ namespace DeadlockOfRain
                         return Pocket(id, moment, at, radius, follow, to, angle);
                     case "victor_jumpstart": case "victor_gun": case "victor_battery": case "victor_aura": case "victor_wire": case "victor_reanimation":
                         return Victor(id, moment, at, radius, follow, to, angle);
+                    case "paige_gun": case "paige_bookwyrm": case "paige_read": case "paige_knights": case "paige_plot_armor":
+                        return Paige(id, moment, at, radius, follow, to, angle, life);
                 }
             }
             catch (System.Exception e) { Log.Warn($"vfx {id}/{moment}: {e.Message}"); }

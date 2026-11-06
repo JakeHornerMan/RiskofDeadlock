@@ -4,6 +4,9 @@
 //   DeadlockExtract.exe --deadlock <Deadlock folder> --out <cache folder> [--manifest manifest.json] [--force]
 //   DeadlockExtract.exe --deadlock <Deadlock folder> --list-models     (each hero key's model, from scripts/heroes.vdata)
 //   ... --heroes <id> --keep-glb <file.glb>      also keep the hero's glTF (the meshes and clips the mod uses), to edit in Blender
+//   DeadlockExtract.exe --loose <folder> --out <cache folder> --manifest m.json [--force]
+//        (1.10.0) read from a folder of loose Deadlock-layout files (models/..., sounds/..., the creator's charactersFinal/<hero>Files/deadlock)
+//        instead of an install: the folder is packed into a temporary pak01_dir.vpk and read like Deadlock (tools/build_local_hero.sh)
 //   DeadlockExtract.exe --import-glb <file.glb> --hero <id> --out <cache folder> [--manifest m.json]
 //        an edited glTF back into heroes/<id>/ (dlm + textures) without Deadlock (tools/build_local_hero.sh, the creator's PC)
 //
@@ -25,13 +28,14 @@ namespace DeadlockExtract;
 
 public static class Program
 {
-    public const string Version = "1.9.0";
+    public const string Version = "1.10.0";
     static StreamWriter? log;
     static string? keepGlb;   // --keep-glb: copy the hero's glTF here before it is deleted
+    static string? looseRoot; // 1.10.0 --loose: the folder read; its ../edit/<hero>.glb supplies the clips the model can't (see MergeClips)
 
     public static int Main(string[] args)
     {
-        string? deadlock = null, outDir = null, manifestPath = null, importGlb = null, importHero = null;
+        string? deadlock = null, loose = null, outDir = null, manifestPath = null, importGlb = null, importHero = null;
         bool force = false, listModels = false;
         HashSet<string>? only = null;   // 1.8.0: --heroes a,b: read only these (the plugin's hero picker)
         for (int i = 0; i < args.Length; i++)
@@ -39,6 +43,7 @@ public static class Program
             switch (args[i])
             {
                 case "--deadlock": deadlock = args[++i]; break;
+                case "--loose": loose = args[++i]; break;
                 case "--out": outDir = args[++i]; break;
                 case "--manifest": manifestPath = args[++i]; break;
                 case "--force": force = true; break;
@@ -57,6 +62,13 @@ public static class Program
         try
         {
             if (importGlb != null) return ImportGlb(importGlb, importHero ?? throw new Exception("--import-glb needs --hero <id>"), outDir, manifestPath);
+            if (loose != null)
+            {
+                looseRoot = Path.GetFullPath(loose);
+                var tmp = PackLoose(loose);
+                try { return Run(tmp, outDir, manifestPath, true, only); }
+                finally { TryDeleteDir(tmp); }
+            }
             if (deadlock == null) throw new Exception("No Deadlock folder given (--deadlock).");
             if (listModels) return ListModels(deadlock);
             return Run(deadlock, outDir, manifestPath, force, only);
@@ -87,6 +99,30 @@ public static class Program
         foreach (var c in new[] { Path.Combine(deadlock, "game", "citadel", "pak01_dir.vpk"), Path.Combine(deadlock, "citadel", "pak01_dir.vpk"), Path.Combine(deadlock, "pak01_dir.vpk") })
             if (File.Exists(c)) return c;
         throw new FileNotFoundException("pak01_dir.vpk not found under " + deadlock + " (is this the Deadlock folder?)");
+    }
+
+    /// <summary>1.10.0: packs a folder of loose Deadlock-layout files (models/heroes_wip/x/x.vmdl_c, sounds/..., soundevents/...) into
+    /// a temporary pak01_dir.vpk so the rest of the reader works on it exactly as on an install. Returns the temporary folder.</summary>
+    static string PackLoose(string folder)
+    {
+        folder = Path.GetFullPath(folder);
+        if (!Directory.Exists(folder)) throw new DirectoryNotFoundException("--loose folder not found: " + folder);
+        var tmp = Path.Combine(Path.GetTempPath(), "DeadlockExtract-loose-" + Environment.ProcessId);
+        TryDeleteDir(tmp);
+        Directory.CreateDirectory(tmp);
+        using var pak = new Package();
+        int n = 0;
+        foreach (var f in Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories))
+        {
+            var rel = Path.GetRelativePath(folder, f).Replace('\\', '/');
+            pak.AddFile(rel, File.ReadAllBytes(f));
+            n++;
+        }
+        var vpk = Path.Combine(tmp, "pak01_dir.vpk");
+        pak.Write(vpk);
+        File.WriteAllText(Path.Combine(tmp, "steam.inf"), "ClientVersion=loose\n");
+        Log($"Loose folder {folder}: {n} files packed into {vpk}");
+        return tmp;
     }
 
     static int Run(string deadlock, string outDir, string manifestPath, bool force, HashSet<string>? only)
@@ -375,13 +411,24 @@ public static class Program
             ComposeAdditiveAnimations = true,
             ProgressReporter = new Progress<string>(m => Log("    " + m)),
         };
-        foreach (var c in hero.Clips) exporter.AnimationFilter.Add(c);
+        // 1.10.0: read from a loose folder (--loose) VRF names a hero's clips by their resource path (models/.../clips/cast_start)
+        // instead of the short name; the filter takes both (DlmWriter stores the short one)
+        var clipDir = (Path.GetDirectoryName(hero.Vmdl) ?? "").Replace('\\', '/') + "/clips/";
+        foreach (var c in hero.Clips) { exporter.AnimationFilter.Add(c); exporter.AnimationFilter.Add(clipDir + c); }
         foreach (var m in hero.Meshes) exporter.MeshFilter.Add(m);
         var glb = Path.Combine(tmp, hero.Id + ".glb");
         exporter.Export(res, glb, CancellationToken.None);
         if (!File.Exists(glb)) throw new Exception("glTF export produced nothing for " + hero.Id);
 
         var model = ModelRoot.Load(glb);
+        // 1.10.0: a loose folder (the creator's own files) has the hero's clips (clips/*.vnmclip_c) but not Deadlock's combined animgraph
+        // (hero.vnmgraph+<hero>.vnmgraph) that VRF finds them through, so the model comes out with its few built-in poses only; the
+        // creator's own glb beside it (<folder>/../edit/<id>.glb, every clip) supplies the rest, bone by bone by name
+        if (looseRoot != null)
+        {
+            var editGlb = Path.Combine(Path.GetDirectoryName(looseRoot) ?? looseRoot, "edit", hero.Id + ".glb");
+            if (File.Exists(editGlb)) Log($"  {hero.Id}: {MergeClips(model, editGlb, hero)} clip(s) taken from {editGlb}");
+        }
         // heroes keep their look as approved (whole-material tints/glows would change them; Deadlock's glow is masked): props only
         // heroes keep only the vertex colours of the materials their sheet lists (heroes.vertexColorMaterials: Wraith's face is
         // painted in vertex colours on a white texture); tints and glows stay off heroes (doc 01 §7)
@@ -392,6 +439,56 @@ public static class Program
         Log($"  {hero.Id}: {stats}");
         if (keepGlb != null) { Directory.CreateDirectory(Path.GetDirectoryName(keepGlb)!); File.Copy(glb, keepGlb, true); Log($"  glTF kept: {keepGlb}"); }
         Directory.Delete(tmp, true);
+    }
+
+    /// <summary>1.10.0: copies the clips the hero's sheet names (and the model lacks) from another glTF of the same skeleton, matching
+    /// bones by name; each clip is named by its short name (the source may name it by its resource path). Returns how many.</summary>
+    static int MergeClips(ModelRoot model, string glbPath, HeroEntry hero)
+    {
+        var src = ModelRoot.Load(glbPath);
+        var nodes = new Dictionary<string, Node>(StringComparer.Ordinal);
+        foreach (var n in model.LogicalNodes) if (n.Name != null && !nodes.ContainsKey(n.Name)) nodes[n.Name] = n;
+        static string ShortName(string name) { name = (name ?? "").Replace('\\', '/'); return name.Substring(name.LastIndexOf('/') + 1); }
+        var have = new HashSet<string>(model.LogicalAnimations.Select(a => ShortName(a.Name)), StringComparer.OrdinalIgnoreCase);
+        int count = 0;
+        foreach (var a in src.LogicalAnimations)
+        {
+            var name = ShortName(a.Name);
+            if (!hero.Clips.Contains(name, StringComparer.OrdinalIgnoreCase) || have.Contains(name)) continue;
+            var dst = model.CreateAnimation(name);
+            foreach (var ch in a.Channels)
+            {
+                var tn = ch.TargetNode;
+                if (tn?.Name == null || !nodes.TryGetValue(tn.Name, out var node)) continue;
+                switch (ch.TargetNodePath)
+                {
+                    case PropertyPath.rotation:
+                    {
+                        var keys = new Dictionary<float, Quaternion>();
+                        foreach (var (t, v) in ch.GetRotationSampler().GetLinearKeys()) keys[t] = v;
+                        if (keys.Count > 0) dst.CreateRotationChannel(node, keys);
+                        break;
+                    }
+                    case PropertyPath.translation:
+                    {
+                        var keys = new Dictionary<float, Vector3>();
+                        foreach (var (t, v) in ch.GetTranslationSampler().GetLinearKeys()) keys[t] = v;
+                        if (keys.Count > 0) dst.CreateTranslationChannel(node, keys);
+                        break;
+                    }
+                    case PropertyPath.scale:
+                    {
+                        var keys = new Dictionary<float, Vector3>();
+                        foreach (var (t, v) in ch.GetScaleSampler().GetLinearKeys()) keys[t] = v;
+                        if (keys.Count > 0) dst.CreateScaleChannel(node, keys);
+                        break;
+                    }
+                }
+            }
+            have.Add(name);
+            count++;
+        }
+        return count;
     }
 
     /// <summary>--import-glb: the creator's edited glTF (Blender) to heroes/&lt;id&gt;/ the same way ExportHero converts Deadlock's,
@@ -542,6 +639,15 @@ public static class Program
             foreach (var f in files.Take(4))
             {
                 var wav = DecodeSound(loader, f);
+                // 1.10.0: a "_blend" sound (Paige's knights: a near/far blend of two recordings) doesn't decode on its own; its plain
+                // recording beside it does (x_lp_blend -> x_lp; x_global_blend -> x_cast_global)
+                if (wav == null && f.Replace('\\', '/').EndsWith("_blend.vsnd", StringComparison.OrdinalIgnoreCase))
+                {
+                    var stem = f.Substring(0, f.Length - "_blend.vsnd".Length);
+                    var cut = stem.LastIndexOf('_');
+                    foreach (var alt in new[] { stem + ".vsnd", cut > 0 ? stem.Substring(0, cut) + "_cast" + stem.Substring(cut) + ".vsnd" : null })
+                        if (alt != null && package.FindEntry(alt + "_c") != null && (wav = DecodeSound(loader, alt)) != null) { Log($"  sound event {name}: {f} -> {alt}"); break; }
+                }
                 if (wav == null) continue;
                 var fn = SafeName(name) + "_" + outFiles.Count + ".wav";
                 File.WriteAllBytes(Path.Combine(dir, fn), wav);

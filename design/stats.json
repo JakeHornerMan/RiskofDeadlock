@@ -287,6 +287,28 @@
       "baseAcceleration": 80,
       "baseMaxShield": 0,
       "sprintingSpeedMultiplier": 1.45
+    },
+    {
+      "hero": "paige",
+      "analog": "EngiBody",
+      "baseMaxHealth": 130,
+      "levelMaxHealth": 39,
+      "baseRegen": 1.0,
+      "levelRegen": 0.2,
+      "baseDamage": 14,
+      "levelDamage": 2.8,
+      "baseArmor": 0,
+      "levelArmor": 0,
+      "baseAttackSpeed": 1,
+      "levelAttackSpeed": 0,
+      "baseCrit": 1,
+      "levelCrit": 0,
+      "baseMoveSpeed": 7.0,
+      "baseJumpPower": 15,
+      "baseJumpCount": 1,
+      "baseAcceleration": 80,
+      "baseMaxShield": 0,
+      "sprintingSpeedMultiplier": 1.45
     }
   ]
 }

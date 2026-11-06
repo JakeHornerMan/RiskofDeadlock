@@ -1062,6 +1062,87 @@
       ],
       "clothChains": 0,
       "runArm": "none"
+    },
+    {
+      "hero": "paige",
+      "upperBodyBone": "spine_0",
+      "gunArms": "LR",
+      "gunBone": "weaponPivot",
+      "gunHand": "hand_L",
+      "muzzle": "weaponTip",
+      "muzzleLeft": "none",
+      "muzzleForward": 0.0,
+      "clothParents": [
+        "none"
+      ],
+      "ragdollBones": [
+        "pelvis",
+        "spine_1",
+        "spine_3",
+        "head",
+        "arm_upper_L",
+        "arm_lower_L",
+        "arm_upper_R",
+        "arm_lower_R",
+        "leg_upper_L",
+        "leg_lower_L",
+        "leg_upper_R",
+        "leg_lower_R"
+      ],
+      "ragdollThickness": 0.35,
+      "rigPrefix": "none",
+      "loopSecondary": false,
+      "springRoots": [
+        "none"
+      ],
+      "springStiffness": 0,
+      "springDamping": 0,
+      "springGravity": 0,
+      "propBones": [
+        "none"
+      ],
+      "steadyClips": [
+        "none"
+      ],
+      "holdBones": [
+        "none"
+      ],
+      "aimPose": "weapon_stand_idle",
+      "idle": "weapon_stand_idle",
+      "run_n": "weapon_run_n",
+      "run_s": "weapon_run_s",
+      "run_e": "weapon_run_e",
+      "run_w": "weapon_run_w",
+      "sprint": "out_of_combat_run_n",
+      "jump_start": "none",
+      "jump_air": "in_air_loop_apex",
+      "land": "none",
+      "fire": "none",
+      "fire_alt": "none",
+      "reload": "reload_idle",
+      "secondary": "cast_start",
+      "secondary_air": "none",
+      "utility": "ability_excalibur_cast",
+      "utility_loop": "ability_excalibur_cast_complete",
+      "special_start": "ability_knights_charge_cast",
+      "special": "ability_knights_charge",
+      "ult_start": "ability_knights_charge_cast",
+      "ult_loop": "ability_knights_charge",
+      "ult_end": "none",
+      "special_loop": "none",
+      "melee": "none",
+      "melee_alt": "none",
+      "death": "none",
+      "melee_heavy": "none",
+      "melee_air": "none",
+      "dash_air": "dash_air_forward",
+      "slam": "none",
+      "float": "none",
+      "restBones": [
+        "none"
+      ],
+      "clothChains": 0,
+      "runArm": "none"
     }
   ]
 }

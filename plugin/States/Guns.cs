@@ -105,6 +105,9 @@ namespace DeadlockOfRain.States
             if (muzzle) Vfx.Play(row.Vfx, "muzzle", muzzle.position, 1f, muzzle);
             if (row.Kind == "gun_goo" && !body.hasEffectiveAuthority && aim.sqrMagnitude > 0.01f && body.inputBank)
                 DlrGoo.Launch(body, row, body.inputBank.aimOrigin, aim, NetworkServer.active);
+            // Paige's pages fly on every machine too (the server's copy deals the damage)
+            if (row.Kind == "gun_page" && !body.hasEffectiveAuthority && aim.sqrMagnitude > 0.01f && body.inputBank)
+                PaigePage.Launch(body, row, muzzle ? muzzle.position : body.inputBank.aimOrigin, aim, NetworkServer.active);
         }
 
         /// <summary>Wraith's Full Auto row (kind full_auto): its buff, and in its recoil column how much harder the gun kicks while it runs.</summary>

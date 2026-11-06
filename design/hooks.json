@@ -497,6 +497,30 @@
       "purpose": "Shocking Reanimation charge: a Tesla Coil pulse every interval at enemies within range (10 + the carrier's own Tesla Coils)",
       "reads": "skills (ult_reanimation row)",
       "side": "server"
+    },
+    {
+      "id": "paige_runtime_component",
+      "method": "component",
+      "target": "DeadlockOfRain.States.PaigeRuntime",
+      "purpose": "Plot Armor: the paige_plot_armor buff on while Paige is below heroes.passiveBelowPct health (server)",
+      "reads": "heroes.passiveBuff/passiveBelowPct",
+      "side": "server"
+    },
+    {
+      "id": "paige_burn_component",
+      "method": "component",
+      "target": "DeadlockOfRain.States.PaigeWyrm",
+      "purpose": "Bookwyrm: the wyvern flight and its burning trail (server: contact hits and trail ticks; every machine: the wyvern and the fire)",
+      "reads": "skills (bookwyrm row)",
+      "side": "all"
+    },
+    {
+      "id": "paige_knights_component",
+      "method": "component",
+      "target": "DeadlockOfRain.States.PaigeKnights",
+      "purpose": "Rallying Charge and The Green Knight: the knights riding out (server: trample damage, stun, ally heals; every machine: the knights)",
+      "reads": "skills (knight_charge, ult_giant_knight rows)",
+      "side": "all"
     }
   ]
 }
