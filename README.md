@@ -19,6 +19,7 @@ Every hero's abilities, numbers and measured damage against their Risk of Rain 2
 - [Wraith](https://claude.ai/artifact/2Bdxqd6iUwp89iEEPELgBb) (matched to Bandit; new, not released yet)
 - [Mina](https://claude.ai/artifact/NWZWgZoK8DRusJpTVzbYoe) · [Pocket](https://claude.ai/artifact/Mc8uRq1qWykkkLncPtNCD5) (matched to Huntress; new, not released yet)
 - [Victor](https://claude.ai/artifact/XP4ssbDWBk2WrV1gaKYBZh) (matched to REX; the creator's own DLL build only, not on Melty)
+- [Paige](https://claude.ai/artifact/3shN9RWGshp3S2fdgt3BQt) (matched to Engineer; the creator's own DLL build only, not on Melty)
 - [Balance overview](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3): every hero next to every Risk of Rain 2 survivor
 
 ## Features

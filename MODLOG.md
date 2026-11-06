@@ -5,6 +5,14 @@
 - Deadlock ClientVersion 6817 (build 26143760, 2026-10-22 evening; no clip, mesh or sound change for our heroes); 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
+## Paige (2026-11-06, the creator's own DLL build only)
+- Thirteenth hero (`bookworm`) from the creator's own files (`charactersFinal/paigeFiles`), matched to Engineer: Chapter's End (`gun_page`,
+  piercing pages, at most 3 enemies), Bookwyrm (`bookwyrm`, her wyvern + burning floor), Captivating Read (`captivating_read`, circle,
+  sword slam, Entangle root), Rallying Charge (`knight_charge`, 5 knights), The Green Knight (`ult_giant_knight`), Plot Armor
+  (`heroes.passiveBelowPct`). New column `skills.propScale`. Ghost green: her props on the sprite shader + RoR2's ghost rim; her
+  additive textures get brightness as alpha (`PaigeTexMat`). Extractor 1.10.0: `--loose`, clips merged from `edit/<id>.glb`, `_blend`
+  sound fallback. Bench 3100 -> 2571 -> **1674** vs Engineer 1611 (inside). Ult 188,376 %. r2modman 1.5.9.
+
 ## Victor redesign (2026-11-05, same day)
 - The creator's "slight redesign": the punches are gone; Memento Mori back on M1 at 100 % a round; M2 is **Jumpstart** (kind `jumpstart`:
   `skills.selfDamageFlat` 10 health to himself, +1 Pain, buff `victor_jumpstart` +30 % move speed 5 s; on the Weapon machine so it pauses

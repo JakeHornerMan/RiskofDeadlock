@@ -85,7 +85,7 @@ namespace DeadlockOfRain.States
 
     // ---------------------------------------------------------------- M1: Chapter's End
     /// <summary>The book reads a spirit page per shot: a glowing bolt (<see cref="PaigePage"/>) from the book toward the point under
-    /// the crosshair at speed m/s that pierces every enemy it meets (each hit once), gone on the world or after range. Damage falls
+    /// the crosshair at speed m/s that pierces up to chainCount enemies (each hit once), gone on the world or after range. Damage falls
     /// off with the distance flown (falloffStart to falloffEnd, down to falloffMinPct). Magazine, reload and timing are the shared gun's.</summary>
     [Kind("gun_page")]
     public sealed class GunPage : GunState
@@ -146,6 +146,8 @@ namespace DeadlockOfRain.States
                 if (damage)
                     Fx.Hit(owner, hb, row.DamagePct / 100f * DlrGoo.Falloff(row, travelled + h.distance), row.ProcCoefficient, p,
                            new DamageTypeCombo { damageType = DamageType.Generic, damageTypeExtended = DamageTypeExtended.Generic, damageSource = DamageSource.Primary });
+                // it pierces at most chainCount enemies (0 = every one): a line of 12 monsters would otherwise all take every page
+                if (row.ChainCount > 0 && struck.Count >= (int)row.ChainCount) { End(); return; }
             }
             transform.position = pos + dir * step;
             travelled += step;

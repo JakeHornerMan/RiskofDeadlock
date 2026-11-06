@@ -2,6 +2,16 @@
 
 One version line, one number up per build. Newest first.
 
+## 1.5.9
+- Built with Risk of Rain 2 build 25921972 (2026-11-06).
+- **Paige joins: the thirteenth hero**, from my own Paige files. A bibliomancer matched to Engineer (130 health, 14 damage); every spirit she summons is see-through ghost green.
+  - **Plot Armor:** +25 % damage while you're below 40 % health.
+  - **Left Click, Chapter's End:** read glowing spirit pages off the book, 140 % each, piercing up to 3 enemies; 14 pages, 2.5 s reload.
+  - **Right Click, Bookwyrm:** her ghostly wyvern flies 20 m through where you aim, breathing green fire on the floor: 180 % as it passes, and the floor burns for 3 s.
+  - **Shift, Captivating Read:** a 7.5 m magic circle where you aim slows everything 36 %; 1.25 s later her giant spirit sword slams into its stone for 350 % and immobilizes them for 1 s.
+  - **R, Rallying Charge:** a row of 5 spectral knights rides out from behind you and charges 40 m: 300 % and a 1 s stun to everything they trample; allies they pass heal 10 %.
+  - **Q, The Green Knight:** one giant green knight charges 100 m, 6000 % rising to 12000 % the further it rides, with a 2 s stun; allies it passes heal 25 %. Anyone can carry it.
+
 ## 1.5.8
 - Built with Risk of Rain 2 build 25921972 (2026-11-05).
 - **Victor redesigned:**

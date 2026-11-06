@@ -188,6 +188,17 @@ for my r2modman")
 - Launches used: 3 test runs (one on a slope where the frog skated off), 3 bench launches (one with no flat spot, one cut by the 10-minute
   limit but finished by the game), 1 ult bench, 1 co-op run.
 
+## 7g. Lessons from Paige (the thirteenth hero, 2026-11-06, DLL build only)
+- A hero folder with only ripped `_c` files: extractor `--loose <folder>` reads it like an install (doc 01). A rip has no combined animgraph,
+  so the hero's clips come from the creator's `edit/<id>.glb` (`MergeClips`); its textures come from the `.vmdl_c`.
+- Test mode presses a move before turning to the new dummies: an aimed ground move must find its target itself there (nearest dummy).
+- Props drawn as ghosts: the model's own texture tinted see-through under RoR2's ghost rim; additive particle textures need brightness → alpha.
+  Check prop sizes in the first devshots (her knights came out 1 m tall at scale 1).
+- A piercing gun swings with the bench pack's layout (430 → 1,770 %/s alone on another stage): cap the pierce before tuning the rest.
+- Memory: a background bench was stopped for low memory while the session sat idle; run benches in the foreground, or start them in the
+  background and wait in a foreground loop (done for runs 2 and 3). The creator then asked us to close big programs ourselves.
+- Launches used: 2 test runs, 3 bench sets (REPEAT=3; one stopped for memory), 1 ult bench, 1 portrait run.
+
 ## 8. Definition of done
 - [ ] `PREFLIGHT CLEAN`, build clean, cache rebuilt with the new content.
 - [ ] `run_test.sh <hero>`: every check passes (including `ragdoll`, `sound-events`, `voice-lines`), `1/1 heroes`.

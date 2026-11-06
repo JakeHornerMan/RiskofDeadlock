@@ -282,6 +282,10 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   The Melty and dev builds leave it out (`Survivors.Released`, no tile), the shipped `extractor/manifest.json` has none of it (gen.py
   writes it to `extractor/manifest-local.json`, which this script uses), preflight doesn't check its names against the Deadlock
   listings (the creator: "DO NOT VALIDATE THIS AGAINST ANY FILE"), and `compare_builds.py` lists it as "own files only".
+  **Paige** (2026-11-06) is the second. Her folder had only Deadlock-layout files and a texture-less `edit/paige.glb`, so her
+  `mod-cache` was made with extractor 1.10.0's `--loose` (doc 01, "A local hero from a ripped folder"); then the usual
+  `build_local_hero.sh paige charactersFinal/paigeFiles --install` for her tests and bench, and `all charactersFinal --r2modman-install`
+  for the creator's package.
   Test it with `build_local_hero.sh <id> charactersFinal/<id>Files --install`, `run_test.sh <id>`, then `--uninstall`.
 
 ## 5b. Daily watch: game updates and Melty breaks (since 2026-10-21)
@@ -605,6 +609,7 @@ doc 02 §11. In short:
 | Victor, a twelfth hero for the creator's own DLL build only (2026-11-05) | The creator made their own Victor (model, textures, animations, sounds) and asked for him "for our custome ddl build" from their spec. Answers: DLL build only (no Melty, no page), Pain 1 hit per stack, the ult burst stuns only, Pain Battery keeps its 3 m blast. Their files are used as given, never checked against anything. New `heroes.localOnly` keeps him out of everything Melty ships. |
 
 | 2026-11-05 | **Victor redesign, and his kit page after all** | The creator pasted a "SLIGHT REDESIGN" of the spec (punches out, gun on M1, Jumpstart on M2, aura 9 m + 0.5 m/Pain) and asked "DO A DPS TEST AND THEN ALSO UPDATE TEHE BALANCE ARTIFACT AND MAKE THE VICTOR PAGE!". Earlier answers kept (Pain 1 hit per stack; the pasted text still says 5). He gets a kit page and a place on the balance overview, marked "DLL build only"; the Melty listing is not touched. |
+| 2026-11-06 | **Paige, a thirteenth hero for the creator's own DLL build** | The creator asked for Paige (deadlock.wiki/Paige) from their own files in `charactersFinal/paigeFiles` ("all the model are correctly use form the folder ... the vfx are ghost like and see though"; sword and book animations, a wyvern breathing fire on the floor, a green knight for the ult and a row of knights in one move), a DLL build, a DPS test, a retune to the base-game match, a second test, a kit page and the balance overview. Answers: R = a row of knights, Q = one giant green knight; Plot Armor = "the passive where she does 25% extra damage when below 40% health"; matched to **Engineer**; everything ghost green (the wyvern's fire too). Mid-way: "the vfx for the character is veryimportant please take extra care to make sure they match deadlock!!!" Built from her own models, clips, textures and sounds only (extractor 1.10.0 `--loose`). |
 
 ## 10. Known open items and ideas
 

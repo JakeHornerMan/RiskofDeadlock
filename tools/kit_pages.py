@@ -25,7 +25,7 @@ def sheet(name):
 HEROES = sheet('heroes'); STATS = {r['hero']: r for r in sheet('stats')}
 SKILLS = sheet('skills'); BUFFS = {r['id']: r for r in sheet('buffs')}
 EQUIP = {r['hero']: r for r in sheet('equipment')}
-LINKS = {'victor': 'https://claude.ai/artifact/XP4ssbDWBk2WrV1gaKYBZh', 'pocket': 'https://claude.ai/artifact/Mc8uRq1qWykkkLncPtNCD5', 'haze': 'https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p', 'abrams': 'https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG',
+LINKS = {'paige': 'https://claude.ai/artifact/3shN9RWGshp3S2fdgt3BQt', 'victor': 'https://claude.ai/artifact/XP4ssbDWBk2WrV1gaKYBZh', 'pocket': 'https://claude.ai/artifact/Mc8uRq1qWykkkLncPtNCD5', 'haze': 'https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p', 'abrams': 'https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG',
          'seven': 'https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m', 'infernus': 'https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF',
          'mokrill': 'https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa', 'viscous': 'https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC', 'ratking': 'https://claude.ai/artifact/Kw4rTyRrvXTb2eEyT9oTYa', 'billy': 'https://claude.ai/artifact/7m271DJLqzAvMZDrqU6QjL', 'wraith': 'https://claude.ai/artifact/2Bdxqd6iUwp89iEEPELgBb', 'mina': 'https://claude.ai/artifact/NWZWgZoK8DRusJpTVzbYoe', 'overview': 'https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3'}
 SLOTS = ['primary', 'secondary', 'utility', 'special']
@@ -88,6 +88,11 @@ VANILLA = {
 
 # ------------------------------------------------------------------ hand-written notes (update with doc 05)
 CHANGES = {
+ 'paige': [('2026-11-06', ['New hero: Paige, matched to Engineer, from the creator’s own model, animations, effect models, textures and sounds (charactersFinal/paigeFiles); in the creator’s own DLL build only (not on Melty)',
+                        'Chapter’s End fires piercing spirit pages; Bookwyrm sends her own wyvern breathing ghost fire along the floor; Captivating Read drops her giant sword into a magic circle (slow, then immobilize)',
+                        'Rallying Charge (R) is a row of 5 spectral knights; The Green Knight (Q) is one giant knight that grows stronger as it rides; both heal allies they pass',
+                        'Plot Armor is the passive: +25 % damage below 40 % health',
+                        'Every spirit is see-through ghost green: her own models on RoR2’s ghost material, with her own letters, graphics and text streak'])],
  'victor': [('2026-11-05', ['New hero: Victor, matched to REX, from the creator’s own model, animations and sounds; in the creator’s own DLL build only (not on Melty)',
                         'Pain: every enemy hit adds a stack (+15 % attack speed each, like Soldier’s Syringe), up to 10; one stack fades every 10 s',
                         'Redesign the same day: the punches are gone; Memento Mori moves to M1 at 100 % a round, and M2 is Jumpstart (10 health to himself for 1 Pain and +30 % move speed for 5 s, every 4 s)',
@@ -247,6 +252,13 @@ PAPER = {
 }
 
 ANALYSIS = {
+ 'paige': ['Three runs after the retune: 1,709, 1,658 and 1,656 %/s with every main move, mean 1,674 against Engineer’s 1,611. That is +63: inside the ±500 band.',
+           'First numbers (pages piercing everything, 160 % a page, Bookwyrm 300 % + 100 %/s burn, Captivating Read 500 %, Rallying Charge 600 %): mean 3,100 (3,130, 3,076, 3,094), +1,489. Bookwyrm’s burning floor (936 alone) and the knights (710) carried it.',
+           'Second try with the area moves cut: mean 2,571 (2,586, 2,659, 2,468). On that stage the pack stood in a line and every page pierced all 12 (the gun alone 1,450–1,770 %/s, against 430 on the first stage), so each page now pierces at most 3 enemies.',
+           'Now, alone: Chapter’s End 283 (140 %, up to 3 enemies a page), Bookwyrm 431 (180 % as it passes + 30 %/s on the burning floor for 3 s), Captivating Read 280 (350 %), Rallying Charge 350 (300 % and a 1 s stun to everything the 5 knights trample).',
+           'Plot Armor (+25 % damage below 40 % health) never shows on the bench: it stands her in god mode at full health.',
+           'The Green Knight (Q, the ult): one use on the ult bench (30 enemies and a Beetle Queen) did 188,376 %, 25 hit, 7,586 % to the Queen. It isn’t in the all-together number.',
+           'In the creator’s own DLL build only (r2modman), not on Melty.'],
  'victor': ['Three runs after the same-day redesign (gun on M1 at 100 %, Jumpstart on M2, aura from 9 m): 2,957, 2,898 and 2,832 %/s with every main move, mean 2,896 against REX’s 1,738. That is +1,158: above the ±500 band.',
             'Aura of Suffering carries him: 1,096 %/s alone (1,070–1,134). At 9 m plus 0.5 m a Pain stack it reaches all 12 of the bench’s pack, which stands 10–15 m away, so once ramped it deals 120 %/s to each. The spec expected it to barely reach them at 6 m. Memento Mori 367 alone (paper 353).',
             'Together the moves feed each other: Jumpstart (0 alone) and the aura hand out Pain, Pain speeds up the gun, and Pain Battery spends it on 1,000 % bolts with a 3 m blast into the pack. Alone, Pain Battery has no Pain to spend, so it measures 0.',
@@ -498,6 +510,18 @@ def maths(r):
                 f"heals him {n(r['healFraction'] * 100)} % of it; costs {n(r['selfDamagePct'])} % max health to switch on, then {n(r['selfDrainPct'])} % a second"], d
     if k == 'ult_reanimation':
         return [], None
+    if k == 'bookwyrm':
+        burn = r['splashPct'] * r['dotTime']; tot = d + burn
+        return [f"{n(d)} % to everything the wyvern passes ({n(r['reach'])} m flight, {n(r['radius'])} m wide) + burning floor {n(r['splashPct'])} %/s × {n(r['dotTime'])} s = {n(tot)} % to an enemy that stays in it",
+                f"every {n(cd)} s"], tot / cd
+    if k == 'captivating_read':
+        return [f"{n(d)} % to everything within {n(r['radius'])} m after {n(r['duration'])} s, slowed {n(-BUFFS[r['buff']]['moveSpeedAdd'] * 100)} % while it builds, then immobilized {n(BUFFS[r['debuff']]['duration'])} s",
+                f"every {n(cd)} s"], d / cd
+    if k == 'knight_charge':
+        return [f"{n(d)} % and a {n(r['stunDuration'])} s stun to every enemy the {n(r['chainCount'])} knights trample ({n(r['range'])} m charge); allies they pass heal {n(r['healFraction'] * 100)} %",
+                f"every {n(cd)} s"], d / cd
+    if k == 'ult_giant_knight':
+        return [f"{n(r['damageMinPct'])} → {n(d)} % (growing over its {n(r['range'])} m ride) and a {n(r['stunDuration'])} s stun to everything in its path; allies heal {n(r['healFraction'] * 100)} %"], None
     if k == 'self_buff':
         return ['no damage: invisibility and speed'], 0
     return [], None
@@ -754,6 +778,12 @@ def passive_card(h):
                 f'<span>up to {n(b["maxStacks"])} stacks = +{n(b["attackSpeedBaseAdd"] * b["maxStacks"] * 100)} % ({n(1 + b["attackSpeedBaseAdd"] * b["maxStacks"])}×), one stack fades every {n(b["duration"])} s</span>'
                 '<span class="eq">from enemy hits, Jumpstart and the aura; Pain Battery spends 3</span></div>'
                 '<p class="note">His own damage (Jumpstart, the aura) never counts as a hit; those moves hand out their stacks directly.</p>')
+    # Plot Armor (Paige): a damage bonus while her health is low
+    if b and b.get('damageAdd') and h.get('passiveBelowPct'):
+        t = [('Below', f"{n(h['passiveBelowPct'])} % health"), ('Damage', f"+{n(b['damageAdd'] * 100)} %")]
+        math = (f'<div class="work"><span>health under {n(h["passiveBelowPct"])} %: every hit she lands deals +{n(b["damageAdd"] * 100)} %</span>'
+                f'<span>back above it: the bonus is gone</span><span class="eq">{n(STATS[h["id"]]["baseMaxHealth"])} health at level 1: under {n(STATS[h["id"]]["baseMaxHealth"] * h["passiveBelowPct"] / 100)}</span></div>'
+                '<p class="note">The bench stands her in god mode at full health, so its numbers never include Plot Armor.</p>')
     for r in SKILLS:
         tb = BUFFS.get(r['debuff']) if r['hero'] == h['id'] and r['kind'] == 'krill_hop' else None
         if not tb or not tb['maxHealthAdd']: continue

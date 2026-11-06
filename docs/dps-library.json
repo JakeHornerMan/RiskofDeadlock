@@ -1897,9 +1897,94 @@
      "max": 2473
     }
    }
+  },
+  "DeadlockPaige": {
+   "name": "Paige",
+   "stats": {
+    "health": 130.0,
+    "healthPerLevel": 39.0,
+    "regen": 1.0,
+    "regenPerLevel": 0.2,
+    "armor": 0.0,
+    "damage": 14.0,
+    "damagePerLevel": 2.8,
+    "moveSpeed": 7.0,
+    "jumps": 1,
+    "crit": 1.0
+   },
+   "skills": {
+    "primary": "Chapter's End",
+    "secondary": "Bookwyrm",
+    "utility": "Captivating Read",
+    "special": "Rallying Charge"
+   },
+   "hero": true,
+   "measuredOn": "v1.3.0b",
+   "dps": {
+    "all": {
+     "runs": [
+      1709,
+      1658,
+      1656
+     ],
+     "mean": 1674,
+     "min": 1656,
+     "max": 1709
+    },
+    "primary": {
+     "runs": [
+      308,
+      261,
+      280
+     ],
+     "mean": 283,
+     "min": 261,
+     "max": 308
+    },
+    "secondary": {
+     "runs": [
+      432,
+      434,
+      427
+     ],
+     "mean": 431,
+     "min": 427,
+     "max": 434
+    },
+    "utility": {
+     "runs": [
+      280,
+      257,
+      303
+     ],
+     "mean": 280,
+     "min": 257,
+     "max": 303
+    },
+    "special": {
+     "runs": [
+      350,
+      350,
+      360
+     ],
+     "mean": 353,
+     "min": 350,
+     "max": 360
+    },
+    "equipment": {
+     "runs": [
+      2967,
+      2962,
+      2974
+     ],
+     "mean": 2968,
+     "min": 2962,
+     "max": 2974
+    }
+   }
   }
  },
  "about": "Stored DPS library (Risk of Deadlock). Main moves and each move alone, % of damage stat per second, measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, 30 s per pass, perfect aim, every move used when ready, no equipment except the \"equipment\" pass). \"all\" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are tagged with the build they were measured on. Built by tools/dps_library.py.",
- "updated": "2026-11-05",
+ "updated": "2026-11-06",
  "runsPerSurvivor": 3
 }

@@ -1,6 +1,6 @@
 # Risk of Deadlock
 
-Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King, Billy, Wraith, Mina, Pocket or Victor**, with their models, animations, guns, abilities, icons and voices.
+Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat King, Billy, Wraith, Mina, Pocket, Victor or Paige**, with their models, animations, guns, abilities, icons and voices.
 
 > Every hero's files are built **into the DLL**: Deadlock does not need to be installed.
 
@@ -8,7 +8,7 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat
 - **Balance pages:** [Balance overview](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3). These are just design sheets: how I make sure every hero is balanced for the Risk of Rain 2 universe.
 
 ## Requirements
-- Built with Risk of Rain 2 build 25921972 (2026-11-05).
+- Built with Risk of Rain 2 build 25921972 (2026-11-06).
 - Risk of Rain 2 on Steam, with **BepInExPack** (bbepis, 5.4.2122) and **RoR2BepInExPack** (RiskofThunder, 1.49.0 or newer). r2modman lists both as this package's dependencies.
 - No Deadlock install needed. The first start of a new DLL unpacks its files in a few seconds.
 
@@ -22,10 +22,11 @@ Every hero's abilities, numbers and measured damage next to their Risk of Rain 2
 - [Haze](https://claude.ai/artifact/G1CjkUFpLFy65e2gBSRZ1p) (Commando) · [Abrams](https://claude.ai/artifact/JJgAwWD5kx3xTmEAHbNiiG) (Loader) · [Seven](https://claude.ai/artifact/WT8ZzxPro4AKvNXiwh1X8m) (Artificer) · [Infernus](https://claude.ai/artifact/SQhdbatoDthiEEqj3EjMeF) (Engineer)
 - [Mo & Krill](https://claude.ai/artifact/XwhDWMMq5RfHb7bxPgE1Aa) (MUL-T) · [Viscous](https://claude.ai/artifact/JRFqAM4uskGuYVJEKA84FC) (REX) · [Rat King](https://claude.ai/artifact/Kw4rTyRrvXTb2eEyT9oTYa) (Captain) · [Billy](https://claude.ai/artifact/7m271DJLqzAvMZDrqU6QjL) (Mercenary)
 - [Wraith](https://claude.ai/artifact/2Bdxqd6iUwp89iEEPELgBb) (Bandit) · [Mina](https://claude.ai/artifact/NWZWgZoK8DRusJpTVzbYoe) (Huntress) · [Pocket](https://claude.ai/artifact/Mc8uRq1qWykkkLncPtNCD5) (Bandit)
+- [Victor](https://claude.ai/artifact/XP4ssbDWBk2WrV1gaKYBZh) (REX) · [Paige](https://claude.ai/artifact/3shN9RWGshp3S2fdgt3BQt) (Engineer)
 - [Balance overview](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3)
 
 ## Features
-- Twelve new survivors, each with Risk of Rain 2's four skills built from their Deadlock kit, plus their ultimate as equipment:
+- Thirteen new survivors, each with Risk of Rain 2's four skills built from their Deadlock kit, plus their ultimate as equipment:
   - **Left Click:** their Deadlock gun, with its magazine and reload (the rounds show above the skill bar).
   - **Right Click and Shift:** two Deadlock abilities.
   - **R:** a fourth move from their Deadlock kit, items or melee.
@@ -42,6 +43,7 @@ Every hero's abilities, numbers and measured damage next to their Risk of Rain 2
 - **Mina:** New Money, Rake, Sanguine Retreat, **Nox Nostra** (a cone of bats pours onto a ringed circle under your crosshair); Q Mist Form. Hold Jump to float under her umbrella; Love Bites bring her moves back sooner.
 - **Pocket:** The Black Sheep, Barrage, Flying Cloak, Enchanter's Satchel; Q **Frog Form** (the case pops open and you leap out as a frog; every landing, on the ground or on an enemy, slams and stuns). One jump plus an air dash.
 - **Victor:** **Memento Mori** on Left Click (a gun that spins up while you hold it), **Jumpstart** on Right Click (shock yourself for 10 health: +1 Pain and +30 % move speed for 5 s), Pain Battery, **Aura of Suffering** (a toggle that hurts you and siphons everything near you, growing with Pain); Q **Shocking Reanimation** (rise into a lightning strike that stuns everything within 30 m, then 20 s of 10 Ukuleles and 10 Tesla Coils). Every enemy hit you take adds a **Pain** stack: +15 % attack speed each, up to 10.
+- **Paige:** **Chapter's End** on Left Click (glowing spirit pages that pierce every enemy in a line), **Bookwyrm** on Right Click (her ghostly wyvern flies through the target breathing green fire on the floor, leaving it burning), **Captivating Read** on Shift (a magic circle that slows, then her giant spirit sword slams down and immobilizes), **Rallying Charge** on R (a row of 5 spectral knights charges, trampling and stunning enemies and healing allies); Q **The Green Knight** (one giant green knight that grows stronger the further it rides). **Plot Armor:** +25 % damage while you're below 40 % health. Every spirit is see-through ghost green.
 - Deadlock voice lines at the right moments; co-op with up to 4 players (everyone needs the same build).
 
 ## Community

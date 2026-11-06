@@ -13,3 +13,4 @@ DeadlockWraith equipment: raw 11160 (372.0/s), 93000% of damage (3100%/s), hits 
 DeadlockMina equipment: raw 13824 (460.8/s), 115200% of damage (3840%/s), hits 123, enemies hit 30, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 3000%
 DPS bench finished
 DeadlockPocket equipment: raw 7200 (240.0/s), 60000% of damage (2000%/s), hits 30, enemies hit 30, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 12.0, boss 0%
+DeadlockPaige equipment: raw 26373 (879.1/s), 188376% of damage (6279%/s), hits 25, enemies hit 25, uses M1 0 M2 0 Shift 0 R 0 Q 1, level 1, damage stat 14.0, boss 7586%

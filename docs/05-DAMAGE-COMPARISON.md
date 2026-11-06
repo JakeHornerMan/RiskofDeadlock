@@ -14,6 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
+| Paige | 2026-11-06: new hero (the creator's own DLL build only): Chapter's End 140 % piercing up to 3, Bookwyrm 180 % + 30 %/s burn, Captivating Read 350 %, Rallying Charge 300 %, The Green Knight (Q), Plot Armor | new hero | this one | **benched** `REPEAT=3 run_bench.sh 30 paige` (§3.21): 1,674, inside |
 | Victor | 2026-11-05: new hero (the creator's own DLL build only), redesigned the same day: Memento Mori M1 100 %, Jumpstart M2, Pain Battery, Aura of Suffering 9 m + 0.5 m/Pain; Pain decays one stack every 10 s | new hero | this one | **benched** `REPEAT=3 run_bench.sh 30 victor` (after one "no flat spot" retry): **2957, 2898, 2832 %/s, mean 2896** vs REX 1738 (+1158, above the band). Alone: gun 367, Jumpstart 0, Pain Battery 0 (no Pain alone), aura 1096 (reaches all 12). Benched before the Pain decay change (the 10 s clock is the same length; not re-run). Levers for the creator: aura 120 → 60 %/s, start radius 9 → 6 m, Battery 1000 → 600 % | **done** (balance open) |
 | Mina | 2026-11-02: the umbrella opens only while Jump is held (Nox Nostra, Sanguine Retreat and Mist Form no longer open it by themselves) | the creator: "ONLY FLOAT WITH THE UNBRELLA WHENN THE SPACE KEY IS DOWN!!!!" | this one | open: `run_bench.sh 30 mina` (Nox Nostra's time in the air after the stream) |
 | Pocket | 2026-11-02: Frog Form's landing on top of an enemy now slams (damage, knockback, stun ring) and the frog hops off it (before: no slam until it touched the floor) | the creator: "if they land on top of an enemy it still does the damage and stuin aoe!" | this one | open: `ULTS=1` ult bench for Frog Form |
@@ -303,6 +304,16 @@ New hero, matched to REX (`TreebotBody`, library 1738 %/s). Three runs after the
 - **%/s hides base damage**: it is a share of the survivor's own damage stat. Viscous's 15 against REX's 12 means 25 % more
   real damage than the %/s says (≈336 dmg/s at level 1 against ≈209). Mo & Krill (11) are the only other hero off 12.
 - Levers if he needs pulling back: Splatter 200 → 150 % first (it is two thirds of the total), then the punch.
+
+### 3.21 Paige, the thirteenth hero (Paige-only runs, 2026-11-06; the creator's own DLL build)
+Matched to **Engineer** (library 1,611: 1,502, 1,639, 1,691; band 1,111–2,111). Three sets of three runs, the creator having asked for a retune to the match:
+- **First numbers** (160 % pages piercing everything, Bookwyrm 300 % + 100 %/s burn, Captivating Read 500 %, Rallying Charge 600 %): all 3,130 / 3,076 / 3,094 →
+  **3,100** (+1,489, above). Alone: Chapter's End 434, **Bookwyrm 936** (its burning floor ticked about 530 times a run), Captivating Read 325, **Rallying Charge 710**.
+- **Area moves cut** (pages 140 %, Bookwyrm 180 % + 30 %/s, Captivating Read 350 %, Rallying Charge 300 %): all 2,586 / 2,659 / 2,468 → **2,571** (+960). That stage
+  lined the pack up and every page pierced all 12: Chapter's End alone 1,451–1,773 (against 430 on the first stage). One number that swings with the pack's
+  layout can't be balanced, so each page now pierces at most **3** enemies (`skills.chainCount`; Deadlock's pierce is unlimited, but against 1–3 heroes).
+- **Current (v1.3.0b): all 1,709 / 1,658 / 1,656 → 1,674 (+63 against Engineer: inside).** Alone: Chapter's End 283, Bookwyrm 431, Captivating Read 280,
+  Rallying Charge 350. Plot Armor never shows (god mode, full health). The Green Knight ult bench: **188,376 %**, 25 of 31 hit, 7,586 % to the Queen.
 
 ### 3.20 Pocket, the eleventh hero (Pocket-only runs, 2026-10-27/28)
 **v1.2.0c (2026-10-28, current: lock-on Barrage he shoots through, cloak 15 m/s, Frog Form 60 s):** all 2411 / 2197 / 2291 → **2300**

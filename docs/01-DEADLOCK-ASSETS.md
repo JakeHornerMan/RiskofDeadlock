@@ -41,7 +41,7 @@ Related documents:
 | NLayer (MP3 decoder) | 1.16.0 | `extractor/DeadlockExtract.csproj` |
 | .NET SDK for the extractor | **net10.0**. VRF 20 needs it; net8 does not compile against it. | csproj `TargetFramework` |
 | SharpGLTF, SkiaSharp, ValvePak, ValveKeyValue | transitive deps of VRF | `THIRD-PARTY-NOTICES.txt` |
-| Extractor version | `1.9.0` (1.9.0: a prop animated by morph targets gets each target as its own pose, `<id>@m<k>.dlm` (Mina's bat flaps that way; local build only, the GitHub tag comes with the release that ships her); 1.8.1: a hero's `vertexColors` materials keep Deadlock's vertex colours (Wraith's face; local build only, the GitHub tag comes with the next release); 1.8.0: `--heroes a,b` reads only those heroes and what they own (manifest `owners`, from `gen.py`), keeps heroes already read with the same stamp, and is about 15x faster: `anim.Duration` was read per frame per bone, and SharpGLTF works it out from every channel's keys on each read (Abrams 9.5 min → 14 s, all nine heroes 2 min; output byte-identical); the glTF exporter's progress lines go to the log; 1.7.0: plain-words progress lines for Melty's setup screen, the hero's display name from the manifest; 1.6.2: voice takes named by Deadlock's take number, every take for `voiceAllTakes` groups; 1.6.1: DLM2, each material's Deadlock tint, cut-out, glow and vertex colours; `Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1, 1.4.0 the heroes.vdata model lookup, 1.5.0 effect models (props), 1.6.0 props with meshes, skeleton and clips, and split hero meshes) | `extractor/Program.cs`; also part of the cache stamp |
+| Extractor version | `1.10.0` (1.10.0: `--loose <folder>` reads a folder of loose Deadlock-layout files (the creator's `charactersFinal/<hero>Files/deadlock`) instead of an install, its clips taken from `<folder>/../edit/<id>.glb` when the model can't supply them, and a `_blend` sound falls back to its plain recording (Paige; local build only, players' extractor writes the same files, no tag needed); 1.9.0: a prop animated by morph targets gets each target as its own pose, `<id>@m<k>.dlm` (Mina's bat flaps that way; local build only, the GitHub tag comes with the release that ships her); 1.8.1: a hero's `vertexColors` materials keep Deadlock's vertex colours (Wraith's face; local build only, the GitHub tag comes with the next release); 1.8.0: `--heroes a,b` reads only those heroes and what they own (manifest `owners`, from `gen.py`), keeps heroes already read with the same stamp, and is about 15x faster: `anim.Duration` was read per frame per bone, and SharpGLTF works it out from every channel's keys on each read (Abrams 9.5 min → 14 s, all nine heroes 2 min; output byte-identical); the glTF exporter's progress lines go to the log; 1.7.0: plain-words progress lines for Melty's setup screen, the hero's display name from the manifest; 1.6.2: voice takes named by Deadlock's take number, every take for `voiceAllTakes` groups; 1.6.1: DLM2, each material's Deadlock tint, cut-out, glow and vertex colours; `Program.Version`; 1.1.0 added voice lines, 1.2.0 reads sound volumes as decibels, 1.3.0 reads each hero on its own and VRF 20.1, 1.4.0 the heroes.vdata model lookup, 1.5.0 effect models (props), 1.6.0 props with meshes, skeleton and clips, and split hero meshes) | `extractor/Program.cs`; also part of the cache stamp |
 
 A Deadlock update can change asset paths, clip names, mesh names or sound event names. **Section 9** explains how to
 re-validate everything after an update.
@@ -74,6 +74,10 @@ Other codenames you will meet in asset paths and sound events:
 - Infernus = **inferno** (`Inferno.FireBomb.Explode`).
 - Mina = **vampirebat** (`hero_vampirebat`, `VampireBat.Rake.Cast`; her gun's events are spelled `Vampirebat.Wpn.*`).
 - Pocket = **synth** (`hero_synth`, abilities `synth_*`, voice `sounds/vo/synth/`), but his model folder and sound events say **pocket** (`models/heroes_wip/pocket/`, `Pocket.Barrage.Start`).
+- Paige = **bookworm** (`hero_bookworm`, `models/heroes_wip/bookworm/bookworm.vmdl`, `Bookworm.Conjure.Dragon.Cast`, voice `sounds/vo/bookworm/`). Her
+  effect models: the wyvern `bookworm_dragon_fullbody.vmdl` (clips `dragon_fly`, `dragon_fly_fast_spawn`), the knight
+  `models/particle/bookworm_horse_knight.vmdl` (clip `bookworm_horse_knight_anims`), `bookworm_sword_large`, `bookworm_stone`.
+  Victor = **frank**. Both are the creator's own files (local-only heroes, below).
 
 Some events use the display name instead (`Haze.Wpn.Fire.Main`, `Abrams.A1.SiphonLife.Cast`, `Seven.Wpn.Fire`,
 `Infernus.Wpn.Fire`). **Always look the exact name up; do not guess** (section 8).
@@ -168,6 +172,18 @@ full manifest to `extractor/manifest-local.json`; `tools/build_local_hero.sh` pa
 `manifest_owners.json` keeps its entries (the local build's file check reads them). Careful: `--import-glb` rebuilds
 `heroes/<id>/` from the glb alone, so a glb without embedded textures leaves the hero with none (2026-11-05: Victor's had to be
 put back from `dealockRip/victorFiles/files/heroes/victor/`); the build only imports when the glb is newer than the dlm.
+
+**A local hero from a ripped folder (extractor 1.10.0, Paige, 2026-11-06).** When the creator's folder holds only Deadlock-layout
+files (`charactersFinal/paigeFiles/deadlock/models/...`, `sounds/...`, `soundevents/...`) and an `edit/<id>.glb` without textures,
+make its `mod-cache` from the folder itself:
+`build/extract/DeadlockExtract.exe --loose charactersFinal/paigeFiles/deadlock --out charactersFinal/paigeFiles/mod-cache --manifest extractor/manifest-local.json --heroes paige`
+(about 1 minute). `--loose` packs the folder into a temporary `pak01_dir.vpk` (ValvePak `AddFile` + `Write`) and runs the normal
+reader on it, so the model, its 8 materials and textures, the props with their clips, icons, sounds and voice come from her files.
+The hero's clips: VRF finds a hero's `.vnmclip_c` files through Deadlock's combined animgraph (`hero.vnmgraph+bookworm.vnmgraph`),
+which a rip doesn't have, so the model alone gives only its 4 built-in poses; `MergeClips` copies the sheet's clips from
+`<folder>/../edit/<id>.glb` onto the model's bones by name (14/14 for Paige). A `*_blend.vsnd` (a near/far blend) doesn't decode;
+the plain recording beside it is used (`x_lp_blend` → `x_lp`, `x_global_blend` → `x_cast_global`). The new dlm is newer than the
+glb, so `build_local_hero.sh` never re-imports the texture-less glb over it. `tools/vrfdump` also takes a folder in place of the vpk.
 
 **Release subsets (2026-10-19).** `gen.py` also writes `extractor/manifest_owners.json`: each image, sound event, sound
 event file and voice group → the hero(es) whose sheet rows use it (sound rows like `mokrill_gun/step` count for their
