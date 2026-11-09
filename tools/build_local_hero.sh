@@ -22,6 +22,10 @@
 # build/local-all/cache (sounds.json joined, files shared by heroes kept once, sheet icons no hero owns taken from the normal
 # cache), builds one DLL with every hero in it and compares it with the Melty build's cache (tools/compare_builds.py).
 # The zip is named Risk_of_Deadlock (creator, 2026-11-02: Thunderstore given up; this is their own copy).
+#   --soon victor,paige (2026-11-09: "dll build with no victor or paige grey out these characters"): "all" leaves those heroes'
+#   files out, keeps only their portrait, and ready.json "comingSoon" makes them greyed-out locked tiles in character select.
+# The DLL is built with OWN_FILES: no extractor code, no Deadlock lookup, no "Deadlock folder" setting (2026-11-09: "make sure no
+# extractor code or referemnce is included"); step 4 checks it. DeadlockExtract.exe is used only to make or convert an edit/<id>.glb.
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 R="/c/Program Files (x86)/Steam/steamapps/common/Risk of Rain 2"
@@ -39,11 +43,14 @@ if [ "$1" = "--uninstall" ]; then
   exit 0
 fi
 
-ID="$1"; F="$2"; INSTALL=""; R2=""; R2I=""; CACHE_ONLY=""
-for a in "${@:3}"; do case "$a" in --install) INSTALL=1;; --r2modman) R2=1;; --r2modman-install) R2=1; R2I=1;; --cache-only) CACHE_ONLY=1;; *) echo "unknown option $a"; exit 1;; esac; done
+ID="$1"; F="$2"; INSTALL=""; R2=""; R2I=""; CACHE_ONLY=""; SOON=""; next=""
+for a in "${@:3}"; do
+  if [ "$next" = soon ]; then SOON="$a"; next=""; continue; fi
+  case "$a" in --install) INSTALL=1;; --r2modman) R2=1;; --r2modman-install) R2=1; R2I=1;; --cache-only) CACHE_ONLY=1;; --soon) next=soon;; *) echo "unknown option $a"; exit 1;; esac
+done
 [ -n "$ID" ] && [ -n "$F" ] || { sed -n 5,7p "$0"; exit 1; }
 F="$(cd "$F" && pwd)"
-[ -f "$EXE" ] || { echo "No $EXE: publish the extractor first (docs/01 §6.7)"; exit 1; }
+need_exe() { [ -f "$EXE" ] || { echo "No $EXE: needed only to make or convert $1; publish the extractor first (docs/01 §6.7)"; exit 1; }; }
 
 if [ "$ID" = "all" ]; then
   # every hero folder on its own first (its glb, its file check), then one cache with all of them
@@ -53,19 +60,30 @@ if [ "$ID" = "all" ]; then
   for d in "$F"/*Files/; do
     [ -d "$d/mod-cache" ] || continue
     h=$(basename "$d"); h=${h%Files}
+    case ",$SOON," in *",$h,"*) echo "== $h: coming soon (left out, greyed out in character select)"; continue;; esac
     echo "== $h"
     bash "$0" "$h" "$d" --cache-only || { echo "Stopped at $h (see above)"; exit 1; }
     n=$((n + 1))
   done
   [ $n -gt 0 ] || { echo "No <hero>Files folders with a mod-cache in $F"; exit 1; }
   rm -rf "$C"
-  python - "$F" "$C" <<'EOF'
+  python - "$F" "$C" "$SOON" "$ROOT/design/heroes.json" <<'EOF'
 import json, os, shutil, sys
 src, dst = sys.argv[1], sys.argv[2]
+soon = [h for h in sys.argv[3].split(',') if h]
 heroes, props, sounds = [], [], {}
+# a coming-soon hero: only its small portrait (the greyed-out tile), nothing else of it
+small = {r['id']: r['imageSmall'] for r in json.load(open(sys.argv[4], encoding='utf-8'))['rows']} if soon else {}
+for h in soon:
+    if h not in small: sys.exit(f'--soon {h}: no such hero in design/heroes.json')
+    rel = os.path.join('images', small[h].replace('.vtex', '').replace('/', '_') + '.png')
+    png = os.path.join(src, h + 'Files', 'mod-cache', rel)
+    if os.path.exists(png):
+        os.makedirs(os.path.join(dst, 'images'), exist_ok=True); shutil.copy2(png, os.path.join(dst, rel))
+    else: print(f'   {h}: no portrait in its mod-cache, the tile shows a plain mark')
 for d in sorted(os.listdir(src)):
     c = os.path.join(src, d, 'mod-cache')
-    if not d.endswith('Files') or not os.path.isdir(c): continue
+    if not d.endswith('Files') or not os.path.isdir(c) or d[:-5] in soon: continue
     ready = json.load(open(os.path.join(c, 'ready.json')))
     heroes += ready['heroes']; props += [p for p in ready['props'] if p not in props]
     sounds.update(json.load(open(os.path.join(c, 'sounds', 'sounds.json'))))
@@ -78,9 +96,9 @@ for d in sorted(os.listdir(src)):
             shutil.copy2(os.path.join(base, f), out)   # a file two heroes share is the same file in both: kept once
 os.makedirs(os.path.join(dst, 'sounds'), exist_ok=True)
 json.dump(sounds, open(os.path.join(dst, 'sounds', 'sounds.json'), 'w'), indent=1)
-json.dump({'stamp': 'own files', 'deadlockBuild': 'your own files', 'heroes': heroes, 'failed': [], 'props': props, 'failedProps': []},
+json.dump({'stamp': 'own files', 'deadlockBuild': 'your own files', 'heroes': heroes, 'comingSoon': soon, 'failed': [], 'props': props, 'failedProps': []},
           open(os.path.join(dst, 'ready.json'), 'w'), indent=2)
-print(f'== One cache with {len(heroes)} heroes: {", ".join(heroes)}')
+print(f'== One cache with {len(heroes)} heroes: {", ".join(heroes)}' + (f'; coming soon: {", ".join(soon)}' if soon else ''))
 EOF
   # icons the sheets use that no hero folder owns (2026-11-02: Seven's Static debuff icon was missing): from the normal cache
   python - "$ROOT/design" "$L/cache" "$C" <<'EOF'
@@ -108,6 +126,7 @@ OUT="$ROOT/build/local-$ID"
 
 # 1. the model to edit (once; reads Deadlock)
 if [ ! -f "$GLB" ]; then
+  need_exe "$GLB"
   echo "== Making $GLB from Deadlock (first time only, about a minute)"
   "$EXE" --deadlock "C:/Program Files (x86)/Steam/steamapps/common/Deadlock" --out "$OUT/from-deadlock" \
     --manifest "$ROOT/extractor/manifest-local.json" --heroes "$ID" --force --keep-glb "$GLB" >/dev/null
@@ -116,6 +135,7 @@ fi
 
 # 2. an edited model back into the mod's format
 if [ "$GLB" -nt "$DLM" ]; then
+  need_exe "your edited $GLB"
   echo "== Converting your edited $GLB"
   "$EXE" --import-glb "$GLB" --hero "$ID" --out "$C" --manifest "$ROOT/extractor/manifest-local.json" | grep -E "^  $ID:|clips not found"
   rm -f "$C/extract.log"
@@ -155,6 +175,15 @@ dotnet build "$ROOT/plugin" -c Release -v q -nologo -p:LocalHeroDir="$(cygpath -
   -p:IntermediateOutputPath="$(cygpath -w "$OUT/obj")\\" -o "$OUT" | grep -E "error|Error\(s\)" || true
 [ -f "$OUT/DeadlockOfRain.dll" ] || { echo "Build failed"; exit 1; }
 echo "   $OUT/DeadlockOfRain.dll ($(du -h "$OUT/DeadlockOfRain.dll" | cut -f1))"
+# no extractor code or reference in it (OWN_FILES; creator, 2026-11-09)
+python - "$OUT/DeadlockOfRain.dll" <<'EOF' || exit 1
+import mmap, sys
+with open(sys.argv[1], 'rb') as f, mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as m:
+    bad = sorted({w for w in ('DeadlockExtract', 'HeroPicker', 'Deadlock folder', 'FindDeadlock', 'ExtractDir')
+                  for e in ('utf-8', 'utf-16-le') if m.find(w.encode(e)) >= 0})
+if bad: sys.exit('The DLL still has extractor code in it: ' + ', '.join(bad))
+print('   No extractor code or reference in the DLL')
+EOF
 # 4b. (all) every hero the same as in the Melty build? (creator, 2026-11-02: "validate all heros are the saem from deadlock melty to the ddl version")
 if [ "$ID" = "all" ]; then python "$ROOT/tools/compare_builds.py" "$L/cache" "$C" || echo "   Differences listed above (tools/compare_builds.py)"; fi
 

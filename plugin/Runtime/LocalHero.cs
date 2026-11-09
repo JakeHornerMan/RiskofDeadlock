@@ -17,6 +17,9 @@ namespace DeadlockOfRain
         public static string Dir;
         /// <summary>The heroes in the embedded ready.json; Survivors.Released keeps only these.</summary>
         public static HashSet<string> Heroes;
+        /// <summary>Heroes left out of this build but shown greyed out as "coming soon" (ready.json "comingSoon", from
+        /// build_local_hero.sh --soon; creator, 2026-11-09: "dll build with no victor or paige grey out these characters").</summary>
+        public static HashSet<string> ComingSoon;
 
         /// <summary>Unpacks the embedded files when the DLL carries them. Returns true when they are in use.</summary>
         public static bool Init()
@@ -47,6 +50,8 @@ namespace DeadlockOfRain
                 var ready = File.ReadAllText(Path.Combine(dir, "ready.json"));
                 var list = Regex.Match(ready, "\"heroes\"\\s*:\\s*\\[([^\\]]*)\\]");
                 Heroes = new HashSet<string>(Regex.Matches(list.Groups[1].Value, "\"([^\"]+)\"").Cast<Match>().Select(m => m.Groups[1].Value));
+                var soon = Regex.Match(ready, "\"comingSoon\"\\s*:\\s*\\[([^\\]]*)\\]");
+                ComingSoon = new HashSet<string>(Regex.Matches(soon.Success ? soon.Groups[1].Value : "", "\"([^\"]+)\"").Cast<Match>().Select(m => m.Groups[1].Value));
             }
             catch (Exception e)
             {

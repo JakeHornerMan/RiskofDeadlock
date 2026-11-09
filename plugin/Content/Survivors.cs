@@ -81,6 +81,8 @@ namespace DeadlockOfRain
             get
             {
                 if (comingSoon != null) return comingSoon;
+                // the DLL build: the embedded ready.json names them (LocalHero.ComingSoon), only hero rows
+                if (LocalHero.ComingSoon != null) return comingSoon = HeroRow.All.Where(h => LocalHero.ComingSoon.Contains(h.Id) && !Released.Contains(h)).ToArray();
                 var file = System.IO.Path.Combine(Plugin.PluginDir ?? "", "coming-soon.txt");
                 if (!System.IO.File.Exists(file)) return comingSoon = new HeroRow[0];
                 var ids = new HashSet<string>(System.IO.File.ReadAllLines(file).Select(l => l.Trim()).Where(l => l.Length > 0));

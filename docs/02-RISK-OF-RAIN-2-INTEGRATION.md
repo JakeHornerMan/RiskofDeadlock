@@ -68,6 +68,17 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
      written out to `%LOCALAPPDATA%\DeadlockOfRain\embedded\` once per DLL build (module version id in `dll-build.txt`),
      `DeadlockCache.DefaultDir()` returns that folder, `FirstRun.Start` is skipped (Deadlock is never looked for) and
      `Survivors.Released` keeps only the heroes in its `ready.json`. The normal build has no such resources and behaves as before.
+     **No extractor in that DLL (2026-11-09,** a reviewer: "Why is it still trying to launch an extractor if files are included?";
+     creator: "make sure no extractor code or referemnce is included"**):** the csproj defines **`OWN_FILES`** whenever
+     `LocalHeroDir` is set. Everything that reads Deadlock lives in `Runtime/FirstRunRead.cs` (a `partial class FirstRun`: the
+     process, its progress and log, the stall stop, finding Deadlock), and with `OWN_FILES` that file compiles only stubs
+     (`Started`/`Running`/`Choosing` false). `HeroPicker.cs` is left out, `Plugin.DeadlockFolder` (the "Deadlock folder" setting)
+     is never bound, and the loading banner says "built into the mod, no Deadlock install needed". `build_local_hero.sh` checks
+     the built DLL for `DeadlockExtract`, `HeroPicker`, `Deadlock folder`, `FindDeadlock` and `ExtractDir` and stops if one is there.
+     Shared log strings no longer name the extractor either (DeadlockCache, the bat prop's sheet note).
+     **Coming soon in that DLL:** the embedded `ready.json` may list `"comingSoon"` (`build_local_hero.sh --soon`); `LocalHero.ComingSoon`
+     then feeds `Survivors.ComingSoon` in place of `coming-soon.txt`, and `MissingHeroes` draws those tiles as a dim **grey** portrait
+     with a grey colour (Melty keeps the black silhouette). 1.5.10: Victor and Paige.
    - `FirstRun.Start` (Thunderstore build only: `extract/DeadlockExtract.exe` beside the DLL). It finds Deadlock (config
      *Deadlock folder*, env `DEADLOCKOFRAIN_DEADLOCK`, RoR2's own Steam library, Steam's path from `reg.exe query
      HKCU\Software\Valve\Steam`, `C:\Program Files (x86)\Steam`, then every library in `libraryfolders.vdf`; Deadlock is

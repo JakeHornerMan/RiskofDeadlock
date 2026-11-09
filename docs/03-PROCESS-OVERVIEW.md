@@ -232,6 +232,12 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   `build/local-all/cache` (sounds.json merged, ready.json with every hero and prop), one DLL (~600 MB for 11 heroes; loads fine,
   mod start 4.2 s) and `<folder>/r2modman/Risk_of_Deadlock_Own_Files-<version>.zip` (~470 MB).
 - Never package or upload this DLL, the r2modman zip, `mod-cache` or the glb: they are Deadlock's files.
+- **`--soon <ids>`** (2026-11-09, creator: "dll build with no victor or paige grey out these characters"): `all` skips those
+  `<id>Files` folders, copies only each one's small portrait into the merged cache and writes `"comingSoon"` into `ready.json`;
+  the game shows them as greyed-out locked tiles (doc 02 §3). 1.5.10 is `all charactersFinal --soon victor,paige --r2modman-install`.
+- **No extractor in the DLL build** (2026-11-09): the DLL is compiled with `OWN_FILES` (doc 02 §3), and the script checks the
+  built DLL holds no extractor code. `DeadlockExtract.exe` is needed only to make an `edit/<id>.glb` that is missing or to
+  convert one newer than its dlm; with every glb in place a build never runs it or reads Deadlock.
 - **2026-11-02:** Thunderstore given up (creator: "we are giving up on thunderstore!"); releases are Melty only, and the creator's
   own copy is the `all` zip, now named `Risk_of_Deadlock-<version>.zip`, imported in r2modman. The single-hero Mo & Krill test build
   was deleted at the creator's word ("it was a test build forget it ever happened"): `--uninstall`, `build/local-mokrill/` and its

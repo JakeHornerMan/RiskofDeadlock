@@ -126,7 +126,7 @@ namespace DeadlockOfRain
                     // kept readable: the cel goo re-colours and oozes its vertices every frame (a no-longer-readable mesh gives it none)
                     m.UploadMeshData(false);
                 }
-                else Log.Warn($"effect model {id} not in the cache (extractor 1.5.0+ reads it); a simple shape stands in");
+                else Log.Warn($"effect model {id} not in the cache; a simple shape stands in");
             }
             catch (Exception e) { Log.Warn($"effect model {id}: {e.Message}"); m = null; }
             props[id] = m;
@@ -157,7 +157,7 @@ namespace DeadlockOfRain
             try
             {
                 if (File.Exists(file)) a = HeroAsset.Read(file, dir);
-                else Log.Warn($"effect model {id} not in the cache (extractor 1.6.0+ reads it)");
+                else Log.Warn($"effect model {id} not in the cache");
             }
             catch (Exception e) { Log.Warn($"effect model {id}: {e.Message}"); a = null; }
             propAssets[id] = a;

@@ -15,7 +15,9 @@ namespace DeadlockOfRain
         public const string Version = "1.5.0";
         public static Plugin Instance;
         public static ConfigEntry<float> Volume;
+#if !OWN_FILES
         public static ConfigEntry<string> DeadlockFolder;
+#endif
         public static string PluginDir;
 
         void Awake()
@@ -26,7 +28,13 @@ namespace DeadlockOfRain
             PluginDir = Path.GetDirectoryName(Info.Location);
             Volume = Config.Bind("Audio", "Deadlock sound volume", 1f, "Volume of the Deadlock sounds (0-1), on top of the game's master and SFX volume.");
 
+            // A DLL with the creator's own hero files built in (LocalHero, the r2modman build) never looks for Deadlock: no
+            // "Deadlock folder" setting and no extractor (a reviewer asked why it seemed to launch one, 2026-11-09)
+#if OWN_FILES
+            LocalHero.Init();
+#else
             DeadlockFolder = Config.Bind("Deadlock", "Deadlock folder", "", "Only needed if Deadlock is not found by itself: your Deadlock folder, e.g. D:\\SteamLibrary\\steamapps\\common\\Deadlock (Steam: Deadlock > Manage > Browse local files). Its game or game\\citadel folder works too.");
+#endif
 
             // every step of the start in the log and start-trail.txt, so a "closed right after starting" report says why (1.2.0)
             StartTrail.Init();
@@ -37,8 +45,12 @@ namespace DeadlockOfRain
             // every start: the loading screen says the Deadlock heroes are being read and built, and names each one (FirstRunOverlay)
             FirstRunOverlay.Show();
             // Thunderstore install: read the heroes from Deadlock now; the loading screen waits for it (Survivors.cs).
-            // A DLL with the creator's own hero files built in (LocalHero) never looks for Deadlock.
-            if (LocalHero.Init() || !FirstRun.Start(DeadlockCache.DefaultDir(), DeadlockFolder.Value)) OpenCache();
+            // Melty: the cache is already there (FirstRun.Start finds no extract/ folder). Own files: straight to the cache.
+#if OWN_FILES
+            OpenCache();
+#else
+            if (!FirstRun.Start(DeadlockCache.DefaultDir(), DeadlockFolder.Value)) OpenCache();
+#endif
 
             if (!MeltyTest.Off("harmony")) new Harmony(Guid).PatchAll(typeof(Plugin).Assembly);
             ContentManager.collectContentPackProviders += add => add(new DeadlockContentProvider());

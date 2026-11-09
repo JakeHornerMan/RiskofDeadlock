@@ -1,3 +1,4 @@
+#if !OWN_FILES   // the DLL build reads nothing from Deadlock (FirstRunRead.cs)
 using System.Collections.Generic;
 using System.Linq;
 using DeadlockOfRain.Sheets;
@@ -132,3 +133,4 @@ namespace DeadlockOfRain
         }
     }
 }
+#endif

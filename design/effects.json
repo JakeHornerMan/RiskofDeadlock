@@ -1655,7 +1655,7 @@
         "none"
       ],
       "tint": "none",
-      "notes": "Deadlock's bat (its wing poses are morph targets: extractor 1.9.0 writes each as its own frame), for every bat effect"
+      "notes": "Deadlock's bat (its wing poses are morph targets, each one kept as its own frame), for every bat effect"
     },
     {
       "id": "mina_bite_tex",

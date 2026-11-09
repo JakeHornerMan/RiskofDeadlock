@@ -1721,3 +1721,17 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Results:** `run_test.sh paige`: first run Captivating Read missed (test mode casts before aiming at the new dummies), second run 1/1, every check.
 **Not done / open:** the creator to share the Paige page ("Anyone with the link"); co-op not run for Paige; the creator's play feel.
 **Lessons:** doc 08 §7g.
+
+### 2026-11-09 · r2modman 1.5.10: no Victor/Paige, no extractor in the DLL build
+**Request (verbatim):** "ok let make dll build with no victor or paigegrewy out these characters! 1.5.6 i hada  friend review the repo e says on the build Why is it still trying to launch an extractor if files are included? wtf can we please fix this for 1.5.6"; mid-work: "can you make sure no extractor code or referemnce is included"
+**Questions asked → answers:** version (1.5.9 was last) → 1.5.10; Victor/Paige → greyed locked "coming soon" tiles, files left out; what to fix → all of it (banner, Deadlock folder setting, build script).
+**Done:**
+- Found: the game never ran the extractor in the DLL build (`LocalHero.Init()` skipped `FirstRun.Start`), but its code, the "Deadlock folder" setting and the "from your own Deadlock install" banner were all in it, and the build script refused to run without the exe.
+- `OWN_FILES` define in the csproj when `LocalHeroDir` is set; `Runtime/FirstRunRead.cs` (extractor half of `FirstRun`, partial class) compiles to stubs with it; `HeroPicker.cs` left out; `Plugin.DeadlockFolder` not bound; own banner and status text. Log strings in DeadlockCache and the bat prop's sheet note no longer name the extractor (gen.py: PREFLIGHT CLEAN).
+- `LocalHero.ComingSoon` from embedded `ready.json` `comingSoon` → `Survivors.ComingSoon`; `MissingHeroes` draws the DLL build's coming-soon tiles as a dim grey portrait.
+- `build_local_hero.sh`: `--soon <ids>`; the extractor exe needed only to make/convert a glb; a check that the DLL holds no `DeadlockExtract`/`HeroPicker`/`Deadlock folder`/`FindDeadlock`/`ExtractDir`.
+- DllBuilds package: CHANGELOG/README 1.5.10; THIRD-PARTY-NOTICES trimmed (the extractor's libraries aren't in this package); INSTALL D3 without `\extract` (the creator asked for no extractor references).
+- Docs 00, 02 §3, 03 §5c.
+**Results:** both builds compile; the OWN_FILES DLL has none of the extractor names, the normal one keeps them. 1.5.10 (599 MB DLL, 472 MB zip, 11 heroes) installed in the r2modman profile "Deadlock". compare_builds: 10/11 the same; Viscous's dlm differs from the Melty cache (the creator's own edited Viscous in charactersFinal, not this change). Melty-path regression `run_test.sh haze`: 1/1, every check (a first run lost its sounds when the dev guard rewrote the cache mid-load; the rerun played 114).
+**Not done / open:** the grey tiles and banner seen in game by the creator.
+**Lessons:** "it launches the extractor" from a reviewer can mean the code is merely present: compile it out, and check the built DLL, rather than relying on a runtime branch.

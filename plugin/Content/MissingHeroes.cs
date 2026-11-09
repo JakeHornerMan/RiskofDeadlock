@@ -63,7 +63,7 @@ namespace DeadlockOfRain
             sd.displayPrefab = display;
             sd.displayNameToken = cb.baseNameToken;
             sd.descriptionToken = cb.baseNameToken;
-            sd.primaryColor = why == null ? Color.black : Color.red;
+            sd.primaryColor = why == null ? (LocalHero.Dir != null ? Color.grey : Color.black) : Color.red;
             sd.desiredSortPosition = hero.SortPosition;
             sd.unlockableDef = unlock;
 
@@ -83,7 +83,9 @@ namespace DeadlockOfRain
             var px = src.GetPixels32();
             for (int i = 0; i < px.Length; i++)
             {
-                px[i] = new Color32(0, 0, 0, px[i].a);
+                // the DLL build greys its coming-soon heroes out (a dim greyscale portrait); Melty keeps the black silhouette
+                if (LocalHero.Dir != null) { var g = (byte)((px[i].r * 30 + px[i].g * 59 + px[i].b * 11) / 100 * 55 / 100); px[i] = new Color32(g, g, g, px[i].a); }
+                else px[i] = new Color32(0, 0, 0, px[i].a);
             }
             t.SetPixels32(px);
             t.Apply();
