@@ -123,7 +123,7 @@ D1. r2modman: Installed > Risk_of_Deadlock > Uninstall (every copy). Optional: d
     (Repo command: python tools/r2modman_install.py --uninstall)
 D2. Steam copy, in the GAME FOLDER delete: the BepInEx folder (RoR2BepInExPack and the mod go with it),
     winhttp.dll, winhttp.dll.melty-off, doorstop_config.ini, .doorstop_version. The game then starts unmodded.
-D3. The mod's own files: delete %LOCALAPPDATA%\DeadlockOfRain\embedded, \cache, \extract and any \cache.* folder.
+D3. The mod's own files: delete %LOCALAPPDATA%\DeadlockOfRain\embedded, \cache and any \cache.* folder.
 D4. Optional: Steam > Risk of Rain 2 > Properties > Installed Files > Verify integrity, to be sure the game is clean.
 
 

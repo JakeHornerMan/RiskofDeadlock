@@ -2,6 +2,14 @@
 
 One version line, one number up per build. Newest first.
 
+## 1.5.10
+- Built with Risk of Rain 2 build 25921972 (2026-11-09).
+- **Victor and Paige are coming soon:** greyed out in character select (hover them for "coming in a later update"). Their files
+  aren't in this build, so the download is smaller. The other eleven heroes are the same as in 1.5.9.
+- **No extractor at all:** this build never had to read Deadlock, and now it carries none of that code. No DeadlockExtract, no
+  Deadlock search, no hero picker, no "Deadlock folder" setting. The loading screen says the heroes are built into the mod,
+  with no Deadlock install needed.
+
 ## 1.5.9
 - Built with Risk of Rain 2 build 25921972 (2026-11-06).
 - **Paige joins: the thirteenth hero**, from my own Paige files. A bibliomancer matched to Engineer (130 health, 14 damage); every spirit she summons is see-through ghost green.
