@@ -1722,6 +1722,14 @@ and a join rule: "done be an idiot f you are disrespectful to other member you w
 **Not done / open:** the creator to share the Paige page ("Anyone with the link"); co-op not run for Paige; the creator's play feel.
 **Lessons:** doc 08 §7g.
 
+### 2026-11-09 · r2modman 1.5.11: Victor and Paige enabled again
+**Request (verbatim):** "please add this to you memory for ddl builds in the future!" (the Paige recipe saved as a memory), then "let do a new build with the new character paige and victor enabled!"
+**Questions asked → answers:** none (version: next patch, 1.5.11).
+**Done:** DllBuilds `package/CHANGELOG.md` 1.5.11 section and `package/README.md` (thirteen heroes, no "coming soon"; Paige's pierce cap in her line). `bash tools/build_local_hero.sh all charactersFinal --r2modman-install` without `--soon`.
+**Results:** 13 heroes in one cache, DLL 693 MB with no extractor code; compare_builds 10/11 the same (Viscous's dlm is the creator's own edit, as in 1.5.10); 1.5.11 installed in the r2modman profile "Deadlock", r2modman restarted.
+**Not done / open:** the creator's play check.
+**Lessons:** none new.
+
 ### 2026-11-09 · r2modman 1.5.10: no Victor/Paige, no extractor in the DLL build
 **Request (verbatim):** "ok let make dll build with no victor or paigegrewy out these characters! 1.5.6 i hada  friend review the repo e says on the build Why is it still trying to launch an extractor if files are included? wtf can we please fix this for 1.5.6"; mid-work: "can you make sure no extractor code or referemnce is included"
 **Questions asked → answers:** version (1.5.9 was last) → 1.5.10; Victor/Paige → greyed locked "coming soon" tiles, files left out; what to fix → all of it (banner, Deadlock folder setting, build script).

@@ -2,6 +2,13 @@
 
 One version line, one number up per build. Newest first.
 
+## 1.5.11
+- Built with Risk of Rain 2 build 25921972 (2026-11-09).
+- **Victor and Paige are back:** both playable again in character select, with all their files in the build. Thirteen heroes.
+  - **Victor:** as in 1.5.8 (Memento Mori on Left Click, Jumpstart, Pain Battery, Aura of Suffering; Q Shocking Reanimation).
+  - **Paige:** as in 1.5.9 (Chapter's End, Bookwyrm, Captivating Read, Rallying Charge; Q The Green Knight; Plot Armor), all ghost green.
+- Still no extractor: every hero's files are built into the DLL.
+
 ## 1.5.10
 - Built with Risk of Rain 2 build 25921972 (2026-11-09).
 - **Victor and Paige are coming soon:** greyed out in character select (hover them for "coming in a later update"). Their files
