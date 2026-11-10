@@ -419,9 +419,11 @@ Authorization header by the tools. Never put it in files, commits, logs or repli
 8. `update_mod` for listing text (description, tagline) when features change. `add_screenshot`/`finish_screenshot` for real in-game shots.
 9. **Ask the creator before `publish`.** Only after a clear yes: `publish`, then `mod_status`. Say "live" only if the server says so; otherwise it is "awaiting review".
    Then `python tools/discord_update.py <version>` posts the update to the Discord #update channel (since 2026-10-24, §9).
-   **Thunderstore (2026-10-25):** GitHub Actions `.github/workflows/thunderstore-watch.yml` runs every 3 hours (creator: not on
-   this PC) and posts "is out on Thunderstore" once the API's Risk of Rain 2 `review_status` is `approved` for the latest
-   version, then disables itself; re-enable it after each upload (Actions > Thunderstore live watch > Enable workflow). It
+   **Thunderstore (2026-10-25):** GitHub Actions `.github/workflows/thunderstore-watch.yml` checks the Thunderstore page every
+   hour (creator: not on this PC) and posts "is out on Thunderstore" once the API's Risk of Rain 2 `review_status` is
+   `approved` for a new latest version. Since 2026-11-10 it stays on for good (Thunderstore has no subscribe/RSS/webhook): the
+   last version posted is `posted.txt` on the branch `ts-watch-state`, so each version goes out once. The changelog section
+   comes from `tools/r2modman_docs/CHANGELOG.md` (the DLL builds), else `thunderstore/CHANGELOG.md`. It
    needs the repo secret `DISCORD_UPDATE_WEBHOOK` (the creator adds it; never in files). The script refuses unknown flags
    (a half-applied edit once ignored `--if-live` and posted a wrong Melty message).
 10. **After publishing (since v0.7.2):** check `install_outcomes` and `player_logs` the next session. A setup failure or

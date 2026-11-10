@@ -6,8 +6,8 @@
     python tools/discord_update.py 1.0.0 --dry-run  # print the message only
     python tools/discord_update.py 1.0.0 --thunderstore            # "is out on Thunderstore" instead
     python tools/discord_update.py 1.0.0 --thunderstore --if-live  # post only once Thunderstore approved this version (the
-        API's review_status) and only once (a marker file). GitHub runs it every 3 hours (.github/workflows/thunderstore-watch.yml,
-        with the webhook as the repo secret DISCORD_UPDATE_WEBHOOK) and switches the workflow off after posting
+        API's review_status) and only once (a marker file). GitHub runs it every hour (.github/workflows/thunderstore-watch.yml,
+        with the webhook as the repo secret DISCORD_UPDATE_WEBHOOK); the workflow remembers the last version it posted
     python tools/discord_update.py --ts-latest   # print the latest version Thunderstore has (for the workflow)
 
 Any other flag is refused, so a typo never posts by accident (2026-10-25: a half-applied edit ignored --if-live and posted).
@@ -26,10 +26,14 @@ LIMIT = 2000   # Discord's message length
 
 
 def section(version):
-    text = open(os.path.join(ROOT, "thunderstore", "CHANGELOG.md"), encoding="utf-8").read()
-    m = re.search(r"^## " + re.escape(version) + r"\s*$(.*?)(?=^## |\Z)", text, re.M | re.S)
-    if not m: sys.exit(f"thunderstore/CHANGELOG.md has no '## {version}' section")
-    return [l for l in m.group(1).strip().splitlines() if l.strip()]
+    # The r2modman/Thunderstore DLL builds (1.5.x on) keep their changelog in tools/r2modman_docs; the Melty one is thunderstore/.
+    for rel in (("tools", "r2modman_docs", "CHANGELOG.md"), ("thunderstore", "CHANGELOG.md")):
+        path = os.path.join(ROOT, *rel)
+        if not os.path.exists(path): continue
+        text = open(path, encoding="utf-8").read()
+        m = re.search(r"^## " + re.escape(version) + r"\s*$(.*?)(?=^## |\Z)", text, re.M | re.S)
+        if m: return [l for l in m.group(1).strip().splitlines() if l.strip()]
+    sys.exit(f"no '## {version}' section in tools/r2modman_docs/CHANGELOG.md or thunderstore/CHANGELOG.md")
 
 
 def message(version, thunderstore):
@@ -69,7 +73,7 @@ def ts_live(version):
 
 
 def remove_task(version):
-    """A local watcher task (Windows) is done once the post went out; on GitHub the workflow switches itself off instead."""
+    """A local watcher task (Windows) is done once the post went out; on GitHub the workflow records the version instead."""
     if os.name != "nt": return
     subprocess.run(["schtasks", "/Delete", "/TN", f"RiskOfDeadlock-Thunderstore-{version}", "/F"], capture_output=True)
 
