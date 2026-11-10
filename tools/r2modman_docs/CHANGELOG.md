@@ -2,6 +2,16 @@
 
 One version line, one number up per build. Newest first.
 
+## 1.6.1
+- Built with Risk of Rain 2 build 25921972 (2026-11-10).
+- **Victor and Paige are playable again:** both back in character select with all their files. Thirteen heroes.
+  - **Victor rebalanced:** Jumpstart is a green lightning strike (every 8 s, +20 % speed); Pain Battery costs 1 Pain, 800 % with
+    falloff to 30 m and knockback; Aura of Suffering is a +33 % damage zone (no damage or healing of its own, stays on, 12 s
+    cooldown, +1 Pain every 5 s); Shocking Reanimation plays his zipline clip, other carriers stand in their idle.
+  - **Paige's Captivating Read:** the sword is turned round so its edge leads, rises slowly out of the circle for a second and
+    slams down, with a shockwave across the circle.
+- Hero files sit beside the DLL in the `heroes` folder, as in 1.5.13.
+
 ## 1.5.13
 - Built with Risk of Rain 2 build 25921972 (2026-11-10).
 - **Victor and Paige are coming soon again:** greyed out in character select while they're finished. Their files aren't in this
