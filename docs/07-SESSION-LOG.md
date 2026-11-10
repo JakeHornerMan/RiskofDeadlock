@@ -1778,3 +1778,11 @@ Mid-turn: "you opened the game but they are not installed!" (our test run on the
 **Results:** `PREFLIGHT CLEAN`, `dotnet build` succeeded. No in-game run: Paige plays only from a DLL build, and the creator asked for none.
 **Not done / open:** seeing it in game with the next DLL build the creator asks for (check the edge now leads and the timing).
 **Lessons:** none new.
+
+### 2026-11-10 · r2modman 1.6.1 with Victor and Paige, started for the creator
+**Request (verbatim):** "ok amke a 1.6.1 build with victor and paige enabled! and then  run the new mod and it changes for me ill test"
+**Questions asked → answers:** none.
+**Done:** `tools/r2modman_version.txt` set to 1.6.0 so the build is 1.6.1 (the creator moved the line to 1.6.x); `DllBuilds/package/CHANGELOG.md` 1.6.1 section (Victor and Paige back, Victor's rebalance, Paige's sword); `build_local_hero.sh all charactersFinal --r2modman-install` (no `--soon`). Started the game modded from the r2modman profile "Deadlock" (`steam -applaunch 632360 --doorstop-enabled true --doorstop-target-assembly <profile>/BepInEx/core/BepInEx.Preloader.dll`), as the creator asked.
+**Results:** 13 heroes, DLL 1.3 MB + `heroes/` 2,118 files (697 MB); compare_builds 10/11 the same (Viscous is the creator's own edited dlm, as before); installed as 1.6.1; the game is running from the profile's BepInEx.
+**Not done / open:** the creator's playtest (Victor's rebalance, Paige's sword).
+**Lessons:** the build's slow part is zipping ~700 MB; tell the creator up front it takes several minutes.
