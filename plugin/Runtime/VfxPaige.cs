@@ -311,9 +311,14 @@ namespace DeadlockOfRain
 
         // ------------------------------------------------------------------ Shift: Captivating Read
         /// <summary>The giant sword's size, and the height of its root when its tip is 0.6 m into the ground (the model stands tip-up, 0.5
-        /// to 5.18 m; it is drawn turned over).</summary>
+        /// to 5.18 m; it is drawn turned over, and turned 180° about the vertical so its edge, not its flat, leads: creator, 2026-11-10:
+        /// "the sword is facing the wrong way ... can we rotate this by 180 on the y axis").</summary>
         const float SwordScale = 1.8f;
         static float SwordRest => 5.18f * SwordScale - 0.6f;
+        static Quaternion SwordRot => Quaternion.Euler(180f, 180f, 0f);
+        /// <summary>How long the sword rises before it slams (creator, 2026-11-10: "the sword need to rise for 1 second slowly and then
+        /// quickly slam into the ground"), and how high above its resting place it climbs.</summary>
+        const float SwordRiseTime = 1f, SwordRiseHeight = 8f;
         static GameObject PaigeReadFx(string moment, Vector3 at, float radius, Transform follow, float life)
         {
             switch (moment)
@@ -345,26 +350,33 @@ namespace DeadlockOfRain
                     if (tq) tq.transform.localScale = new Vector3(0.65f, 2.6f, 1f);
                     text.AddComponent<PaigeDrift>().Velocity = Vector3.up * 1.2f;
                     var g = Light(root, paigeGhost, radius * 1.8f, 0.5f, Vector3.up).gameObject.AddComponent<GrowLight>(); g.To = 3f; g.Over = l;
-                    // the sword gathering overhead, point down, sinking toward the circle
-                    var sword = PaigeGhostProp("paige_sword", at + Vector3.up * (SwordRest + 12f), Quaternion.Euler(180f, 0f, 0f), SwordScale, null, 1f, false);
-                    var fall = sword.AddComponent<PaigeSwordHover>(); fall.From = at + Vector3.up * (SwordRest + 12f); fall.To = at + Vector3.up * (SwordRest + 4f); fall.Over = l;
+                    // the sword, point down, rises slowly out of the circle for a second, then slams down to land exactly at life
+                    var low = at + Vector3.up * (SwordRest - 1.5f);
+                    var sword = PaigeGhostProp("paige_sword", low, SwordRot, SwordScale, null, 1f, false);
+                    var rs = sword.AddComponent<PaigeSwordRiseSlam>();
+                    rs.Low = low; rs.High = at + Vector3.up * (SwordRest + SwordRiseHeight); rs.Rest = at + Vector3.up * SwordRest;
+                    rs.Rise = Mathf.Min(SwordRiseTime, l - 0.12f); rs.Slam = l - rs.Rise;
                     sword.transform.SetParent(root.transform, true);
                     return root;
                 }
                 case "hit":
                 {
-                    // the sword slams point-first into the centre and stands there in its stone, see-through green; a shockwave,
-                    // a flash, a shake, pages and letters thrown out, the sword-in-stone graphic flashing on the ground
+                    // the sword has slammed point-first into the centre (the loop's sword ends here) and stands in its stone,
+                    // see-through green; a shockwave runs out across the circle (kept inside it), a flash, a shake, pages and letters
+                    // thrown out, the sword-in-stone graphic flashing on the ground
                     var root = Root(at, 2.4f, null);
-                    var sword = PaigeGhostProp("paige_sword", at + Vector3.up * SwordRest, Quaternion.Euler(180f, 0f, 0f), SwordScale, null, 1f, false);
+                    var sword = PaigeGhostProp("paige_sword", at + Vector3.up * SwordRest, SwordRot, SwordScale, null, 1f, false);
                     sword.transform.SetParent(root.transform, true);
-                    var slam = sword.AddComponent<PaigeSwordHover>(); slam.From = at + Vector3.up * (SwordRest + 4f); slam.To = at + Vector3.up * SwordRest; slam.Over = 0.08f;
                     var stone = PaigeGhostProp("paige_stone", at - Vector3.up * 0.15f, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f), 2.2f, null, 1f, false);
                     stone.transform.SetParent(root.transform, true);
                     sword.AddComponent<PaigeFadeOut>().Begin(1.6f, 0.7f);
                     stone.AddComponent<PaigeFadeOut>().Begin(1.6f, 0.7f);
-                    Ring(at + Vector3.up * 0.15f, paigeGhost, 0.5f, radius * 1.15f, 0.5f, 0.45f);
-                    Ring(at + Vector3.up * 0.15f, paigePale, 0.3f, radius * 0.8f, 0.35f, 0.25f);
+                    // the shockwave: two rings racing out to the circle's edge, a flat wave of sparks and mist along the ground
+                    Ring(at + Vector3.up * 0.15f, paigeGhost, 0.5f, radius, 0.35f, 0.7f);
+                    Ring(at + Vector3.up * 0.25f, paigePale, 0.3f, radius * 0.97f, 0.5f, 0.3f);
+                    Ring(at + Vector3.up * 0.1f, paigeGhost, 0.2f, radius * 0.6f, 0.25f, 0.4f);
+                    Burst(at + Vector3.up * 0.2f, "mat_spark", paigePale, 50, 0.4f, radius / 0.45f, 0.08f, 0.5f, true);
+                    Burst(at + Vector3.up * 0.3f, "mat_glow", new Color(paigeGhost.r, paigeGhost.g, paigeGhost.b, 0.5f), 14, 0.45f, radius / 0.5f, 1.4f, 0.5f, true);
                     Burst(at, "mat_glow", paigeGhost, 3, 0.5f, 1f, radius * 0.9f, 0.6f);
                     Burst(at, "mat_spark", paigePale, 30, 0.6f, 12f, 0.07f, 0.5f, false, true, 1f);
                     PaigeLetterBurst(at + Vector3.up * 0.5f, paigePale, 26, 1.2f, 6f, 0.32f, radius * 0.4f, true);
@@ -468,15 +480,24 @@ namespace DeadlockOfRain
         }
 
         /// <summary>The sword moving from From to To over Over seconds, easing in (gathering, then the slam).</summary>
-        sealed class PaigeSwordHover : MonoBehaviour
+        /// <summary>The Captivating Read sword: rises slowly (easing out) from Low to High over Rise seconds, then drops fast (easing
+        /// in) to Rest over Slam seconds and hides there, where the hit moment's sword takes over.</summary>
+        sealed class PaigeSwordRiseSlam : MonoBehaviour
         {
-            public Vector3 From, To; public float Over = 1f;
+            public Vector3 Low, High, Rest; public float Rise = 1f, Slam = 0.25f;
             float age;
             void Update()
             {
                 age += Time.deltaTime;
-                float t = Mathf.Clamp01(age / Mathf.Max(0.01f, Over));
-                transform.position = Vector3.LerpUnclamped(From, To, t * t);
+                if (age < Rise)
+                {
+                    float t = age / Mathf.Max(0.01f, Rise);
+                    transform.position = Vector3.LerpUnclamped(Low, High, 1f - (1f - t) * (1f - t));
+                    return;
+                }
+                float u = Mathf.Clamp01((age - Rise) / Mathf.Max(0.01f, Slam));
+                transform.position = Vector3.LerpUnclamped(High, Rest, u * u * u);
+                if (u >= 1f) gameObject.SetActive(false);
             }
         }
 

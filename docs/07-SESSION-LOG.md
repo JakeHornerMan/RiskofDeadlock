@@ -1770,3 +1770,11 @@ Mid-turn: "you opened the game but they are not installed!" (our test run on the
 **Results:** 1.5.13 in the r2modman profile "Deadlock": a 1.3 MB DLL, `heroes/` with 1,822 files, 11 heroes, coming soon victor and paige. DLL build in the Steam copy, `run_test.sh haze`: every skill and sound passed; the first run failed `coming-soon-tile` (the check expected Melty's black tile), passed after the fix. The log showed the files read from the plugin folder and `embedded` removed. Steam copy back to main's dev build (`--uninstall`).
 **Not done / open:** the r2modman 1.5.13 DLL predates the test-check and "greyed-out" log fix (test mode and a log line only, nothing a player sees).
 **Lessons:** a `dotnet build -p:IntermediateOutputPath` with a relative path resolves against `plugin/`, so the obj lands inside the project and doubles its attributes (CS0579). Always pass an absolute path.
+
+### 2026-11-10 · Paige: Captivating Read sword turned round, rise and slam
+**Request (verbatim):** "paige feedback so the Shift Captivating Read [...] animation is so close!. first of all the sword is facing the wrong way, tt sticks into the grond not the edge, can we rotate this by 180 on the y axis. also the animation is shitty the sword needto rise for 1 second slowly and then quckly slam into the groun creating  shock wave within the circl on impact" and "do not make a new dll build until i tell you!"
+**Questions asked → answers:** none.
+**Done:** `VfxPaige.cs`: the sword's rotation `Euler(180, 180, 0)` (was `180, 0, 0`); new `PaigeSwordRiseSlam` in the loop moment: rises from 1.5 m below rest to 8 m above it over 1 s (easing out), then drops in the remaining 0.25 s (easing in, cubic) and hides as the hit moment's sword appears at rest; the hit's shockwave is three rings and a flat spark/mist wave out to the circle's radius (was 1.15× radius); unused `PaigeSwordHover` removed. `effects.json` note, docs 00 §9, 02, MODLOG.
+**Results:** `PREFLIGHT CLEAN`, `dotnet build` succeeded. No in-game run: Paige plays only from a DLL build, and the creator asked for none.
+**Not done / open:** seeing it in game with the next DLL build the creator asks for (check the edge now leads and the timing).
+**Lessons:** none new.

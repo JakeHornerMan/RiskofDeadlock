@@ -285,7 +285,14 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: r2modman 1.5.13, hero files beside the DLL (2026-11-10)
+## 9. Last work: Paige's Captivating Read sword (2026-11-10)
+- Creator: the sword faced the wrong way ("rotate this by 180 on the y axis"); it should "rise for 1 second slowly and then quickly
+  slam into the ground creating shock wave within the circle on impact". Done in `VfxPaige.cs` (`SwordRot`, `PaigeSwordRiseSlam`,
+  shockwave rings and a flat spark/mist wave kept to the circle's radius). Visual only: no numbers changed, no retest flag.
+- **No DLL build** (creator: "do not make a new dll build until i tell you!"), so not seen in game yet; it goes in with the next
+  build they ask for.
+
+## 9-prev40. r2modman 1.5.13, hero files beside the DLL (2026-11-10)
 - Creator, relaying a friend: "keep those 2 characters greyed out in our new build 1.5.11" (built as 1.5.13; 1.5.11/1.5.12 existed)
   and "why are the assets being extracted and placed into app data? Why not just include them in the mod folder itself alongside the DLL?";
   asked for evidence from real mods first.
