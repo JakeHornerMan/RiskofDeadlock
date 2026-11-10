@@ -8,6 +8,12 @@ One version line, one number up per build. Newest first.
 - **Heroes left out while in development** are now shown blacked out with an amber `</>` dev badge, and hovering says they're
   in development (none are left out in this build).
 
+## 1.6.2
+- **Victor's Aura of Suffering:** its health drain is now 4x his health regen a second (items and level included), instead
+  of 2 % max health. With +2 regen it drains 8.
+- **Victor's Jumpstart:** the lightning now always lands on him: the strike holds him still for half a second, his pose
+  frozen and his skin flashing white.
+
 ## 1.6.1
 - Built with Risk of Rain 2 build 25921972 (2026-11-10).
 - **Victor and Paige are playable again:** both back in character select with all their files. Thirteen heroes.
