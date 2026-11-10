@@ -281,7 +281,7 @@ namespace DeadlockOfRain.States
     /// buff is on (the field, its loop sound, its radius following Pain). On the server, while on: every interval each enemy within
     /// radius + reach x Pain gets the debuff (victor_suffering: +33 % damage taken from him) and, if damagePct is above 0, a tick
     /// ramping from damageMinPct to damagePct a second over duration with healFraction of it healed (both 0 since 2026-11-09:
-    /// the creator's "amplify zone only"); selfDrainPct of his max health a second, which can kill him; +buffStacks Pain every
+    /// the creator's "amplify zone only"); selfDrainPct of his max health plus selfDrainRegenMult x his own health regen (items and level included; creator, 2026-11-10: 2x at first, then "it says victor should take 4x the regen rate when aura is active!") a second, which can kill him; +buffStacks Pain every
     /// buffEvery seconds; off at stopBelowPct health only if that is above 0 (0 now: it stays on until R).</summary>
     public sealed class VictorAura : MonoBehaviour
     {
@@ -384,7 +384,12 @@ namespace DeadlockOfRain.States
                 Relay.Sound(row.Id, "end", body.corePosition);
                 return;
             }
-            if (now >= nextDrain) { nextDrain = now + 1f; SelfHurt(row.SelfDrainPct / 100f, row.StopBelowPct <= 0f); }
+            if (now >= nextDrain)
+            {
+                nextDrain = now + 1f;
+                float drain = hc.fullCombinedHealth * row.SelfDrainPct / 100f + row.SelfDrainRegenMult * Mathf.Max(0f, body.regen);
+                if (drain > 0f) VictorPain.HurtSelf(body, drain, row.StopBelowPct <= 0f);
+            }
             if (row.BuffEvery > 0f && now >= nextPain) { nextPain = now + row.BuffEvery; VictorPain.Add(body, row.Buff, (int)Mathf.Max(1, row.BuffStacks)); }
             if (now < nextTick) return;
             nextTick = now + row.Interval;

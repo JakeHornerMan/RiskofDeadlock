@@ -514,7 +514,7 @@ def maths(r):
         if d <= 0:
             amp = BUFFS.get(r['debuff'], {}).get('damageTakenFromOwnerPerStack', 0) * 100
             return [f"no damage of its own: every enemy within {n(r['radius'])} m + {n(r['reach'])} m per Pain takes +{n(amp)} % damage from him",
-                    f"+{n(r['buffStacks'])} Pain every {n(r['buffEvery'])} s; costs {n(r['selfDamagePct'])} % max health to switch on, then {n(r['selfDrainPct'])} % a second (can kill him); stays on until R, {n(cd)} s cooldown"], 0
+                    f"+{n(r['buffStacks'])} Pain every {n(r['buffEvery'])} s; costs {n(r['selfDamagePct'])} % max health to switch on, then " + (f"{n(r['selfDrainRegenMult'])}× his health regen" if r.get('selfDrainRegenMult') else f"{n(r['selfDrainPct'])} % max health") + f" a second (can kill him); stays on until R, {n(cd)} s cooldown"], 0
         return [f"{n(r['damageMinPct'])} → {n(d)} %/s over {n(r['duration'])} s to every enemy within {n(r['radius'])} m + {n(r['reach'])} m per Pain",
                 f"heals him {n(r['healFraction'] * 100)} % of it; costs {n(r['selfDamagePct'])} % max health to switch on, then {n(r['selfDrainPct'])} % a second"], d
     if k == 'ult_reanimation':

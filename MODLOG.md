@@ -5,6 +5,9 @@
 - Deadlock ClientVersion 6817 (build 26143760, 2026-10-22 evening; no clip, mesh or sound change for our heroes); 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
+## Victor aura drain (2026-11-10, r2modman 1.6.2)
+- Aura of Suffering drains 4x his own health regen a second (new `selfDrainRegenMult` column), instead of 2 % max health.
+
 ## Paige sword (2026-11-10, visual only)
 - Captivating Read: the sword turned 180° about the vertical, rises slowly out of the circle for 1 s and slams down fast; the impact
   shockwave stays inside the circle. Not built yet (the creator will say when).

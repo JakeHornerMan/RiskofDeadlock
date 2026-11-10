@@ -285,7 +285,12 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: Paige's Captivating Read sword (2026-11-10)
+## 9. Last work: r2modman 1.6.1 and 1.6.2, Victor's aura drain = 4x regen (2026-11-10)
+- 1.6.1: Victor and Paige enabled (version line now 1.6.x, creator's request), started modded for the creator's playtest.
+- Creator: Aura of Suffering's drain "whatever victor regen rate persecond regardless of items should be doubled": new skills column
+  `selfDrainRegenMult` (4 on `victor_aura`; first 2x, then "it says victor should take 4x the regen rate", `selfDrainPct` 0). Built as 1.6.2, installed and started for them. Not run through `run_test.sh`.
+
+## 9-prev39. Paige's Captivating Read sword (2026-11-10)
 - Creator: the sword faced the wrong way ("rotate this by 180 on the y axis"); it should "rise for 1 second slowly and then quickly
   slam into the ground creating shock wave within the circle on impact". Done in `VfxPaige.cs` (`SwordRot`, `PaigeSwordRiseSlam`,
   shockwave rings and a flat spark/mist wave kept to the circle's radius). Visual only: no numbers changed, no retest flag.
