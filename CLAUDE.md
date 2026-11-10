@@ -41,6 +41,18 @@ Deadlock's assets from the player's own install; nothing from either game ships.
 10. `docs/10-DAILY-WATCH.md`: the daily watch (`tools/watch/`): game-update and Melty-break checks, the unattended fix run, its permissions.
 `MODLOG.md` is the short journal of versions, lab notes and gotchas.
 
+**Outside reference: the R2Wiki modding Cookbook** (https://risk-of-thunder.github.io/R2Wiki/Mod-Creation/Cookbook; creator, 2026-11-10:
+"R2Wiki modding cook book i need this to be reference in the claude.md for all build process"). It is the RoR2 community's guide to
+making, packaging and testing a mod, and a good reference for anything on the RoR2 side. Read it before changing how a build is made,
+laid out, packaged or installed (Melty release, the r2modman DLL build, `package.py`, `r2modman_package.py`), and follow it unless
+a rule here says otherwise:
+- a mod's assets go in the mod's own plugin folder **beside the DLL** ("has to land next to dll"), found from `Info.Location`. Never
+  unpack or write them to AppData or anywhere else (the 1.5.13 change; doc 02 §3). Also find files that a mod manager has moved up
+  beside the DLL;
+- name the package folder after the mod, and test a release from its zip in a fresh profile, so misplaced asset bundles or sound
+  banks show up.
+When the Cookbook and our layout differ, say so to the creator before building.
+
 ## Standing rules
 - **Record every session.** For every creator request that changes anything, append an entry to
   `docs/07-SESSION-LOG.md` (template at its top: the request verbatim, questions asked and answers, what was done,
@@ -79,6 +91,8 @@ Deadlock's assets from the player's own install; nothing from either game ships.
   to build, just build (no checking the files; the build adds the changelog's version section itself). The package is
   **`JakeHornerMan-Risk_of_Deadlock`**, one version line **1.5.x**, one patch up per build (creator, 2026-11-02: "make the mod by
   JakeHornerMan ... this is 1.5 version we keep updating it with that number incrementally"; the last one in `tools/r2modman_version.txt`).
+- **Every build and package follows the R2Wiki Cookbook** (above, "Outside reference"): read it first when a build, package or
+  install step changes, and record in doc 03 where we differ and why.
 - **Commit after each logical step; do not push unless asked.** Ask the creator before `publish` on Melty. The one
   exception is the **daily watch** (`tools/watch/`, doc 03 §5b): its unattended fix run may publish a fix on its own, but
   only after every check and Melty's `test_release` pass, and only when `main` holds no unreleased work besides the fix (doc 10 §3.4).

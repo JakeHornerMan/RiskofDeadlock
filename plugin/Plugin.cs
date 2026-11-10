@@ -28,7 +28,7 @@ namespace DeadlockOfRain
             PluginDir = Path.GetDirectoryName(Info.Location);
             Volume = Config.Bind("Audio", "Deadlock sound volume", 1f, "Volume of the Deadlock sounds (0-1), on top of the game's master and SFX volume.");
 
-            // A DLL with the creator's own hero files built in (LocalHero, the r2modman build) never looks for Deadlock: no
+            // The creator's own hero build (LocalHero: heroes/ beside the DLL, the r2modman package) never looks for Deadlock: no
             // "Deadlock folder" setting and no extractor (a reviewer asked why it seemed to launch one, 2026-11-09)
 #if OWN_FILES
             LocalHero.Init();

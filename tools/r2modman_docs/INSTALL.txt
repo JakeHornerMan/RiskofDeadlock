@@ -10,7 +10,7 @@ You need:
   - Windows, Steam, and Risk of Rain 2 bought and installed on Steam.
   - The package zip: JakeHornerMan-Risk_of_Deadlock-1.5.x.zip
     (made by the build, in DllBuilds\ of the RiskofDeadlock repo).
-  - Deadlock is NOT needed: every hero's files are inside the DLL.
+  - Deadlock is NOT needed: every hero's files come with the mod (the heroes folder beside the DLL).
 
 
 -------------------------------------------------------------------------------------------------------
@@ -53,17 +53,17 @@ A6. Put the mod in.
     a. Make the folder  GAME FOLDER\BepInEx\plugins\JakeHornerMan-Risk_of_Deadlock
     b. Open the package zip. Copy the files at its top (manifest.json, icon.png, README.md, CHANGELOG.md, INSTALL.txt,
        README.txt) into that folder, then open the zip's "plugins" folder and copy what is in it (DeadlockOfRain.dll,
-       LICENSE.txt, THIRD-PARTY-NOTICES.txt, built-with.txt) into the SAME folder (not into a plugins folder of its own).
+       the heroes folder, LICENSE.txt, THIRD-PARTY-NOTICES.txt, built-with.txt) into the SAME folder (not into a plugins folder of its own).
        That is exactly what r2modman does with the package.
-    c. Check: GAME FOLDER\BepInEx\plugins\JakeHornerMan-Risk_of_Deadlock\DeadlockOfRain.dll exists (about 600 MB).
+    c. Check: GAME FOLDER\BepInEx\plugins\JakeHornerMan-Risk_of_Deadlock\DeadlockOfRain.dll exists, with the heroes folder
+       beside it (about 1,800 files, 600 MB).
     d. Make sure no OTHER copy of DeadlockOfRain.dll is anywhere in GAME FOLDER\BepInEx\plugins.
 
 A7. Start it: press Play on Steam.
-    The first start of a new DLL unpacks the hero files to %LOCALAPPDATA%\DeadlockOfRain\embedded
-    (a few seconds). In character select you should see all 11 Deadlock heroes.
+    The mod reads the hero files straight from its heroes folder; nothing is unpacked. In character select you should see all 11 Deadlock heroes.
 
 A8. Check it loaded (if anything looks wrong): open GAME FOLDER\BepInEx\LogOutput.log and look for
-        Playing abrams, billy, haze, ... from your own files (built into this DLL); Deadlock is not read
+        Playing abrams, billy, haze, ... from your own files in ...\JakeHornerMan-Risk_of_Deadlock\heroes; Deadlock is not read
 
     If you also use the Melty app: it puts its own Risk of Deadlock release back when it starts (it renames
     winhttp.dll to winhttp.dll.melty-off). Close the Melty app, or use PART B.
@@ -110,7 +110,7 @@ Close the game first.
              comes from the zip's plugins folder).
   r2modman:  Uninstall the old Risk_of_Deadlock (B3), then Import local mod with the new zip (B4).
              Or the one command from "B (the quick way)".
-The first start of the new DLL unpacks its files again (a few seconds).
+Updating replaces the heroes folder with the DLL; nothing else is written.
 
 
 -------------------------------------------------------------------------------------------------------
@@ -123,7 +123,8 @@ D1. r2modman: Installed > Risk_of_Deadlock > Uninstall (every copy). Optional: d
     (Repo command: python tools/r2modman_install.py --uninstall)
 D2. Steam copy, in the GAME FOLDER delete: the BepInEx folder (RoR2BepInExPack and the mod go with it),
     winhttp.dll, winhttp.dll.melty-off, doorstop_config.ini, .doorstop_version. The game then starts unmodded.
-D3. The mod's own files: delete %LOCALAPPDATA%\DeadlockOfRain\embedded, \cache and any \cache.* folder.
+D3. The mod's own files: delete %LOCALAPPDATA%\DeadlockOfRain\cache and any \cache.* folder
+    (and \embedded, left by versions before 1.5.13; 1.5.13 removes it on its first start).
 D4. Optional: Steam > Risk of Rain 2 > Properties > Installed Files > Verify integrity, to be sure the game is clean.
 
 
@@ -140,4 +141,5 @@ The game starts unmodded from Steam
 Two copies / old version still showing
   - Uninstall every Risk_of_Deadlock in r2modman, delete extra folders holding DeadlockOfRain.dll, install once.
 The first start takes long
-  - Normal once per new DLL: it unpacks about 1,800 files (600 MB) to %LOCALAPPDATA%\DeadlockOfRain\embedded.
+  - It loads 11 heroes' models, animations and sounds from the heroes folder: on a slow disk that takes a little while.
+    The loading screen names each hero as it is built: the game is not stuck.

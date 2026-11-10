@@ -232,6 +232,10 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   `build/local-all/cache` (sounds.json merged, ready.json with every hero and prop), one DLL (~600 MB for 11 heroes; loads fine,
   mod start 4.2 s) and `<folder>/r2modman/Risk_of_Deadlock_Own_Files-<version>.zip` (~470 MB).
 - Never package or upload this DLL, the r2modman zip, `mod-cache` or the glb: they are Deadlock's files.
+- **Hero files beside the DLL (1.5.13, 2026-11-10):** the DLL is built with `-p:OwnFiles=true` and nothing embedded (about 1 MB);
+  step 4 copies the merged cache to `build/local-<id>/heroes/`, `--install` copies it into the Steam copy beside the DLL
+  (`--uninstall` removes it), and `r2modman_package.py` zips it as `plugins/heroes/**` (PACKAGE-CONTENTS sums it in one row).
+  `r2modman_install.py` keeps subfolders. Why: popular survivor mods ship their assets beside the DLL (doc 02 §3).
 - **`--soon <ids>`** (2026-11-09, creator: "dll build with no victor or paige grey out these characters"): `all` skips those
   `<id>Files` folders, copies only each one's small portrait into the merged cache and writes `"comingSoon"` into `ready.json`;
   the game shows them as greyed-out locked tiles (doc 02 §3). 1.5.10 is `all charactersFinal --soon victor,paige --r2modman-install`.

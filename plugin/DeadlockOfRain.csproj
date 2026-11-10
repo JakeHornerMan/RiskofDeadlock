@@ -46,12 +46,10 @@
     <EmbeddedResource Include="Assets\discord.png" LogicalName="DeadlockOfRain.discord.png" />
     <EmbeddedResource Include="Assets\heroes.png" LogicalName="DeadlockOfRain.heroes.png" />
   </ItemGroup>
-  <!-- the creator's own hero files inside the DLL (tools/build_local_hero.sh: -p:LocalHeroDir=<folder>, their PC only; LocalHero.cs) -->
-  <!-- OWN_FILES: that DLL leaves out reading Deadlock (Runtime/FirstRunRead.cs, HeroPicker.cs, the Deadlock folder setting) -->
-  <PropertyGroup Condition="'$(LocalHeroDir)' != ''">
+  <!-- the creator's own hero build (tools/build_local_hero.sh: -p:OwnFiles=true, their r2modman package; LocalHero.cs). Its hero
+       files are a heroes/ folder beside the DLL (since 1.5.13; nothing embedded). OWN_FILES also leaves out reading Deadlock
+       (Runtime/FirstRunRead.cs, HeroPicker.cs, the Deadlock folder setting). -->
+  <PropertyGroup Condition="'$(OwnFiles)' == 'true'">
     <DefineConstants>$(DefineConstants);OWN_FILES</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition="'$(LocalHeroDir)' != ''">
-    <EmbeddedResource Include="$(LocalHeroDir)\**\*" LogicalName="localhero/%(RecursiveDir)%(Filename)%(Extension)" />
-  </ItemGroup>
 </Project>

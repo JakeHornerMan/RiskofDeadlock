@@ -7,8 +7,8 @@ Risk of Deadlock puts Deadlock's heroes into Risk of Rain 2 as survivors: Haze, 
 Mo & Krill, Viscous, Rat King, Billy, Wraith, Mina and Pocket, each with their model, animations, sounds,
 voice lines and abilities.
 
-Every hero's files are built INTO the DLL, so Deadlock does not need to be installed and nothing is read
-from it when the game starts.
+Every hero's files come with the mod, in the heroes folder beside the DLL (like other Risk of Rain 2 character mods ship
+their asset bundles), so Deadlock does not need to be installed and nothing is read from it or unpacked anywhere.
 
 What is in this package (laid out like a Thunderstore release)
 --------------------------------------------------------------
@@ -19,7 +19,8 @@ What is in this package (laid out like a Thunderstore release)
   CHANGELOG.md                  what changed in every 1.5.x version, with the "Built with" line
   INSTALL.txt                   how to install it by hand or with r2modman, update it and remove everything
   README.txt                    this file
-  plugins/DeadlockOfRain.dll    the mod (BepInEx 5 plugin) with all 11 heroes' files inside it (about 600 MB)
+  plugins/DeadlockOfRain.dll    the mod (BepInEx 5 plugin, about 1 MB)
+  plugins/heroes/               every hero's files: models, animations, textures, icons, sounds, voice (about 600 MB)
   plugins/LICENSE.txt           the mod's licence
   plugins/THIRD-PARTY-NOTICES.txt  the libraries the project uses and their licences
   plugins/built-with.txt        the Risk of Rain 2 build it was made with, the version and the date
@@ -35,7 +36,7 @@ Where things go on the PC
 -------------------------
   The mod (r2modman)       %APPDATA%\r2modmanPlus-local\RiskOfRain2\profiles\<profile>\BepInEx\plugins\JakeHornerMan-Risk_of_Deadlock\
   The mod (by hand)        <Risk of Rain 2 folder>\BepInEx\plugins\JakeHornerMan-Risk_of_Deadlock\
-  Files the mod unpacks    %LOCALAPPDATA%\DeadlockOfRain\embedded\  (written on the first start of each new DLL, a few seconds)
+  The hero files           the heroes folder inside the mod's folder above (nothing is unpacked anywhere else)
   The log                  <the BepInEx folder in use>\LogOutput.log  (look for "Playing ... from your own files")
 
 Building a new package

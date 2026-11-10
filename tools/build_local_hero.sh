@@ -1,15 +1,16 @@
 #!/bin/bash
 # The creator's own hero build (creator, 2026-11-01: "a mod that will run mo and krill only ... without the need of deadlock
-# installed"; "Embedded in the DLL"): their edited files built into DeadlockOfRain.dll, for their PC only. Never packaged,
+# installed"): their edited files as a heroes/ folder beside DeadlockOfRain.dll (embedded in the DLL until 1.5.12; since 1.5.13 plain
+# files beside it, the way RoR2 survivor mods ship their AssetBundles: a reviewer asked why they were unpacked to AppData), for their PC only. Never packaged,
 # never uploaded. The guide for the creator is charactersFinal/build&install.md; doc 03 §5c has the short version.
 #
 #   bash tools/build_local_hero.sh <id> <folder> [--install] [--r2modman]   e.g. mokrill charactersFinal/mokrillFiles --install
 #   bash tools/build_local_hero.sh --uninstall                  back to main's dev build with every hero
 #
-# <folder>/mod-cache is the hero's cache (heroes/<id>/, sounds/, images/, props/) and gets built into the DLL as it is.
+# <folder>/mod-cache is the hero's cache (heroes/<id>/, sounds/, images/, props/) and is copied beside the DLL as heroes/.
 # <folder>/edit/<id>.glb is the model to edit in Blender: made once from Deadlock (the only time Deadlock is read), and when it
 # is newer than the hero's .dlm it is converted back into mod-cache (DeadlockExtract --import-glb).
-# --install copies the DLL into the Steam copy and writes $LOCALAPPDATA/DeadlockOfRain/local-hero.txt: while that file exists the
+# --install copies the DLL and heroes/ into the Steam copy and writes $LOCALAPPDATA/DeadlockOfRain/local-hero.txt: while that file exists the
 # dev guard leaves the Steam copy alone and lab_restore.sh puts this DLL back instead of main's.
 # --r2modman (2026-11-01) also writes DllBuilds/<Name>-<version>.zip (at the repo root since 2026-11-04) for r2modman's "Import local mod" (the creator's
 # own profile; the version is the build time, so every import is newer). Same plugin id as Risk of Deadlock: disable that one
@@ -38,6 +39,7 @@ running() { powershell -NoProfile -Command "Get-Process -Name 'Risk of Rain 2' -
 if [ "$1" = "--uninstall" ]; then
   [ -n "$(running)" ] && { echo "Risk of Rain 2 is running: close it first, then run this again."; exit 1; }
   rm -f "$MARK"
+  rm -rf "$P/heroes"
   bash "$ROOT/tools/lab_restore.sh"
   echo "Back to main's dev build with every hero."
   exit 0
@@ -169,12 +171,13 @@ EOF
 [ -n "$CACHE_ONLY" ] && exit 0
 fi
 
-# 4. the DLL with mod-cache inside (its own output and obj folders: main's dev DLL is untouched)
+# 4. the DLL (OWN_FILES; its own output and obj folders: main's dev DLL is untouched) and the hero files beside it as heroes/
 echo "== Building the DLL"
-dotnet build "$ROOT/plugin" -c Release -v q -nologo -p:LocalHeroDir="$(cygpath -w "$C")" \
+dotnet build "$ROOT/plugin" -c Release -v q -nologo -p:OwnFiles=true \
   -p:IntermediateOutputPath="$(cygpath -w "$OUT/obj")\\" -o "$OUT" | grep -E "error|Error\(s\)" || true
 [ -f "$OUT/DeadlockOfRain.dll" ] || { echo "Build failed"; exit 1; }
-echo "   $OUT/DeadlockOfRain.dll ($(du -h "$OUT/DeadlockOfRain.dll" | cut -f1))"
+rm -rf "$OUT/heroes"; cp -r "$C" "$OUT/heroes"; rm -f "$OUT/heroes/extract.log"
+echo "   $OUT/DeadlockOfRain.dll ($(du -h "$OUT/DeadlockOfRain.dll" | cut -f1)) and $OUT/heroes/ ($(find "$OUT/heroes" -type f | wc -l) files, $(du -sh "$OUT/heroes" | cut -f1))"
 # no extractor code or reference in it (OWN_FILES; creator, 2026-11-09)
 python - "$OUT/DeadlockOfRain.dll" <<'EOF' || exit 1
 import mmap, sys
@@ -192,6 +195,7 @@ if [ -n "$INSTALL" ]; then
   [ -n "$(running)" ] && { echo "Risk of Rain 2 is running: close it, then run this again with --install."; exit 1; }
   [ -d "$P" ] || { echo "No $P: is the mod installed in the Steam copy?"; exit 1; }
   cp "$OUT/DeadlockOfRain.dll" "$P/DeadlockOfRain.dll"
+  rm -rf "$P/heroes"; cp -r "$OUT/heroes" "$P/heroes"
   cygpath -w "$OUT/DeadlockOfRain.dll" > "$MARK"
   [ -f "$R/winhttp.dll" ] || cp "$R/winhttp.dll.melty-off" "$R/winhttp.dll" 2>/dev/null || true
   echo "== Installed: start Risk of Rain 2 from Steam. Back to every hero: bash tools/build_local_hero.sh --uninstall"

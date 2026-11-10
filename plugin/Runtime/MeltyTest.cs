@@ -200,7 +200,10 @@ namespace DeadlockOfRain
                     if (!tex) { bad.Add(hero.Id + ": no portrait"); continue; }
                     var px = tex.GetPixels32();
                     int shape = px.Count(p => p.a > 20), lit = px.Count(p => p.a > 20 && (p.r | p.g | p.b) != 0);
-                    if (shape < px.Length / 10 || shape == px.Length || lit > 0) bad.Add($"{hero.Id}: portrait not a silhouette ({shape}/{px.Length} shape, {lit} lit)");
+                    // the DLL build greys its coming-soon portraits out (MissingHeroes.Silhouette): grey only, no colour, and dim
+                    int coloured = px.Count(p => p.a > 20 && (p.r != p.g || p.g != p.b || p.r > 150));
+                    if (shape < px.Length / 10 || shape == px.Length) bad.Add($"{hero.Id}: portrait not a silhouette ({shape}/{px.Length} shape)");
+                    else if (LocalHero.Dir == null ? lit > 0 : coloured > 0) bad.Add($"{hero.Id}: portrait not {(LocalHero.Dir == null ? "a black silhouette" : "greyed out")} ({lit} lit, {coloured} coloured)");
                 }
                 Write("coming-soon-tile", bad.Count == 0, string.Join("; ", bad));
             }

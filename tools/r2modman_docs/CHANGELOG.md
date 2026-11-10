@@ -2,6 +2,14 @@
 
 One version line, one number up per build. Newest first.
 
+## 1.5.13
+- Built with Risk of Rain 2 build 25921972 (2026-11-10).
+- **Victor and Paige are coming soon again:** greyed out in character select while they're finished. Their files aren't in this
+  build. The other eleven heroes are the same as in 1.5.12.
+- **The hero files sit in the mod's own folder now:** a `heroes` folder beside a small DLL (about 1 MB instead of 600 MB), the way
+  other Risk of Rain 2 character mods ship their asset bundles. Nothing is unpacked to AppData any more; the old
+  `%LOCALAPPDATA%\DeadlockOfRain\embedded` folder is removed on the first start, and removing the mod removes everything.
+
 ## 1.5.12
 - Built with Risk of Rain 2 build 25921972 (2026-11-10).
 

@@ -13,6 +13,8 @@ the default and then pull in the info every time"). Every file in it goes into t
                              when the section has none, is filled in and written back, so older sections keep their own line
     plugins/built-with.txt   always written by the build (the RoR2 build, version, date, author)
     plugins/DeadlockOfRain.dll  the DLL just built (never kept in package/)
+    plugins/heroes/...       the hero files beside the DLL (<dll folder>/heroes, from build_local_hero.sh; since 1.5.13, read from
+                             there by LocalHero: a mod's assets beside its DLL, as Enforcer and Paladin ship theirs)
     icon.png                 only when package/ has none: our own in-game renders of the heroes in rows (build/pages/img);
                              python tools/r2modman_package.py --icon draws it again
 After a successful build the values filled in are written back into package/, and the text files and manifest are copied to
@@ -43,7 +45,7 @@ WHAT = {  # what each file in the package is (PACKAGE-CONTENTS.md)
     'plugins/INSTALL.txt': lambda m, c: 'by hand (Part A), r2modman (Part B), updating, removing everything, problems',
     'plugins/About this package.txt': lambda m, c: "package/README.txt: what the package is, what's in it, where things go on the PC",
     'plugins/Join Discord.txt': lambda m, c: 'the invite link to the Risk of Deadlock Discord',
-    'plugins/DeadlockOfRain.dll': lambda m, c: "the mod (BepInEx 5 plugin), with every hero's files inside (only in the zip)",
+    'plugins/DeadlockOfRain.dll': lambda m, c: "the mod (BepInEx 5 plugin); it reads the hero files from `heroes/` beside it",
     'plugins/LICENSE.txt': lambda m, c: "the mod's licence, as in the Thunderstore zip",
     'plugins/THIRD-PARTY-NOTICES.txt': lambda m, c: 'the libraries the project uses and their licences, as in the Thunderstore zip',
     'plugins/built-with.txt': lambda m, c: 'the Risk of Rain 2 build, the version, the date and the author (written by the build)',
@@ -62,8 +64,13 @@ def write_contents(zpath):
         cl = next((f for f in ('plugins/CHANGELOG.txt', 'CHANGELOG.md') if f in z.namelist()), None)
         c = re.findall(r'^## (\S+)', z.read(cl).decode('utf-8'), re.M) if cl else []
         built = dict(l.split('=', 1) for l in z.read('plugins/built-with.txt').decode('utf-8').splitlines() if '=' in l)
+    hero = [i for i in infos if i.filename.startswith('plugins/heroes/')]
     rows = [(i.filename, size(i.file_size), WHAT[i.filename](m, c) if i.filename in WHAT else '(a file you added in package/)')
-            for i in infos]
+            for i in infos if i not in hero]
+    if hero:  # one row for the hero files: about 1,800 of them
+        rows.append(('plugins/heroes/', size(sum(i.file_size for i in hero)),
+                     f"{len(hero)} files: every hero's model, animations, textures, icons, sounds and voice, read from here by the DLL "
+                     "(ready.json names the heroes and the coming-soon ones; only in the zip)"))
     lines = [f"# {m['author']}-{m['name']} {m['version_number']}", '',
              f"Built {built.get('date', '?')} with Risk of Rain 2 build {built.get('ror2', '?')} and "
              f"{built.get('heroes', '?')}. Zip: `{os.path.basename(zpath)}` ({size(os.path.getsize(zpath))}).",
@@ -159,7 +166,9 @@ if sys.argv[1] == '--icon':  # python tools/r2modman_package.py --icon [out.png]
 dll, outdir, hid = sys.argv[1:4]
 SRC = os.path.join(outdir, 'package')
 rows = json.load(open(os.path.join(ROOT, 'design', 'heroes.json'), encoding='utf-8'))['rows']
-ids = json.load(open(os.path.join(os.path.dirname(dll), 'cache', 'ready.json')))['heroes'] if hid == 'all' else [hid]
+HEROES = os.path.join(os.path.dirname(dll), 'heroes')   # the hero files beside the DLL (build_local_hero.sh step 4)
+if not os.path.isfile(os.path.join(HEROES, 'ready.json')): sys.exit(f'No {HEROES}/ready.json: build with tools/build_local_hero.sh')
+ids = json.load(open(os.path.join(HEROES, 'ready.json')))['heroes']
 
 def read(rel):
     return open(os.path.join(SRC, *rel.split('/')), encoding='utf-8').read()
@@ -252,7 +261,12 @@ with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
                                                                  'dependencies')}, indent=2) + '\n')
         elif rel in filled: z.writestr(arc(rel), filled[rel])
         else: z.write(os.path.join(SRC, *rel.split('/')), arc(rel))
-        if rel == 'plugins/built-with.txt': z.write(dll, 'plugins/DeadlockOfRain.dll')
+        if rel == 'plugins/built-with.txt':
+            z.write(dll, 'plugins/DeadlockOfRain.dll')
+            for d, _, fs in os.walk(HEROES):
+                for f in sorted(fs):
+                    full = os.path.join(d, f)
+                    z.write(full, 'plugins/heroes/' + os.path.relpath(full, HEROES).replace(os.sep, '/'))
 
 # built: the filled-in values back into package/, the text files to tools/r2modman_docs (git history), the version used
 for rel, text in filled.items():

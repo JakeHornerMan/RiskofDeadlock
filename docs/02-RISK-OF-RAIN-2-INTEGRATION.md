@@ -63,20 +63,29 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
 ## 3. Boot sequence
 
 1. **`Plugin.Awake`** (BepInEx chainloader):
-   - **`LocalHero.Init`** first (2026-11-01, `Runtime/LocalHero.cs`): a DLL built with `-p:LocalHeroDir=<folder>`
-     (`tools/build_local_hero.sh`, the creator's PC only) carries that folder as `localhero/...` resources (csproj). They are
-     written out to `%LOCALAPPDATA%\DeadlockOfRain\embedded\` once per DLL build (module version id in `dll-build.txt`),
-     `DeadlockCache.DefaultDir()` returns that folder, `FirstRun.Start` is skipped (Deadlock is never looked for) and
-     `Survivors.Released` keeps only the heroes in its `ready.json`. The normal build has no such resources and behaves as before.
+   - **`LocalHero.Init`** first (2026-11-01, `Runtime/LocalHero.cs`), only in a DLL built with **`-p:OwnFiles=true`**
+     (`tools/build_local_hero.sh`, the creator's r2modman package). **Since 1.5.13 (2026-11-10)** its hero files are plain files in a
+     **`heroes/` folder beside the DLL** (a whole cache: `ready.json`, `heroes/`, `sounds/`, `images/`, `props/`), found from
+     `Plugin.PluginDir` (falls back to the DLL's own folder if a mod manager ever flattens it) and read in place: nothing is
+     unpacked and nothing goes to AppData. Until 1.5.12 the folder was embedded as `localhero/...` resources and written out to
+     `%LOCALAPPDATA%\DeadlockOfRain\embedded\` on the first start of each DLL; `LocalHero` now deletes that folder once. A reviewer
+     asked "why are the assets being extracted and placed into app data? Why not just include them in the mod folder itself
+     alongside the DLL?"; the creator asked for evidence first. Enforcer and Paladin (Thunderstore zips) ship
+     `plugins/AssetBundles/` and `plugins/SoundBank(s)/` beside the DLL and load them with `Info.Location` → `GetDirectoryName` →
+     `LoadFromFile`. ChefMod keeps one small bundle in its DLL and loads it from memory (`LoadFromMemory`). None writes to AppData.
+     The R2Wiki Cookbook says assets "land next to dll". With the folder missing,
+     `LocalHero.Dir` still points there (never the AppData cache), no hero loads and the title screen says to reinstall.
+     `DeadlockCache.DefaultDir()` returns that folder, `FirstRun.Start` is never compiled in, and `Survivors.Released` keeps only
+     the heroes in its `ready.json`. The normal build behaves as before.
      **No extractor in that DLL (2026-11-09,** a reviewer: "Why is it still trying to launch an extractor if files are included?";
-     creator: "make sure no extractor code or referemnce is included"**):** the csproj defines **`OWN_FILES`** whenever
-     `LocalHeroDir` is set. Everything that reads Deadlock lives in `Runtime/FirstRunRead.cs` (a `partial class FirstRun`: the
+     creator: "make sure no extractor code or referemnce is included"**):** the csproj defines **`OWN_FILES`** with
+     `OwnFiles=true`. Everything that reads Deadlock lives in `Runtime/FirstRunRead.cs` (a `partial class FirstRun`: the
      process, its progress and log, the stall stop, finding Deadlock), and with `OWN_FILES` that file compiles only stubs
      (`Started`/`Running`/`Choosing` false). `HeroPicker.cs` is left out, `Plugin.DeadlockFolder` (the "Deadlock folder" setting)
      is never bound, and the loading banner says "built into the mod, no Deadlock install needed". `build_local_hero.sh` checks
      the built DLL for `DeadlockExtract`, `HeroPicker`, `Deadlock folder`, `FindDeadlock` and `ExtractDir` and stops if one is there.
      Shared log strings no longer name the extractor either (DeadlockCache, the bat prop's sheet note).
-     **Coming soon in that DLL:** the embedded `ready.json` may list `"comingSoon"` (`build_local_hero.sh --soon`); `LocalHero.ComingSoon`
+     **Coming soon in that DLL:** its `heroes/ready.json` may list `"comingSoon"` (`build_local_hero.sh --soon`); `LocalHero.ComingSoon`
      then feeds `Survivors.ComingSoon` in place of `coming-soon.txt`, and `MissingHeroes` draws those tiles as a dim **grey** portrait
      with a grey colour (Melty keeps the black silhouette). 1.5.10: Victor and Paige.
    - `FirstRun.Start` (Thunderstore build only: `extract/DeadlockExtract.exe` beside the DLL). It finds Deadlock (config

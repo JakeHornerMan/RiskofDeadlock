@@ -71,7 +71,7 @@ namespace DeadlockOfRain
             Defs[hero.Id] = sd;
             Unlockables[hero.Id] = unlock;
             placeholders.Add(sd);
-            if (why == null) { soon.Add(sd); Log.Info($"{hero.DisplayName}: shown as a blacked-out \"coming soon\" tile in character select"); }
+            if (why == null) { soon.Add(sd); Log.Info($"{hero.DisplayName}: shown as a {(LocalHero.Dir != null ? "greyed-out" : "blacked-out")} \"coming soon\" tile in character select"); }
             else Log.Warn($"{hero.DisplayName}: shown as a locked red ! tile in character select ({why})");
         }
 
