@@ -2,13 +2,18 @@
 
 One version line, one number up per build. Newest first.
 
+## 1.6.3
+- Built with Risk of Rain 2 build 25921972 (2026-11-10).
+- **Victor's Jumpstart blasts:** as the lightning lands on him, everything within 5 m takes 250 % damage: green bolts strike
+  the ground round him, arcs crawl out across the floor, shock rings race out and an arc jumps to every enemy hit.
+- **Reloads match their animation:** every hero's reload animation now ends exactly when the reload does, so nobody fires
+  mid-reload any more (Victor, Haze, Infernus, Mo & Krill, Viscous, Rat King, Billy, Mina and Pocket). Reload times are unchanged.
+
 ## 1.6.2
 - Built with Risk of Rain 2 build 25921972 (2026-11-10).
 - Same thirteen heroes as 1.6.1.
 - **Heroes left out while in development** are now shown blacked out with an amber `</>` dev badge, and hovering says they're
   in development (none are left out in this build).
-
-## 1.6.2
 - **Victor's Aura of Suffering:** its health drain is now 4x his health regen a second (items and level included), instead
   of 2 % max health. With +2 regen it drains 8.
 - **Victor's Jumpstart:** the lightning now always lands on him: the strike holds him still for half a second, his pose
