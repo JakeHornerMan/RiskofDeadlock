@@ -238,7 +238,7 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   `r2modman_install.py` keeps subfolders. Why: popular survivor mods ship their assets beside the DLL (doc 02 §3).
 - **`--soon <ids>`** (2026-11-09, creator: "dll build with no victor or paige grey out these characters"): `all` skips those
   `<id>Files` folders, copies only each one's small portrait into the merged cache and writes `"comingSoon"` into `ready.json`;
-  the game shows them as greyed-out locked tiles (doc 02 §3). 1.5.10 is `all charactersFinal --soon victor,paige --r2modman-install`.
+  the game shows them as black locked tiles with a dev badge (doc 02 §3; grey in 1.5.10–1.5.13). 1.5.10 is `all charactersFinal --soon victor,paige --r2modman-install`.
 - **No extractor in the DLL build** (2026-11-09): the DLL is compiled with `OWN_FILES` (doc 02 §3), and the script checks the
   built DLL holds no extractor code. `DeadlockExtract.exe` is needed only to make an `edit/<id>.glb` that is missing or to
   convert one newer than its dlm; with every glb in place a build never runs it or reads Deadlock.

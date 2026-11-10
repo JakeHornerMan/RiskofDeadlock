@@ -86,6 +86,14 @@ When the Cookbook and our layout differ, say so to the creator before building.
   while the creator plays, run it with `R2WAIT=1` in the background so it installs the moment they close the game. **Exception, new heroes**
   (creator, 2026-11-04): a new hero is built for **Melty first**; build the DllBuilds package for r2modman only when the creator asks (doc 08 §6b).
   The package lands in `DllBuilds/` at the repo root (gitignored); its files come from `DllBuilds/package/` (doc 03 §5c).
+  **Every DLL build is laid out like 1.5.13** (creator, 2026-11-10: "make sure all future dll build are done in this way like 1.5.13
+  with hero files beside the DLL like it mentions in the wiki"): a small DLL built with `-p:OwnFiles=true` and the hero files as a
+  `heroes/` folder beside it in the mod's folder. Never embed them in the DLL and never unpack or write them to AppData (R2Wiki
+  Cookbook; doc 02 §3). `build_local_hero.sh` does this; keep it that way.
+  **Heroes the creator leaves out are blacked out with a dev badge** (creator, 2026-11-10: "black out the characters like before and
+  put a dev symbol over them if they are in development and i have asked to leave them out"): `--soon <ids>`. The tile is a black
+  silhouette with an amber `</>` badge, and the hover text says the hero is in development (`MissingHeroes.DevBadge`). Note in the
+  package CHANGELOG which heroes were left out.
   **Title-screen Discord button: Melty build yes, DLL build no** (creator, 2026-11-05: "the melty can have the discord button in the gaim main menu the ddl cannot"); `CommunityButton` skips it when `LocalHero.Dir` is set, so keep that check (doc 02).
   **Read `DllBuilds/CLAUDE.md` first:** edit only `package/CHANGELOG.md` and `package/README.md`, only for a new character; when asked
   to build, just build (no checking the files; the build adds the changelog's version section itself). The package is

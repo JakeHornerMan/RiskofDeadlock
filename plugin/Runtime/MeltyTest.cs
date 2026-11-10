@@ -199,11 +199,15 @@ namespace DeadlockOfRain
                     var tex = MissingHeroes.Bodies[hero.Id].GetComponent<CharacterBody>().portraitIcon as Texture2D;
                     if (!tex) { bad.Add(hero.Id + ": no portrait"); continue; }
                     var px = tex.GetPixels32();
-                    int shape = px.Count(p => p.a > 20), lit = px.Count(p => p.a > 20 && (p.r | p.g | p.b) != 0);
-                    // the DLL build greys its coming-soon portraits out (MissingHeroes.Silhouette): grey only, no colour, and dim
-                    int coloured = px.Count(p => p.a > 20 && (p.r != p.g || p.g != p.b || p.r > 150));
-                    if (shape < px.Length / 10 || shape == px.Length) bad.Add($"{hero.Id}: portrait not a silhouette ({shape}/{px.Length} shape)");
-                    else if (LocalHero.Dir == null ? lit > 0 : coloured > 0) bad.Add($"{hero.Id}: portrait not {(LocalHero.Dir == null ? "a black silhouette" : "greyed out")} ({lit} lit, {coloured} coloured)");
+                    // the DLL build adds the dev badge in a corner (MissingHeroes.DevBadge): black everywhere else, and the badge there
+                    int w = tex.width, h = tex.height;
+                    bool dll = LocalHero.Dir != null;
+                    Func<int, bool> inBadge = i => dll && MissingHeroes.DevBadgeArea(i % w, i / w, w, h);
+                    int shape = Enumerable.Range(0, px.Length).Count(i => px[i].a > 20 && !inBadge(i));
+                    int lit = Enumerable.Range(0, px.Length).Count(i => px[i].a > 20 && !inBadge(i) && (px[i].r | px[i].g | px[i].b) != 0);
+                    int badge = dll ? Enumerable.Range(0, px.Length).Count(i => inBadge(i) && px[i].r == 255 && px[i].g == 176) : 0;
+                    if (shape < px.Length / 10 || shape == px.Length || lit > 0) bad.Add($"{hero.Id}: portrait not a silhouette ({shape}/{px.Length} shape, {lit} lit)");
+                    if (dll && badge == 0) bad.Add($"{hero.Id}: no dev badge");
                 }
                 Write("coming-soon-tile", bad.Count == 0, string.Join("; ", bad));
             }

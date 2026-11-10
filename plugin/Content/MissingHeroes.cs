@@ -45,7 +45,7 @@ namespace DeadlockOfRain
             cb.portraitIcon = why == null ? Silhouette(DeadlockCache.Image(hero.ImageSmall)) ?? Icon() : Icon();
             Survivors.Tokens[cb.baseNameToken] = hero.DisplayName;
 
-            var text = why == null ? $"{hero.DisplayName} is coming in a later update."
+            var text = why == null ? (LocalHero.Dir != null ? $"{hero.DisplayName} is in development and left out of this build." : $"{hero.DisplayName} is coming in a later update.")
                 : $"{hero.DisplayName} couldn't be read from your Deadlock ({why}). The other heroes are ready to play.\n\n{BuiltWith.Versions()}";
             var unlock = ScriptableObject.CreateInstance<UnlockableDef>();
             unlock.cachedName = "DeadlockOfRain.Missing." + hero.Id;
@@ -63,7 +63,7 @@ namespace DeadlockOfRain
             sd.displayPrefab = display;
             sd.displayNameToken = cb.baseNameToken;
             sd.descriptionToken = cb.baseNameToken;
-            sd.primaryColor = why == null ? (LocalHero.Dir != null ? Color.grey : Color.black) : Color.red;
+            sd.primaryColor = why == null ? Color.black : Color.red;
             sd.desiredSortPosition = hero.SortPosition;
             sd.unlockableDef = unlock;
 
@@ -71,11 +71,13 @@ namespace DeadlockOfRain
             Defs[hero.Id] = sd;
             Unlockables[hero.Id] = unlock;
             placeholders.Add(sd);
-            if (why == null) { soon.Add(sd); Log.Info($"{hero.DisplayName}: shown as a {(LocalHero.Dir != null ? "greyed-out" : "blacked-out")} \"coming soon\" tile in character select"); }
+            if (why == null) { soon.Add(sd); Log.Info($"{hero.DisplayName}: shown as a blacked-out {(LocalHero.Dir != null ? "\"in development\" tile with the dev badge" : "\"coming soon\" tile")} in character select"); }
             else Log.Warn($"{hero.DisplayName}: shown as a locked red ! tile in character select ({why})");
         }
 
-        /// <summary>A black silhouette of a portrait, its shape kept by the alpha (the coming-soon tile); null without one.</summary>
+        /// <summary>A black silhouette of a portrait, its shape kept by the alpha (the coming-soon tile); null without one. In the DLL build
+        /// (a hero the creator left out while it is in development; creator, 2026-11-10: "black out the characters like before and put a dev
+        /// symbol over them") it also carries the dev badge (DevBadge).</summary>
         static Texture2D Silhouette(Texture2D src)
         {
             if (!src) return null;
@@ -83,13 +85,47 @@ namespace DeadlockOfRain
             var px = src.GetPixels32();
             for (int i = 0; i < px.Length; i++)
             {
-                // the DLL build greys its coming-soon heroes out (a dim greyscale portrait); Melty keeps the black silhouette
-                if (LocalHero.Dir != null) { var g = (byte)((px[i].r * 30 + px[i].g * 59 + px[i].b * 11) / 100 * 55 / 100); px[i] = new Color32(g, g, g, px[i].a); }
-                else px[i] = new Color32(0, 0, 0, px[i].a);
+                px[i] = new Color32(0, 0, 0, px[i].a);
             }
+            if (LocalHero.Dir != null) DevBadge(px, src.width, src.height);
             t.SetPixels32(px);
             t.Apply();
             return t;
+        }
+
+        /// <summary>The dev badge, drawn here (no game art): an amber disc in the bottom-right corner with a white "&lt;/&gt;" (code, in
+        /// development). Its area is DevBadgeArea, which the coming-soon-tile test leaves out of the "black silhouette" count.</summary>
+        static void DevBadge(Color32[] px, int w, int h)
+        {
+            float r = DevBadgeRadius * Mathf.Min(w, h), cx = w - r * 1.1f, cy = r * 1.1f;   // Unity textures start at the bottom row
+            float line = r * 0.13f;
+            // "<", "/", ">" as line segments, in units of r around the centre
+            var segs = new[] { (-0.75f, 0f, -0.35f, 0.4f), (-0.75f, 0f, -0.35f, -0.4f), (-0.12f, -0.5f, 0.12f, 0.5f), (0.75f, 0f, 0.35f, 0.4f), (0.75f, 0f, 0.35f, -0.4f) };
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    float dx = x - cx, dy = y - cy, d = Mathf.Sqrt(dx * dx + dy * dy);
+                    if (d > r) continue;
+                    var c = d > r - line * 0.6f ? new Color32(30, 20, 0, 255) : new Color32(255, 176, 0, 255);
+                    foreach (var (ax, ay, bx, by) in segs)
+                    {
+                        float x0 = cx + ax * r, y0 = cy + ay * r, x1 = cx + bx * r, y1 = cy + by * r;
+                        float vx = x1 - x0, vy = y1 - y0, t = Mathf.Clamp01(((x - x0) * vx + (y - y0) * vy) / (vx * vx + vy * vy));
+                        float ex = x - (x0 + t * vx), ey = y - (y0 + t * vy);
+                        if (ex * ex + ey * ey <= line * line) { c = new Color32(255, 255, 255, 255); break; }
+                    }
+                    px[y * w + x] = c;
+                }
+        }
+
+        /// <summary>The dev badge's radius as a share of the portrait's smaller side.</summary>
+        internal const float DevBadgeRadius = 0.22f;
+
+        /// <summary>True for a pixel inside the dev badge (with a pixel of margin).</summary>
+        internal static bool DevBadgeArea(int x, int y, int w, int h)
+        {
+            float r = DevBadgeRadius * Mathf.Min(w, h), dx = x - (w - r * 1.1f), dy = y - r * 1.1f;
+            return dx * dx + dy * dy <= (r + 1.5f) * (r + 1.5f);
         }
 
         /// <summary>A red "!" in a dark red disc, drawn here (no Deadlock art).</summary>

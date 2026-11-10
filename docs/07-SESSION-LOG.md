@@ -1786,3 +1786,13 @@ Mid-turn: "you opened the game but they are not installed!" (our test run on the
 **Results:** 13 heroes, DLL 1.3 MB + `heroes/` 2,118 files (697 MB); compare_builds 10/11 the same (Viscous is the creator's own edited dlm, as before); installed as 1.6.1; the game is running from the profile's BepInEx.
 **Not done / open:** the creator's playtest (Victor's rebalance, Paige's sword).
 **Lessons:** the build's slow part is zipping ~700 MB; tell the creator up front it takes several minutes.
+
+### 2026-11-10 · r2modman 1.5.14: left-out heroes blacked out with a dev badge; the 1.5.13 layout for every DLL build
+**Request (verbatim):** "can we black out the characters like before and put a dev symbol over them if they are in development and i have asked to leave them out just make a note of this! can we also make sure all future dll build are done in this way like 1.5.13 with hero files beside the DLL like it mentions in the wiki"
+**Questions asked → answers:** none.
+**Done:**
+- `MissingHeroes`: in the DLL build a left-out hero's tile is the black silhouette again, plus an amber `</>` dev badge drawn in code (`DevBadge`; no game art), and the hover text says "in development and left out of this build". Melty's coming-soon tile is unchanged. The `coming-soon-tile` check wants black outside the badge and the badge inside it.
+- Notes: CLAUDE.md (every DLL build uses the 1.5.13 layout; left-out heroes get the dev badge), `DllBuilds/CLAUDE.md`, memory `dll-build-layout`, doc 02 §3, doc 03 §5c. Package CHANGELOG/README 1.5.14.
+- 1.5.14 was packaged from the same `build/local-all` (only the DLL rebuilt; the hero files didn't change). The DLL has no extractor names (1.3 MB).
+**Results:** both builds compile. The creator was playing, so the r2modman swap waits for the game to close (`--wait`), and the in-game test waits too.
+**Not done / open:** `run_test.sh haze` with the DLL build in the Steam copy (`coming-soon-tile` with the badge), once the game is closed.
