@@ -403,7 +403,7 @@
         "weapon_run_s",
         "weapon_run_w",
         "weapon_stand_idle",
-        "zipline_boosted_loop"
+        "zipline_attached_loop"
       ],
       "split": [],
       "vertexColors": [
