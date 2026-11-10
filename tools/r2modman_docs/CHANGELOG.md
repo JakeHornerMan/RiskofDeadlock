@@ -2,6 +2,12 @@
 
 One version line, one number up per build. Newest first.
 
+## 1.6.2
+- Built with Risk of Rain 2 build 25921972 (2026-11-10).
+- Same thirteen heroes as 1.6.1.
+- **Heroes left out while in development** are now shown blacked out with an amber `</>` dev badge, and hovering says they're
+  in development (none are left out in this build).
+
 ## 1.6.1
 - Built with Risk of Rain 2 build 25921972 (2026-11-10).
 - **Victor and Paige are playable again:** both back in character select with all their files. Thirteen heroes.

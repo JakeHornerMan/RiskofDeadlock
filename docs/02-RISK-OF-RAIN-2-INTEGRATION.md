@@ -90,7 +90,7 @@ subfolder because two Melty mashups shipping the same plugin path would conflict
      with an amber **`</>` dev badge** in the bottom-right corner (`DevBadge`, drawn in code), and the hover text "in development and
      left out of this build" (creator, 2026-11-10: "black out the characters like before and put a dev symbol over them"; 1.5.10–1.5.13
      drew them grey). The test check `coming-soon-tile` wants black outside the badge and the badge's amber inside it
-     (`MissingHeroes.DevBadgeArea`). 1.5.14: Victor and Paige.
+     (`MissingHeroes.DevBadgeArea`). In since 1.6.2 (no hero left out in that build).
    - `FirstRun.Start` (Thunderstore build only: `extract/DeadlockExtract.exe` beside the DLL). It finds Deadlock (config
      *Deadlock folder*, env `DEADLOCKOFRAIN_DEADLOCK`, RoR2's own Steam library, Steam's path from `reg.exe query
      HKCU\Software\Valve\Steam`, `C:\Program Files (x86)\Steam`, then every library in `libraryfolders.vdf`; Deadlock is

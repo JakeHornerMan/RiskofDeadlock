@@ -1787,7 +1787,7 @@ Mid-turn: "you opened the game but they are not installed!" (our test run on the
 **Not done / open:** the creator's playtest (Victor's rebalance, Paige's sword).
 **Lessons:** the build's slow part is zipping ~700 MB; tell the creator up front it takes several minutes.
 
-### 2026-11-10 · r2modman 1.5.14: left-out heroes blacked out with a dev badge; the 1.5.13 layout for every DLL build
+### 2026-11-10 · r2modman 1.6.2: left-out heroes blacked out with a dev badge; the 1.5.13 layout for every DLL build
 **Request (verbatim):** "can we black out the characters like before and put a dev symbol over them if they are in development and i have asked to leave them out just make a note of this! can we also make sure all future dll build are done in this way like 1.5.13 with hero files beside the DLL like it mentions in the wiki"
 **Questions asked → answers:** none.
 **Done:**
@@ -1795,4 +1795,6 @@ Mid-turn: "you opened the game but they are not installed!" (our test run on the
 - Notes: CLAUDE.md (every DLL build uses the 1.5.13 layout; left-out heroes get the dev badge), `DllBuilds/CLAUDE.md`, memory `dll-build-layout`, doc 02 §3, doc 03 §5c. Package CHANGELOG/README 1.5.14.
 - 1.5.14 was packaged from the same `build/local-all` (only the DLL rebuilt; the hero files didn't change). The DLL has no extractor names (1.3 MB).
 **Results:** both builds compile. The creator was playing, so the r2modman swap waits for the game to close (`--wait`), and the in-game test waits too.
-**Not done / open:** `run_test.sh haze` with the DLL build in the Steam copy (`coming-soon-tile` with the badge), once the game is closed.
+**What really shipped:** a parallel session built r2modman 1.6.1 with Victor and Paige enabled at 20:45 (into the same `build/local-all`) and started the game for the creator's playtest. The package step here reused that folder, so it became **1.6.2 with all 13 heroes**, installed when the playtest game closed. The dev badge is in the code, inactive with no hero left out. The 1.5.14 changelog section was removed (never built), the README lists all 13 again, and 1.6.2's section says what it is. The text inside the installed 1.6.2 zip still shows the old wording, which the next build fixes.
+**Not done / open:** the badge has not been seen in game (no hero is left out); run `coming-soon-tile` the next time a build uses `--soon`.
+**Lessons:** two sessions share `build/local-all`, `tools/r2modman_version.txt` and `DllBuilds/`. Before packaging, re-read `git log` and the version file, and package only from a build made in the same command (`build_local_hero.sh`, not a reused folder).
