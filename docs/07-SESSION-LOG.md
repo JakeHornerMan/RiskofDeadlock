@@ -1822,3 +1822,8 @@ Mid-turn: "you opened the game but they are not installed!" (our test run on the
 **Results:** `PREFLIGHT CLEAN`, `dotnet build` succeeded. No build or in-game run (the creator said not to build; their game was open).
 **Not done / open:** a build when the creator asks; `run_test.sh victor` and a bench for the new damage. Eight other heroes' reload clips are longer than their reloads (Haze 1.77/1.4, Infernus 2.67/1.4, Mo & Krill 2.42/2.0, Viscous 2.80/2, Rat King 2.93/2.0, Billy 3.10/2.0, Mina 1.73/1.5, Pocket 2.97/2.0): left alone, ask.
 **Lessons:** compare a hero's reload clip length with its reloadTime when adding a gun.
+
+### 2026-11-10 · Every hero's reload clip fits its reload; r2modman 1.6.3
+**Request (verbatim):** "please make sure all character reload that the same as thir animation add this to your set up of characters also!"; then "make a build and then test it"
+**Questions asked → answers:** none (read as: the clip ends with the reload; reload times unchanged, so no balance change).
+**Done:** `reloadFit: true` on every animations row; doc 08 §2 (new heroes), doc 02, MODLOG, 00 §9. 1.6.3 built (Victor's Jumpstart blast and these fits), installed in r2modman; shared gun code changed, so every hero tested.

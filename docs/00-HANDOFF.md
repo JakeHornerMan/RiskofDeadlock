@@ -287,8 +287,8 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ## 9. Last work: Victor Jumpstart blast, reload clip fit (2026-11-10, not built)
 - Jumpstart 250 % within 5 m as the bolt lands (`nova`/`zap` vfx); `reloadFit` animations column (Victor true) speeds the reload clip
-  up to end with the reload. The creator said not to build yet. Eight other heroes' reload clips are longer than their reloads too
-  (MODLOG); ask before fitting them. Bench flag open for Jumpstart.
+  up to end with the reload; then for every hero (creator: "make sure all character reload that the same as their animation"),
+  and doc 08 §2 says so for new heroes. Built as 1.6.3 and tested. Bench flag open for Jumpstart.
 
 ## 9-prev38. r2modman 1.6.1 and 1.6.2, Victor's aura drain = 4x regen (2026-11-10)
 - 1.6.1: Victor and Paige enabled (version line now 1.6.x, creator's request), started modded for the creator's playtest.

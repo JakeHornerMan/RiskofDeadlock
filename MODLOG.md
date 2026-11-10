@@ -7,8 +7,9 @@
 
 ## Victor Jumpstart blast and reload clip (2026-11-10, not built yet)
 - Jumpstart: 250 % within 5 m as the bolt lands (green bolt cage, floor arcs, shock rings, arcs to each enemy). Bench flag open.
-- Reload clip fitted to the reload for Victor (`reloadFit`; reload_idle 2.83 s vs 2 s). Haze, Infernus, Mo & Krill, Viscous, Rat King,
-  Billy, Mina and Pocket have the same mismatch (clip longer than the reload) and are left as they are.
+- Reload clip fitted to the reload (`reloadFit`, every hero): Victor 2.83/2.0 s, Haze 1.77/1.4, Infernus 2.67/1.4, Mo & Krill
+  2.42/2.0, Viscous 2.80/2, Rat King 2.93/2.0, Billy 3.10/2.0, Mina 1.73/1.5, Pocket 2.97/2.0 now play faster; the rest already fit.
+  Reload times unchanged, so no balance change.
 
 ## Victor aura drain (2026-11-10, r2modman 1.6.2)
 - Jumpstart: the strike holds him 0.5 s (white skin flash, pose and movement frozen), so the bolt always lands on him.

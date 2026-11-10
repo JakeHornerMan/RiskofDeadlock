@@ -51,6 +51,11 @@ Say up front how many game launches the build needs (§6) and why. The creator d
 | `effects.json` | 1 `custom` row per visual (§4), plus RoR2 prefab rows (`impact`, `tracer`, `orb`, `ward`...) if reused |
 | `hooks.json` | only if a new Harmony patch is added (keep it in sync with doc 02 §9) |
 
+- **Reload clip = reload** (creator, 2026-11-10: "make sure all character reload that the same as their animation add this to your
+  set up of characters"): every `animations.json` row has `reloadFit: true`, so a reload clip longer than the gun's `reloadTime` is
+  played faster and ends exactly with the reload (never firing mid-clip). Check the clip length against `reloadTime` when choosing
+  the gun's reload (`python -c "import sys; sys.path.insert(0,'tools'); import dlm_pose as m; print(m.read('<id>')[1]['<clip>'][0])"`).
+
 ## 3. Sound (SFX and voice)
 - **Find events** in the decompiled vsndevts. Ability sounds are usually `<Hero>.<Ability>.Cast/.Lp/.Hit/.End`; item
   moves use `Mods.*`. Another hero's event is fine when the hero has none (Combustion's tick is Rat King's).
