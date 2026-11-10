@@ -2,6 +2,9 @@
 
 One version line, one number up per build. Newest first.
 
+## 1.5.12
+- Built with Risk of Rain 2 build 25921972 (2026-11-10).
+
 ## 1.5.11
 - Built with Risk of Rain 2 build 25921972 (2026-11-09).
 - **Victor and Paige are back:** both playable again in character select, with all their files in the build. Thirteen heroes.

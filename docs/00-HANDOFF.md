@@ -292,7 +292,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
   vs REX 1738, stored as v1.3.0c (doc 05 §3.22). Doc 06 Victor section.
 - Pages: `kit_pages.py` updated and built (`build/pages/victor-kit.html`, `balance-vs-commando.html`); **not republished**: the artifact tools stopped
   working in the session. Next session: republish Victor's page and the overview (and the other pages, nav unchanged) to their links.
-- r2modman: 1.5.12 with the change (see doc 07). Open: the creator's play feel; the ult rise not seen in a devshot (taken after landing).
+- r2modman profile "Deadlock": 1.5.12 with the change installed (13 heroes; compare_builds 10/11, Viscous the creator's own dlm as before). Steam copy: main's dev build (`--uninstall`). Open: the creator's play feel; the ult rise not seen in a devshot (taken after landing).
 
 ## 9-prev42. r2modman 1.5.11, Victor and Paige back (2026-11-09)
 - The creator: "let do a new build with the new character paige and victor enabled!". DllBuilds CHANGELOG 1.5.11 and README
