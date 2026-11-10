@@ -1814,3 +1814,11 @@ Mid-turn: "you opened the game but they are not installed!" (our test run on the
 **Results:** `PREFLIGHT CLEAN`, `dotnet build` succeeded. Not run through `run_test.sh` (straight to the creator's build).
 **Not done / open:** the creator's look at it in game.
 **Lessons:** a visual tied to the cast position misses a moving hero; hold the hero or make the effect follow.
+
+### 2026-11-10 · Victor: reload clip fits the reload; Jumpstart 5 m green blast (not built)
+**Request (verbatim):** "victor is shooting before his relaod animation is complete!, also for teh [M2 Jumpstart] can we do a 5m radius aoe dammge when we trigger this abiliy excacly when the lightning strikes vitor please amke athe aoe creative and green! do not make a build yet when you do these changes"
+**Questions asked → answers:** none.
+**Done:** his reload_idle is 2.83 s against a 2 s reload (less with Pain): new animations column `reloadFit` (Victor true, all others false; preflight/gen list it as a non-clip column); `GunState.ReloadClipSpeed` plays the clip at length / reload time when it is longer. `victor_jumpstart` damagePct 250, procCoefficient 1, radius 5, expect + enemy_damage, description; `Jumpstart` plays `nova` at his feet as the strike lands and the server hits everything within 5 m and relays a `zap` arc to each; `VfxVictor` `nova` (nine green bolts striking round the edge, floor arcs out to them, three shock rings, a glowing disc, rising sparks, flash) and `zap`. `kit_pages.py` jumpstart text; docs 00, 02, 05 §0 flag, 06, MODLOG.
+**Results:** `PREFLIGHT CLEAN`, `dotnet build` succeeded. No build or in-game run (the creator said not to build; their game was open).
+**Not done / open:** a build when the creator asks; `run_test.sh victor` and a bench for the new damage. Eight other heroes' reload clips are longer than their reloads (Haze 1.77/1.4, Infernus 2.67/1.4, Mo & Krill 2.42/2.0, Viscous 2.80/2, Rat King 2.93/2.0, Billy 3.10/2.0, Mina 1.73/1.5, Pocket 2.97/2.0): left alone, ask.
+**Lessons:** compare a hero's reload clip length with its reloadTime when adding a gun.

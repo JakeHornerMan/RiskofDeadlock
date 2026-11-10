@@ -5,6 +5,11 @@
 - Deadlock ClientVersion 6817 (build 26143760, 2026-10-22 evening; no clip, mesh or sound change for our heroes); 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
+## Victor Jumpstart blast and reload clip (2026-11-10, not built yet)
+- Jumpstart: 250 % within 5 m as the bolt lands (green bolt cage, floor arcs, shock rings, arcs to each enemy). Bench flag open.
+- Reload clip fitted to the reload for Victor (`reloadFit`; reload_idle 2.83 s vs 2 s). Haze, Infernus, Mo & Krill, Viscous, Rat King,
+  Billy, Mina and Pocket have the same mismatch (clip longer than the reload) and are left as they are.
+
 ## Victor aura drain (2026-11-10, r2modman 1.6.2)
 - Jumpstart: the strike holds him 0.5 s (white skin flash, pose and movement frozen), so the bolt always lands on him.
 - Aura of Suffering drains 4x his own health regen a second (new `selfDrainRegenMult` column), instead of 2 % max health.

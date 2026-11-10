@@ -14,6 +14,7 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 
 | Survivor | Ability | Why a retest is needed | Commit | Status |
 |---|---|---|---|---|
+| Victor | Jumpstart | now 250 % to everything within 5 m as the bolt lands (was no damage); every 8 s | 2026-11-10 | open |
 | Victor | Aura of Suffering | self-drain now 4x his health regen a second (was 2 % max health); his damage is unchanged, only his survival on the bench | 2026-11-10 | open (low priority) |
 | Victor | 2026-11-10: the creator's feedback: Jumpstart 8 s / +20 %, Pain Battery 1 Pain 800 % with falloff (12 → 30 m, 40 %) and knockback, the aura a +33 % damage zone (no damage, no heal, stays on, 12 s) | changed kit | this one | **benched** `REPEAT=3 run_bench.sh 30 victor` (§3.22): 1,675 vs REX 1,738 (−63) | **done** |
 | Paige | 2026-11-06: new hero (the creator's own DLL build only): Chapter's End 140 % piercing up to 3, Bookwyrm 180 % + 30 %/s burn, Captivating Read 350 %, Rallying Charge 300 %, The Green Knight (Q), Plot Armor | new hero | this one | **benched** `REPEAT=3 run_bench.sh 30 paige` (§3.21): 1,674, inside |

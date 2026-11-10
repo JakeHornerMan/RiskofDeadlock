@@ -1,3 +1,4 @@
+using System.Linq;
 using DeadlockOfRain.Sheets;
 using EntityStates;
 using RoR2;
@@ -84,7 +85,7 @@ namespace DeadlockOfRain.States
             float speed = attackSpeedStat;
             if (FullAutoOn(characterBody)) speed /= 1f + (Sheet.Buff(FullAutoBuff)?.AttackSpeedAdd ?? 0f);
             rt.BeginReload(row, speed);
-            if (anim) anim.Gesture("reload", 1f);
+            if (anim) anim.Gesture("reload", ReloadClipSpeed(anim, characterBody, row, speed));
             Relay.Reload(characterBody);
         }
 
@@ -133,8 +134,21 @@ namespace DeadlockOfRain.States
             var row = Survivors.GunRow(body);
             if (row == null) return;
             var anim = DeadlockAnimator.Of(body);
-            if (anim) anim.Gesture("reload", 1f);
+            if (anim) anim.Gesture("reload", ReloadClipSpeed(anim, body, row, body.attackSpeed));
             Fx.Sound(row.Id, "reload", body.transform.position);
+        }
+
+        /// <summary>The reload clip's speed: 1, or, for a hero whose animations row has reloadFit, faster when the clip is longer than
+        /// the reload, so it ends with the reload and the gun never fires mid-clip (creator, 2026-11-10: "victor is shooting before
+        /// his reload animation is complete!": his reload_idle is 2.83 s, the reload 2 s and less with Pain).</summary>
+        static float ReloadClipSpeed(DeadlockAnimator anim, CharacterBody body, SkillRow gun, float attackSpeed)
+        {
+            var hero = Survivors.HeroOf(body);
+            var fit = hero != null ? AnimRow.All.FirstOrDefault(a => a.Hero == hero) : null;
+            if (fit == null || !fit.ReloadFit) return 1f;
+            float reload = gun.ReloadTime / Mathf.Max(0.1f, attackSpeed);
+            float len = anim ? anim.ClipLength("reload") : 0f;
+            return reload > 0f && len > reload ? len / reload : 1f;
         }
 
         /// <summary>Mo's punch (Krill is away): a short, wide bullet from the aim origin out to the gun row's reach, so it is

@@ -17,7 +17,7 @@ namespace DeadlockOfRain
         {
             switch (id)
             {
-                case "victor_jumpstart": return VictorJumpstart(moment, at, to);
+                case "victor_jumpstart": return VictorJumpstart(moment, at, radius, to);
                 case "victor_gun": return VictorGun(moment, at);
                 case "victor_battery": return VictorBattery(moment, at, radius, to);
                 case "victor_aura": return VictorAuraFx(moment, at, radius, follow, to);
@@ -32,8 +32,42 @@ namespace DeadlockOfRain
         /// and a short flash. "strike" (at = his feet, to = his chest): a bolt of green lightning from the sky into him (creator,
         /// 2026-11-09: "Ability need to be clearer have a strike of green lightning come down!"): a thick white core inside two green
         /// bolts, a scorch ring and sparks on the ground, a bright green flash and a small shake.</summary>
-        static GameObject VictorJumpstart(string moment, Vector3 at, Vector3? to)
+        static GameObject VictorJumpstart(string moment, Vector3 at, float radius, Vector3? to)
         {
+            if (moment == "nova")
+            {
+                // the blast round him as the bolt lands (at = his feet, radius = the blast): a cage of green bolts striking the
+                // ground all round the edge, arcs crawling out along the floor like cracks to meet them, a green shock ring racing out
+                // to the edge with a pale one behind it, a glowing disc burnt into the floor, and sparks and a column of green rising
+                float r = Mathf.Max(1f, radius);
+                var floor = at + Vector3.up * 0.1f;
+                int n = 9;
+                for (int i = 0; i < n; i++)
+                {
+                    float ang = (i + Random.Range(-0.25f, 0.25f)) / n * Mathf.PI * 2f;
+                    var edge = floor + new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)) * r * Random.Range(0.85f, 1f);
+                    Bolt(edge + Vector3.up * Random.Range(9f, 14f) + Random.insideUnitSphere * 1.2f, edge, victorBolt, 0.22f, 0.35f, 12, 0.9f, true);
+                    Bolt(floor, edge, victorArc, 0.1f, 0.4f, 12, 0.45f, true, true);
+                    Burst(edge, "mat_spark", victorBolt, 8, 0.35f, 6f, 0.05f, 0.2f, false, true);
+                }
+                Ring(floor, victorBolt, 0.4f, r, 0.3f, 0.6f);
+                Ring(floor + Vector3.up * 0.05f, victorArc, 0.2f, r * 0.9f, 0.5f, 0.25f);
+                Ring(at + Vector3.up * 1.2f, victorField, 0.3f, r * 0.7f, 0.35f, 0.2f);
+                Burst(floor, "mat_glow", new Color(victorField.r, victorField.g, victorField.b, 0.6f), 10, 0.5f, r * 1.6f, 1.6f, 0.4f, true);
+                Burst(floor, "mat_glow", victorBolt, 2, 0.6f, 0f, r * 1.2f);
+                Burst(at, "mat_spark", victorArc, 40, 0.6f, 9f, 0.06f, r * 0.5f, false, true, 0.6f);
+                Flash(at + Vector3.up, victorBolt, r * 3f, 0.3f, 6f);
+                return null;
+            }
+            if (moment == "zap")
+            {
+                // an arc from him (to) to an enemy the blast hit (at), and a green pop on it
+                var from = to ?? at;
+                Bolt(from, at, victorBolt, 0.12f, 0.25f, 10, 0.5f, true);
+                Burst(at, "mat_spark", victorArc, 10, 0.3f, 6f, 0.05f, 0.3f);
+                Burst(at, "mat_glow", victorBolt, 1, 0.25f, 0f, 1.2f);
+                return null;
+            }
             if (moment == "strike")
             {
                 var body = to ?? at + Vector3.up;

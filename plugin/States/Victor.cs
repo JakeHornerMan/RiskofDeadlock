@@ -129,9 +129,20 @@ namespace DeadlockOfRain.States
             Sound("cast");
             if (anim) anim.Gesture("secondary", Mathf.Max(1f, anim.ClipLength("secondary") / Mathf.Max(0.1f, row.Duration)));
             Vfx.Play(row.Vfx, "cast", VictorAura.ArmPoint(characterBody), 1f, null, characterBody.corePosition);
-            // a bolt of green lightning comes down on him (creator, 2026-11-09: "have a strike of green lightning come down!")
+            // a bolt of green lightning comes down on him (creator, 2026-11-09: "have a strike of green lightning come down!"), and
+            // as it lands a radius blast round him (creator, 2026-11-10: "a 5m radius aoe damage ... exactly when the lightning
+            // strikes victor ... creative and green"): the nova on every machine, the hit and an arc to each enemy from the server
             Vfx.Play(row.Vfx, "strike", characterBody.footPosition, 1f, null, characterBody.corePosition);
+            if (row.Radius > 0f) Vfx.Play(row.Vfx, "nova", characterBody.footPosition, row.Radius);
             if (!Server) return;
+            if (row.DamagePct > 0f && row.Radius > 0f)
+                foreach (var hb in Fx.Enemies(characterBody, characterBody.corePosition, row.Radius))
+                {
+                    var vb = hb.healthComponent.body;
+                    var p = vb ? vb.corePosition : hb.transform.position;
+                    Fx.Hit(characterBody, hb, row.DamagePct / 100f, row.ProcCoefficient, p);
+                    Relay.Vfx(row.Vfx, "zap", p, 1f, null, characterBody.corePosition, 0f);
+                }
             VictorPain.HurtSelf(characterBody, row.SelfDamageFlat);
             Buffs.Clear(characterBody, row.Buff);
             Buffs.AddTimed(characterBody, row.Buff, Sheet.Buff(row.Buff)?.Duration ?? 5f);

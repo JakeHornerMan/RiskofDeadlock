@@ -504,8 +504,9 @@ def maths(r):
         return [f"about {n(hops)} landings × {n(d)} % within {n(r['radius'])} m = {n(hops * d)} % per enemy, a high leap {n(r['splashPct'])} % within {n(r['nearRadius'])} m"], None
     if k == 'jumpstart':
         b = BUFFS.get(r['buff'], {})
-        return [f"no damage: {n(r['selfDamageFlat'])} health to himself for {n(r['buffStacks'])} Pain (+{n(BUFFS['pain']['attackSpeedBaseAdd'] * 100)} % attack speed)",
-                f"and +{n(b.get('moveSpeedAdd', 0) * 100)} % move speed for {n(b.get('duration', 0))} s, every {n(cd)} s"], 0
+        hit = f"{n(d)} % to everything within {n(r['radius'])} m as the bolt lands; " if d > 0 and r['radius'] > 0 else "no damage: "
+        return [f"{hit}{n(r['selfDamageFlat'])} health to himself for {n(r['buffStacks'])} Pain (+{n(BUFFS['pain']['attackSpeedBaseAdd'] * 100)} % attack speed)",
+                f"and +{n(b.get('moveSpeedAdd', 0) * 100)} % move speed for {n(b.get('duration', 0))} s, every {n(cd)} s"], (d if d > 0 and r['radius'] > 0 else 0)
     if k == 'pain_battery':
         fo = f", falling to {n(d * r['falloffMinPct'] / 100)} % at {n(r['falloffEnd'])} m (full to {n(r['falloffStart'])} m)" if r['falloffEnd'] > r['falloffStart'] else ''
         return [f"{n(d)} % to the enemy hit and everything within {n(r['radius'])} m{fo}, knocked back and slowed {n(-BUFFS[r['debuff']]['moveSpeedAdd'] * 100)} %",
