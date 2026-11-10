@@ -475,6 +475,20 @@
       ]
     },
     {
+      "id": "mat_flash_white",
+      "kind": "material",
+      "addressable": "RoR2/Base/Huntress/matHuntressFlashBright.mat",
+      "scaleWithRadius": false,
+      "tint": "none",
+      "notes": "Huntress's bright flash: Victor's skin flashing white while Jumpstart's lightning holds him (TemporaryOverlay over his whole model)",
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ]
+    },
+    {
       "id": "mat_sand_overlay",
       "kind": "material",
       "addressable": "RoR2/Base/Bison/matSnowyOverlay.mat",

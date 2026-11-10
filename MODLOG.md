@@ -6,6 +6,7 @@
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
 ## Victor aura drain (2026-11-10, r2modman 1.6.2)
+- Jumpstart: the strike holds him 0.5 s (white skin flash, pose and movement frozen), so the bolt always lands on him.
 - Aura of Suffering drains 4x his own health regen a second (new `selfDrainRegenMult` column), instead of 2 % max health.
 
 ## Paige sword (2026-11-10, visual only)

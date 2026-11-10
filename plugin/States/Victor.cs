@@ -109,14 +109,23 @@ namespace DeadlockOfRain.States
     /// <summary>Right Click: Victor jolts himself with the defibrillator. selfDamageFlat health (non-lethal, his own damage so it is
     /// never a hit for Pain), buffStacks Pain, and the buff (+30 % move speed, refreshed rather than stacked). The jolt clip plays
     /// for duration seconds on the upper body while he keeps walking; it is on the Weapon machine, so it pauses Memento Mori for
-    /// that long and the held trigger picks the gun up again still spun up (gun hangTime is longer than the jolt).</summary>
+    /// that long and the held trigger picks the gun up again still spun up (gun hangTime is longer than the jolt).
+    /// The strike holds him for minDuration (creator, 2026-11-10: "the lightning does not strike victor ... make sure it always
+    /// follows victor ... put in a white flash on his skin and pause his movement and animation for 0.5 second"): his skin flashes
+    /// white (mat_flash_white overlay), the jolt pose freezes, RoR2's Entangle root (server) and the owner's velocity held at 0, so
+    /// the bolt always lands on him.</summary>
     [Kind("jumpstart")]
     public sealed class Jumpstart : DlrState
     {
+        bool paused, released;
+
         public override void OnEnter()
         {
             base.OnEnter();
             if (row == null) return;
+            WhiteFlash(characterBody, row.MinDuration);
+            if (Server && row.MinDuration > 0f) characterBody.AddTimedBuff(RoR2Content.Buffs.Entangle, row.MinDuration);
+            if (isAuthority && characterMotor) characterMotor.velocity = Vector3.zero;
             Sound("cast");
             if (anim) anim.Gesture("secondary", Mathf.Max(1f, anim.ClipLength("secondary") / Mathf.Max(0.1f, row.Duration)));
             Vfx.Play(row.Vfx, "cast", VictorAura.ArmPoint(characterBody), 1f, null, characterBody.corePosition);
@@ -133,7 +142,40 @@ namespace DeadlockOfRain.States
         public override void FixedUpdate()
         {
             base.FixedUpdate();
+            if (row != null && !released)
+            {
+                if (fixedAge < row.MinDuration)
+                {
+                    // the jolt pose shows for a moment, then he is held in it
+                    if (!paused && anim && fixedAge >= 0.06f) { anim.enabled = false; paused = true; }
+                    if (isAuthority && characterMotor) characterMotor.velocity = Vector3.zero;
+                }
+                else Release();
+            }
             if (isAuthority && (row == null || fixedAge >= row.Duration)) outer.SetNextStateToMain();
+        }
+
+        void Release()
+        {
+            released = true;
+            if (paused && anim) anim.enabled = true;
+            paused = false;
+        }
+
+        public override void OnExit() { Release(); base.OnExit(); }
+
+        /// <summary>A white flash over the whole model for seconds, fading out (every machine).</summary>
+        static void WhiteFlash(CharacterBody b, float seconds)
+        {
+            var model = b && b.modelLocator && b.modelLocator.modelTransform ? b.modelLocator.modelTransform.GetComponent<CharacterModel>() : null;
+            if (!model || seconds <= 0f) return;
+            var o = TemporaryOverlayManager.AddOverlay(model.gameObject);
+            o.duration = seconds;
+            o.animateShaderAlpha = true;
+            o.alphaCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
+            o.destroyComponentOnEnd = true;
+            o.originalMaterial = Vfx.Mat("mat_flash_white", Color.white);
+            o.AddToCharacterModel(model);
         }
 
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.PrioritySkill;

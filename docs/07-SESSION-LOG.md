@@ -1806,3 +1806,11 @@ Mid-turn: "you opened the game but they are not installed!" (our test run on the
 **Results:** `PREFLIGHT CLEAN`, `dotnet build` succeeded. No `run_test.sh` (the creator wanted the build straight away).
 **Not done / open:** the creator's play feel; bench flag (damage unchanged); pages not republished.
 **Lessons:** none new.
+
+### 2026-11-10 · Victor: Jumpstart holds him 0.5 s under the strike (in 1.6.2)
+**Request (verbatim):** "also when victor is moving and her uses [Jumpstart text] the lightning does not stricke victor can you make sure it always follows victor also fuck it let put ina white flah on his skin and pause his movement and animation ofr 0.5 sceond while it happens!"
+**Questions asked → answers:** none.
+**Done:** `victor_jumpstart` duration 0.6, minDuration 0.5 (the hold), description; new effects row `mat_flash_white` (Huntress's bright flash); `Jumpstart`: white overlay for 0.5 s, `DeadlockAnimator` paused after 0.06 s (re-enabled at 0.5 s or on exit), `Entangle` for 0.5 s on the server, velocity 0 on the owner. The 4x-drain build was stopped again and everything goes in one 1.6.2. Docs 02, MODLOG, 1.6.2 changelog.
+**Results:** `PREFLIGHT CLEAN`, `dotnet build` succeeded. Not run through `run_test.sh` (straight to the creator's build).
+**Not done / open:** the creator's look at it in game.
+**Lessons:** a visual tied to the cast position misses a moving hero; hold the hero or make the effect follow.
