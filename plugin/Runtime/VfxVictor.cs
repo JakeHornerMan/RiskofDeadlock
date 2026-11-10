@@ -29,9 +29,30 @@ namespace DeadlockOfRain
 
         // ------------------------------------------------------------------ Jumpstart
         /// <summary>The defibrillator jolt: white-violet arcs from the barbed-wire arm (at) across his chest (to), sparks off the arm
-        /// and a short flash.</summary>
+        /// and a short flash. "strike" (at = his feet, to = his chest): a bolt of green lightning from the sky into him (creator,
+        /// 2026-11-09: "Ability need to be clearer have a strike of green lightning come down!"): a thick white core inside two green
+        /// bolts, a scorch ring and sparks on the ground, a bright green flash and a small shake.</summary>
         static GameObject VictorJumpstart(string moment, Vector3 at, Vector3? to)
         {
+            if (moment == "strike")
+            {
+                var body = to ?? at + Vector3.up;
+                var sky = at + Vector3.up * 30f + Random.insideUnitSphere * 1.5f;
+                Bolt(sky, body, Color.white, 0.55f, 0.3f, 18, 1.2f);
+                Bolt(sky, at, victorBolt, 0.9f, 0.35f, 16, 1.8f, true);
+                Bolt(sky + Random.insideUnitSphere * 2f, body, victorArc, 0.35f, 0.4f, 14, 2.2f, true);
+                for (int i = 0; i < 6; i++)
+                {
+                    float ang = i / 6f * Mathf.PI * 2f + Random.Range(-0.3f, 0.3f);
+                    Bolt(at + Vector3.up * 0.1f, at + new Vector3(Mathf.Cos(ang), 0.1f, Mathf.Sin(ang)) * 2.5f, victorBolt, 0.12f, 0.3f, 10, 0.3f, true, true);
+                }
+                Ring(at + Vector3.up * 0.15f, victorBolt, 0.3f, 3f, 0.4f, 0.35f);
+                Burst(at + Vector3.up * 0.2f, "mat_spark", victorArc, 30, 0.4f, 10f, 0.07f, 0.4f);
+                Burst(body, "mat_glow", victorBolt, 2, 0.3f, 0f, 2.2f);
+                Flash(body, victorBolt, 12f, 0.3f, 7f);
+                Shake(at, 8f, 0.6f, 0.2f);
+                return null;
+            }
             if (moment != "cast") return null;
             var chest = to ?? at;
             Bolt(at, chest, Color.white, 0.25f, 0.18f, 8, 0.25f);
@@ -83,6 +104,20 @@ namespace DeadlockOfRain
                     Bolt(at, end, victorArc, 0.3f, 0.25f, 12, 0f, true);
                     Burst(at, "mat_glow", victorViolet, 2, 0.2f, 0f, 0.8f);
                     Flash(at, victorViolet, 6f, 0.15f, 4f);
+                    return null;
+                }
+                case "impact":
+                {
+                    // it met an enemy (creator, 2026-11-09: "make it be way more impact when we hit an enemy"): the normal burst,
+                    // plus a white-green core, a second wider shockwave, more arcs, a bigger flash and a camera shake
+                    VictorBattery("hit", at, radius, to);
+                    Burst(at, "mat_glow", Color.white, 2, 0.2f, 0f, radius * 0.6f);
+                    Burst(at, "mat_spark", victorBolt, 40, 0.6f, 18f, 0.09f, 0.5f);
+                    Ring(at + Vector3.up * 0.2f, victorBolt, 0.5f, radius * 1.6f, 0.5f, 0.45f);
+                    Ring(at, victorArc, 0.3f, radius * 1.2f, 0.4f, 0.3f, true);
+                    for (int i = 0; i < 8; i++) Bolt(at, at + Random.onUnitSphere * radius * 1.4f, victorBolt, 0.22f, 0.3f, 8, 0.6f, true);
+                    Flash(at, Color.white, radius * 4f, 0.2f, 9f);
+                    Shake(at, radius * 6f, 1.5f, 0.3f);
                     return null;
                 }
                 case "hit":
@@ -145,6 +180,15 @@ namespace DeadlockOfRain
                     Bolt(from, at, victorBolt, 0.2f, 0.2f, 16, 0.35f, true);
                     Bolt(from, at, victorArc, 0.07f, 0.15f, 12, 0.45f, true);
                     Burst(at, "mat_spark", victorArc, 8, 0.2f, 6f, 0.05f);
+                    return null;
+                }
+                case "mark":
+                {
+                    // an enemy inside the field (taking +33 % from him): a short green arc from Victor to it and a spark on it
+                    var from = to ?? at;
+                    Bolt(from + Vector3.up * 0.5f, at, victorField, 0.06f, 0.18f, 10, 0.25f, true);
+                    Burst(at, "mat_spark", victorArc, 4, 0.2f, 3f, 0.04f);
+                    Burst(at, "mat_glow", victorField, 1, 0.25f, 0f, 0.5f);
                     return null;
                 }
                 case "hit":

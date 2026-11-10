@@ -5,6 +5,12 @@
 - Deadlock ClientVersion 6817 (build 26143760, 2026-10-22 evening; no clip, mesh or sound change for our heroes); 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
+## Victor rebalance (2026-11-10, the creator's own DLL build only)
+- Jumpstart 8 s, +20 %, a green lightning strike from the sky. Pain Battery 1 Pain, 800 %, 30 m with falloff (full to 12 m, 40 % at 30 m), 4 m knockback
+  blast, bigger enemy-hit burst. Aura of Suffering: +33 % damage taken from him inside (`victor_suffering`), no damage/heal, stays on (drain can kill), 12 s.
+- Shocking Reanimation: Victor's `ult_loop` was `zipline_boosted_loop`, absent from his files (`zipline_attached_loop`), so he froze; anyone else now idles.
+- Bench 1958 -> 1992 (cooldown 2.5 s: Pain-limited, no effect) -> **1675** vs REX 1738. Lesson: a resource-limited move tunes by damage, not cooldown.
+
 ## Paige (2026-11-06, the creator's own DLL build only)
 - Thirteenth hero (`bookworm`) from the creator's own files (`charactersFinal/paigeFiles`), matched to Engineer: Chapter's End (`gun_page`,
   piercing pages, at most 3 enemies), Bookwyrm (`bookwyrm`, her wyvern + burning floor), Captivating Read (`captivating_read`, circle,

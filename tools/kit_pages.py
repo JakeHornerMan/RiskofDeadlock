@@ -93,7 +93,11 @@ CHANGES = {
                         'Rallying Charge (R) is a row of 5 spectral knights; The Green Knight (Q) is one giant knight that grows stronger as it rides; both heal allies they pass',
                         'Plot Armor is the passive: +25 % damage below 40 % health',
                         'Every spirit is see-through ghost green: her own models on RoR2’s ghost material, with her own letters, graphics and text streak'])],
- 'victor': [('2026-11-05', ['New hero: Victor, matched to REX, from the creator’s own model, animations and sounds; in the creator’s own DLL build only (not on Melty)',
+ 'victor': [('2026-11-10', ['Jumpstart: a bolt of green lightning strikes him; every 8 s (was 4) and +20 % move speed (was +30 %)',
+                        'Pain Battery costs 1 Pain (was 3): 800 % (was 1,000), full to 12 m, falling to 40 % at its 30 m reach; a 4 m blast that knocks enemies back, and a much bigger hit when it meets an enemy',
+                        'Aura of Suffering is a +33 % damage zone: no damage and no healing of its own; it stays on until R (no cut-off at 10 % health, the drain can kill him), +1 Pain every 5 s, 12 s cooldown',
+                        'Shocking Reanimation: Victor rides his zipline clip up again; anyone else stands in their idle instead of freezing mid-move']),
+            ('2026-11-05', ['New hero: Victor, matched to REX, from the creator’s own model, animations and sounds; in the creator’s own DLL build only (not on Melty)',
                         'Pain: every enemy hit adds a stack (+15 % attack speed each, like Soldier’s Syringe), up to 10; one stack fades every 10 s',
                         'Redesign the same day: the punches are gone; Memento Mori moves to M1 at 100 % a round, and M2 is Jumpstart (10 health to himself for 1 Pain and +30 % move speed for 5 s, every 4 s)',
                         'Aura of Suffering grows from 9 m (+0.5 m per Pain, 14 m at 10); Pain Battery spends 3 Pain on a 1,000 % bolt with a 3 m blast; Shocking Reanimation (Q) stuns everything within 30 m, then 20 s of 10 Ukuleles and 10 Tesla Coils'])],
@@ -259,11 +263,11 @@ ANALYSIS = {
            'Plot Armor (+25 % damage below 40 % health) never shows on the bench: it stands her in god mode at full health.',
            'The Green Knight (Q, the ult): one use on the ult bench (30 enemies and a Beetle Queen) did 188,376 %, 25 hit, 7,586 % to the Queen. It isn’t in the all-together number.',
            'In the creator’s own DLL build only (r2modman), not on Melty.'],
- 'victor': ['Three runs after the same-day redesign (gun on M1 at 100 %, Jumpstart on M2, aura from 9 m): 2,957, 2,898 and 2,832 %/s with every main move, mean 2,896 against REX’s 1,738. That is +1,158: above the ±500 band.',
-            'Aura of Suffering carries him: 1,096 %/s alone (1,070–1,134). At 9 m plus 0.5 m a Pain stack it reaches all 12 of the bench’s pack, which stands 10–15 m away, so once ramped it deals 120 %/s to each. The spec expected it to barely reach them at 6 m. Memento Mori 367 alone (paper 353).',
-            'Together the moves feed each other: Jumpstart (0 alone) and the aura hand out Pain, Pain speeds up the gun, and Pain Battery spends it on 1,000 % bolts with a 3 m blast into the pack. Alone, Pain Battery has no Pain to spend, so it measures 0.',
-            'Levers, the creator’s call: the aura 120 → 60 %/s (about −550 together), a smaller start radius (9 → 6 m, the pack would then sit mostly outside it), or Pain Battery 1,000 → 600 %.',
-            'In the creator’s own DLL build only (r2modman), not on Melty. Shocking Reanimation (Q) did 71,200–74,200 % to the 12-enemy pack in one use on this bench; the ult bench (30 enemies and a Beetle Queen) hasn’t been run for it. It isn’t in the all-together number.'],
+ 'victor': ['Three runs after the creator’s 2026-11-10 changes (Pain Battery 1 Pain, the aura a +33 % damage zone, Jumpstart every 8 s): 1,935, 1,569 and 1,520 %/s with every main move, mean 1,675 against REX’s 1,738. That is −63: close to the match.',
+            'Tuning on the way: with Pain Battery at 1,000 % the three runs were 2,023, 1,788 and 2,063 (mean 1,958, +220); a 2.5 s cooldown changed nothing (1,992), because Pain, not the cooldown, decides how often it fires (the pack keeps hitting him for more); 800 % brought it to 1,675.',
+            'Alone: Memento Mori 395. Jumpstart, Pain Battery and the aura measure 0 alone: Jumpstart and the aura deal no damage, and Pain Battery has nothing to spend. Together they carry him: Pain speeds up the gun, the aura adds +33 % to everything he deals inside it, and the Battery’s 800 % bolts land in the pack.',
+            'Before (2026-11-05): 2,896, with the aura dealing 1,096 alone and healing him.',
+            'In the creator’s own DLL build only (r2modman), not on Melty. Shocking Reanimation (Q) did 63,000–74,200 % to the 12-enemy pack in one use on this bench; it isn’t in the all-together number.'],
  'pocket': ['Three runs at v1.2.0c (lock-on Barrage he shoots through): 2,411, 2,197 and 2,291 %/s with every main move, mean 2,300 against Bandit’s 1,919. That is +381: inside the ±500 band. (v1.2.0a: 2,423.)',
             'Barrage still carries him (about 1,316 %/s alone: four 250 % bursts, each a stun, on the enemy it locked) and its amp (+4 % a burst that hits, up to +16 %) raises everything else. The Black Sheep 591, the Satchel 529, Flying Cloak 383.',
             'The spec’s numbers measured about 2,709 counted honestly (the bench used to divide the amp back out of the damage), so its two levers were used: amp 6 → 4 % a burst, then the Satchel burst 600 → 450 %.',
@@ -503,9 +507,14 @@ def maths(r):
         return [f"no damage: {n(r['selfDamageFlat'])} health to himself for {n(r['buffStacks'])} Pain (+{n(BUFFS['pain']['attackSpeedBaseAdd'] * 100)} % attack speed)",
                 f"and +{n(b.get('moveSpeedAdd', 0) * 100)} % move speed for {n(b.get('duration', 0))} s, every {n(cd)} s"], 0
     if k == 'pain_battery':
-        return [f"{n(d)} % to the enemy hit and everything within {n(r['radius'])} m, slowed {n(-BUFFS[r['debuff']]['moveSpeedAdd'] * 100)} %",
+        fo = f", falling to {n(d * r['falloffMinPct'] / 100)} % at {n(r['falloffEnd'])} m (full to {n(r['falloffStart'])} m)" if r['falloffEnd'] > r['falloffStart'] else ''
+        return [f"{n(d)} % to the enemy hit and everything within {n(r['radius'])} m{fo}, knocked back and slowed {n(-BUFFS[r['debuff']]['moveSpeedAdd'] * 100)} %",
                 f"costs {n(r['buffStacks'])} Pain; {n(cd)} s cooldown"], None
     if k == 'aura_toggle':
+        if d <= 0:
+            amp = BUFFS.get(r['debuff'], {}).get('damageTakenFromOwnerPerStack', 0) * 100
+            return [f"no damage of its own: every enemy within {n(r['radius'])} m + {n(r['reach'])} m per Pain takes +{n(amp)} % damage from him",
+                    f"+{n(r['buffStacks'])} Pain every {n(r['buffEvery'])} s; costs {n(r['selfDamagePct'])} % max health to switch on, then {n(r['selfDrainPct'])} % a second (can kill him); stays on until R, {n(cd)} s cooldown"], 0
         return [f"{n(r['damageMinPct'])} → {n(d)} %/s over {n(r['duration'])} s to every enemy within {n(r['radius'])} m + {n(r['reach'])} m per Pain",
                 f"heals him {n(r['healFraction'] * 100)} % of it; costs {n(r['selfDamagePct'])} % max health to switch on, then {n(r['selfDrainPct'])} % a second"], d
     if k == 'ult_reanimation':

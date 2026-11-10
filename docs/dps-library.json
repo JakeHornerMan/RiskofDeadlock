@@ -1834,27 +1834,27 @@
     "special": "Aura of Suffering"
    },
    "hero": true,
-   "measuredOn": "v1.3.0a",
+   "measuredOn": "v1.3.0c",
    "dps": {
     "all": {
      "runs": [
-      2957,
-      2898,
-      2832
+      1935,
+      1569,
+      1520
      ],
-     "mean": 2896,
-     "min": 2832,
-     "max": 2957
+     "mean": 1675,
+     "min": 1520,
+     "max": 1935
     },
     "primary": {
      "runs": [
-      367,
-      367,
-      367
+      394,
+      394,
+      396
      ],
-     "mean": 367,
-     "min": 367,
-     "max": 367
+     "mean": 395,
+     "min": 394,
+     "max": 396
     },
     "secondary": {
      "runs": [
@@ -1878,23 +1878,23 @@
     },
     "special": {
      "runs": [
-      1070,
-      1134,
-      1083
+      0,
+      0,
+      0
      ],
-     "mean": 1096,
-     "min": 1070,
-     "max": 1134
+     "mean": 0,
+     "min": 0,
+     "max": 0
     },
     "equipment": {
      "runs": [
-      2447,
-      2473,
-      2373
+      1893,
+      2113,
+      1993
      ],
-     "mean": 2431,
-     "min": 2373,
-     "max": 2473
+     "mean": 2000,
+     "min": 1893,
+     "max": 2113
     }
    }
   },
@@ -1985,6 +1985,6 @@
   }
  },
  "about": "Stored DPS library (Risk of Deadlock). Main moves and each move alone, % of damage stat per second, measured with tools/run_bench.sh (doc 05 §2: Monsoon, level 1, no items, 12 still enemies 10-15 m away, 30 s per pass, perfect aim, every move used when ready, no equipment except the \"equipment\" pass). \"all\" = main moves together (the balance number). Vanilla survivors never need re-measuring; heroes are tagged with the build they were measured on. Built by tools/dps_library.py.",
- "updated": "2026-11-06",
+ "updated": "2026-11-10",
  "runsPerSurvivor": 3
 }

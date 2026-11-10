@@ -1046,7 +1046,7 @@
       "special_start": "cast_channeling_start",
       "special": "cast_end",
       "ult_start": "ability_reanimation",
-      "ult_loop": "zipline_boosted_loop",
+      "ult_loop": "zipline_attached_loop",
       "ult_end": "none",
       "special_loop": "none",
       "melee": "none",

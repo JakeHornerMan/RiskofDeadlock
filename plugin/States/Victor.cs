@@ -64,7 +64,7 @@ namespace DeadlockOfRain.States
             if (MeltyTest.Active) MeltyTest.Report("pain-stacks", true, b.baseNameToken);
         }
 
-        /// <summary>Takes away n stacks (Pain Battery spends 3). Server only.</summary>
+        /// <summary>Takes away n stacks (Pain Battery spends 1). Server only.</summary>
         public static void RemoveOldest(CharacterBody b, string id, int n)
         {
             var d = Buffs.Get(id);
@@ -72,16 +72,17 @@ namespace DeadlockOfRain.States
             for (int k = 0; k < n && b.HasBuff(d); k++) b.RemoveBuff(d);
         }
 
-        /// <summary>Victor hurting himself (Jumpstart, the aura): attacker = himself, so it never counts as a hit for Pain; never
-        /// kills him (NonLethal) and goes through armor and blocks. Server only.</summary>
-        public static void HurtSelf(CharacterBody b, float amount)
+        /// <summary>Victor hurting himself (Jumpstart, the aura): attacker = himself, so it never counts as a hit for Pain; goes
+        /// through armor and blocks. Jumpstart never kills him (NonLethal); the aura's drain can (creator, 2026-11-09: "Keep, can kill").
+        /// Server only.</summary>
+        public static void HurtSelf(CharacterBody b, float amount, bool lethal = false)
         {
             var hc = b ? b.healthComponent : null;
             if (!hc || !hc.alive || amount <= 0f || !NetworkServer.active) return;
             hc.TakeDamage(new DamageInfo
             {
                 attacker = b.gameObject, inflictor = b.gameObject, damage = amount, position = b.corePosition,
-                damageType = DamageType.NonLethal | DamageType.BypassArmor | DamageType.BypassBlock, procCoefficient = 0f, crit = false,
+                damageType = (lethal ? DamageType.Generic : DamageType.NonLethal) | DamageType.BypassArmor | DamageType.BypassBlock, procCoefficient = 0f, crit = false,
                 damageColorIndex = DamageColorIndex.Bleed,
             });
         }
@@ -119,6 +120,8 @@ namespace DeadlockOfRain.States
             Sound("cast");
             if (anim) anim.Gesture("secondary", Mathf.Max(1f, anim.ClipLength("secondary") / Mathf.Max(0.1f, row.Duration)));
             Vfx.Play(row.Vfx, "cast", VictorAura.ArmPoint(characterBody), 1f, null, characterBody.corePosition);
+            // a bolt of green lightning comes down on him (creator, 2026-11-09: "have a strike of green lightning come down!")
+            Vfx.Play(row.Vfx, "strike", characterBody.footPosition, 1f, null, characterBody.corePosition);
             if (!Server) return;
             VictorPain.HurtSelf(characterBody, row.SelfDamageFlat);
             Buffs.Clear(characterBody, row.Buff);
@@ -173,9 +176,10 @@ namespace DeadlockOfRain.States
     }
 
     // ---------------------------------------------------------------- Shift: Pain Battery
-    /// <summary>Spends buffStacks of the buff (3 Pain) on an instant bolt along the aim, up to range: the first enemy or surface it
-    /// meets, and everything within radius of that point, takes damagePct and the debuff (a 40% slow). With fewer stacks nothing
-    /// happens and the charge stays. Never hurts Victor.</summary>
+    /// <summary>Spends buffStacks of the buff (1 Pain) on an instant bolt along the aim, up to range: the first enemy or surface it
+    /// meets, and everything within radius of that point, takes damagePct (falling off from falloffStart to falloffMinPct % at
+    /// falloffEnd), is knocked back away from the impact and gets the debuff (a 40% slow). With too few stacks nothing happens and
+    /// the charge stays. Never hurts Victor.</summary>
     [Kind("pain_battery")]
     public sealed class PainBattery : DlrState
     {
@@ -205,23 +209,37 @@ namespace DeadlockOfRain.States
             Sound("cast");
             Vfx.Play(row.Vfx, "cast", from, row.Radius, null, end);
             Fx.Sound(row.Id, "hit", end);
-            Vfx.Play(row.Vfx, "hit", end, row.Radius);
+            Vfx.Play(row.Vfx, target ? "impact" : "hit", end, row.Radius);
             MeltyTest.Report("pain-battery", true, characterBody.baseNameToken);
             if (!Server) return;
             VictorPain.RemoveOldest(characterBody, row.Buff, (int)row.BuffStacks);
+            // falloff: full damage to falloffStart, down to falloffMinPct % at falloffEnd (= range, so it never travels for ever)
+            float coef = Coef * DlrGoo.Falloff(row, Vector3.Distance(aim.origin, end));
             var struck = new HashSet<HealthComponent>();
             if (target && target.healthComponent && target.healthComponent.alive)
             {
                 struck.Add(target.healthComponent);
-                Fx.Hit(characterBody, target, Coef, row.ProcCoefficient, end);
+                Fx.Hit(characterBody, target, coef, row.ProcCoefficient, end);
                 Buffs.Apply(characterBody, target.healthComponent.body, row.Debuff);
+                Push(target.healthComponent, end - aim.direction);
             }
             foreach (var hb in Fx.Enemies(characterBody, end, row.Radius))
             {
                 if (!struck.Add(hb.healthComponent)) continue;
-                Fx.Hit(characterBody, hb, Coef, row.ProcCoefficient, hb.healthComponent.body ? hb.healthComponent.body.corePosition : end);
+                Fx.Hit(characterBody, hb, coef, row.ProcCoefficient, hb.healthComponent.body ? hb.healthComponent.body.corePosition : end);
                 if (hb.healthComponent.body) Buffs.Apply(characterBody, hb.healthComponent.body, row.Debuff);
+                Push(hb.healthComponent, end);
             }
+        }
+
+        /// <summary>Knocks a struck enemy away from the impact point (bosses not).</summary>
+        void Push(HealthComponent hc, Vector3 from)
+        {
+            var b = hc ? hc.body : null;
+            if (row.Knockback <= 0f || !b || b.isChampion || !hc.alive) return;
+            var dir = b.corePosition - from; dir.y = 0f;
+            if (dir.sqrMagnitude < 0.01f) dir = characterBody.transform.forward;
+            Fx.KnockBack(characterBody, hc, dir.normalized + Vector3.up * 0.35f, row.Knockback);
         }
 
         public override void FixedUpdate()
@@ -259,10 +277,12 @@ namespace DeadlockOfRain.States
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Any;
     }
 
-    /// <summary>On Victor's body, every machine: the barbed-wire arm crackling from 3 Pain, and the aura while its buff is on (the
-    /// field, its loop sound, its radius following Pain). On the server, while on: every interval each enemy within radius +
-    /// reach x Pain takes a tick ramping from damageMinPct to damagePct a second over duration, and Victor heals healFraction of what
-    /// it dealt; selfDrainPct of his max health a second; +buffStacks Pain every buffEvery seconds; off at stopBelowPct health.</summary>
+    /// <summary>On Victor's body, every machine: the barbed-wire arm crackling once Pain Battery is ready, and the aura while its
+    /// buff is on (the field, its loop sound, its radius following Pain). On the server, while on: every interval each enemy within
+    /// radius + reach x Pain gets the debuff (victor_suffering: +33 % damage taken from him) and, if damagePct is above 0, a tick
+    /// ramping from damageMinPct to damagePct a second over duration with healFraction of it healed (both 0 since 2026-11-09:
+    /// the creator's "amplify zone only"); selfDrainPct of his max health a second, which can kill him; +buffStacks Pain every
+    /// buffEvery seconds; off at stopBelowPct health only if that is above 0 (0 now: it stays on until R).</summary>
     public sealed class VictorAura : MonoBehaviour
     {
         public const string Buff = "victor_aura";
@@ -312,9 +332,22 @@ namespace DeadlockOfRain.States
 
         float Radius => row == null ? 0f : row.Radius + row.Reach * Buffs.Count(body, row.Buff);
 
-        void SelfHurt(float fraction)
+        /// <summary>Pain Battery's cost (the wire crackles from it).</summary>
+        int Ready
         {
-            if (body && body.healthComponent) VictorPain.HurtSelf(body, body.healthComponent.fullCombinedHealth * fraction);
+            get
+            {
+                if (ready > 0) return ready;
+                var hero = Survivors.HeroOf(body);
+                var bat = hero != null ? Sheet.SkillsOf(hero).FirstOrDefault(r => r.Kind == "pain_battery") : null;
+                return ready = bat != null ? Mathf.Max(1, (int)bat.BuffStacks) : 3;
+            }
+        }
+        int ready;
+
+        void SelfHurt(float fraction, bool lethal = false)
+        {
+            if (body && body.healthComponent) VictorPain.HurtSelf(body, body.healthComponent.fullCombinedHealth * fraction, lethal);
         }
 
         void Update()
@@ -322,8 +355,8 @@ namespace DeadlockOfRain.States
             if (!body) return;
             int pain = Buffs.Count(body, "pain");
             // the barbed wire crackles from 3 Pain: Pain Battery is ready
-            if (pain >= 3 && !wire && Arm()) wire = Vfx.Play("victor_wire", "loop", arm.position, 1f, arm);
-            else if (pain < 3 && wire) { Vfx.Stop(wire, 0.3f); wire = null; }
+            if (pain >= Ready && !wire && Arm()) wire = Vfx.Play("victor_wire", "loop", arm.position, 1f, arm);
+            else if (pain < Ready && wire) { Vfx.Stop(wire, 0.3f); wire = null; }
             bool on = row != null && Buffs.Count(body, Buff) > 0;
             if (on && !field)
             {
@@ -344,14 +377,14 @@ namespace DeadlockOfRain.States
             var hc = body.healthComponent;
             if (!hc.alive) return;
             float now = Time.fixedTime;
-            // never kills him: off at stopBelowPct health
-            if (hc.combinedHealthFraction <= row.StopBelowPct / 100f)
+            // off at stopBelowPct health, if set (0 since 2026-11-09: it never switches itself off, and the drain can kill him)
+            if (row.StopBelowPct > 0f && hc.combinedHealthFraction <= row.StopBelowPct / 100f)
             {
                 Buffs.Clear(body, Buff);
                 Relay.Sound(row.Id, "end", body.corePosition);
                 return;
             }
-            if (now >= nextDrain) { nextDrain = now + 1f; SelfHurt(row.SelfDrainPct / 100f); }
+            if (now >= nextDrain) { nextDrain = now + 1f; SelfHurt(row.SelfDrainPct / 100f, row.StopBelowPct <= 0f); }
             if (row.BuffEvery > 0f && now >= nextPain) { nextPain = now + row.BuffEvery; VictorPain.Add(body, row.Buff, (int)Mathf.Max(1, row.BuffStacks)); }
             if (now < nextTick) return;
             nextTick = now + row.Interval;
@@ -362,14 +395,20 @@ namespace DeadlockOfRain.States
             {
                 var victim = hb.healthComponent;
                 var vb = victim.body;
-                float before = victim.combinedHealth;
-                Fx.Hit(body, hb, coef, row.TickProc, vb ? vb.corePosition : hb.transform.position);
-                healed += Mathf.Max(0f, before - victim.combinedHealth) * row.HealFraction;
+                // inside the field: +33 % damage taken from him (creator, 2026-11-09: "every enemy within in pain aura circle take a
+                // flat 33% extra damage"); the debuff lasts a moment past each tick, so it ends soon after they leave
+                if (vb && row.Debuff != "none") Buffs.Apply(body, vb, row.Debuff);
+                if (coef > 0f)
+                {
+                    float before = victim.combinedHealth;
+                    Fx.Hit(body, hb, coef, row.TickProc, vb ? vb.corePosition : hb.transform.position);
+                    healed += Mathf.Max(0f, before - victim.combinedHealth) * row.HealFraction;
+                }
                 // a flying enemy (the strikes only run along the floor) gets one bolt from Victor every tick that hurts it (creator,
                 // 2026-11-05: "if there is a flying enemy in the aoe circle shoot 1 lightning bolt to them every time they are damaged");
                 // others a thin red thread to Victor now and then (every player sees both)
                 if (vb && vb.isFlying) Relay.Vfx(row.Vfx, "zap", vb.corePosition, 1f, null, body.corePosition + Vector3.up * 0.5f);
-                else if (vb && Random.value < 0.35f) Relay.Vfx(row.Vfx, "hit", vb.corePosition, 1f, null, body.corePosition);
+                else if (vb && Random.value < 0.35f) Relay.Vfx(row.Vfx, row.HealFraction > 0f ? "hit" : "mark", vb.corePosition, 1f, null, body.corePosition);
             }
             if (healed > 0f) hc.Heal(healed, default);
         }
@@ -399,10 +438,13 @@ namespace DeadlockOfRain.States
                 var gp = characterMotor.gravityParameters; gp.channeledAntiGravityGranterCount++; characterMotor.gravityParameters = gp;
                 floating = true;
             }
-            // Victor rides his zipline clip up; anyone else is frozen in their pose
+            // Victor rides his zipline clip up (ult_loop); anyone else stands in their idle (creator, 2026-11-10: "it stay on what
+            // it was last on make sure it is idle for all other characters!"): a Deadlock hero loops its idle clip over the whole
+            // body; a RoR2 survivor is put in its Body layer's Idle with the gesture layers emptied, then held there (its own
+            // controller would otherwise switch to falling as it rises)
             if (anim && anim.HasClip("ult_loop")) anim.Override("ult_loop", row.MinDuration, true);
-            else if (anim) { anim.enabled = false; frozen = true; }
-            else { vanilla = GetModelAnimator(); if (vanilla) { vanilla.speed = 0f; frozen = true; } }
+            else if (anim && anim.HasClip("idle")) anim.Override("idle", row.MinDuration, true);
+            else { vanilla = GetModelAnimator(); if (vanilla) { Idle(vanilla); vanilla.speed = 0f; frozen = true; } }
             Vfx.Play(row.Vfx, "cast", characterBody.corePosition, 1f, transform);
         }
 
@@ -446,6 +488,23 @@ namespace DeadlockOfRain.States
                 var pain = Sheet.Buff(hero.PassiveBuff);
                 if (pain != null) VictorPain.Add(characterBody, hero.PassiveBuff, (int)pain.MaxStacks);
             }
+        }
+
+        /// <summary>A RoR2 survivor's animator straight into its idle: Body layer Idle, the gesture layers on their empty states.</summary>
+        static void Idle(Animator a)
+        {
+            for (int i = 0; i < a.layerCount; i++)
+            {
+                var name = a.GetLayerName(i);
+                foreach (var st in name == "Body" ? new[] { "Idle", "IdleIn" } : new[] { "Empty", "BufferEmpty" })
+                {
+                    int h = Animator.StringToHash(st);
+                    if (!a.HasState(i, h)) continue;
+                    a.Play(h, i, 0f);
+                    break;
+                }
+            }
+            a.Update(0f);
         }
 
         void Unfreeze()
