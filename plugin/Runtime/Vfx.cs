@@ -1300,6 +1300,7 @@ namespace DeadlockOfRain
         public static void Preload()
         {
             foreach (var e in EffectRow.All) if (e.Kind == "material") Mat(e.Id, Color.white);
+            WarmHeroFx();
         }
 
         static GameObject Root(Vector3 at, float life, Transform follow)

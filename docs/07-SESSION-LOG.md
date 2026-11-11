@@ -1830,3 +1830,9 @@ Mid-turn: "you opened the game but they are not installed!" (our test run on the
 **Results:** `PREFLIGHT CLEAN`, build clean; 1.6.3 installed in r2modman. `run_test.sh` (all 13, the DLL build in the Steam copy, 3.7 GB free after closing Discord/Razer/NVIDIA Overlay/NordVPN): 10/13; `victor-plays`, `guns-fire`, `gun-aims`, `gun-in-hand`, `ammo-counter` pass. Fails: mokrill (Tag Team target moved 0.7 m), wraith (Project Mind rose 0 m), paige (`paige_ult`: no enemy_stun). Rerun of those three: mokrill passes; wraith fails on something else (Card Trick no damage), so its fails move run to run; paige_ult no enemy_stun again (2 of 2). Steam copy back to main's dev build.
 **Not done / open:** Paige's Green Knight stun in test mode (repeats; not touched by this change); Wraith's test flakiness.
 **Lessons:** none new.
+
+### 2026-11-10 · Frame rate with Paige and Victor
+**Request (verbatim):** "I noticed some fps struggle with both paige and victor can we run some tests and fix this"; then "you can do the best fix and retest and then fix again keep ging in this cyccle and making build. alway go with the best option and wok independantly"
+**Questions asked → answers:** none.
+**Done:** models compared first (bones, vertices, textures: in line with the others, not the cause). Frame-time probe in `DpsBench` (`frames` and `roots` lines per pass); bench moves to golemplains when a stage has no flat spot. `Vfx.WarmHeroFx` on the loading screen (props, Paige's alpha textures once per texture, ghost material, recoloured lightning); Victor's muzzle and hit effects capped. Docs 02, 05 §0b, MODLOG.
+**Results:** before: Haze 37 ms, Victor 43-54, Paige 38-47 with a 1.45 s first-use freeze. After (another stage): Haze 21-30, Victor 30-33, Paige 29-32, worst 63 ms. Frame time grows pass by pass for every hero as objects pile up: next.

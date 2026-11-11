@@ -99,8 +99,15 @@ namespace DeadlockOfRain
         }
 
         // ------------------------------------------------------------------ Memento Mori
+        // Memento Mori fires up to ~20 rounds a second spun up with Pain: its muzzle and hit effects are capped (creator, 2026-11-10:
+        // "fps struggle with ... victor"; each muzzle was three particle systems and a light, every round)
+        static float nextMuzzle, nextHit;
+        const float MuzzleGap = 0.07f, HitGap = 0.05f;
+
         static GameObject VictorGun(string moment, Vector3 at)
         {
+            if (moment == "muzzle") { if (Time.time < nextMuzzle) return null; nextMuzzle = Time.time + MuzzleGap; }
+            else if (moment == "hit" || moment == "impact") { if (Time.time < nextHit) return null; nextHit = Time.time + HitGap; }
             switch (moment)
             {
                 case "muzzle":

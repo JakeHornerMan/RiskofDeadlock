@@ -62,11 +62,23 @@ namespace DeadlockOfRain
         {
             string key = texId + "|" + ColorUtility.ToHtmlStringRGBA(tint);
             if (paigeTexMats.TryGetValue(key, out var m)) return m;
+            var tex = PaigeAlphaTex(texId);
+            if (tex) m = new Material(SpriteShader()) { mainTexture = tex, color = tint, renderQueue = 3100 };
+            paigeTexMats[key] = m;
+            return m;
+        }
+
+        static readonly System.Collections.Generic.Dictionary<string, Texture2D> paigeAlphaTex = new System.Collections.Generic.Dictionary<string, Texture2D>();
+        /// <summary>One of her textures with its brightness turned into alpha, made once per texture (it was redone for every tint,
+        /// a long stall the first time each move ran: creator, 2026-11-10, "fps struggle with paige"); warmed on the loading screen.</summary>
+        static Texture2D PaigeAlphaTex(string texId)
+        {
+            if (paigeAlphaTex.TryGetValue(texId, out var tex)) return tex;
             var row = Sheet.Effect(texId);
             var src = row != null ? DeadlockCache.Image(row.Addressable) : null;
+            tex = null;
             if (src)
             {
-                Texture2D tex;
                 try
                 {
                     var px = src.GetPixels32();
@@ -81,10 +93,40 @@ namespace DeadlockOfRain
                     tex.SetPixels32(px); tex.Apply(true, true);
                 }
                 catch (System.Exception e) { Log.Warn($"paige texture {texId}: {e.Message}"); tex = src; }
-                m = new Material(SpriteShader()) { mainTexture = tex, color = tint, renderQueue = 3100 };
             }
-            paigeTexMats[key] = m;
-            return m;
+            paigeAlphaTex[texId] = tex;
+            return tex;
+        }
+
+        /// <summary>Loading screen: everything Paige's and Victor's moves would otherwise build the first time they run (a freeze
+        /// mid-fight): her textures, the ghost material, every prop model in the cache with its clips (any hero's), the lightning in
+        /// Victor's and Paige's colours. Heroes not in this build are skipped.</summary>
+        static void WarmHeroFx()
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew(); int props = 0, texs = 0;
+            string dir = DeadlockCache.Dir;
+            bool Has(string sub) => dir != null && System.IO.Directory.Exists(System.IO.Path.Combine(dir, sub));
+            foreach (var e in EffectRow.All)
+            {
+                try
+                {
+                    if (e.Kind == "prop" && Has(System.IO.Path.Combine("props", e.Id)))
+                    {
+                        var b = PropModels.Build(e.Id);
+                        if (b == null) continue;
+                        foreach (var mf in b.Root.GetComponentsInChildren<MeshFilter>(true)) if (mf.sharedMesh) Object.Destroy(mf.sharedMesh);
+                        Object.Destroy(b.Root);
+                        props++;
+                    }
+                    else if (e.Kind == "texture" && e.Id.StartsWith("paige_") && Has(System.IO.Path.Combine("heroes", "paige")) && PaigeAlphaTex(e.Id)) texs++;
+                }
+                catch (System.Exception ex) { Log.Warn($"warm {e.Id}: {ex.Message}"); }
+            }
+            if (Has(System.IO.Path.Combine("heroes", "paige"))) PaigeGhostMat();
+            if (Sheet.Effect("mat_lightning") != null)
+                foreach (var c in new[] { paigeGhost, paigePale, victorBolt, victorArc, victorField, victorViolet, victorRed, Color.white })
+                    Remapped("mat_lightning", c);
+            Log.Info($"effects warmed: {props} prop models, {texs} textures in {sw.ElapsedMilliseconds} ms");
         }
 
         /// <summary>A quad of one of her textures (<see cref="PaigeTexMat"/>): flat on the ground or facing the camera.</summary>

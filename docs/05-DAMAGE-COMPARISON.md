@@ -51,6 +51,14 @@ bug, fixed: doc 02 §7, MODLOG gotcha 11).
 | Mo & Krill | speed 6.3, Sand Blast 750 % / knockback 22, Burrow ×3 speed, Dust Devil 450 % ×32 proc 0.5; then (same day) Tag Team 1000 % + 300 % splash, base health 200; then Tag Team 400 % + 150 %, 8 s, 20 s | v0.7.1c balance pass after the creator's play | this one | **benched** (2317 %/s, run of 2026-10-19); then Sand Blast 400 %, Dust Devil 5 s: **2227 %/s**; `run_test.sh mokrill` every check pass (second run; the first spawned below the map) then Burrow 14 s, punch knockback 10: **2425 %/s** (run of 2026-10-19 after one "no flat spot" retry), `run_test.sh mokrill` every check pass | **done** |
 | – | – | earlier: nothing open (v0.6.3 Flame Gun 75 % and Flame Dash pockets covered by the Infernus-only run of 2026-10-18, §3.3; Mo & Krill's play-check pass (Tag Team on R, Dust Devil on Q, Burrow 3 × 500 %, Frenzy punch 600 %, Sand Blast wind-up and shove) covered by the Mo & Krill-only run of 2026-10-19, §3.5) | – | – |
 
+## 0b. Frame times on the bench (2026-11-10)
+Every pass also writes `frames <hero> <mode>: ... avg / p95 / p99 / worst ms, gc, objects, particle systems, line renderers, lights,
+mono heap` and `roots <hero> <mode>:` (the scene's top-level objects by name, to find what piles up). Compare heroes on the same
+run only (the stage changes the numbers a lot). A stage with no flat spot for the pack now moves the run to `golemplains` and looks again.
+- Before the fixes (Haze 37 ms average): Victor 43-54 ms, Paige 38-47 ms with a **1.45 s** freeze the first time her moves ran.
+- After (Haze 21-30 ms on that run): Victor 30-33, Paige 29-32, her worst frame 63 ms. Frame time rises pass by pass on every hero
+  (Haze 21 → 30 ms) as the scene's objects grow (4,400 → 6,600): being looked into.
+
 ## 1. The question
 The creator's hypothesis: **Commando, using every ability the moment it is ready while shooting constantly for 30 s
 against a big pack of enemies on Monsoon, is the Risk of Rain 2 standard for DPS.** Every Deadlock hero is measured the

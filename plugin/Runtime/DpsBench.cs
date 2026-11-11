@@ -73,6 +73,9 @@ namespace DeadlockOfRain
             return json.Substring(c, end - c);
         }
 
+        static List<float> frameMs;
+        void Update() { if (frameMs != null) frameMs.Add(Time.unscaledDeltaTime * 1000f); }
+
         static void Write(string line)
         {
             Log.Info("DPS bench: " + line);
@@ -195,15 +198,34 @@ namespace DeadlockOfRain
             // one fixed flat spot, a pack 10 m in front: three rows of four, 2.5 m apart. The spot must see the whole pack: a rock
             // or a slope between them once left a run with almost no hits, so up to 16 spot/direction pairs are tried and the
             // first where every pack spot is on ground within 2 m of the arena's height and in clear line of sight wins.
-            var body = user.cachedBody;
-            var start = body.footPosition;
-            var aim0 = body.inputBank.aimDirection; aim0.y = 0; aim0.Normalize();
+            // a stage with no flat spot for the pack (it happens: twice in a row on 2026-11-10) moves the run to Titanic Plains and
+            // looks again there
             List<Vector3> spots = null;
             int tries = 0, seen = 0;
             int rows = ults ? 5 : 3, cols = ults ? 6 : 4, want = rows * cols;
             // the ult pack is wide: up to 4 m of height and no line of sight needed (ults reach round corners too); if no
             // spot holds all 30, the best one (24+) is used and the rest are filled in beside its spots
             float tolerance = ults ? 4f : 2f;
+            CharacterBody body = null;
+            for (int attempt = 0; attempt < 2 && spots == null; attempt++)
+            {
+            if (attempt > 0)
+            {
+                Write("arena: no flat spot on this stage; moving the run to golemplains");
+                var old = user.cachedBody;
+                UnityEngine.Networking.NetworkManager.singleton.ServerChangeScene("golemplains");
+                float tc = Time.unscaledTime;
+                while ((UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "golemplains" || !user.cachedBody || user.cachedBody == old) && Time.unscaledTime - tc < 90f) yield return null;
+                yield return new WaitForSeconds(4f);
+                var pod = user.cachedBody;
+                if (pod && pod.currentVehicle) pod.currentVehicle.EjectPassenger(pod.gameObject);
+                yield return new WaitForSeconds(2f);
+                MeltyTest.QuietStage();
+                if (!user.cachedBody) break;
+            }
+            body = user.cachedBody;
+            var start = body.footPosition;
+            var aim0 = body.inputBank.aimDirection; aim0.y = 0; aim0.Normalize();
             List<Vector3> best = null; Vector3 bestCentre = default, bestFwd = default;
             for (int t = 0; t < 16 && spots == null; t++)
             {
@@ -233,6 +255,7 @@ namespace DeadlockOfRain
                 spots = new List<Vector3>(best); arena = bestCentre; forward = bestFwd;
                 var side = Vector3.Cross(Vector3.up, forward);
                 for (int k = 0; spots.Count < want; k++) spots.Add(best[k % best.Count] + side * 1.25f);
+            }
             }
             if (spots == null) { Write("FAILED: no flat spot with a clear view of the pack on this stage"); yield break; }
             TeleportHelper.TeleportBody(body, arena + Vector3.up * 0.5f, false);
@@ -491,6 +514,9 @@ namespace DeadlockOfRain
             body.onSkillActivatedServer += OnSkill;
             EquipmentSlot.onServerEquipmentActivated += OnEquipment;
             tally = new Tally();
+            // frame times over the pass (creator, 2026-11-10: "some fps struggle with both paige and victor"): every rendered
+            // frame's length, the GC collections and the scene's objects, so heroes can be compared on the same workload
+            frameMs = new List<float>(4096); int gc0 = GC.CollectionCount(0);
             float start = Time.time, nextRefill = 0f; int frame = 0;
             while (Time.time - start < seconds)
             {
@@ -545,6 +571,7 @@ namespace DeadlockOfRain
                 yield return new WaitForFixedUpdate();
             }
             var t = tally; tally = null;
+            var fms = frameMs; frameMs = null; int gcs = GC.CollectionCount(0) - gc0;
             if (body) body.onSkillActivatedServer -= OnSkill;
             EquipmentSlot.onServerEquipmentActivated -= OnEquipment;
             var b2 = master.GetBody();
@@ -555,6 +582,19 @@ namespace DeadlockOfRain
             sb.Append($"uses M1 {t.Uses[0]} M2 {t.Uses[1]} Shift {t.Uses[2]} R {t.Uses[3]} Q {t.Uses[4]}, level {(b2 ? b2.level : 0):F0}, damage stat {(b2 ? b2.damage : 0):F1}");
             if (ults) sb.Append($", boss {t.BossPct:F0}%");
             Write(sb.ToString());
+            if (fms != null && fms.Count > 0)
+            {
+                fms.Sort();
+                float avg = fms.Average(), p95 = fms[Mathf.Min(fms.Count - 1, (int)(fms.Count * 0.95f))], p99 = fms[Mathf.Min(fms.Count - 1, (int)(fms.Count * 0.99f))];
+                int objs = FindObjectsOfType<GameObject>().Length, ps = FindObjectsOfType<ParticleSystem>().Length, lr = FindObjectsOfType<LineRenderer>().Length,
+                    lights = FindObjectsOfType<Light>().Length;
+                Write($"frames {who} {mode}: {fms.Count} frames, avg {avg:F1} ms ({1000f / avg:F0} fps), p95 {p95:F1}, p99 {p99:F1}, worst {fms[fms.Count - 1]:F1}, " +
+                      $"gc {gcs}, objects {objs}, particle systems {ps}, line renderers {lr}, lights {lights}, mono heap {GC.GetTotalMemory(false) / 1048576} MB");
+                // what the scene's top-level objects are, most first (to find what piles up from pass to pass)
+                var tops = FindObjectsOfType<Transform>().Where(x => !x.parent).GroupBy(x => x.name.Replace("(Clone)", "")).OrderByDescending(g => g.Count()).Take(8)
+                    .Select(g => $"{g.Key} {g.Count()}");
+                Write($"roots {who} {mode}: " + string.Join(", ", tops));
+            }
             // let projectiles, storms and DoTs from this pass end before the next one is counted
             yield return new WaitForSeconds(2.5f);
         }
