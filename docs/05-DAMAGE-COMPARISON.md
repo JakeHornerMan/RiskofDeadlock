@@ -56,8 +56,10 @@ Every pass also writes `frames <hero> <mode>: ... avg / p95 / p99 / worst ms, gc
 mono heap` and `roots <hero> <mode>:` (the scene's top-level objects by name, to find what piles up). Compare heroes on the same
 run only (the stage changes the numbers a lot). A stage with no flat spot for the pack now moves the run to `golemplains` and looks again.
 - Before the fixes (Haze 37 ms average): Victor 43-54 ms, Paige 38-47 ms with a **1.45 s** freeze the first time her moves ran.
-- After (Haze 21-30 ms on that run): Victor 30-33, Paige 29-32, her worst frame 63 ms. Frame time rises pass by pass on every hero
-  (Haze 21 → 30 ms) as the scene's objects grow (4,400 → 6,600): being looked into.
+- After (Haze 21-30 ms on that run): Victor 30-33, Paige 29-32, her worst frame 63 ms. A third run on one stage: Haze 22-29,
+  Victor 29.0-29.6, Paige 28.6-30.1 (worst 62 ms): **Victor and Paige now cost the same as Haze.**
+- The rise from pass to pass (Haze 22 → 29 ms) is the bench itself: the pack's dead bodies (`mdlLemurian`/`mdlBeetle` ragdolls)
+  and RoR2's own `SoundEmitter` pool (312 after Haze's Bullet Dance, then flat). Not a hero leak.
 
 ## 1. The question
 The creator's hypothesis: **Commando, using every ability the moment it is ready while shooting constantly for 30 s

@@ -1836,3 +1836,6 @@ Mid-turn: "you opened the game but they are not installed!" (our test run on the
 **Questions asked → answers:** none.
 **Done:** models compared first (bones, vertices, textures: in line with the others, not the cause). Frame-time probe in `DpsBench` (`frames` and `roots` lines per pass); bench moves to golemplains when a stage has no flat spot. `Vfx.WarmHeroFx` on the loading screen (props, Paige's alpha textures once per texture, ghost material, recoloured lightning); Victor's muzzle and hit effects capped. Docs 02, 05 §0b, MODLOG.
 **Results:** before: Haze 37 ms, Victor 43-54, Paige 38-47 with a 1.45 s first-use freeze. After (another stage): Haze 21-30, Victor 30-33, Paige 29-32, worst 63 ms. Frame time grows pass by pass for every hero as objects pile up: next.
+Third run (one stage, object counts): Haze 22-29 ms, Victor 29.0-29.6, Paige 28.6-30.1: on par. The pass-to-pass rise is the pack's ragdolls and RoR2's SoundEmitter pool (bench only). Built as r2modman 1.6.4, installed.
+**Not done / open:** the creator's feel in play.
+**Lessons:** time a hero's frames on the same run as a control hero; a first-use freeze shows as the "all" pass's worst frame.
