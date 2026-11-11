@@ -1,5 +1,6 @@
 #if OWN_FILES
 using System.Collections.Generic;
+using System.Linq;
 using DeadlockOfRain.Sheets;
 using HarmonyLib;
 using RoR2;
@@ -15,11 +16,15 @@ namespace DeadlockOfRain.Enemies
     {
         public const string MeleeHitBoxGroup = "TrooperMelee";
 
+        /// <summary>Deadlock metres to world metres for this enemy: the heroes' shared factor x the row's sizeMult (creator, 2026-11-11:
+        /// "make all trooper like 1.5 time thir height").</summary>
+        public static float Scale(EnemyRow row) => ModelBuilder.GlobalScale * row.SizeMult;
+
         public static GameObject Build(EnemyRow row, float reach)
         {
             var root = new GameObject("mdlDeadlock" + row.Id);
-            root.transform.localScale = Vector3.one * ModelBuilder.GlobalScale;
-            var looks = new List<EnemyLook.Look>();
+            root.transform.localScale = Vector3.one * Scale(row);
+            var looks = new List<EnemyLookPart>();
             foreach (var id in row.Models)
             {
                 var look = BuildLook(root.transform, id, row);
@@ -27,11 +32,11 @@ namespace DeadlockOfRain.Enemies
             }
             if (looks.Count == 0) { Object.Destroy(root); return null; }
             // one look shown until EnemyLook picks this body's own (Start)
-            for (int i = 1; i < looks.Count; i++) looks[i].Root.SetActive(false);
+            for (int i = 1; i < looks.Count; i++) looks[i].gameObject.SetActive(false);
 
             // the child locator of the first look (every look has the same skeleton names); EnemyLook repoints it to the shown one
             var locator = root.AddComponent<ChildLocator>();
-            AccessTools.Field(typeof(ChildLocator), "transformPairs").SetValue(locator, looks[0].Locator);
+            AccessTools.Field(typeof(ChildLocator), "transformPairs").SetValue(locator, looks[0].Pairs());
 
             // every look's renderers, always: CharacterModel turns each listed renderer on every frame, so the look not shown and the
             // health heads not shown are switched off through their GameObjects instead (EnemyLook)
@@ -66,7 +71,7 @@ namespace DeadlockOfRain.Enemies
             // model's scale)
             if (reach > 0f)
             {
-                float s = ModelBuilder.GlobalScale;
+                float s = Scale(row);
                 var box = new GameObject("MeleeHitBox");
                 box.transform.SetParent(root.transform, false);
                 float h = row.SourceHeight * s;
@@ -80,7 +85,7 @@ namespace DeadlockOfRain.Enemies
             return root;
         }
 
-        static EnemyLook.Look BuildLook(Transform root, string id, EnemyRow row)
+        static EnemyLookPart BuildLook(Transform root, string id, EnemyRow row)
         {
             var asset = DeadlockCache.LoadHero(id);
             if (asset == null) return null;
@@ -130,7 +135,15 @@ namespace DeadlockOfRain.Enemies
             var anim = go.AddComponent<EnemyAnimator>();
             anim.Setup(id, row, asset, bones);
             var rb = BuildRagdoll(go, bones, row, anim);
-            return new EnemyLook.Look { Root = go, Infos = infos.ToArray(), Locator = pairs.ToArray(), Health = health, Animator = anim, Ragdoll = rb };
+            var part = go.AddComponent<EnemyLookPart>();
+            part.Infos = infos.ToArray();
+            part.LocatorNames = pairs.Select(x => x.name).ToArray();
+            part.LocatorTransforms = pairs.Select(x => x.transform).ToArray();
+            part.HealthParts = health.SelectMany(h => h).ToArray();
+            part.HealthStageOf = health.SelectMany((h, k) => h.Select(_ => k)).ToArray();
+            part.HealthStages = health.Length;
+            part.Animator = anim; part.Ragdoll = rb;
+            return part;
         }
 
         /// <summary>A death ragdoll on the look's own bones (RoR2's RagdollController), as ModelBuilder gives heroes.</summary>
@@ -178,35 +191,57 @@ namespace DeadlockOfRain.Enemies
         }
     }
 
+    /// <summary>One look of an enemy (amber, sapphire), on that look's root: its renderers, child-locator points, health head meshes,
+    /// animator and ragdoll. Only Unity objects, strings, numbers and their arrays, so Unity copies it onto every spawned body
+    /// (2026-11-11: a [Serializable] data class in EnemyLook came out empty on the copies: no look, no attack clips, no candle, no
+    /// ragdoll; only the prefab had them).</summary>
+    public sealed class EnemyLookPart : MonoBehaviour
+    {
+        public CharacterModel.RendererInfo[] Infos;
+        public string[] LocatorNames;
+        public Transform[] LocatorTransforms;
+        public GameObject[] HealthParts;
+        public int[] HealthStageOf;
+        public int HealthStages;
+        public EnemyAnimator Animator;
+        public RagdollController Ragdoll;
+
+        public ChildLocator.NameTransformPair[] Pairs()
+        {
+            var n = LocatorNames ?? new string[0];
+            var r = new ChildLocator.NameTransformPair[n.Length];
+            for (int i = 0; i < n.Length; i++) r[i] = new ChildLocator.NameTransformPair { name = n[i], transform = LocatorTransforms[i] };
+            return r;
+        }
+    }
+
     /// <summary>Which look of an enemy is shown (amber or sapphire, by its network id so every player sees the same one, creator
     /// 2026-11-11: "random each spawn"), the candle health readout (Deadlock's head meshes, full/mid/low by thirds of health) and the
     /// candle flame (a small light that goes out on death).</summary>
     public sealed class EnemyLook : MonoBehaviour
     {
-        public sealed class Look
-        {
-            public GameObject Root;
-            public CharacterModel.RendererInfo[] Infos;
-            public ChildLocator.NameTransformPair[] Locator;
-            public List<GameObject>[] Health;
-            public EnemyAnimator Animator;
-            public RagdollController Ragdoll;
-        }
-
-        public Look[] Looks;
+        public EnemyLookPart[] Looks;
         public string Row;
         public int Shown = -1;
         public int HealthStage = -1;
-        Look look;
+        EnemyLookPart look;
         CharacterBody body;
         Light flame;
         float flameBase;
 
         /// <summary>The animator of the look shown on this body (null before Start).</summary>
-        public EnemyAnimator Animator => look?.Animator;
+        public EnemyAnimator Animator => look ? look.Animator : null;
         /// <summary>The ragdoll of the look shown (its death state starts it).</summary>
-        public RagdollController Ragdoll => look?.Ragdoll;
-        public static EnemyLook Of(CharacterBody b) => b && b.modelLocator && b.modelLocator.modelTransform ? b.modelLocator.modelTransform.GetComponent<EnemyLook>() : null;
+        public RagdollController Ragdoll => look ? look.Ragdoll : null;
+        // through the body's EnemyTag first (2026-11-11: through the model locator it came back empty on spawned Troopers, so no attack
+        // or flinch clip ever played)
+        public static EnemyLook Of(CharacterBody b)
+        {
+            if (!b) return null;
+            var tag = b.GetComponent<EnemyTag>();
+            if (tag && tag.Look) return tag.Look;
+            return b.modelLocator && b.modelLocator.modelTransform ? b.modelLocator.modelTransform.GetComponent<EnemyLook>() : null;
+        }
 
         void Start()
         {
@@ -219,10 +254,10 @@ namespace DeadlockOfRain.Enemies
         public void Pick(int k)
         {
             Shown = k;
-            for (int i = 0; i < Looks.Length; i++) Looks[i].Root.SetActive(i == k);
+            for (int i = 0; i < Looks.Length; i++) if (Looks[i]) Looks[i].gameObject.SetActive(i == k);
             look = Looks[k];
             var locator = GetComponent<ChildLocator>();
-            if (locator) AccessTools.Field(typeof(ChildLocator), "transformPairs").SetValue(locator, look.Locator);
+            if (locator) AccessTools.Field(typeof(ChildLocator), "transformPairs").SetValue(locator, look.Pairs());
             HealthStage = -1;
             // the candle flame: a warm point light at the wick (green on the Medic, whose candle burns green)
             var at = locator ? locator.FindChild("Flame") : null;
@@ -240,17 +275,17 @@ namespace DeadlockOfRain.Enemies
 
         void Update()
         {
-            if (look == null || look.Health.Length == 0) return;
+            if (!look || look.HealthStages == 0) return;
             var hc = body ? body.healthComponent : null;
             float f = hc ? hc.combinedHealthFraction : 1f;
             bool dead = hc && !hc.alive;
-            int n = look.Health.Length;
+            int n = look.HealthStages;
             // full health shows the first mesh; each third lost shows the next (Deadlock's candle melting down)
             int stage = Mathf.Clamp(Mathf.FloorToInt((1f - f) * n), 0, n - 1);
             if (stage != HealthStage)
             {
                 HealthStage = stage;
-                for (int i = 0; i < n; i++) foreach (var g in look.Health[i]) if (g) g.SetActive(i == stage);
+                for (int i = 0; i < look.HealthParts.Length; i++) if (look.HealthParts[i]) look.HealthParts[i].SetActive(look.HealthStageOf[i] == stage);
             }
             if (flame)
             {

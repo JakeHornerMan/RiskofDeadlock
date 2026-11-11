@@ -132,12 +132,12 @@ namespace DeadlockOfRain.Enemies
             cb.rootMotionInMainState = false;
             cb.baseArmor = row.Armor; cb.levelArmor = 0f;
 
-            // size: the vanilla capsule scaled to the trooper's height (Deadlock metres x the heroes' shared factor)
+            // size: the vanilla capsule scaled to the trooper's height (Deadlock metres x the heroes' shared factor x sizeMult)
             var capsule = body.GetComponent<CapsuleCollider>();
             if (capsule)
             {
-                float h = row.SourceHeight * ModelBuilder.GlobalScale, k = h / Mathf.Max(0.1f, capsule.height);
-                float r = Mathf.Min(Mathf.Max(capsule.radius * k, row.Width * ModelBuilder.GlobalScale * 1.2f), h * 0.5f), y = capsule.center.y * k;
+                float h = row.SourceHeight * EnemyModel.Scale(row), k = h / Mathf.Max(0.1f, capsule.height);
+                float r = Mathf.Min(Mathf.Max(capsule.radius * k, row.Width * EnemyModel.Scale(row) * 1.2f), h * 0.5f), y = capsule.center.y * k;
                 capsule.height = h; capsule.radius = r; capsule.center = new Vector3(0, y, 0);
                 var kcm = body.GetComponent<KinematicCharacterMotor>();
                 if (kcm)
@@ -192,6 +192,8 @@ namespace DeadlockOfRain.Enemies
             }
             var tag = body.AddComponent<EnemyTag>();
             tag.Id = row.Id;
+            tag.Look = model.GetComponent<EnemyLook>();
+            if (!tag.Look) Log.Warn($"{row.Id}: the model has no EnemyLook");
             var pulse = skills.FirstOrDefault(s => s.Kind == "medic_pulse");
             if (pulse != null) body.AddComponent<MedicPulse>().RowId = pulse.Id;
 
@@ -275,6 +277,19 @@ namespace DeadlockOfRain.Enemies
             D("Chase", SkillSlot.None, 0f, Far, chase);
         }
 
+        /// <summary>Plays a Deadlock sound where a shot ends, if it ended by hitting something (before its lifetime ran out). The
+        /// projectile is destroyed on every machine, so each plays it once.</summary>
+        public sealed class ShotImpactSound : MonoBehaviour
+        {
+            public string Event;
+            float born, life;
+            void Start() { born = Time.time; var s = GetComponent<ProjectileSimple>(); life = s ? s.lifetime : 99f; }
+            void OnDestroy()
+            {
+                if (born > 0f && Time.time - born < life - 0.1f && !string.IsNullOrEmpty(Event)) DeadlockAudio.Play(Event, transform.position);
+            }
+        }
+
         /// <summary>The shot's projectile: the Lemurian's fireball, flying at the row's speed, its look recoloured to the row's colour.</summary>
         static GameObject Shot(EnemySkillRow s)
         {
@@ -285,7 +300,12 @@ namespace DeadlockOfRain.Enemies
             p.name = "Deadlock" + s.Id + "Projectile";
             AssetId(p);
             var simple = p.GetComponent<ProjectileSimple>();
-            if (simple) simple.desiredForwardSpeed = s.ProjectileSpeed;
+            // set once when fired, then gravity bends it into an arc (EnemyShot aims the arc onto the target)
+            if (simple) { simple.desiredForwardSpeed = s.ProjectileSpeed; simple.updateAfterFiring = false; simple.enableVelocityOverLifetime = false; }
+            var rb = p.GetComponent<Rigidbody>();
+            if (rb) { rb.useGravity = true; rb.isKinematic = false; }
+            // Deadlock's impact sound where it lands (the row's hitSound), on every machine
+            if (s.HitSound != "none") p.AddComponent<ShotImpactSound>().Event = s.HitSound;
             var pc = p.GetComponent<ProjectileController>();
             if (pc && ghostSrc)
             {

@@ -1868,3 +1868,19 @@ controller on); test spawns get the player as target, as the director's do (AI s
 motion (`rootMotionInMainState` off, the Melee Trooper never moved); the Medic stood 20 m behind its group with a 15 m pulse (now
 7 m, the far Lemurian went unhealed); the Melee Trooper overshot on the node graph (Close ≤ reach, ChaseDirect ≤ 8 m off-graph).
 The last full run (for the melee-hold fix) was stopped by Claude Code for low memory; not rerun yet.
+
+### 2026-11-11 (later) · Troopers: creator's playtest fixes · DLL build only
+**Request (verbatim):** "can you make sure you use the corresct sfx for each of teh troopers! they should be in the files? ... also
+here undernesath the Karma on the right side can we have a orange box in the same style witha check box for Troopers this will enable
+and disable troopers in a players game the troopers are not behaving corretly i belive i am seeing the melles no even play an attack
+anaimatino and im not seeing the shooter stop with a range band and play a shotting animtion and firing at the player!"; "make all
+trooper like 1.5 time thir height right now"; "the trooper ranged is shottin at the floor the projectile should travel as an arc";
+"never mind i close the game fucking fix the troopers!".
+**Done:** the cause of no attack/flinch clips (and no look pick, candle heads or ragdoll on spawned Troopers): the per-look data
+was a `[Serializable]` class Unity didn't copy onto spawned bodies → `EnemyLookPart` component; `sizeMult` 1.5 column; Melee Trooper
+swing `Trooper.Super.Melee.Swing` (re-extracted), shot impact sound played; shots lob in an arc onto the AI's target at 25 m/s;
+the lobby's orange Troopers box (`TrooperRule`, after Karma, on by default; off = no Troopers that run); test fixes (spawned-look
+check, ground spawns, swing starts) and `SPAWN=` play option.
+**Results:** `ENEMIES=melee,ranged,medic STAGE=golemplains run_test.sh haze`: 21/21 pass; the swing clip plays on spawned Troopers.
+**Lessons:** check components on a *spawned* copy, not the prefab; custom serializable classes from our assembly don't survive
+Instantiate; close the game after every test run (the creator asked why it was still open).

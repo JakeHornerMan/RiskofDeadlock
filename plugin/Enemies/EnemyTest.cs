@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DeadlockOfRain.Enemies;
+using DeadlockOfRain.Sheets;
 using RoR2;
 using RoR2.CharacterAI;
 using UnityEngine;
@@ -34,10 +35,15 @@ namespace DeadlockOfRain
         {
             var m = System.Text.RegularExpressions.Regex.Match(text, "\"enemies\"\\s*:\\s*\"([^\"]*)\"");
             if (m.Success) TestEnemies = m.Groups[1].Value.Split(',').Select(s => s.Trim()).Where(s => s != "").ToList();
+            var sp = System.Text.RegularExpressions.Regex.Match(text, "\"spawn\"\\s*:\\s*\"([a-z0-9:,]+)\"");
+            if (sp.Success) PlaySpawn = sp.Groups[1].Value;
         }
 
         static Vector3 Ground(Vector3 near)
         {
+            // the spot itself, dropped onto the ground (2026-11-11: snapping to the nearest node stacked the Medic's group on one spot)
+            if (Physics.Raycast(near + Vector3.up * 15f, Vector3.down, out var hit, 40f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
+                return hit.point + Vector3.up * 0.2f;
             var g = SceneInfo.instance ? SceneInfo.instance.groundNodes : null;
             if (g)
             {
@@ -85,6 +91,32 @@ namespace DeadlockOfRain
             targets.Clear();
         }
 
+        /// <summary>Play mode's "spawn" (e.g. "medic:5,melee:2"): those Troopers, AI on, 15-20 m in front of the player, a few
+        /// seconds into the stage.</summary>
+        static string PlaySpawn;
+
+        static IEnumerator PlaySpawns(LocalUser user)
+        {
+            CharacterBody b = null;
+            while (!(b = user != null ? user.cachedBody : null)) yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(4f);
+            enemyTarget = b;
+            var fwd = b.inputBank ? b.inputBank.aimDirection : b.transform.forward; fwd.y = 0; fwd.Normalize();
+            var side = Vector3.Cross(Vector3.up, fwd);
+            int n = 0;
+            foreach (var part in PlaySpawn.Split(','))
+            {
+                var kv = part.Split(':');
+                int count = kv.Length > 1 && int.TryParse(kv[1], out var c) ? Mathf.Clamp(c, 1, 20) : 1;
+                for (int i = 0; i < count; i++, n++)
+                {
+                    var e = SpawnEnemy("trooper_" + kv[0], b.footPosition + fwd * (15f + 2.5f * (n / 5)) + side * (((n % 5) - 2) * 3f), true);
+                    targets.Remove(e);
+                }
+            }
+            Log.Info($"Play mode: spawned {n} Troopers ({PlaySpawn}) in front of the player");
+        }
+
         /// <summary>One line on what the enemy's AI is doing (target, driver, state, distance): for reading a failed check.</summary>
         static void LogAi(CharacterBody e, CharacterBody p)
         {
@@ -94,7 +126,16 @@ namespace DeadlockOfRain
                 $"driver {(ai && ai.skillDriverEvaluation.dominantSkillDriver ? ai.skillDriverEvaluation.dominantSkillDriver.customName : "none")}, state {(esm ? esm.state?.GetType().Name : "?")}, " +
                 $"move {(e && e.inputBank ? e.inputBank.moveVector.ToString("F2") : "?")}, dist {Dist(e, p):F1}, player at {(p ? p.footPosition.ToString("F1") : "?")} vis {(p ? p.GetVisibilityLevel(TeamIndex.Monster).ToString() : "?")}; " +
                 $"body at {(e ? e.footPosition.ToString("F1") : "?")} speed {(e ? e.moveSpeed : 0f):F1}, motor {(e && e.characterMotor ? $"{(e.characterMotor.enabled ? "on" : "off")} grounded {e.characterMotor.isGrounded} vel {e.characterMotor.velocity:F1} dir {e.characterMotor.moveDirection:F2} kcm {(e.characterMotor.Motor ? e.characterMotor.Motor.enabled.ToString() : "none")}" : "none")}" +
+                $", anim [{EnemyLook.Of(e)?.Animator?.Describe() ?? "none"}] look {(EnemyLook.Of(e) ? EnemyLook.Of(e).Shown : -1)} model {(e && e.modelLocator && e.modelLocator.modelTransform ? e.modelLocator.modelTransform.name + "/" + string.Join(",", e.modelLocator.modelTransform.GetComponents<Component>().Select(c => c.GetType().Name)) : "none")}" +
                 $", capsule {(e && e.GetComponent<CapsuleCollider>() ? $"h {e.GetComponent<CapsuleCollider>().height:F2} r {e.GetComponent<CapsuleCollider>().radius:F2} c {e.GetComponent<CapsuleCollider>().center.y:F2}" : "none")}");
+        }
+
+        /// <summary>The enemy is in one of its attack states.</summary>
+        static bool Swinging(CharacterBody e)
+        {
+            var esm = e ? EntityStateMachine.FindByCustomName(e.gameObject, "Weapon") : null;
+            var body = e ? EntityStateMachine.FindByCustomName(e.gameObject, "Body") : null;
+            return esm && esm.state is EnemyAttack || body && body.state is EnemyAttack;
         }
 
         static float Dist(CharacterBody a, CharacterBody b) => a && b ? Vector3.Distance(Flat(a.footPosition), Flat(b.footPosition)) : -1f;
@@ -133,6 +174,10 @@ namespace DeadlockOfRain
             Check("enemy-spawn-pool", TrooperDirector.StagesTouched > 0 && inPool == Enemies.Enemies.Cards.Count,
                 $"R2API pools touched {TrooperDirector.StagesTouched}; {inPool}/{Enemies.Enemies.Cards.Count} Trooper cards in this stage's monster list; costs " +
                 string.Join(", ", Enemies.Enemies.Cards.Select(kv => $"{kv.Key} {kv.Value.directorCreditCost}")));
+            var choice = TrooperRule.Def != null && Run.instance ? Run.instance.ruleBook.GetRuleChoice(TrooperRule.Def) : null;
+            Check("troopers-lobby-rule", TrooperRule.Def != null && TrooperRule.OnThisRun() && TrooperRule.Def.category != null && TrooperRule.Def.category.displayToken == TrooperRule.Header
+                && RuleCatalog.allCategoryDefs.IndexOf(TrooperRule.Def.category) == RuleCatalog.allCategoryDefs.FindIndex(c => c.displayToken == "RULE_HEADER_KARMA") + 1,
+                TrooperRule.Def == null ? "no Troopers rule" : $"Troopers box after Karma, this run: {choice?.localName ?? "?"}");
             Check("enemy-family", TrooperDirector.Family("troopers") != null, "Trooper family event made");
             Check("medic-spawn-gate", !MedicSpawnGate.AlliesNear(arena + Vector3.up * 500f), "a spot with no monsters near turns the Medic down");
 
@@ -152,6 +197,11 @@ namespace DeadlockOfRain
             var t = SpawnEnemy("trooper_melee", arena + arenaForward * 20f, true);
             if (!t) { Check("trooper-melee", false, "could not spawn"); yield break; }
             yield return new WaitForSeconds(2f);
+            var lk = EnemyLook.Of(t);
+            Check("enemy-look-spawned", lk && lk.Shown >= 0 && lk.Animator && lk.Animator.Has(Sheet.Enemy("trooper_melee").Idle),
+                lk ? $"look {lk.Shown}, animator {(lk.Animator ? lk.Animator.Describe() : "none")}; looks {(lk.Looks == null ? "null" : lk.Looks.Length.ToString())} " +
+                $"[{(lk.Looks == null ? "" : string.Join(", ", lk.Looks.Select(l => l == null ? "null" : $"{l.gameObject.name + (l.gameObject.activeSelf ? " on" : " off")} anim {(l.Animator ? "yes" : "no")}")))}] " +
+                $"enabled {lk.enabled} active {lk.isActiveAndEnabled} same as tag {(t.GetComponent<EnemyTag>()?.Look == lk)}" : "no EnemyLook");
             Shot("trooper_melee_spawn");
             // the target walks a steady path across the arena, turning every 3 s
             float start = Time.time, closest = 99f;
@@ -163,15 +213,16 @@ namespace DeadlockOfRain
                 yield return new WaitForFixedUpdate();
             }
             walk = Vector3.zero;
-            var swings = notes.Where(n => n.What == "swing" && n.T >= start).ToList();
+            var swings = notes.Where(n => n.What == "swingstart" && n.T >= start).ToList();
             Check("trooper-melee-chase", closest <= 3.5f, $"closest {closest:F1} m to the walking target");
             Check("trooper-melee-swing", swings.Count > 0 && swings.All(n => n.Dist <= 4f), $"{swings.Count} swings, at {string.Join(", ", swings.Select(n => n.Dist.ToString("F1")))} m");
             // the target stops: the Trooper stays beside it and keeps hitting
-            float hold = Time.time; var at = Flat(t.footPosition); float wander = 0f;
+            float hold = Time.time; var at = Flat(t.footPosition); float wander = 0f; bool swingShot = false;
             for (float s = 0f; s < 8f; s += 0.1f)
             {
                 if (s > 2f) wander = Mathf.Max(wander, Dist(p, t));
                 if (Mathf.Repeat(s + 0.01f, 0.5f) < 0.1f) LogAi(t, p);
+                if (!swingShot && Swinging(t)) { swingShot = true; yield return new WaitForSeconds(0.35f); LogAi(t, p); Shot("trooper_melee_swinging"); }
                 yield return new WaitForSeconds(0.1f);
             }
             Shot("trooper_melee_hold");
@@ -196,7 +247,14 @@ namespace DeadlockOfRain
                 yield return new WaitForSeconds(0.2f);
             }
             // after the first shot: it holds its ground (no closer than the band)
-            for (float s = 0f; s < 5f; s += 0.2f) { nearest = Mathf.Min(nearest, Dist(p, t)); yield return new WaitForSeconds(0.2f); }
+            bool shotShot = false;
+            for (float s = 0f; s < 5f; s += 0.2f)
+            {
+                nearest = Mathf.Min(nearest, Dist(p, t));
+                if (!shotShot && Swinging(t)) { shotShot = true; yield return new WaitForSeconds(0.3f); LogAi(t, p); Shot("trooper_ranged_shooting"); }
+                else if (Mathf.Repeat(s + 0.01f, 1f) < 0.2f) LogAi(t, p);
+                yield return new WaitForSeconds(0.2f);
+            }
             Shot("trooper_ranged_band");
             var shots = notes.Where(n => n.What == "shot").ToList();
             Check("trooper-ranged-approach", firstShot >= 14f && firstShot <= 31f && nearest >= 13f, $"first shot at {firstShot:F1} m, nearest after {nearest:F1} m");
@@ -244,6 +302,8 @@ namespace DeadlockOfRain
                     if (b && b.healthComponent.alive && b.healthComponent.combinedHealthFraction > 0.4f)
                         b.healthComponent.TakeDamage(new DamageInfo { damage = b.healthComponent.fullHealth * 0.05f, position = b.corePosition, procCoefficient = 0f, damageColorIndex = DamageColorIndex.Default });
                 if (Mathf.Abs(s - 4f) < 0.01f) Shot("trooper_medic_heal");
+                if (Mathf.Repeat(s, 1f) < 0.01f && medic)
+                    Log.Info("medic group: " + string.Join("; ", group.Select(g2 => g2 ? $"{g2.name.Replace("(Clone)", "")} {Vector3.Distance(g2.corePosition, medic.corePosition):F1} m hp {g2.healthComponent.health:F0}/{g2.healthComponent.fullHealth:F0} alive {g2.healthComponent.alive} team {g2.teamComponent.teamIndex}" : "gone")) + $"; medic at {medic.footPosition:F1}");
                 yield return new WaitForSeconds(0.5f);
             }
             HealthComponent.onCharacterHealServer -= OnHeal;

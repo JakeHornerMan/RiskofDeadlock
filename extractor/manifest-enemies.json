@@ -190,6 +190,7 @@
     "Trooper.Death",
     "Trooper.Deploy.Impact",
     "Trooper.Melee.Swing",
+    "Trooper.Super.Melee.Swing",
     "TrooperRifle.BulletImpact.Default",
     "TrooperRifle.Fire"
   ],

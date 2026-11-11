@@ -936,6 +936,10 @@ namespace DeadlockOfRain
         static IEnumerator PlayRun(LocalUser user)
         {
             Log.Info($"Melty test finished: play mode, no checks; can't be hurt: {God}; the game stays open");
+#if OWN_FILES
+            // "spawn": "medic:5" (SPAWN= run_test.sh): those enemies in front of the player once the stage starts (creator, 2026-11-11)
+            if (PlaySpawn != null) Plugin.Instance.StartCoroutine(PlaySpawns(user));
+#endif
             if (!God) yield break;
             while (true)
             {

@@ -13,6 +13,8 @@ namespace DeadlockOfRain.Enemies
     public sealed class EnemyTag : MonoBehaviour
     {
         public string Id;
+        /// <summary>The body's model look (set at build; a reference Unity keeps on every spawned copy).</summary>
+        public EnemyLook Look;
         public static string Of(CharacterBody b) => b ? b.GetComponent<EnemyTag>()?.Id : null;
     }
 
@@ -76,7 +78,11 @@ namespace DeadlockOfRain.Enemies
     /// <summary>A melee hit: a box reach metres in front (EnemyModel's hitbox), damagePct x damage, after the windup.</summary>
     public abstract class EnemyMelee : EnemyAttack
     {
-        protected override void Begin() => Sound(row.CastSound, transform.position);
+        protected override void Begin()
+        {
+            Sound(row.CastSound, transform.position);
+            if (isAuthority) MeltyTest.EnemyNote("swingstart", characterBody);
+        }
 
         protected override void Fire()
         {
@@ -141,14 +147,30 @@ namespace DeadlockOfRain.Enemies
             if (!isAuthority) return;
             var prefab = Enemies.ShotFor(row.Id);
             if (!prefab) return;
-            var aim = GetAimRay();
-            // from the muzzle toward where the body aims (its target)
-            var dir = aim.direction;
-            if (Physics.Raycast(aim, out var hit, 200f, LayerIndex.world.mask | LayerIndex.entityPrecise.mask, QueryTriggerInteraction.Ignore))
-                dir = (hit.point - at).normalized;
-            ProjectileManager.instance.FireProjectile(prefab, at, Util.QuaternionSafeLookRotation(dir), gameObject, damageStat * row.DamagePct, 0f, RollCrit(),
-                speedOverride: row.ProjectileSpeed);
+            // an arc onto the AI's target (creator, 2026-11-11: "the projectile should travel as an arc"; aimed along the body's aim
+            // ray it hit the floor): projectileSpeed is its speed across the ground, gravity bends it down onto the target's middle
+            var vel = GetAimRay().direction * row.ProjectileSpeed;
+            var to = TargetPoint();
+            if (to.HasValue)
+            {
+                var d = to.Value - at;
+                var flat = new Vector3(d.x, 0f, d.z);
+                float t = Mathf.Max(0.15f, flat.magnitude / Mathf.Max(1f, row.ProjectileSpeed));
+                float g = -Physics.gravity.y;
+                vel = flat / t + Vector3.up * (d.y / t + 0.5f * g * t);
+            }
+            ProjectileManager.instance.FireProjectile(prefab, at, Util.QuaternionSafeLookRotation(vel), gameObject, damageStat * row.DamagePct, 0f, RollCrit(),
+                speedOverride: vel.magnitude);
             MeltyTest.EnemyNote("shot", characterBody);
+        }
+
+        /// <summary>Where the AI's current target's middle is (server: the master's BaseAI), or null.</summary>
+        Vector3? TargetPoint()
+        {
+            var ai = characterBody && characterBody.master ? characterBody.master.GetComponent<RoR2.CharacterAI.BaseAI>() : null;
+            var tgt = ai != null ? ai.currentEnemy : null;
+            if (tgt == null || !tgt.gameObject) return null;
+            return tgt.characterBody ? tgt.characterBody.corePosition : tgt.gameObject.transform.position;
         }
 
         public override void OnExit()

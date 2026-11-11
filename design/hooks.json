@@ -534,7 +534,7 @@
       "id": "medic_spawn_gate",
       "method": "harmony-prefix",
       "target": "RoR2.CombatDirector.AttemptSpawnOnTarget",
-      "purpose": "the Medic Trooper only joins a fight: its card is dropped when no other monster is within 30 m of the spawn point (DLL build only)",
+      "purpose": "the Medic Trooper only joins a fight: its card is dropped when no other monster is within 30 m of the spawn point (DLL build only); also turns down every Trooper card when the lobby switched the Troopers off",
       "reads": "enemies.*",
       "side": "server"
     },
@@ -553,6 +553,14 @@
       "purpose": "the Medic's heal pulse and its place behind its allies (custom AI target, drivers switched on and off)",
       "reads": "enemySkills.*",
       "side": "server"
+    },
+    {
+      "id": "troopers_lobby_rule",
+      "method": "harmony-prefix",
+      "target": "RoR2.RuleCatalog.AddCategory",
+      "purpose": "adds the lobby's orange Troopers box (a rule category with an On/Off rule) just before Items, so it sits under Karma (DLL build only)",
+      "reads": "enemies.*",
+      "side": "both"
     }
   ]
 }

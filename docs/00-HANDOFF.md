@@ -285,7 +285,9 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
-## 9. Last work: the Troopers, an enemy system (2026-11-11, in progress)
+## 9. Last work: the Troopers, an enemy system (2026-11-11; playtest fixes done, 21/21 in game)
+- Later the same day: animations on spawned Troopers fixed (`EnemyLookPart`), 1.5x size, the right sounds, arcing shots, the lobby
+  Troopers box; installed for the creator (doc 07).
 - Deadlock's Melee, Ranged and Medic Troopers as RoR2 monsters, the creator's DLL build only (doc 11, doc 07 entry).
 - Built and installed in the Steam copy for testing (`local-hero.txt` exists; R2API, HookGenPatcher in its plugins/patchers).
 - Next: Steam signed in → `ENEMIES=melee,ranged,medic STAGE=golemplains bash tools/run_test.sh haze`; fix and tune; co-op;

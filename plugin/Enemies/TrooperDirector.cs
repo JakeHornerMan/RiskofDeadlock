@@ -41,6 +41,8 @@ namespace DeadlockOfRain.Enemies
         static void OnMonsters(DccsPool pool, List<DirectorAPI.DirectorCardHolder> mix, DirectorAPI.StageInfo stage)
         {
             if (!Enemies.Enabled.Value || Enemies.Cards.Count == 0 || !pool) return;
+            // the lobby's Troopers box (TrooperRule) set to off for this run
+            if (!TrooperRule.OnThisRun()) { Log.Info("Enemies: Troopers switched off in the lobby for this run"); return; }
             StagesTouched++;
             var dccsList = new List<DirectorCardCategorySelection>();
             DirectorAPI.Helpers.ForEachPoolEntryInDccsPool(pool, e => { if (e != null && e.dccs) dccsList.Add(e.dccs); });
@@ -115,7 +117,13 @@ namespace DeadlockOfRain.Enemies
         static bool Prefix(CombatDirector __instance, Transform spawnTarget, ref bool __result)
         {
             var card = current(__instance);
-            if (card == null || !Enemies.Cards.TryGetValue("trooper_medic", out var medic) || card.spawnCard != medic) return true;
+            if (card == null || !card.spawnCard) return true;
+            // the lobby switched the Troopers off: no Trooper card spawns (a pool or family event kept from an earlier run included)
+            if (!TrooperRule.OnThisRun() && Enemies.Cards.ContainsValue(card.spawnCard as CharacterSpawnCard))
+            {
+                current(__instance) = null; __result = false; return false;
+            }
+            if (!Enemies.Cards.TryGetValue("trooper_medic", out var medic) || card.spawnCard != medic) return true;
             if (AlliesNear(spawnTarget ? spawnTarget.position : __instance.transform.position)) return true;
             current(__instance) = null;
             Refused++;

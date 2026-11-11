@@ -58,6 +58,16 @@ namespace DeadlockOfRain.Enemies
 
         public float Length(string clip) => Has(clip) ? anim[clip].length : 0f;
 
+        /// <summary>The clips playing now, with their weights and times (test-mode logging).</summary>
+        public string Describe()
+        {
+            Init();
+            if (!anim) return "no animation";
+            var parts = new List<string>();
+            foreach (AnimationState st in anim) if (st.enabled) parts.Add($"{st.name} L{st.layer} w{st.weight:F2} t{st.normalizedTime:F2}");
+            return parts.Count > 0 ? string.Join(" | ", parts) : "nothing playing";
+        }
+
         void LateUpdate()
         {
             if (!anim || row == null) return;
