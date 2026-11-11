@@ -1827,3 +1827,6 @@ Mid-turn: "you opened the game but they are not installed!" (our test run on the
 **Request (verbatim):** "please make sure all character reload that the same as thir animation add this to your set up of characters also!"; then "make a build and then test it"
 **Questions asked → answers:** none (read as: the clip ends with the reload; reload times unchanged, so no balance change).
 **Done:** `reloadFit: true` on every animations row; doc 08 §2 (new heroes), doc 02, MODLOG, 00 §9. 1.6.3 built (Victor's Jumpstart blast and these fits), installed in r2modman; shared gun code changed, so every hero tested.
+**Results:** `PREFLIGHT CLEAN`, build clean; 1.6.3 installed in r2modman. `run_test.sh` (all 13, the DLL build in the Steam copy, 3.7 GB free after closing Discord/Razer/NVIDIA Overlay/NordVPN): 10/13; `victor-plays`, `guns-fire`, `gun-aims`, `gun-in-hand`, `ammo-counter` pass. Fails: mokrill (Tag Team target moved 0.7 m), wraith (Project Mind rose 0 m), paige (`paige_ult`: no enemy_stun). Rerun of those three: mokrill passes; wraith fails on something else (Card Trick no damage), so its fails move run to run; paige_ult no enemy_stun again (2 of 2). Steam copy back to main's dev build.
+**Not done / open:** Paige's Green Knight stun in test mode (repeats; not touched by this change); Wraith's test flakiness.
+**Lessons:** none new.
