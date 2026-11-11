@@ -39,6 +39,8 @@ Deadlock's assets from the player's own install; nothing from either game ships.
    intake questions, sound and voice, Unity-built effects, tests, bench, pages, definition of done.
 8. `docs/09-PUBLIC-EXE-BUILD.md`: why the extractor is an exe, how GitHub builds it in public (releases `extractor-X.Y.Z`), and the DLL fallback plan.
 10. `docs/10-DAILY-WATCH.md`: the daily watch (`tools/watch/`): game-update and Melty-break checks, the unattended fix run, its permissions.
+11. `docs/11-ENEMIES.md`: **enemies** (Deadlock NPCs as RoR2 monsters; the Troopers, 2026-11-11, DLL build only): the sheets
+   `design/enemies.json` / `enemySkills.json`, `plugin/Enemies/`, R2API.Director spawning, the `ENEMIES=` test plan.
 `MODLOG.md` is the short journal of versions, lab notes and gotchas.
 
 **Outside reference: the R2Wiki modding Cookbook** (https://risk-of-thunder.github.io/R2Wiki/Mod-Creation/Cookbook; creator, 2026-11-10:
@@ -138,6 +140,8 @@ Three pieces, linked by generated data:
   hero's Deadlock ultimate is a RoR2 equipment (Q, 120 s, `Content/Equipment.cs`, rows in `design/equipment.json`) that the
   hero starts holding and anyone can find; firing it starts the ult's state on whatever body holds it (`DlrState.RowOverride`).
   Buff effects live in Harmony patches in `Content/Buffs.cs`; every hook is also listed in `design/hooks.json` (keep in sync).
+- **Enemies** (`plugin/Enemies/`, `OWN_FILES` only, doc 11): vanilla Beetle/Lemurian body + master clones with our model,
+  states and AI drivers; spawned on every stage through R2API.Director (a soft dependency, compile-only refs in `build/ref/`).
 - **Voice lines:** `design/voice.json` maps each hero's Deadlock dialogue groups (`sounds/vo/<group>_NN`) to triggers
   (select, unselect, skill, multikill, idle); the extractor exports them as `vo:<group>` events and `Runtime/Voice.cs` plays
   them for the local hero (an ult item speaks with its own hero's voice). Never list the lines on the pages.

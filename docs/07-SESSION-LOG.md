@@ -1839,3 +1839,26 @@ Mid-turn: "you opened the game but they are not installed!" (our test run on the
 Third run (one stage, object counts): Haze 22-29 ms, Victor 29.0-29.6, Paige 28.6-30.1: on par. The pass-to-pass rise is the pack's ragdolls and RoR2's SoundEmitter pool (bench only). Built as r2modman 1.6.4, installed.
 **Not done / open:** the creator's feel in play.
 **Lessons:** time a hero's frames on the same run as a control hero; a first-use freeze shows as the "all" pass's worst frame.
+
+### 2026-11-11 · Troopers: an enemy system and three enemies · DLL build only · in progress
+**Request (verbatim):** the creator's "Troopers — Enemy Design Spec" (24 Oct 2026, pasted) plus: "please use our custom assets in
+"C:\Users\jakeh\Documents\GitHub\RiskofDeadlock\charactersFinal\npc" please i believ we can make a system for creating enemy types so let
+work on these 3 fairly basic types... please ask questions!"; later "let complete these enemys".
+**Questions asked → answers:** where they ship → DLL build only; spawning → "Add R2API" (not our own code); team colour → random
+each spawn; off switch → config, on by default; R2API in the package → "What does the the risk of rain modding wiki suggest?"
+(the Cookbook: list dependencies in manifest.json, don't bundle), then "Yes, both" (manifest lines and install into the profile);
+size → Deadlock size; install when the tests pass → yes.
+**Done:** `design/enemies.json` + `enemySkills.json` with gen/preflight (enemy manifest `extractor/manifest-enemies.json`); the six
+trooper looks extracted from `charactersFinal/npc/troopers` (`--loose`, every clip, 5 sounds) into its new `mod-cache`;
+`plugin/Enemies/` (model with both looks and Deadlock's health head meshes, animator, melee/shot/spawn/death/stagger states, Beetle
+and Lemurian clones with our AI drivers, Medic pulse/visuals/follow AI/heal orb, R2API.Director pools + Trooper family event +
+Medic spawn gate, config switch, test plan `ENEMIES=`); `tools/fetch_r2api.py`, `tools/thunderstore_deps.py` (used by
+r2modman_install.py); `build_local_hero.sh all` merges the NPC caches; package CHANGELOG/README and manifest.json R2API lines; doc 11.
+**Results:** preflight clean; both builds compile, the Melty DLL has no Trooper or R2API code. The all-heroes DLL with the Troopers
+is installed in the Steam copy (`local-hero.txt` written), with R2API + HookGenPatcher there for the test. **Not tested in game
+yet:** Steam restarted at 10:29 signed out, so both launches were ignored (NOT_STARTED).
+**Not done / open:** the in-game test (`ENEMIES=melee,ranged,medic STAGE=golemplains bash tools/run_test.sh haze`) once Steam is
+signed in, then tuning; a co-op run; `build_local_hero.sh all charactersFinal --r2modman-install` (1.6.4); afterwards
+`build_local_hero.sh --uninstall` so the Steam copy is main's dev build again.
+**Lessons:** read clip names from the `edit/*.glb` before choosing clips; check models for gib copies; Deadlock's trooper health
+readout is mesh swapping, not a clip.

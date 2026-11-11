@@ -22,6 +22,8 @@ namespace DeadlockOfRain
         /// <summary>Heroes left out of this build but shown greyed out as "coming soon" (ready.json "comingSoon", from
         /// build_local_hero.sh --soon; creator, 2026-11-09: "dll build with no victor or paige grey out these characters").</summary>
         public static HashSet<string> ComingSoon;
+        /// <summary>The enemy models in its ready.json "enemies" (design/enemies.json models; docs/11), built by Enemies.</summary>
+        public static HashSet<string> Enemies = new HashSet<string>();
 
         /// <summary>Finds the hero files beside the DLL. Returns true when they are in use; otherwise the title screen says why.</summary>
         public static bool Init()
@@ -46,13 +48,14 @@ namespace DeadlockOfRain
                 var ready = File.ReadAllText(Path.Combine(dir, "ready.json"));
                 Heroes = Ids(ready, "heroes");
                 ComingSoon = Ids(ready, "comingSoon");
+                Enemies = Ids(ready, "enemies");
             }
             catch (Exception e)
             {
                 Log.Error("Own hero files: ready.json could not be read: " + e);
                 return false;
             }
-            Log.Info($"Playing {string.Join(", ", Heroes)} from your own files in {dir}; Deadlock is not read");
+            Log.Info($"Playing {string.Join(", ", Heroes)} from your own files in {dir}; Deadlock is not read" + (Enemies.Count > 0 ? $"; enemies {string.Join(", ", Enemies)}" : ""));
             return true;
         }
 

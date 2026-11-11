@@ -828,6 +828,10 @@ namespace DeadlockOfRain.Sheets
             new HookRow { Id = "paige_runtime_component", Method = "component", Target = "DeadlockOfRain.States.PaigeRuntime", Purpose = "Plot Armor: the paige_plot_armor buff on while Paige is below heroes.passiveBelowPct health (server)", Reads = "heroes.passiveBuff/passiveBelowPct", Side = "server" },
             new HookRow { Id = "paige_burn_component", Method = "component", Target = "DeadlockOfRain.States.PaigeWyrm", Purpose = "Bookwyrm: the wyvern flight and its burning trail (server: contact hits and trail ticks; every machine: the wyvern and the fire)", Reads = "skills (bookwyrm row)", Side = "all" },
             new HookRow { Id = "paige_knights_component", Method = "component", Target = "DeadlockOfRain.States.PaigeKnights", Purpose = "Rallying Charge and The Green Knight: the knights riding out (server: trample damage, stun, ally heals; every machine: the knights)", Reads = "skills (knight_charge, ult_giant_knight rows)", Side = "all" },
+            new HookRow { Id = "enemy_spawn_pools", Method = "event", Target = "R2API.DirectorAPI.MonsterActions", Purpose = "the enemies (DLL build only, docs/11): add each to every stage's Basic Monsters and add their family event", Reads = "enemies.*", Side = "server" },
+            new HookRow { Id = "medic_spawn_gate", Method = "harmony-prefix", Target = "RoR2.CombatDirector.AttemptSpawnOnTarget", Purpose = "the Medic Trooper only joins a fight: its card is dropped when no other monster is within 30 m of the spawn point (DLL build only)", Reads = "enemies.*", Side = "server" },
+            new HookRow { Id = "medic_heal_orb", Method = "event", Target = "RoR2.GlobalEventManager.onCharacterDeathGlobal", Purpose = "a dying Medic Trooper drops Monster Tooth's healing orb for the players (DLL build only)", Reads = "enemies.*", Side = "server" },
+            new HookRow { Id = "medic_pulse", Method = "component", Target = "DeadlockOfRain.Enemies.MedicPulse / MedicFollow", Purpose = "the Medic's heal pulse and its place behind its allies (custom AI target, drivers switched on and off)", Reads = "enemySkills.*", Side = "server" },
         };
     }
 
@@ -996,6 +1000,93 @@ namespace DeadlockOfRain.Sheets
 
         public static readonly TeaserRow[] All = new TeaserRow[]
         {
+        };
+    }
+
+    /// <summary>Row of design/enemies.json. Monsters built from Deadlock NPCs (2026-11-11, the creator's Trooper spec; docs/11-ENEMIES.md). Each row is one enemy type: a clone of a vanilla monster's body ...</summary>
+    public sealed class EnemyRow
+    {
+        public string Id;
+        public string Name;
+        public string Family;
+        public bool LocalOnly;
+        public string CloneBody;
+        public string CloneMaster;
+        public string CostFrom;
+        public float CostMult;
+        public float WeightMult;
+        public string[] Models;
+        public string[] Vmdls;
+        public string[] Meshes;
+        public float SourceHeight;
+        public float Width;
+        public float Health;
+        public float HealthLvl;
+        public float Damage;
+        public float DamageLvl;
+        public float Speed;
+        public float Armor;
+        public float StaggerPct;
+        public float KeepMin;
+        public float KeepMax;
+        public float FleeRange;
+        public string Idle;
+        public string RunN;
+        public string RunS;
+        public string RunE;
+        public string RunW;
+        public string JumpAir;
+        public string Flinch;
+        public string[] HealthMeshes;
+        public string SpawnClip;
+        public string MuzzleBone;
+        public string[] RagdollBones;
+        public string SpawnSound;
+        public string DeathSound;
+        public string Subtitle;
+        public string Lore;
+
+        public static readonly EnemyRow[] All = new EnemyRow[]
+        {
+            new EnemyRow { Id = "trooper_melee", Name = "Melee Trooper", Family = "troopers", LocalOnly = true, CloneBody = "RoR2/Base/Beetle/BeetleBody.prefab", CloneMaster = "RoR2/Base/Beetle/BeetleMaster.prefab", CostFrom = "RoR2/Base/Beetle/cscBeetle.asset", CostMult = 1.25f, WeightMult = 1.0f, Models = new string[] { "amber_trooper_01_melee", "sapphire_trooper_01_melee" }, Vmdls = new string[] { "models/npc_units/troopers/amber_trooper_01_melee/amber_trooper_01_melee.vmdl", "models/npc_units/troopers/sapphire_trooper_01_melee/sapphire_trooper_01_melee.vmdl" }, Meshes = new string[] { "amber_trooper_01_melee_model", "sapphire_trooper_01_model", "head_health_high", "head_health_mid", "head_health_low" }, SourceHeight = 2.128f, Width = 0.4f, Health = 160.0f, HealthLvl = 48.0f, Damage = 12.0f, DamageLvl = 2.4f, Speed = 6.0f, Armor = 0.0f, StaggerPct = 0.15f, KeepMin = 0.0f, KeepMax = 0.0f, FleeRange = 0.0f, Idle = "primary_idle_has_target", RunN = "has_target_run_n", RunS = "has_target_run_s", RunE = "has_target_run_e", RunW = "has_target_run_w", JumpAir = "in_air_forced", Flinch = "hit_react_01", HealthMeshes = new string[] { "head_health_high", "head_health_mid", "head_health_low" }, SpawnClip = "jump_land", MuzzleBone = "laser_melee", RagdollBones = new string[] { "pelvis", "spine_0", "spine_1", "head", "arm_upper_L", "arm_lower_L", "arm_upper_R", "arm_lower_R", "leg_upper_L", "leg_lower_L", "leg_upper_R", "leg_lower_R" }, SpawnSound = "Trooper.Deploy.Impact", DeathSound = "Trooper.Death", Subtitle = "Deadlock's lane brawler", Lore = "A stocky automaton with a candle burning on its head. The wax melts as it takes damage." },
+            new EnemyRow { Id = "trooper_ranged", Name = "Ranged Trooper", Family = "troopers", LocalOnly = true, CloneBody = "RoR2/Base/Lemurian/LemurianBody.prefab", CloneMaster = "RoR2/Base/Lemurian/LemurianMaster.prefab", CostFrom = "RoR2/Base/Lemurian/cscLemurian.asset", CostMult = 1.25f, WeightMult = 1.0f, Models = new string[] { "amber_trooper_01", "sapphire_trooper_01" }, Vmdls = new string[] { "models/npc_units/troopers/amber_trooper_01/amber_trooper_01.vmdl", "models/npc_units/troopers/sapphire_trooper_01/sapphire_trooper_01.vmdl" }, Meshes = new string[] { "amber_trooper_01_model", "sapphire_trooper_01_model", "head_health_high", "head_health_mid", "head_health_low" }, SourceHeight = 2.234f, Width = 0.4f, Health = 160.0f, HealthLvl = 48.0f, Damage = 12.0f, DamageLvl = 2.4f, Speed = 7.0f, Armor = 0.0f, StaggerPct = 0.15f, KeepMin = 15.0f, KeepMax = 30.0f, FleeRange = 0.0f, Idle = "primary_idle_has_target", RunN = "has_target_run_n", RunS = "has_target_run_s", RunE = "has_target_run_e", RunW = "has_target_run_w", JumpAir = "in_air_forced", Flinch = "hit_react_01", HealthMeshes = new string[] { "head_health_high", "head_health_mid", "head_health_low" }, SpawnClip = "jump_land", MuzzleBone = "laser", RagdollBones = new string[] { "pelvis", "spine_0", "spine_1", "head", "arm_upper_L", "arm_lower_L", "arm_upper_R", "arm_lower_R", "leg_upper_L", "leg_lower_L", "leg_upper_R", "leg_lower_R" }, SpawnSound = "Trooper.Deploy.Impact", DeathSound = "Trooper.Death", Subtitle = "Deadlock's lane rifleman", Lore = "The standard Trooper, with a candle-snuffer gun. Keeps its distance and shoots." },
+            new EnemyRow { Id = "trooper_medic", Name = "Medic Trooper", Family = "troopers", LocalOnly = true, CloneBody = "RoR2/Base/Lemurian/LemurianBody.prefab", CloneMaster = "RoR2/Base/Lemurian/LemurianMaster.prefab", CostFrom = "RoR2/Base/Lemurian/cscLemurian.asset", CostMult = 1.25f, WeightMult = 0.4f, Models = new string[] { "amber_medic_01", "sapphire_medic_01" }, Vmdls = new string[] { "models/npc_units/troopers/amber_medic_01/amber_medic_01.vmdl", "models/npc_units/troopers/sapphire_medic_01/sapphire_medic_01.vmdl" }, Meshes = new string[] { "amber_medic_01_model", "sapphire_medic_01_model", "banner_cloth", "head_health_high", "head_health_mid", "head_health_low" }, SourceHeight = 2.25f, Width = 0.4f, Health = 140.0f, HealthLvl = 42.0f, Damage = 6.0f, DamageLvl = 1.2f, Speed = 7.0f, Armor = 0.0f, StaggerPct = 0.15f, KeepMin = 15.0f, KeepMax = 30.0f, FleeRange = 10.0f, Idle = "idle_has_target", RunN = "has_target_run_n", RunS = "has_target_run_s", RunE = "has_target_run_e", RunW = "has_target_run_w", JumpAir = "in_air_forced", Flinch = "hit_react_small_01", HealthMeshes = new string[] { "head_health_high", "head_health_mid", "head_health_low" }, SpawnClip = "jump_land", MuzzleBone = "laser", RagdollBones = new string[] { "pelvis", "spine_0", "spine_1", "head", "arm_upper_L", "arm_lower_L", "arm_upper_R", "arm_lower_R", "leg_upper_L", "leg_lower_L", "leg_upper_R", "leg_lower_R" }, SpawnSound = "Trooper.Deploy.Impact", DeathSound = "Trooper.Death", Subtitle = "Deadlock's banner trooper", Lore = "Hangs back behind other monsters and heals them with a pulse every second. Kill it first." },
+        };
+    }
+
+    /// <summary>Row of design/enemySkills.json. The attacks of each design/enemies.json row (docs/11-ENEMIES.md). slot primary/secondary replaces that slot's skill on the cloned vanilla body (the vanilla AI d...</summary>
+    public sealed class EnemySkillRow
+    {
+        public string Id;
+        public string Enemy;
+        public string Slot;
+        public string Kind;
+        public float DamagePct;
+        public float Reach;
+        public float MinRange;
+        public float MaxRange;
+        public float Windup;
+        public float Duration;
+        public float Cooldown;
+        public float ProjectileSpeed;
+        public float Radius;
+        public float HealPct;
+        public float HealPctBoss;
+        public float Interval;
+        public string Clip;
+        public string CastSound;
+        public string HitSound;
+        public string Ror2Sound;
+        public string Color;
+        public string[] Expect;
+
+        public static readonly EnemySkillRow[] All = new EnemySkillRow[]
+        {
+            new EnemySkillRow { Id = "trooper_melee_swing", Enemy = "trooper_melee", Slot = "primary", Kind = "trooper_swing", DamagePct = 2.0f, Reach = 3.0f, MinRange = 0.0f, MaxRange = 3.0f, Windup = 0.6f, Duration = 1.1f, Cooldown = 0.5f, ProjectileSpeed = 0.0f, Radius = 0.0f, HealPct = 0.0f, HealPctBoss = 0.0f, Interval = 0.0f, Clip = "melee_attack", CastSound = "Trooper.Melee.Swing", HitSound = "none", Ror2Sound = "none", Color = "#ffb347", Expect = new string[] { "target_damage" } },
+            new EnemySkillRow { Id = "trooper_ranged_hit", Enemy = "trooper_ranged", Slot = "primary", Kind = "trooper_close_hit", DamagePct = 1.5f, Reach = 3.0f, MinRange = 0.0f, MaxRange = 7.0f, Windup = 0.4f, Duration = 0.9f, Cooldown = 0.5f, ProjectileSpeed = 0.0f, Radius = 0.0f, HealPct = 0.0f, HealPctBoss = 0.0f, Interval = 0.0f, Clip = "melee_attack_01", CastSound = "Trooper.Melee.Swing", HitSound = "none", Ror2Sound = "none", Color = "#ffb347", Expect = new string[] { "target_damage" } },
+            new EnemySkillRow { Id = "trooper_ranged_shot", Enemy = "trooper_ranged", Slot = "secondary", Kind = "trooper_shot", DamagePct = 1.0f, Reach = 0.0f, MinRange = 15.0f, MaxRange = 30.0f, Windup = 0.6f, Duration = 1.0f, Cooldown = 2.0f, ProjectileSpeed = 45.0f, Radius = 0.0f, HealPct = 0.0f, HealPctBoss = 0.0f, Interval = 0.0f, Clip = "primary_shoot", CastSound = "TrooperRifle.Fire", HitSound = "TrooperRifle.BulletImpact.Default", Ror2Sound = "none", Color = "#ffd27a", Expect = new string[] { "projectile", "target_damage" } },
+            new EnemySkillRow { Id = "trooper_medic_shot", Enemy = "trooper_medic", Slot = "secondary", Kind = "medic_shot", DamagePct = 0.5f, Reach = 0.0f, MinRange = 15.0f, MaxRange = 30.0f, Windup = 0.6f, Duration = 1.0f, Cooldown = 2.0f, ProjectileSpeed = 45.0f, Radius = 0.0f, HealPct = 0.0f, HealPctBoss = 0.0f, Interval = 0.0f, Clip = "primary_fire", CastSound = "TrooperRifle.Fire", HitSound = "TrooperRifle.BulletImpact.Default", Ror2Sound = "none", Color = "#8dff9a", Expect = new string[] { "projectile", "target_damage" } },
+            new EnemySkillRow { Id = "trooper_medic_pulse", Enemy = "trooper_medic", Slot = "passive", Kind = "medic_pulse", DamagePct = 0.0f, Reach = 0.0f, MinRange = 0.0f, MaxRange = 0.0f, Windup = 0.0f, Duration = 0.0f, Cooldown = 0.0f, ProjectileSpeed = 0.0f, Radius = 15.0f, HealPct = 0.04f, HealPctBoss = 0.02f, Interval = 1.0f, Clip = "none", CastSound = "none", HitSound = "none", Ror2Sound = "Play_item_proc_TPhealingNova", Color = "#5dff7a", Expect = new string[] { "ally_heal" } },
         };
     }
 

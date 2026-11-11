@@ -1123,6 +1123,13 @@ the other is the **host** (only the host writes checks). How to run it: doc 03 ย
 
 ---
 
+## 11b. Enemies (the Troopers, 2026-11-11; DLL build only)
+Monsters built from Deadlock NPCs: clones of a vanilla body and master with our model, states and AI drivers, put into every
+stage's spawn pool through R2API.Director. Everything is in **`docs/11-ENEMIES.md`**. RoR2 facts learned there: `CharacterModel`
+switches every listed renderer on each frame (hide a part through its GameObject); `HealthComponent.godMode` returns before any
+damage event (test hits through the attack's own hit list); `BaseAI` evaluates its `AISkillDriver`s in component order, first
+match wins, and a `Custom` driver needs `SetCustomTargetGameObject`.
+
 ## 12. Gotchas we hit (read before debugging)
 
 1. **One material per renderer:** see ยง4.3. Symptom: hero invisible or missing parts.

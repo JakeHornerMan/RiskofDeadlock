@@ -298,6 +298,14 @@ Creator: "a mod that will run mo and krill only ... without the need of deadlock
   for the creator's package.
   Test it with `build_local_hero.sh <id> charactersFinal/<id>Files --install`, `run_test.sh <id>`, then `--uninstall`.
 
+### 5c.1 Enemies in the DLL build (2026-11-11)
+`build_local_hero.sh all` also merges every `charactersFinal/npc/<group>/mod-cache` (made with `DeadlockExtract --loose
+<group>/deadlock --manifest extractor/manifest-enemies.json`) and lists their models as ready.json `enemies`. The DLL compiles
+against R2API (fetched by `tools/fetch_r2api.py` into `build/ref/`, never bundled); the package's `manifest.json` lists
+`RiskofThunder-R2API_Core-5.3.0` and `RiskofThunder-R2API_Director-3.1.3` (the creator's OK, 2026-11-11; the Cookbook's dependency
+rule), and `r2modman_install.py` installs any missing dependency through `tools/thunderstore_deps.py`. Where we differ from the
+Cookbook: nothing; R2API is a dependency, not bundled. Details: doc 11.
+
 ## 5b. Daily watch: game updates and Melty breaks (since 2026-10-21)
 The full manual is **doc 10** (`docs/10-DAILY-WATCH.md`); this is the summary.
 

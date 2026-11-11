@@ -87,6 +87,10 @@ namespace DeadlockOfRain
                 // optional "stage": "blackbeach": the run moves to that stage before the heroes are tested (STAGE= in run_test.sh)
                 var sm = System.Text.RegularExpressions.Regex.Match(text, "\"stage\"\\s*:\\s*\"([^\"]+)\"");
                 if (sm.Success) TestStage = sm.Groups[1].Value.Trim();
+#if OWN_FILES
+                // optional "enemies": "melee,ranged,medic": the Trooper test plan instead of the hero checks (ENEMIES= run_test.sh; docs/11)
+                ReadEnemies(text);
+#endif
                 var bm = System.Text.RegularExpressions.Regex.Match(text, "\"break\"\\s*:\\s*\"([^\"]*)\"");
                 if (bm.Success)
                     foreach (var id in bm.Groups[1].Value.Split(',').Select(h => h.Trim()).Where(h => h != ""))
@@ -267,6 +271,9 @@ namespace DeadlockOfRain
             var first = user.cachedBody;
             if (first && first.currentVehicle) first.currentVehicle.EjectPassenger(first.gameObject);
             yield return new WaitForSeconds(2f);
+#if OWN_FILES
+            if (TestEnemies != null) { yield return EnemyRun(user); yield break; }
+#endif
             if (DevShots) yield return Lineup();
             QuietStage();
 

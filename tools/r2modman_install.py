@@ -9,7 +9,9 @@ Does what r2modman's Settings > Profile > Import local mod does, after removing 
   from the profile's mods.yml: the own-files builds and the old Thunderstore Risk_of_Deadlock alike (the same plugin twice
   clashes; Thunderstore was given up on 2026-11-02);
 - r2modman's download cache of those packages goes too (the newest import is kept there, as r2modman keeps it);
-- the zip goes to BepInEx/plugins/<author>-<name>/ with r2modman's mm_v2_manifest.json, and its entry is added to mods.yml.
+- the zip goes to BepInEx/plugins/<author>-<name>/ with r2modman's mm_v2_manifest.json, and its entry is added to mods.yml;
+- the Thunderstore dependencies its manifest lists that the profile lacks are downloaded and installed the same way
+  (tools/thunderstore_deps.py; R2API for the Troopers, 2026-11-11).
 r2modman keeps mods.yml in memory and writes it back on close, so the script closes r2modman first and starts it again at the end;
 it stops only while the game is running (the creator may be playing). Never upload the zip: its DLL holds Deadlock's files.
 """
@@ -153,6 +155,10 @@ entry = f"""- manifestVersion: 1
   trustedPackage: false
 """
 open(mods_yml, 'w', encoding='utf-8', newline='\n').write(head + ''.join(keep) + entry)
+# 4. its Thunderstore dependencies the profile lacks (R2API for the Troopers, 2026-11-11), laid out as r2modman installs them
+mtmp = os.path.join(ROOT, 'build', 'r2modman-manifest.json')
+json.dump(manifest, open(mtmp, 'w', encoding='utf-8'))
+subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'thunderstore_deps.py'), mtmp, '--profile', profile])
 print(f'== r2modman profile "{profile}": removed {", ".join(gone) or "nothing"}; installed {full} {manifest["version_number"]}')
 if r2exe:
     # through PowerShell's Start-Process: a child of this script dies with the shell that ran it

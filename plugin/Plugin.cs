@@ -8,6 +8,10 @@ using UnityEngine;
 
 namespace DeadlockOfRain
 {
+#if OWN_FILES
+    // the enemies spawn through R2API.Director (docs/11): soft, so the heroes still load without it (TrooperDirector logs why)
+    [BepInDependency("com.bepis.r2api.director", BepInDependency.DependencyFlags.SoftDependency)]
+#endif
     [BepInPlugin(Guid, "Risk of Deadlock", Version)]
     public sealed class Plugin : BaseUnityPlugin
     {
@@ -67,6 +71,10 @@ namespace DeadlockOfRain
             CommunityButton.Init();
             MeltyTest.Init();
             DpsBench.Init();
+#if OWN_FILES
+            Enemies.Enemies.Init(Config);
+            Enemies.TrooperDirector.Init();
+#endif
             // a player's freeze log ended inside this method (1.0.2): how long it took, so the next log shows it
             Log.Info($"mod start took {started.Elapsed.TotalSeconds:F1} s (the sounds load on their own thread)");
         }

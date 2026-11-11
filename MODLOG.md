@@ -5,6 +5,12 @@
 - Deadlock ClientVersion 6817 (build 26143760, 2026-10-22 evening; no clip, mesh or sound change for our heroes); 6812 (build 26118388, update of 2026-10-22; checked by the daily watch: no sheet cell, clip or mesh changed); 6795 (2026-10-19), 6774 before. Source 2
 - ValveResourceFormat 20.1.7467 (.NET 10; 20.0.6980 until v0.7.1), ilspycmd 11.1 (RoR2.dll decompiled to ~/ror2-decomp, never shipped)
 
+## Troopers: the enemy system (2026-11-11)
+- Deadlock's Melee, Ranged and Medic Troopers as RoR2 monsters (DLL build only; docs/11). Sheets `enemies.json`/`enemySkills.json`,
+  `plugin/Enemies/`, R2API.Director spawning. Candle health = Deadlock's three `head_health_*` meshes swapped by thirds (not a clip).
+- Gotchas: the trooper models carry a `*_fractured_model` gib copy (filter it out); thunderstore.io refuses Python's default
+  User-Agent (403); HookGenPatcher's zip nests everything under `BepInEx/`.
+
 ## Frame rate: Paige's first-use freeze, Victor's gun effects (2026-11-10)
 - The bench logs frame times per pass (doc 05 §0b). Paige froze 1.45 s the first time her moves ran (her textures converted per tint,
   her props and clips built mid-fight): now warmed on the loading screen. Victor's gun made 3 particle systems and a light every

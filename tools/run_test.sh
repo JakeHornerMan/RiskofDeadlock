@@ -30,6 +30,10 @@ for V in BREAK STAGE OFF; do [ -z "${!V}" ] || [[ "${!V}" =~ ^[A-Za-z0-9_,]+$ ]]
 # (GOD=1 as well: the hero can't be hurt)
 [ -n "$PLAY" ] && HEROES="$HEROES, \"play\": true"
 [ -n "$GOD" ] && HEROES="$HEROES, \"god\": true"
+# ENEMIES=melee,ranged,medic tools/run_test.sh haze: the Troopers' test plan (docs/11) instead of the hero checks; needs the
+# creator's own DLL build installed (build_local_hero.sh all charactersFinal --install) and R2API in the Steam copy
+# (python tools/thunderstore_deps.py DllBuilds/package/manifest.json --steam); STAGE=golemplains gives it room
+[ -n "$ENEMIES" ] && { [[ "$ENEMIES" =~ ^[a-z,]+$ ]] || { echo "ENEMIES must be letters and commas"; exit 1; }; HEROES="$HEROES, \"enemies\": \"$ENEMIES\""; }
 CHECKS="${1:-$(cygpath -aw "$(dirname "$0")/../build")\\checks.txt}"
 # no game may be running, so the old logs can be removed and never mistaken for this run; a copy the creator started is never
 # closed: the run stops with GAME_OPEN instead (tools/game_guard.sh)

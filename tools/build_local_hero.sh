@@ -96,11 +96,28 @@ for d in sorted(os.listdir(src)):
             out = os.path.join(dst, rel)
             os.makedirs(os.path.dirname(out), exist_ok=True)
             shutil.copy2(os.path.join(base, f), out)   # a file two heroes share is the same file in both: kept once
+# the enemies (design/enemies.json, docs/11; Troopers, 2026-11-11): every <folder>/npc/<group>/mod-cache made by
+# DeadlockExtract --loose <group>/deadlock --manifest extractor/manifest-enemies.json; their models are listed as "enemies"
+enemies = []
+npc = os.path.join(src, 'npc')
+for g in sorted(os.listdir(npc)) if os.path.isdir(npc) else []:
+    c = os.path.join(npc, g, 'mod-cache')
+    if not os.path.exists(os.path.join(c, 'ready.json')): continue
+    enemies += json.load(open(os.path.join(c, 'ready.json')))['heroes']
+    sp = os.path.join(c, 'sounds', 'sounds.json')
+    if os.path.exists(sp): sounds.update(json.load(open(sp)))
+    for base, _, files in os.walk(c):
+        for f in files:
+            rel = os.path.relpath(os.path.join(base, f), c)
+            if rel in ('ready.json', os.path.join('sounds', 'sounds.json'), 'extract.log', 'progress.txt'): continue
+            out = os.path.join(dst, rel)
+            os.makedirs(os.path.dirname(out), exist_ok=True)
+            shutil.copy2(os.path.join(base, f), out)
 os.makedirs(os.path.join(dst, 'sounds'), exist_ok=True)
 json.dump(sounds, open(os.path.join(dst, 'sounds', 'sounds.json'), 'w'), indent=1)
-json.dump({'stamp': 'own files', 'deadlockBuild': 'your own files', 'heroes': heroes, 'comingSoon': soon, 'failed': [], 'props': props, 'failedProps': []},
+json.dump({'stamp': 'own files', 'deadlockBuild': 'your own files', 'heroes': heroes, 'comingSoon': soon, 'enemies': enemies, 'failed': [], 'props': props, 'failedProps': []},
           open(os.path.join(dst, 'ready.json'), 'w'), indent=2)
-print(f'== One cache with {len(heroes)} heroes: {", ".join(heroes)}' + (f'; coming soon: {", ".join(soon)}' if soon else ''))
+print(f'== One cache with {len(heroes)} heroes: {", ".join(heroes)}' + (f'; coming soon: {", ".join(soon)}' if soon else '') + (f'; enemies: {", ".join(enemies)}' if enemies else ''))
 EOF
   # icons the sheets use that no hero folder owns (2026-11-02: Seven's Static debuff icon was missing): from the normal cache
   python - "$ROOT/design" "$L/cache" "$C" <<'EOF'
@@ -173,6 +190,7 @@ fi
 
 # 4. the DLL (OWN_FILES; its own output and obj folders: main's dev DLL is untouched) and the hero files beside it as heroes/
 echo "== Building the DLL"
+python "$ROOT/tools/fetch_r2api.py" >/dev/null || { echo "Could not fetch the R2API references (tools/fetch_r2api.py)"; exit 1; }
 dotnet build "$ROOT/plugin" -c Release -v q -nologo -p:OwnFiles=true \
   -p:IntermediateOutputPath="$(cygpath -w "$OUT/obj")\\" -o "$OUT" | grep -E "error|Error\(s\)" || true
 [ -f "$OUT/DeadlockOfRain.dll" ] || { echo "Build failed"; exit 1; }

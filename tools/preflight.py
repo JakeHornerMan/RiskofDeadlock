@@ -24,7 +24,7 @@ def load(name):
     with open(os.path.join(D, name + '.json'), encoding='utf-8') as f:
         return json.load(f)
 
-sheets = {n: load(n) for n in ['heroes', 'stats', 'skills', 'equipment', 'buffs', 'animations', 'sounds', 'effects', 'hooks', 'voice', 'teasers']}
+sheets = {n: load(n) for n in ['heroes', 'stats', 'skills', 'equipment', 'buffs', 'animations', 'sounds', 'effects', 'hooks', 'voice', 'teasers', 'enemies', 'enemySkills']}
 
 # 1. every cell filled
 for name, s in sheets.items():
@@ -134,9 +134,9 @@ for r in skills.values():
         bad(f'equipment: skill {r["id"]} needs exactly one equipment row')
 
 # 4. kinds implemented
-states_dir = os.path.join(ROOT, 'plugin', 'States')
 impl = set()
-if os.path.isdir(states_dir):
+for states_dir in (os.path.join(ROOT, 'plugin', 'States'), os.path.join(ROOT, 'plugin', 'Enemies')):
+    if not os.path.isdir(states_dir): continue
     for fn in os.listdir(states_dir):
         if fn.endswith('.cs'):
             impl |= set(re.findall(r'\[Kind\("([a-z_]+)"\)\]', open(os.path.join(states_dir, fn), encoding='utf-8').read()))
@@ -301,6 +301,42 @@ for h in heroes.values():
         if m != 'none' and m not in h['meshInclude']: bad(f'heroes[{h["id"]}].splitMeshes: "{m}" is not in meshInclude')
 for e in effects.values():
     if e['kind'] != 'prop' and (e['meshes'] != ['none'] or e['clips'] != ['none']): bad(f'effects[{e["id"]}].meshes/clips: only props read meshes or clips')
+
+# 8. enemies (design/enemies.json, enemySkills.json; docs/11)
+enemies = {r['id']: r for r in sheets['enemies']['rows']}
+ENEMY_EXPECT = {'target_damage', 'ally_heal', 'projectile'}
+for e in enemies.values():
+    if e['id'] in heroes: bad(f'enemies[{e["id"]}]: same id as a hero')
+    if len(e['models']) != len(e['vmdls']) or 'none' in e['models']: bad(f'enemies[{e["id"]}].models/vmdls: one vmdl per look')
+    for c in ('costMult', 'weightMult', 'health', 'damage', 'speed', 'sourceHeight', 'width'):
+        if e[c] <= 0: bad(f'enemies[{e["id"]}].{c}: must be > 0')
+    if not (0 < e['staggerPct'] < 1): bad(f'enemies[{e["id"]}].staggerPct: a fraction of max health')
+    if e['keepMin'] > e['keepMax']: bad(f'enemies[{e["id"]}].keepMin: above keepMax')
+    if not e['localOnly']: bad(f'enemies[{e["id"]}].localOnly: enemies are in the DLL build only for now (creator, 2026-11-11)')
+    if sum(1 for s in sheets['enemySkills']['rows'] if s['enemy'] == e['id'] and s['slot'] != 'passive') < 1: bad(f'enemySkills: {e["id"]} has no attack')
+for s in sheets['enemySkills']['rows']:
+    ref('enemySkills', s['id'], 'enemy', s['enemy'], enemies, False)
+    ref('enemySkills', s['id'], 'slot', s['slot'], {'primary', 'secondary', 'passive'}, False)
+    if s['kind'] not in impl: bad(f'enemySkills[{s["id"]}].kind: "{s["kind"]}" has no implementing state in plugin/Enemies')
+    if not s['expect'] or any(x not in ENEMY_EXPECT for x in s['expect']): bad(f'enemySkills[{s["id"]}].expect: one or more of {sorted(ENEMY_EXPECT)}')
+    if s['slot'] != 'passive' and (s['damagePct'] <= 0 or s['windup'] <= 0 or s['duration'] < s['windup']): bad(f'enemySkills[{s["id"]}]: an attack needs damagePct, a windup and a duration at least that long')
+    if s['minRange'] > s['maxRange']: bad(f'enemySkills[{s["id"]}].minRange: above maxRange')
+    if s['slot'] == 'passive' and (s['radius'] <= 0 or s['interval'] <= 0): bad(f'enemySkills[{s["id"]}]: a pulse needs a radius and an interval')
+    if not re.fullmatch(r'#[0-9a-fA-F]{6}', s['color']): bad(f'enemySkills[{s["id"]}].color: #rrggbb')
+for e in enemies.values():
+    for s in ('primary', 'secondary'):
+        if sum(1 for r in sheets['enemySkills']['rows'] if r['enemy'] == e['id'] and r['slot'] == s) > 1: bad(f'enemySkills: {e["id"]} has two {s} rows')
+if ak:
+    for e in enemies.values():
+        for c in ('cloneBody', 'cloneMaster', 'costFrom'):
+            if e[c] not in keys: bad(f'enemies[{e["id"]}].{c}: "{e[c]}" not in RoR2 catalog')
+if ev:
+    for e in enemies.values():
+        for c in ('spawnSound', 'deathSound'):
+            if e[c] != 'none' and e[c] not in events: bad(f'enemies[{e["id"]}].{c}: event "{e[c]}" not in Deadlock soundevents')
+    for s in sheets['enemySkills']['rows']:
+        for c in ('castSound', 'hitSound'):
+            if s[c] != 'none' and s[c] not in events: bad(f'enemySkills[{s["id"]}].{c}: event "{s[c]}" not in Deadlock soundevents')
 
 cells = sum(len(s['rows']) * len(s['columns']) for s in sheets.values())
 if problems:

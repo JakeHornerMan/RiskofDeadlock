@@ -521,6 +521,38 @@
       "purpose": "Rallying Charge and The Green Knight: the knights riding out (server: trample damage, stun, ally heals; every machine: the knights)",
       "reads": "skills (knight_charge, ult_giant_knight rows)",
       "side": "all"
+    },
+    {
+      "id": "enemy_spawn_pools",
+      "method": "event",
+      "target": "R2API.DirectorAPI.MonsterActions",
+      "purpose": "the enemies (DLL build only, docs/11): add each to every stage's Basic Monsters and add their family event",
+      "reads": "enemies.*",
+      "side": "server"
+    },
+    {
+      "id": "medic_spawn_gate",
+      "method": "harmony-prefix",
+      "target": "RoR2.CombatDirector.AttemptSpawnOnTarget",
+      "purpose": "the Medic Trooper only joins a fight: its card is dropped when no other monster is within 30 m of the spawn point (DLL build only)",
+      "reads": "enemies.*",
+      "side": "server"
+    },
+    {
+      "id": "medic_heal_orb",
+      "method": "event",
+      "target": "RoR2.GlobalEventManager.onCharacterDeathGlobal",
+      "purpose": "a dying Medic Trooper drops Monster Tooth's healing orb for the players (DLL build only)",
+      "reads": "enemies.*",
+      "side": "server"
+    },
+    {
+      "id": "medic_pulse",
+      "method": "component",
+      "target": "DeadlockOfRain.Enemies.MedicPulse / MedicFollow",
+      "purpose": "the Medic's heal pulse and its place behind its allies (custom AI target, drivers switched on and off)",
+      "reads": "enemySkills.*",
+      "side": "server"
     }
   ]
 }

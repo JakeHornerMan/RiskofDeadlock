@@ -1,0 +1,201 @@
+{
+  "heroes": [
+    {
+      "id": "amber_trooper_01_melee",
+      "name": "Melee Trooper",
+      "key": "none",
+      "vmdl": "models/npc_units/troopers/amber_trooper_01_melee/amber_trooper_01_melee.vmdl",
+      "meshes": [
+        "amber_trooper_01_melee_model",
+        "sapphire_trooper_01_model",
+        "head_health_high",
+        "head_health_mid",
+        "head_health_low"
+      ],
+      "clips": [
+        "has_target_run_e",
+        "has_target_run_n",
+        "has_target_run_s",
+        "has_target_run_w",
+        "hit_react_01",
+        "in_air_forced",
+        "jump_land",
+        "melee_attack",
+        "primary_idle_has_target"
+      ],
+      "split": [
+        "head_health_high",
+        "head_health_mid",
+        "head_health_low"
+      ],
+      "vertexColors": []
+    },
+    {
+      "id": "sapphire_trooper_01_melee",
+      "name": "Melee Trooper",
+      "key": "none",
+      "vmdl": "models/npc_units/troopers/sapphire_trooper_01_melee/sapphire_trooper_01_melee.vmdl",
+      "meshes": [
+        "amber_trooper_01_melee_model",
+        "sapphire_trooper_01_model",
+        "head_health_high",
+        "head_health_mid",
+        "head_health_low"
+      ],
+      "clips": [
+        "has_target_run_e",
+        "has_target_run_n",
+        "has_target_run_s",
+        "has_target_run_w",
+        "hit_react_01",
+        "in_air_forced",
+        "jump_land",
+        "melee_attack",
+        "primary_idle_has_target"
+      ],
+      "split": [
+        "head_health_high",
+        "head_health_mid",
+        "head_health_low"
+      ],
+      "vertexColors": []
+    },
+    {
+      "id": "amber_trooper_01",
+      "name": "Ranged Trooper",
+      "key": "none",
+      "vmdl": "models/npc_units/troopers/amber_trooper_01/amber_trooper_01.vmdl",
+      "meshes": [
+        "amber_trooper_01_model",
+        "sapphire_trooper_01_model",
+        "head_health_high",
+        "head_health_mid",
+        "head_health_low"
+      ],
+      "clips": [
+        "has_target_run_e",
+        "has_target_run_n",
+        "has_target_run_s",
+        "has_target_run_w",
+        "hit_react_01",
+        "in_air_forced",
+        "jump_land",
+        "melee_attack_01",
+        "primary_idle_has_target",
+        "primary_shoot"
+      ],
+      "split": [
+        "head_health_high",
+        "head_health_mid",
+        "head_health_low"
+      ],
+      "vertexColors": []
+    },
+    {
+      "id": "sapphire_trooper_01",
+      "name": "Ranged Trooper",
+      "key": "none",
+      "vmdl": "models/npc_units/troopers/sapphire_trooper_01/sapphire_trooper_01.vmdl",
+      "meshes": [
+        "amber_trooper_01_model",
+        "sapphire_trooper_01_model",
+        "head_health_high",
+        "head_health_mid",
+        "head_health_low"
+      ],
+      "clips": [
+        "has_target_run_e",
+        "has_target_run_n",
+        "has_target_run_s",
+        "has_target_run_w",
+        "hit_react_01",
+        "in_air_forced",
+        "jump_land",
+        "melee_attack_01",
+        "primary_idle_has_target",
+        "primary_shoot"
+      ],
+      "split": [
+        "head_health_high",
+        "head_health_mid",
+        "head_health_low"
+      ],
+      "vertexColors": []
+    },
+    {
+      "id": "amber_medic_01",
+      "name": "Medic Trooper",
+      "key": "none",
+      "vmdl": "models/npc_units/troopers/amber_medic_01/amber_medic_01.vmdl",
+      "meshes": [
+        "amber_medic_01_model",
+        "sapphire_medic_01_model",
+        "banner_cloth",
+        "head_health_high",
+        "head_health_mid",
+        "head_health_low"
+      ],
+      "clips": [
+        "has_target_run_e",
+        "has_target_run_n",
+        "has_target_run_s",
+        "has_target_run_w",
+        "hit_react_small_01",
+        "idle_has_target",
+        "in_air_forced",
+        "jump_land",
+        "primary_fire"
+      ],
+      "split": [
+        "head_health_high",
+        "head_health_mid",
+        "head_health_low"
+      ],
+      "vertexColors": []
+    },
+    {
+      "id": "sapphire_medic_01",
+      "name": "Medic Trooper",
+      "key": "none",
+      "vmdl": "models/npc_units/troopers/sapphire_medic_01/sapphire_medic_01.vmdl",
+      "meshes": [
+        "amber_medic_01_model",
+        "sapphire_medic_01_model",
+        "banner_cloth",
+        "head_health_high",
+        "head_health_mid",
+        "head_health_low"
+      ],
+      "clips": [
+        "has_target_run_e",
+        "has_target_run_n",
+        "has_target_run_s",
+        "has_target_run_w",
+        "hit_react_small_01",
+        "idle_has_target",
+        "in_air_forced",
+        "jump_land",
+        "primary_fire"
+      ],
+      "split": [
+        "head_health_high",
+        "head_health_mid",
+        "head_health_low"
+      ],
+      "vertexColors": []
+    }
+  ],
+  "images": [],
+  "soundEvents": [
+    "Trooper.Death",
+    "Trooper.Deploy.Impact",
+    "Trooper.Melee.Swing",
+    "TrooperRifle.BulletImpact.Default",
+    "TrooperRifle.Fire"
+  ],
+  "soundEventFiles": [],
+  "voiceGroups": [],
+  "voiceAllTakes": [],
+  "props": [],
+  "owners": {}
+}

@@ -41,6 +41,8 @@ namespace DeadlockOfRain
         public static readonly Dictionary<string, string> Tokens = new Dictionary<string, string>();
         public static float CommandoHeight;
         static GameObject holder;
+        /// <summary>The inactive holder every built prefab lives under (enemies too).</summary>
+        public static Transform Holder => holder ? holder.transform : null;
 
         /// <summary>The display name in letters and digits only, for object and catalog names ("Mo & Krill" -> MoKrill; the
         /// bench, the body catalog and console commands want one word).</summary>
@@ -700,6 +702,20 @@ namespace DeadlockOfRain
                 var e = Survivors.Build();
                 while (e.MoveNext()) { args.ReportProgress(0.5f); yield return e.Current; }
             }
+#if OWN_FILES
+            // the enemies (design/enemies.json, docs/11): the creator's own DLL build only
+            if (DeadlockCache.Ready)
+            {
+                var en = Enemies.Enemies.Build(Survivors.Holder);
+                while (en.MoveNext()) { args.ReportProgress(0.6f); yield return en.Current; }
+                pack.bodyPrefabs.Add(Enemies.Enemies.Bodies.Values.ToArray());
+                pack.masterPrefabs.Add(Enemies.Enemies.Masters.Values.ToArray());
+                pack.skillDefs.Add(Enemies.Enemies.SkillDefs.ToArray());
+                pack.skillFamilies.Add(Enemies.Enemies.Families.ToArray());
+                pack.projectilePrefabs.Add(Enemies.Enemies.Projectiles.ToArray());
+                pack.effectDefs.Add(Enemies.Enemies.EffectDefs.ToArray());
+            }
+#endif
             FirstRun.BuildEnd();
             pack.bodyPrefabs.Add(Survivors.Bodies.Values.ToArray());
             pack.survivorDefs.Add(Survivors.Defs.Values.ToArray());

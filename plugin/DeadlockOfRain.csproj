@@ -52,4 +52,11 @@
   <PropertyGroup Condition="'$(OwnFiles)' == 'true'">
     <DefineConstants>$(DefineConstants);OWN_FILES</DefineConstants>
   </PropertyGroup>
+  <!-- the enemies (plugin/Enemies, docs/11; Troopers, 2026-11-11) spawn through R2API.Director: compile-only references, fetched by
+       tools/fetch_r2api.py into build/ref/; never copied or bundled (the package lists R2API as a dependency, R2Wiki Cookbook) -->
+  <ItemGroup Condition="'$(OwnFiles)' == 'true'">
+    <Reference Include="$(MSBuildThisFileDirectory)..\build\ref\R2API.Core.dll" Private="false" />
+    <Reference Include="$(MSBuildThisFileDirectory)..\build\ref\R2API.Director.dll" Private="false" />
+    <Reference Include="$(MSBuildThisFileDirectory)..\build\ref\R2API.Addressables.dll" Private="false" />
+  </ItemGroup>
 </Project>

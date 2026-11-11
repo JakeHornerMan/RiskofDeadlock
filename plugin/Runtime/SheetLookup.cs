@@ -19,6 +19,9 @@ namespace DeadlockOfRain
         public static AnimRow Anims(string hero) => AnimRow.All.First(a => a.Hero == hero);
         public static IEnumerable<SkillRow> SkillsOf(string hero) => SkillRow.All.Where(s => s.Hero == hero);
         public static SkillRow SkillOf(string hero, string slot) => SkillRow.All.First(s => s.Hero == hero && s.Slot == slot);
+        /// <summary>An enemy type (design/enemies.json) and its attacks (enemySkills.json; docs/11).</summary>
+        public static EnemyRow Enemy(string id) => id == null ? null : EnemyRow.All.FirstOrDefault(e => e.Id == id);
+        public static IEnumerable<EnemySkillRow> EnemySkillsOf(string enemy) => EnemySkillRow.All.Where(s => s.Enemy == enemy);
 
         public static SkillRow Skill(string id)
         {
