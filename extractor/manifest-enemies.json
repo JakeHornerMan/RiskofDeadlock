@@ -28,7 +28,12 @@
         "head_health_mid",
         "head_health_low"
       ],
-      "vertexColors": []
+      "vertexColors": [
+        "vertcolor_pbr_basic",
+        "amber_trooper_01_vc",
+        "sapphire_trooper_melee_vc",
+        "sapphire_trooper_melee_head"
+      ]
     },
     {
       "id": "sapphire_trooper_01_melee",
@@ -58,7 +63,12 @@
         "head_health_mid",
         "head_health_low"
       ],
-      "vertexColors": []
+      "vertexColors": [
+        "vertcolor_pbr_basic",
+        "amber_trooper_01_vc",
+        "sapphire_trooper_melee_vc",
+        "sapphire_trooper_melee_head"
+      ]
     },
     {
       "id": "amber_trooper_01",
@@ -80,16 +90,19 @@
         "hit_react_01",
         "in_air_forced",
         "jump_land",
-        "melee_attack_01",
-        "primary_idle_has_target",
-        "primary_shoot"
+        "primary_idle_has_target"
       ],
       "split": [
         "head_health_high",
         "head_health_mid",
         "head_health_low"
       ],
-      "vertexColors": []
+      "vertexColors": [
+        "vertcolor_pbr_basic",
+        "amber_trooper_01_vc",
+        "sapphire_trooper_melee_vc",
+        "sapphire_trooper_melee_head"
+      ]
     },
     {
       "id": "sapphire_trooper_01",
@@ -111,16 +124,19 @@
         "hit_react_01",
         "in_air_forced",
         "jump_land",
-        "melee_attack_01",
-        "primary_idle_has_target",
-        "primary_shoot"
+        "primary_idle_has_target"
       ],
       "split": [
         "head_health_high",
         "head_health_mid",
         "head_health_low"
       ],
-      "vertexColors": []
+      "vertexColors": [
+        "vertcolor_pbr_basic",
+        "amber_trooper_01_vc",
+        "sapphire_trooper_melee_vc",
+        "sapphire_trooper_melee_head"
+      ]
     },
     {
       "id": "amber_medic_01",
@@ -143,15 +159,19 @@
         "hit_react_small_01",
         "idle_has_target",
         "in_air_forced",
-        "jump_land",
-        "primary_fire"
+        "jump_land"
       ],
       "split": [
         "head_health_high",
         "head_health_mid",
         "head_health_low"
       ],
-      "vertexColors": []
+      "vertexColors": [
+        "vertcolor_pbr_basic",
+        "amber_trooper_01_vc",
+        "sapphire_trooper_melee_vc",
+        "sapphire_trooper_melee_head"
+      ]
     },
     {
       "id": "sapphire_medic_01",
@@ -174,15 +194,19 @@
         "hit_react_small_01",
         "idle_has_target",
         "in_air_forced",
-        "jump_land",
-        "primary_fire"
+        "jump_land"
       ],
       "split": [
         "head_health_high",
         "head_health_mid",
         "head_health_low"
       ],
-      "vertexColors": []
+      "vertexColors": [
+        "vertcolor_pbr_basic",
+        "amber_trooper_01_vc",
+        "sapphire_trooper_melee_vc",
+        "sapphire_trooper_melee_head"
+      ]
     }
   ],
   "images": [],

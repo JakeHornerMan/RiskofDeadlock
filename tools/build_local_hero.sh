@@ -191,8 +191,12 @@ fi
 # 4. the DLL (OWN_FILES; its own output and obj folders: main's dev DLL is untouched) and the hero files beside it as heroes/
 echo "== Building the DLL"
 python "$ROOT/tools/fetch_r2api.py" >/dev/null || { echo "Could not fetch the R2API references (tools/fetch_r2api.py)"; exit 1; }
+BLOG="$OUT.build.log"
 dotnet build "$ROOT/plugin" -c Release -v q -nologo -p:OwnFiles=true \
-  -p:IntermediateOutputPath="$(cygpath -w "$OUT/obj")\\" -o "$OUT" | grep -E "error|Error\(s\)" || true
+  -p:IntermediateOutputPath="$(cygpath -w "$OUT/obj")\\" -o "$OUT" >"$BLOG" 2>&1 && BRC=0 || BRC=$?
+grep -E "error|Error\(s\)" "$BLOG" || true
+# a failed compile leaves the last good DLL in $OUT: stop here, or the old one would be packaged and installed (2026-11-11)
+if [ $BRC -ne 0 ] || grep -q "error CS" "$BLOG"; then echo "Build failed (errors above): nothing packaged or installed"; exit 1; fi
 [ -f "$OUT/DeadlockOfRain.dll" ] || { echo "Build failed"; exit 1; }
 rm -rf "$OUT/heroes"; cp -r "$C" "$OUT/heroes"; rm -f "$OUT/heroes/extract.log"
 echo "   $OUT/DeadlockOfRain.dll ($(du -h "$OUT/DeadlockOfRain.dll" | cut -f1)) and $OUT/heroes/ ($(find "$OUT/heroes" -type f | wc -l) files, $(du -sh "$OUT/heroes" | cut -f1))"

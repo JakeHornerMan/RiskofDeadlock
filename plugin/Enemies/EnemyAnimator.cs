@@ -52,8 +52,8 @@ namespace DeadlockOfRain.Enemies
             var st = anim[clip];
             st.speed = speed;
             anim.Stop(clip);
-            anim.CrossFade(clip, 0.08f);
-            gestureUntil = Time.time + st.length / Mathf.Max(0.05f, speed) - 0.08f;
+            anim.CrossFade(clip, 0.15f);
+            gestureUntil = Time.time + st.length / Mathf.Max(0.05f, speed) - 0.15f;
         }
 
         public float Length(string clip) => Has(clip) ? anim[clip].length : 0f;

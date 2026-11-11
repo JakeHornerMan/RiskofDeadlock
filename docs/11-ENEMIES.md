@@ -72,6 +72,23 @@ plugin/Enemies/TrooperDirector.cs: R2API.Director MonsterActions ─► every st
 - **Spawn cards**: human hull, ground graph, never on `NoCharacterSpawn` nodes, cost = the `costFrom` vanilla card's × `costMult`
   (read at load: the spec's "read the Lemurian's cost from the game data").
 
+### 3b. Changes from the creator's playtests (2026-11-11, later)
+- **Medic = the Mending elite** ("the healing trooper should be have the same way with the same vfx"): `enemySkills.json` `affix`
+  `bdEliteEarth`, carried for good (`MedicPulse` adds it on the server). The buff brings Mending's green tint, its healer attachment
+  (`HealNearbyController`: the green tethers), never healing another Mending monster (so never another Medic), and Mending's healer
+  core when it dies (plus our heal orb). The attachment is set to the row's `radius` (15 m) and `maxTargets` (3) with its own,
+  damage-based heal off; our heal goes to the nearest 3 hurt allies: `healPct` 8 % of their max health a second (`healPctBoss` 3 %),
+  so it stays a big problem at every level ("heal up to 3 enemys at a time make them a big problem"). Our old ring/beam effects stay
+  only for a row without an affix.
+- **Attacks stand idle** except the Melee Trooper's swing ("the animation played is bad can we just keep them stading idel"; then
+  "THE ... MELEE TROOPER ARE NOT ... DOUING THEIR ANIMATION"): Ranged and Medic attack clips `none`; the melee swing plays at
+  Deadlock's own speed (sped up to land on the windup it looked wrong), 0.15 s blend.
+- **Shots start higher**: `muzzleRaise` 0.9 Deadlock metres above the muzzle bone (Ranged, Medic) so the arc clears the floor.
+- **Materials checked against Deadlock** (line-up test `ENEMIES=lineup`): the `*_vc` / `vertcolor_pbr_basic` /
+  `sapphire_trooper_melee_head` materials have a blank 1 px texture and take their colours from the mesh (`vertexColorMaterials`):
+  the extractor keeps them and `EnemyModel` paints them into a texture as heroes' are (`asset.AtlasVertexColors`); they were white.
+  `lookTints` (one per look) tone each look a little toward Deadlock's muted copper and steel-teal.
+
 ## 4. Spawning (TrooperDirector.cs, R2API.Director 3.1.3)
 - `DirectorAPI.MonsterActions`: on every stage's `DccsPool` (Simulacrum's waves, Commencement and the Void stages use these
   pools too) each Trooper is added to Basic Monsters (`Helpers.AddNewMonster`), `minimumStageCompletions` 0, weight = the copied
@@ -88,6 +105,19 @@ plugin/Enemies/TrooperDirector.cs: R2API.Director MonsterActions ─► every st
   carries it to every player. Off: `OnMonsters` adds nothing and the spawn gate turns down any Trooper card (pools kept from an
   earlier run included).
 - R2API is a **soft** dependency of the plugin: without it the heroes load and the log says the Troopers can't spawn.
+
+- **Stage list** (`TrooperStages`, creator's "Feature: Trooper stage selection"): every stage with a monster pool in the game's
+  own data (the addressable keys `RoR2/<pack>/<scene>/dp*Monsters.asset`, matched to SceneCatalog by base scene name; DLC stages the
+  players don't own are hidden), grouped Stage 1-5 / Final / Hidden Realms / Simulacrum (Simulacrum rows named after their stage).
+  Default = the stages whose pool lists `cscLemurian` (by object or by its address GUID). Against the creator's base-game list the
+  game data agrees and adds **Siren's Call** (plus the DLC and Simulacrum stages with Lemurians). Config `Enemies / TrooperStages`
+  (`default` or base scene names), read on the host. `OnMonsters` decides each stage as it loads (`StageAllowed`, so a change counts
+  from the next stage); not allowed → no cards added and our cards and family event taken back out of the pool; the spawn gate
+  refuses Trooper cards there too.
+- **Lobby dropdown** (`TrooperStagesUi`, a postfix on `RuleCategoryController.SetData`): "Stages: N selected" under the Troopers
+  checkbox; the list (Reset to default, group headers, ticked rows) opens under it or above when there's no room; greyed and shut
+  while the Troopers box is unticked (the list is kept) and on a joining client (the host's list counts); "No stages selected -
+  Troopers won't spawn." when none.
 
 ## 5. R2API: how it is used (R2Wiki Cookbook)
 - Never bundled. `DllBuilds/package/manifest.json` lists `RiskofThunder-R2API_Core-5.3.0` and `RiskofThunder-R2API_Director-3.1.3`
@@ -118,4 +148,9 @@ States note swings, hits and shots with their distance to the target (`MeltyTest
 - Test spawns get the player as their target (`currentEnemy`, as the combat director does); monster AI sees only 90° ahead.
 - Spawn points are dropped onto the ground by a ray, not snapped to the nearest node (that stacked the Medic's group on one spot).
 - Melee swings are judged where they start (`swingstart`): walking out of reach during the windup is the dodge.
+- `ENEMIES=stages STAGE=golemplains`: the lobby dropdown (`stages-list`, `-default`, `-ui-open`, `-ui-greyed`, `-reset`) then stage
+  moves with the test's own `ServerChangeScene` (the console's `next_stage` needs cheats): `stages-untick` (Titanic Plains off),
+  `-untick-other` (Distant Roost on), `-tick` (Sky Meadow on), `-none` (nothing ticked, from the next stage). The creator's value is
+  put back afterwards.
+- `ENEMIES=lineup`: every look standing in a row, screenshots for the material check.
 - `PLAY=1 GOD=1 SPAWN=medic:5 bash tools/run_test.sh haze`: an ordinary run with those Troopers spawned in front of the player.

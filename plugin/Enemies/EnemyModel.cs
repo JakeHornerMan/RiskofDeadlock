@@ -85,6 +85,15 @@ namespace DeadlockOfRain.Enemies
             return root;
         }
 
+        static Color Tint(EnemyRow row, string id)
+        {
+            int k = System.Array.IndexOf(row.Models, id);
+            if (k < 0 || row.LookTints == null || k >= row.LookTints.Length || row.LookTints[k] == "none") return Color.white;
+            var p = row.LookTints[k].Split(',');
+            float F(int i) => p.Length > i && float.TryParse(p[i], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 1f;
+            return new Color(F(0), F(1), F(2), 1f);
+        }
+
         static EnemyLookPart BuildLook(Transform root, string id, EnemyRow row)
         {
             var asset = DeadlockCache.LoadHero(id);
@@ -104,6 +113,8 @@ namespace DeadlockOfRain.Enemies
             var infos = new List<CharacterModel.RendererInfo>();
             var health = new List<GameObject>[row.HealthMeshes.Length];
             for (int k = 0; k < health.Length; k++) health[k] = new List<GameObject>();
+            // the vertex-coloured materials (vertexColorMaterials) get a part with its own painted texture, as heroes' do
+            asset.AtlasVertexColors = true;
             var parts = asset.Parts;
             for (int s = 0; s < parts.Length; s++)
             {
@@ -119,7 +130,11 @@ namespace DeadlockOfRain.Enemies
                 smr.bones = bones;
                 smr.rootBone = armature;
                 smr.updateWhenOffscreen = true;
-                var mat = ModelBuilder.MakeMaterial(asset, def);
+                // hero: true paints the vertex-coloured materials (*_vc, vertcolor_pbr_basic) into a texture: RoR2's shader shows no vertex
+                // colours, so they came out white (2026-11-11, the creator's material check)
+                var mat = ModelBuilder.MakeMaterial(asset, def, true);
+                // the look's tone (lookTints): a little toward Deadlock's muted colours
+                if (mat.HasProperty("_Color")) mat.SetColor("_Color", mat.GetColor("_Color") * Tint(row, id));
                 smr.sharedMaterial = mat;
                 smr.shadowCastingMode = ShadowCastingMode.On;
                 infos.Add(new CharacterModel.RendererInfo { renderer = smr, defaultMaterial = mat, defaultShadowCastingMode = ShadowCastingMode.On });

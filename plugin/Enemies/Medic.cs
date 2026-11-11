@@ -24,15 +24,63 @@ namespace DeadlockOfRain.Enemies
         public bool Healing;
         public int Pulses, Healed;
 
-        void Start() { body = GetComponent<CharacterBody>(); row = EnemySkillRow.All.FirstOrDefault(s => s.Id == RowId); next = Time.fixedTime + 1f; }
+        /// <summary>The row's elite buff (affix column), carried for good: it does the healing and its visuals.</summary>
+        public BuffDef Affix;
+        HealNearbyController mend;
+
+        void Start()
+        {
+            body = GetComponent<CharacterBody>(); row = EnemySkillRow.All.FirstOrDefault(s => s.Id == RowId); next = Time.fixedTime + 1f;
+            if (row != null && row.Affix != "none")
+            {
+                var i = BuffCatalog.FindBuffIndex(row.Affix);
+                Affix = i != BuffIndex.None ? BuffCatalog.GetBuffDef(i) : null;
+                if (!Affix) Log.Warn($"{row.Id}: no buff {row.Affix}; the Medic heals with its own pulse instead");
+            }
+        }
 
         void FixedUpdate()
         {
             if (!NetworkServer.active || row == null || !body || !body.healthComponent || !body.healthComponent.alive) return;
+            // the Mending elite's buff (creator, 2026-11-11: "the healing trooper should be have the same way with the same vfx"): its
+            // attachment heals hurt allies near it each second with its green tethers, never another Mending monster, and leaves
+            // the Mending healer core when it dies. Here only whether anyone needs healing is worked out, for the AI.
+            if (Affix && !body.HasBuff(Affix)) body.AddBuff(Affix);
             if (Time.fixedTime < next) return;
             next = Time.fixedTime + row.Interval;
             var team = body.teamComponent ? body.teamComponent.teamIndex : TeamIndex.Monster;
             float r2 = row.Radius * row.Radius;
+            if (Affix)
+            {
+                // Mending's attachment draws the tethers to the nearest hurt allies: its reach and count set to the row's, its own
+                // (damage-based) heal off; the heal is ours, a share of each one's max health, so the Medic stays a big problem at
+                // every level (creator, 2026-11-11: "heal up to 3 enemys at a time make them a big problem")
+                if (!mend)
+                {
+                    mend = Object.FindObjectsOfType<HealNearbyController>().FirstOrDefault(h => h.GetComponent<NetworkedBodyAttachment>()?.attachedBody == body);
+                    if (mend)
+                    {
+                        mend.Networkradius = row.Radius;
+                        mend.NetworkmaxTargets = Mathf.Max(1, Mathf.RoundToInt(row.MaxTargets));
+                        mend.damagePerSecondCoefficient = 0f;
+                    }
+                }
+                var hurt = new List<CharacterBody>();
+                foreach (var tc in TeamComponent.GetTeamMembers(team))
+                {
+                    var b2 = tc ? tc.body : null;
+                    if (!b2 || b2 == body || !b2.healthComponent || !b2.healthComponent.alive || b2.HasBuff(Affix)) continue;
+                    if ((b2.corePosition - body.corePosition).sqrMagnitude <= r2 && b2.healthComponent.health < b2.healthComponent.fullHealth) hurt.Add(b2);
+                }
+                foreach (var b2 in hurt.OrderBy(x => (x.corePosition - body.corePosition).sqrMagnitude).Take(Mathf.Max(1, Mathf.RoundToInt(row.MaxTargets))))
+                {
+                    b2.healthComponent.Heal(b2.healthComponent.fullHealth * (b2.isChampion ? row.HealPctBoss : row.HealPct), default);
+                    Healed++;
+                }
+                Healing = hurt.Count > 0;
+                if (Healing) Pulses++;
+                return;
+            }
             var healed = new List<CharacterBody>();
             foreach (var tc in TeamComponent.GetTeamMembers(team))
             {

@@ -534,7 +534,7 @@
       "id": "medic_spawn_gate",
       "method": "harmony-prefix",
       "target": "RoR2.CombatDirector.AttemptSpawnOnTarget",
-      "purpose": "the Medic Trooper only joins a fight: its card is dropped when no other monster is within 30 m of the spawn point (DLL build only); also turns down every Trooper card when the lobby switched the Troopers off",
+      "purpose": "the Medic Trooper only joins a fight: its card is dropped when no other monster is within 30 m of the spawn point (DLL build only); also turns down every Trooper card when the lobby switched the Troopers off; and on stages not ticked in the lobby stage list",
       "reads": "enemies.*",
       "side": "server"
     },
@@ -561,6 +561,14 @@
       "purpose": "adds the lobby's orange Troopers box (a rule category with an On/Off rule) just before Items, so it sits under Karma (DLL build only)",
       "reads": "enemies.*",
       "side": "both"
+    },
+    {
+      "id": "troopers_stage_dropdown",
+      "method": "harmony-postfix",
+      "target": "RoR2.UI.RuleCategoryController.SetData",
+      "purpose": "adds the Trooper stage dropdown under the Troopers checkbox in the lobby's Risk of Deadlock box (DLL build only)",
+      "reads": "enemies.*",
+      "side": "client"
     }
   ]
 }

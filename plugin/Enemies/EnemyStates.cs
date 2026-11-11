@@ -39,11 +39,10 @@ namespace DeadlockOfRain.Enemies
             windup = row.Windup / speed; duration = row.Duration / speed;
             anim = EnemyLook.Of(characterBody)?.Animator;
             StartAimMode(duration + 0.5f);
-            // the move's clip timed so its swing (or shot) lands at the end of the windup: the raise is the counter-play
             if (anim != null && row.Clip != "none")
             {
-                float len = anim.Length(row.Clip);
-                anim.Gesture(row.Clip, len > 0f ? Mathf.Clamp(len * 0.5f / Mathf.Max(0.1f, windup), 0.5f, 2.5f) : 1f);
+                // at Deadlock's own speed (2026-11-11: sped up to land on the windup it looked bad), scaled only by attack speed
+                anim.Gesture(row.Clip, Mathf.Clamp(attackSpeedStat, 0.5f, 2f));
             }
             Begin();
         }
@@ -64,7 +63,10 @@ namespace DeadlockOfRain.Enemies
         {
             var loc = GetModelChildLocator();
             var t = loc ? loc.FindChild("Muzzle") : null;
-            return t ? t.position : (characterBody ? characterBody.corePosition : transform.position);
+            var at = t ? t.position : (characterBody ? characterBody.corePosition : transform.position);
+            // raised by the row's muzzleRaise (Deadlock metres, scaled like the model): from the gun it often hit the floor
+            var er = Sheet.Enemy(EnemyTag.Of(characterBody));
+            return er != null ? at + Vector3.up * er.MuzzleRaise * EnemyModel.Scale(er) : at;
         }
 
         protected void Sound(string ev, Vector3 at)
@@ -128,6 +130,7 @@ namespace DeadlockOfRain.Enemies
             if (!at) return;
             var go = new GameObject("ShotGlow");
             go.transform.SetParent(at, false);
+            go.transform.position = MuzzlePos();
             glow = go.AddComponent<Light>();
             glow.type = LightType.Point; glow.color = Sheet.Color(row.Color); glow.range = 3f; glow.intensity = 0f; glow.shadows = LightShadows.None;
         }

@@ -163,7 +163,7 @@ namespace DeadlockOfRain
             void Check(string name, bool ok, string why) { total++; if (ok) passed++; Write(name, ok, why); }
 
             // content: every enemy built with both looks; spawn cards; the stage's pool reached; the family; the Medic's gate
-            var built = (TestEnemies ?? new List<string>()).Select(e => "trooper_" + e).ToList();
+            var built = (TestEnemies ?? new List<string>()).Where(e => e != "stages" && e != "lineup").Select(e => "trooper_" + e).ToList();
             var missing = built.Where(e => !Enemies.Enemies.Bodies.ContainsKey(e)).ToList();
             Check("enemies-built", missing.Count == 0, missing.Count == 0 ? $"{Enemies.Enemies.Bodies.Count} built" : "missing " + string.Join(", ", missing));
             var looks = Enemies.Enemies.Bodies.Values.Select(b => b.GetComponent<ModelLocator>().modelTransform.GetComponent<EnemyLook>()).ToList();
@@ -171,7 +171,7 @@ namespace DeadlockOfRain
             var sel = ClassicStageInfo.instance ? ClassicStageInfo.instance.monsterSelection : null;
             int inPool = 0;
             if (sel != null) for (int i = 0; i < sel.Count; i++) if (Enemies.Enemies.Cards.Values.Contains(sel.GetChoice(i).value?.spawnCard)) inPool++;
-            Check("enemy-spawn-pool", TrooperDirector.StagesTouched > 0 && inPool == Enemies.Enemies.Cards.Count,
+            if (TrooperDirector.StageAllowed) Check("enemy-spawn-pool", TrooperDirector.StagesTouched > 0 && inPool == Enemies.Enemies.Cards.Count,
                 $"R2API pools touched {TrooperDirector.StagesTouched}; {inPool}/{Enemies.Enemies.Cards.Count} Trooper cards in this stage's monster list; costs " +
                 string.Join(", ", Enemies.Enemies.Cards.Select(kv => $"{kv.Key} {kv.Value.directorCreditCost}")));
             var choice = TrooperRule.Def != null && Run.instance ? Run.instance.ruleBook.GetRuleChoice(TrooperRule.Def) : null;
@@ -181,6 +181,8 @@ namespace DeadlockOfRain
             Check("enemy-family", TrooperDirector.Family("troopers") != null, "Trooper family event made");
             Check("medic-spawn-gate", !MedicSpawnGate.AlliesNear(arena + Vector3.up * 500f), "a spot with no monsters near turns the Medic down");
 
+            if (TestEnemies.Contains("stages")) { yield return StagesRun(user, Check); walk = Vector3.zero; Log.Info($"Melty test finished: enemies {passed + lobbyPassed}/{total + lobbyTotal} checks passed"); yield break; }
+            if (TestEnemies.Contains("lineup")) yield return LineupTest(body, side);
             if (TestEnemies.Contains("melee")) yield return MeleeTest(body, side, Check);
             if (TestEnemies.Contains("ranged")) yield return RangedTest(body, Check);
             if (TestEnemies.Contains("medic")) yield return MedicTest(body, side, Check);
@@ -188,6 +190,130 @@ namespace DeadlockOfRain
             walk = Vector3.zero;
             Clear();
             Log.Info($"Melty test finished: enemies {passed}/{total} checks passed");
+        }
+
+        // ---- the Trooper stage list (ENEMIES=stages; the creator's "Feature: Trooper stage selection" tests) ----
+        static string stagesBefore;
+        static int lobbyPassed, lobbyTotal;
+        static void LobbyCheck(string name, bool ok, string why) { lobbyTotal++; if (ok) lobbyPassed++; Write(name, ok, why); }
+
+        /// <summary>In the lobby: the dropdown's rows, the default, opening it, greying it with the Troopers box unticked (the list
+        /// kept), Reset to default. Leaves a list for the run: the Lemurian's minus Titanic Plains, plus Sky Meadow.</summary>
+        internal static IEnumerator LobbyStages()
+        {
+            float t0 = Time.unscaledTime;
+            while ((!TrooperStages.Ready || !TrooperStagesUi.Instance) && Time.unscaledTime - t0 < 40f) yield return null;
+            var ui = TrooperStagesUi.Instance;
+            stagesBefore = TrooperStages.Selected.Value;
+            var vis = TrooperStages.Visible.ToList();
+            var groups = vis.Select(s => s.Group).Distinct().ToList();
+            LobbyCheck("stages-list", TrooperStages.Ready && vis.Count > 0 && vis.All(s => s.Owned) && groups.All(g => g.StartsWith("Stage ") || g == "Final" || g == "Hidden Realms" || g == "Simulacrum"),
+                $"{vis.Count} of {TrooperStages.All.Count} stages shown (owned), groups {string.Join(", ", groups)}: " + string.Join(", ", vis.Select(s => $"{s.Group}/{s.Name}")));
+            TrooperStages.Reset();
+            var lem = TrooperStages.LemurianKeys;
+            LobbyCheck("stages-default", TrooperStages.IsDefault && TrooperStages.Current().SetEquals(lem) && lem.Contains("golemplains") && lem.Contains("blackbeach") && !lem.Contains("skymeadow"),
+                "default = the Lemurian stages: " + string.Join(", ", lem.OrderBy(x => x)));
+            if (!ui) { LobbyCheck("stages-ui-open", false, "no dropdown in the lobby"); yield break; }
+            ui.Open(true);
+            yield return new WaitForSeconds(1f);
+            Shot("lobby_stages_open");
+            LobbyCheck("stages-ui-open", ui.PanelOpen && ui.RowCount == vis.Count, $"open {ui.PanelOpen}, {ui.RowCount} rows for {vis.Count} stages");
+            // untick the Troopers box (the host's vote): greyed and closed, the list kept
+            TrooperStages.Set(lem.Where(k => k != "golemplains").Concat(new[] { "skymeadow" }));
+            var chosen = TrooperStages.Selected.Value;
+            var voter = PreGameRuleVoteController.FindForUser(LocalUserManager.GetFirstLocalUser()?.currentNetworkUser);
+            if (voter && TrooperRule.Def != null) voter.SetVote(TrooperRule.Def.globalIndex, 1);
+            t0 = Time.unscaledTime;
+            while (ui.Interactable && Time.unscaledTime - t0 < 5f) yield return null;
+            yield return new WaitForSeconds(0.5f);
+            Shot("lobby_stages_greyed");
+            bool greyed = !ui.Interactable && !ui.PanelOpen;
+            ui.Open(true);
+            bool stayedShut = !ui.PanelOpen;
+            if (voter && TrooperRule.Def != null) voter.SetVote(TrooperRule.Def.globalIndex, 0);
+            t0 = Time.unscaledTime;
+            while (!ui.Interactable && Time.unscaledTime - t0 < 5f) yield return null;
+            LobbyCheck("stages-ui-greyed", greyed && stayedShut && ui.Interactable && TrooperStages.Selected.Value == chosen,
+                $"greyed {greyed}, would not open {stayedShut}, back on {ui.Interactable}, list kept {TrooperStages.Selected.Value == chosen}");
+            TrooperStages.Set(new[] { "golemplains" });
+            TrooperStages.Reset();
+            bool reset = TrooperStages.Current().SetEquals(lem);
+            TrooperStages.Set(lem.Where(k => k != "golemplains").Concat(new[] { "skymeadow" }));
+            LobbyCheck("stages-reset", reset, "Reset to default gives the Lemurian list back");
+        }
+
+        static IEnumerator GoTo(LocalUser user, string scene)
+        {
+            var old = user.cachedBody;
+            UnityEngine.Networking.NetworkManager.singleton.ServerChangeScene(scene);
+            float t0 = Time.unscaledTime;
+            while ((UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != scene || !user.cachedBody || user.cachedBody == old) && Time.unscaledTime - t0 < 90f) yield return null;
+            yield return new WaitForSeconds(2f);
+            QuietStage();
+        }
+
+        static int TrooperCards()
+        {
+            var sel = ClassicStageInfo.instance ? ClassicStageInfo.instance.monsterSelection : null;
+            int n = 0;
+            if (sel != null) for (int i = 0; i < sel.Count; i++) if (Enemies.Enemies.Cards.Values.Contains(sel.GetChoice(i).value?.spawnCard)) n++;
+            return n;
+        }
+
+        /// <summary>In the run: the list the lobby left (no Titanic Plains, Sky Meadow added) decides each stage as it loads.</summary>
+        IEnumerator StagesRun(LocalUser user, System.Action<string, bool, string> Check)
+        {
+            var here = SceneCatalog.mostRecentSceneDef;
+            Check("stages-untick", !TrooperDirector.StageAllowed && TrooperCards() == 0,
+                $"{here?.cachedName}: allowed {TrooperDirector.StageAllowed}, {TrooperCards()} Trooper cards in its monster list");
+            yield return GoTo(user, "blackbeach");
+            Check("stages-untick-other", TrooperDirector.StageAllowed && TrooperCards() == 3, $"blackbeach: allowed {TrooperDirector.StageAllowed}, {TrooperCards()} Trooper cards");
+            yield return GoTo(user, "skymeadow");
+            Check("stages-tick", TrooperDirector.StageAllowed && TrooperCards() == 3, $"skymeadow (not a Lemurian stage): allowed {TrooperDirector.StageAllowed}, {TrooperCards()} Trooper cards");
+            // nothing ticked: from the next stage on, none anywhere (the stage running keeps what it had)
+            TrooperStages.Set(new string[0]);
+            bool kept = TrooperDirector.StageAllowed;
+            yield return GoTo(user, "blackbeach");
+            Check("stages-none", kept && !TrooperDirector.StageAllowed && TrooperCards() == 0 && TrooperStages.Current().Count == 0,
+                $"the running stage kept its Troopers {kept}; blackbeach after: allowed {TrooperDirector.StageAllowed}, {TrooperCards()} cards");
+            TrooperStages.Selected.Value = stagesBefore ?? TrooperStages.Default;
+            Log.Info($"Melty test: stage list put back to '{TrooperStages.Selected.Value}'");
+        }
+
+        /// <summary>Every enemy in each of its looks, standing still in a row facing the camera, for comparing the materials with
+        /// Deadlock (creator, 2026-11-11). Two shots: the whole row, then each pair closer.</summary>
+        IEnumerator LineupTest(CharacterBody p, Vector3 side)
+        {
+            Put(p, arena);
+            var made = new List<CharacterBody>();
+            var rows = EnemyRow.All.Where(r => Enemies.Enemies.Masters.ContainsKey(r.Id)).ToList();
+            int n = rows.Sum(r => r.Models.Length), i = 0;
+            foreach (var r in rows)
+                for (int k = 0; k < r.Models.Length; k++, i++)
+                {
+                    var e = SpawnEnemy(r.Id, arena + arenaForward * 13f + side * ((i - (n - 1) * 0.5f) * 3.2f), false);
+                    if (!e) continue;
+                    made.Add(e);
+                    yield return null;
+                    var lk = EnemyLook.Of(e);
+                    if (lk) lk.Pick(k);
+                    if (e.characterDirection) { e.characterDirection.forward = -arenaForward; e.characterDirection.moveVector = Vector3.zero; }
+                }
+            // the camera looks the way the player faces: at the row
+            if (p.inputBank) p.inputBank.aimDirection = arenaForward;
+            yield return new WaitForSeconds(3f);
+            Shot("trooper_lineup");
+            for (int r = 0; r < rows.Count; r++)
+            {
+                int first = rows.Take(r).Sum(x => x.Models.Length);
+                var mid = arena + arenaForward * 13f + side * (((first + (rows[r].Models.Length - 1) * 0.5f) - (n - 1) * 0.5f) * 3.2f);
+                Put(p, Ground(mid - arenaForward * 7f));
+                yield return new WaitForSeconds(1.5f);
+                Shot("trooper_lineup_" + rows[r].Id);
+            }
+            Log.Info("enemy lineup: " + string.Join(", ", made.Select(e => $"{e.name} look {EnemyLook.Of(e)?.Shown}")));
+            Clear();
+            yield return new WaitForSeconds(1f);
         }
 
         IEnumerator MeleeTest(CharacterBody p, Vector3 side, System.Action<string, bool, string> Check)
@@ -311,10 +437,22 @@ namespace DeadlockOfRain
             float medicHealed = 0f;
             // the Medic's own regen counts as healing too: only a heal of its pulse size would be the pulse
             if (healedBy.TryGetValue(medic, out var mh)) medicHealed = mh;
-            Check("trooper-medic-heal", unhealed.Count == 0 && medicHealed < medic.healthComponent.fullHealth * 0.04f,
-                $"healed {group.Count - unhealed.Count}/{group.Count} ({string.Join(", ", group.Select(b => $"{b.name.Replace("(Clone)", "")} +{(healedBy.TryGetValue(b, out var a) ? a : 0f):F0}"))}); the Medic itself +{medicHealed:F0}" + (unhealed.Count > 0 ? "; not healed: " + string.Join(", ", unhealed) : ""));
+            // with the Mending buff, Mending's own rules: the nearest hurt allies, up to its target cap
+            var mend = pulse && pulse.Affix ? Object.FindObjectsOfType<HealNearbyController>().FirstOrDefault(h => h.GetComponent<NetworkedBodyAttachment>()?.attachedBody == medic) : null;
+            int need = mend ? Mathf.Min(group.Count, Mathf.Max(1, mend.maxTargets)) : group.Count;
+            Check("trooper-medic-heal", group.Count - unhealed.Count >= need && medicHealed < medic.healthComponent.fullHealth * 0.04f,
+                $"healed {group.Count - unhealed.Count}/{group.Count}, needed {need} ({string.Join(", ", group.Select(b => $"{b.name.Replace("(Clone)", "")} +{(healedBy.TryGetValue(b, out var a) ? a : 0f):F0}"))}); the Medic itself +{medicHealed:F0}" + (unhealed.Count > 0 ? "; not healed: " + string.Join(", ", unhealed) : ""));
             int pulses = (pulse ? pulse.Pulses : 0) - pulses0, rings = MedicFx.RingsShown - rings0;
-            Check("trooper-medic-fx", pulses >= 6 && rings >= pulses - 1 && MedicFx.BeamsShown > 0, $"{pulses} pulses in 8 s, {rings} rings and {MedicFx.BeamsShown} beams shown here");
+            if (pulse && pulse.Affix)
+            {
+                // the Mending elite's own healer attachment on the Medic, tethered to the hurt group (its green beams)
+                var hnc = Object.FindObjectsOfType<HealNearbyController>().FirstOrDefault(h => h.GetComponent<NetworkedBodyAttachment>()?.attachedBody == medic);
+                bool tethered = hnc && (bool)HarmonyLib.AccessTools.Field(typeof(HealNearbyController), "isTetheredToAtLeastOneObject").GetValue(hnc);
+                Check("trooper-medic-fx", medic.HasBuff(pulse.Affix) && hnc && tethered,
+                    $"Mending buff {medic.HasBuff(pulse.Affix)}, healer attachment {(hnc ? $"yes (radius {hnc.radius:F0} m, up to {hnc.maxTargets} at a time, {hnc.damagePerSecondCoefficient:F2} x damage {medic.damage:F0} a second)" : "no")}, tethered {tethered}, {pulses} seconds with someone to heal");
+            }
+            else
+                Check("trooper-medic-fx", pulses >= 6 && rings >= pulses - 1 && MedicFx.BeamsShown > 0, $"{pulses} pulses in 8 s, {rings} rings and {MedicFx.BeamsShown} beams shown here");
             // nobody left to heal: it fights like a Ranged Trooper, 15-30 m away, shooting
             foreach (var b in group) if (b && b.master) { targets.Remove(b); b.master.TrueKill(); }
             notes.Clear();

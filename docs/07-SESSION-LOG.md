@@ -1884,3 +1884,20 @@ check, ground spawns, swing starts) and `SPAWN=` play option.
 **Results:** `ENEMIES=melee,ranged,medic STAGE=golemplains run_test.sh haze`: 21/21 pass; the swing clip plays on spawned Troopers.
 **Lessons:** check components on a *spawned* copy, not the prefab; custom serializable classes from our assembly don't survive
 Instantiate; close the game after every test run (the creator asked why it was still open).
+
+### 2026-11-11 (evening) · Troopers: Mending Medic, stage dropdown, material check · DLL build only
+**Requests (verbatim, short):** "Mending elite the healing trooper shoul be have the same way with the same vfx ... also on the
+character select page the title should be Risk fo Deadlock and troopers should be in the box witha check box"; "the animation played
+is bad can we just keep them stading idel! also the shooting point is too low"; "let the healer heal up to 3 enemys at a time make
+them a big problem"; the pasted "Feature: Trooper stage selection" spec plus "the lsit should be a drop donw and it should not be
+selectable when the troopers checkbox is disabled"; "THE ... MELEE TROOPER ARE NOT ... DOUING THEIR ANIMATION"; "CAN YOU PLEASE
+VALIDATE THAT THE MATREIAL IN GAME MATCH WHAT WE ARE SEEING IN DEADLOCK DONT BE AFRAID TO EDIT THEMA TINY BIT TO FIT THE ROR2 STYLE".
+**Asked → answered:** Simulacrum stages in the dropdown → their own group.
+**Done:** Medic = Mending (`bdEliteEarth`) with tethers at 15 m / 3 targets and our 8 % heal; lobby box "Risk of Deadlock" with a
+"Troopers" label; Ranged/Medic attacks idle, the melee swing back at natural speed; `muzzleRaise`; `TrooperStages` + `TrooperStagesUi`
+(stage list from the game's pools, Lemurian default, config, host's choice, greyed when off, kept on screen); vertex-coloured
+materials painted (they were white) and `lookTints`; `build_local_hero.sh` now stops on a failed compile (it had installed the old
+DLL twice); `ENEMIES=stages` and `ENEMIES=lineup` tests.
+**Results:** see the commit; the stage checks 9/9; the game's Lemurian list = the creator's base-game list plus Siren's Call.
+**Lessons:** an attack clip and "idle" are per enemy (the creator wanted only the shooters idle); read the build log, not the exit
+code, until the script was fixed; compare the line-up against the creator's Deadlock pictures before calling the materials right.

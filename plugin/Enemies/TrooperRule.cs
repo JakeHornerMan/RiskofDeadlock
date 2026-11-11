@@ -2,11 +2,14 @@
 using System;
 using HarmonyLib;
 using RoR2;
+using RoR2.UI;
+using TMPro;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace DeadlockOfRain.Enemies
 {
-    /// <summary>The lobby's "Troopers" box (creator, 2026-11-11: "underneath the Karma on the right side can we have a orange box in
+    /// <summary>The lobby's "Risk of Deadlock" box with its "Troopers" checkbox (creator, 2026-11-11: "underneath the Karma on the right side can we have a orange box in
     /// the same style with a check box for Troopers this will enable and disable troopers in a players game"): a rule category of
     /// RoR2's own rule catalogue, added straight after Karma, with one rule whose two choices are a ticked and an empty box. The lobby
     /// votes it and the run's rule book carries it to every player, like the artifacts. Off: TrooperDirector leaves the Troopers out of
@@ -34,9 +37,11 @@ namespace DeadlockOfRain.Enemies
         static void Add()
         {
             var tokens = Survivors.Tokens;
-            tokens[Header] = "Troopers";
-            tokens["DLR_RULE_HEADER_TROOPERS_SUBTITLE"] = "Deadlock's lane Troopers among the monsters";
-            tokens["DLR_RULE_HEADER_TROOPERS_EDIT"] = "Switch the Troopers on or off for this run";
+            // the box is Risk of Deadlock's; the Troopers are a ticked item in it (creator, 2026-11-11: "the title should be Risk fo
+            // Deadlock and troopers should be in the box witha check box that will turn them on and off")
+            tokens[Header] = "Risk of Deadlock";
+            tokens["DLR_RULE_HEADER_TROOPERS_SUBTITLE"] = "Risk of Deadlock's extras for this run";
+            tokens["DLR_RULE_HEADER_TROOPERS_EDIT"] = "Tick or untick the Troopers for this run";
             tokens["DLR_RULE_TROOPERS_NAME"] = "Troopers";
             tokens["DLR_RULE_TROOPERS_ON_DESC"] = "<style=cIsHealing>On:</style> Melee, Ranged and Medic Troopers spawn with the other monsters, from stage 1.";
             tokens["DLR_RULE_TROOPERS_OFF_DESC"] = "<style=cDeath>Off:</style> no Troopers spawn in this run.";
@@ -64,7 +69,48 @@ namespace DeadlockOfRain.Enemies
             return !(Run.instance.ruleBook.GetRuleChoice(Def)?.extraData is bool b) || b;
         }
 
+        /// <summary>The choice's icon in the lobby gets the word "Troopers" beside it, in the lobby's own font (the grid shows icons
+        /// only).</summary>
+        [HarmonyPatch(typeof(RuleChoiceController), nameof(RuleChoiceController.SetChoice))]
+        static class Label
+        {
+            const string Name = "DeadlockTroopersLabel";
+
+            static void Postfix(RuleChoiceController __instance, RuleChoiceDef newChoiceDef)
+            {
+                try
+                {
+                    bool ours = Def != null && newChoiceDef != null && newChoiceDef.ruleDef == Def;
+                    var old = __instance.transform.Find(Name);
+                    if (!ours) { if (old) old.gameObject.SetActive(false); return; }
+                    if (old) { old.gameObject.SetActive(true); return; }
+                    var cat = __instance.GetComponentInParent<RuleCategoryController>();
+                    TMP_Text src = cat && cat.categoryHeaderLanguageController ? cat.categoryHeaderLanguageController.GetComponent<TMP_Text>() : null;
+                    if (!src) src = Object.FindObjectOfType<TextMeshProUGUI>();
+                    var go = new GameObject(Name, typeof(RectTransform));
+                    var rt = (RectTransform)go.transform;
+                    rt.SetParent(__instance.transform, false);
+                    rt.anchorMin = rt.anchorMax = new Vector2(1f, 0.5f);
+                    rt.pivot = new Vector2(0f, 0.5f);
+                    rt.anchoredPosition = new Vector2(10f, 0f);
+                    rt.sizeDelta = new Vector2(220f, 40f);
+                    var le = go.AddComponent<UnityEngine.UI.LayoutElement>(); le.ignoreLayout = true;
+                    var text = go.AddComponent<HGTextMeshProUGUI>();
+                    if (src) { text.font = src.font; text.fontSharedMaterial = src.fontSharedMaterial; }
+                    text.text = "Troopers";
+                    text.fontSize = src ? Mathf.Max(18f, src.fontSize * 0.85f) : 24f;
+                    text.alignment = TextAlignmentOptions.MidlineLeft;
+                    text.color = Color.white;
+                    text.raycastTarget = false;
+                    text.enableWordWrapping = false;
+                }
+                catch (Exception e) { Log.Warn($"Enemies: Troopers label: {e.Message}"); }
+            }
+        }
+
         /// <summary>The choice's icon, drawn here: a square box in the Troopers' orange, ticked when on.</summary>
+        internal static Sprite BoxSprite(bool ticked) => Box(ticked);
+
         static Sprite Box(bool ticked)
         {
             const int n = 128;

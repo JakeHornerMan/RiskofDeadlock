@@ -41,8 +41,18 @@ namespace DeadlockOfRain.Enemies
         static void OnMonsters(DccsPool pool, List<DirectorAPI.DirectorCardHolder> mix, DirectorAPI.StageInfo stage)
         {
             if (!Enemies.Enabled.Value || Enemies.Cards.Count == 0 || !pool) return;
-            // the lobby's Troopers box (TrooperRule) set to off for this run
-            if (!TrooperRule.OnThisRun()) { Log.Info("Enemies: Troopers switched off in the lobby for this run"); return; }
+            // decided once as the stage loads, so a change in the lobby list counts from the next stage: the lobby's Troopers box
+            // (TrooperRule) and the ticked stages (TrooperStages, the host's config)
+            var scene = SceneCatalog.FindSceneDef(stage.ToInternalStageName()) ?? SceneCatalog.mostRecentSceneDef;
+            StageAllowed = TrooperRule.OnThisRun() && TrooperStages.Allowed(scene);
+            StageKey = TrooperStages.KeyOf(scene);
+            if (!StageAllowed)
+            {
+                // pools are assets that keep what an earlier stage added: take our cards and family event back out
+                RemoveFrom(pool);
+                Log.Info($"Enemies: no Troopers on {StageKey} ({(TrooperRule.OnThisRun() ? "not ticked in the lobby's stage list" : "switched off in the lobby")})");
+                return;
+            }
             StagesTouched++;
             var dccsList = new List<DirectorCardCategorySelection>();
             DirectorAPI.Helpers.ForEachPoolEntryInDccsPool(pool, e => { if (e != null && e.dccs) dccsList.Add(e.dccs); });
@@ -102,6 +112,37 @@ namespace DeadlockOfRain.Enemies
             }
         }
 
+        /// <summary>This stage's decision (OnMonsters): may the Troopers spawn here. True until a stage has been decided.</summary>
+        public static bool StageAllowed = true;
+        public static string StageKey;
+
+        static void RemoveFrom(DccsPool pool)
+        {
+            var ours = new HashSet<SpawnCard>(Enemies.Cards.Values);
+            int cards = 0, fams = 0;
+            DirectorAPI.Helpers.ForEachPoolEntryInDccsPool(pool, e =>
+            {
+                if (e == null || !e.dccs) return;
+                for (int i = 0; i < e.dccs.categories.Length; i++)
+                {
+                    var cs = e.dccs.categories[i].cards;
+                    if (cs == null) continue;
+                    var kept = cs.Where(x => x == null || !x.spawnCard || !ours.Contains(x.spawnCard)).ToArray();
+                    cards += cs.Length - kept.Length;
+                    e.dccs.categories[i].cards = kept;
+                }
+            });
+            var famSet = new HashSet<DirectorCardCategorySelection>(families.Values.Where(f => f));
+            foreach (var c in pool.poolCategories)
+            {
+                if (c.includedIfConditionsMet == null) continue;
+                int n = c.includedIfConditionsMet.Length;
+                c.includedIfConditionsMet = c.includedIfConditionsMet.Where(e => e == null || !famSet.Contains(e.dccs)).ToArray();
+                fams += n - c.includedIfConditionsMet.Length;
+            }
+            if (cards + fams > 0) Log.Info($"Enemies: took {cards} Trooper cards and {fams} family events out of this stage's pool");
+        }
+
         public static FamilyDirectorCardCategorySelection Family(string name) => families.TryGetValue(name, out var f) ? f : null;
     }
 
@@ -118,8 +159,9 @@ namespace DeadlockOfRain.Enemies
         {
             var card = current(__instance);
             if (card == null || !card.spawnCard) return true;
-            // the lobby switched the Troopers off: no Trooper card spawns (a pool or family event kept from an earlier run included)
-            if (!TrooperRule.OnThisRun() && Enemies.Cards.ContainsValue(card.spawnCard as CharacterSpawnCard))
+            // the lobby switched the Troopers off, or this stage isn't ticked: no Trooper card spawns (a pool or family event kept
+            // from an earlier stage or run included)
+            if ((!TrooperRule.OnThisRun() || !TrooperDirector.StageAllowed) && Enemies.Cards.ContainsValue(card.spawnCard as CharacterSpawnCard))
             {
                 current(__instance) = null; __result = false; return false;
             }

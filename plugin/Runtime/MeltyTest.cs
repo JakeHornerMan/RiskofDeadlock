@@ -239,6 +239,10 @@ namespace DeadlockOfRain
             while (!PreGameController.instance && Time.unscaledTime - t0 < 60f) yield return null;
             yield return new WaitForSeconds(3f);
             Shot("lobby");
+#if OWN_FILES
+            // ENEMIES=stages: the lobby's Trooper stage dropdown (EnemyTest.LobbyStages)
+            if (TestEnemies != null && TestEnemies.Contains("stages")) yield return LobbyStages();
+#endif
             yield return new WaitForSeconds(0.5f);
             if (PreGameController.instance) RoR2.Console.instance.SubmitCmd(null, "pregame_start_run");
             t0 = Time.unscaledTime;

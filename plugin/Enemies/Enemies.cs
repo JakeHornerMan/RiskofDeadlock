@@ -40,8 +40,9 @@ namespace DeadlockOfRain.Enemies
         public static void Init(ConfigFile config)
         {
             Enabled = config.Bind("Enemies", "Troopers", true,
-                "Deadlock's Troopers (Melee, Ranged, Medic) join the monsters on every stage. Off: they never spawn.");
+                "Deadlock's Troopers (Melee, Ranged, Medic) join the monsters on the stages ticked in the lobby (Enemies / TrooperStages). Off: they never spawn.");
             GlobalEventManager.onCharacterDeathGlobal += OnDeath;
+            TrooperStages.Init(config);
         }
 
         /// <summary>The projectile of an enemy's shot row (null when it has none).</summary>
