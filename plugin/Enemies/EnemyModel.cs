@@ -149,7 +149,6 @@ namespace DeadlockOfRain.Enemies
 
             var anim = go.AddComponent<EnemyAnimator>();
             anim.Setup(id, row, asset, bones);
-            var rb = BuildRagdoll(go, bones, row, anim);
             var part = go.AddComponent<EnemyLookPart>();
             part.Infos = infos.ToArray();
             part.LocatorNames = pairs.Select(x => x.name).ToArray();
@@ -157,59 +156,15 @@ namespace DeadlockOfRain.Enemies
             part.HealthParts = health.SelectMany(h => h).ToArray();
             part.HealthStageOf = health.SelectMany((h, k) => h.Select(_ => k)).ToArray();
             part.HealthStages = health.Length;
-            part.Animator = anim; part.Ragdoll = rb;
+            part.Animator = anim;
             return part;
-        }
-
-        /// <summary>A death ragdoll on the look's own bones (RoR2's RagdollController), as ModelBuilder gives heroes.</summary>
-        static RagdollController BuildRagdoll(GameObject look, Transform[] bones, EnemyRow row, EnemyAnimator anim)
-        {
-            var list = new List<Transform>();
-            foreach (var n in row.RagdollBones) { var t = n == "none" ? null : ModelBuilder.Find(bones, n); if (t) list.Add(t); }
-            if (list.Count < 2) return null;
-            var parentOf = new Dictionary<Transform, Transform>();
-            foreach (var b in list)
-                for (var p = b.parent; p; p = p.parent)
-                    if (list.Contains(p)) { parentOf[b] = p; break; }
-            foreach (var b in list)
-            {
-                Transform end = null;
-                foreach (var c in list) if (parentOf.TryGetValue(c, out var pp) && pp == b) { end = c; break; }
-                if (!end) { float far = 0f; foreach (Transform c in b) { float d = (c.position - b.position).sqrMagnitude; if (d > far) { far = d; end = c; } } }
-                var seg = end ? b.InverseTransformPoint(end.position) : Vector3.up * 0.15f;
-                if (seg.magnitude < 0.05f) seg = Vector3.up * 0.15f;
-                b.gameObject.layer = LayerIndex.ragdoll.intVal;
-                var body = b.gameObject.AddComponent<Rigidbody>();
-                body.isKinematic = true; body.mass = 5f;
-                var cap = b.gameObject.AddComponent<CapsuleCollider>();
-                cap.direction = Mathf.Abs(seg.x) > Mathf.Abs(seg.y) ? (Mathf.Abs(seg.x) > Mathf.Abs(seg.z) ? 0 : 2) : (Mathf.Abs(seg.y) > Mathf.Abs(seg.z) ? 1 : 2);
-                cap.center = seg * 0.5f;
-                cap.radius = Mathf.Max(0.01f, 0.3f * seg.magnitude);
-                cap.height = seg.magnitude + cap.radius;
-                cap.enabled = false;
-            }
-            foreach (var b in list)
-            {
-                if (!parentOf.TryGetValue(b, out var par)) continue;
-                var j = b.gameObject.AddComponent<CharacterJoint>();
-                j.connectedBody = par.GetComponent<Rigidbody>();
-                j.enableProjection = true;
-                j.lowTwistLimit = new SoftJointLimit { limit = -30f };
-                j.highTwistLimit = new SoftJointLimit { limit = 30f };
-                j.swing1Limit = new SoftJointLimit { limit = 50f };
-                j.swing2Limit = new SoftJointLimit { limit = 40f };
-            }
-            var rc = look.AddComponent<RagdollController>();
-            rc.bones = list.ToArray();
-            rc.componentsToDisableOnRagdoll = new MonoBehaviour[] { anim };
-            return rc;
         }
     }
 
-    /// <summary>One look of an enemy (amber, sapphire), on that look's root: its renderers, child-locator points, health head meshes,
-    /// animator and ragdoll. Only Unity objects, strings, numbers and their arrays, so Unity copies it onto every spawned body
-    /// (2026-11-11: a [Serializable] data class in EnemyLook came out empty on the copies: no look, no attack clips, no candle, no
-    /// ragdoll; only the prefab had them).</summary>
+    /// <summary>One look of an enemy (amber, sapphire), on that look's root: its renderers, child-locator points, health head meshes
+    /// and animator. Only Unity objects, strings, numbers and their arrays, so Unity copies it onto every spawned body
+    /// (2026-11-11: a [Serializable] data class in EnemyLook came out empty on the copies: no look, no attack clips, no candle; only
+    /// the prefab had them).</summary>
     public sealed class EnemyLookPart : MonoBehaviour
     {
         public CharacterModel.RendererInfo[] Infos;
@@ -219,7 +174,6 @@ namespace DeadlockOfRain.Enemies
         public int[] HealthStageOf;
         public int HealthStages;
         public EnemyAnimator Animator;
-        public RagdollController Ragdoll;
 
         public ChildLocator.NameTransformPair[] Pairs()
         {
@@ -246,8 +200,6 @@ namespace DeadlockOfRain.Enemies
 
         /// <summary>The animator of the look shown on this body (null before Start).</summary>
         public EnemyAnimator Animator => look ? look.Animator : null;
-        /// <summary>The ragdoll of the look shown (its death state starts it).</summary>
-        public RagdollController Ragdoll => look ? look.Ragdoll : null;
         // through the body's EnemyTag first (2026-11-11: through the model locator it came back empty on spawned Troopers, so no attack
         // or flinch clip ever played)
         public static EnemyLook Of(CharacterBody b)
@@ -307,6 +259,27 @@ namespace DeadlockOfRain.Enemies
                 if (dead) flame.enabled = false;
                 else flame.intensity = flameBase * (0.85f + 0.15f * Mathf.PerlinNoise(Time.time * 6f, GetInstanceID() * 0.01f)) * Mathf.Lerp(0.5f, 1f, f);
             }
+        }
+    }
+
+    /// <summary>A dead enemy's model fading out the way RoR2's corpses do (creator, 2026-11-11: "can they die like all the other
+    /// enemys and just fade out ... dont make all the bones on the rig spaz out"; the old ragdoll threw the bones about): it holds its
+    /// last pose for Hold seconds, then CharacterModel.corpseFade (the dither fade of RoR2's shader) goes from 1 to 0 over Fade seconds
+    /// (vanilla Corpse.dissolveTime), and the model goes. Runs on every machine.</summary>
+    public sealed class EnemyFade : MonoBehaviour
+    {
+        public float Hold = 0.5f, Fade = 1f;
+        CharacterModel cm;
+        float t;
+        public float Value => cm ? cm.corpseFade : 0f;
+
+        void Start() { cm = GetComponent<CharacterModel>(); }
+
+        void Update()
+        {
+            t += Time.deltaTime;
+            if (cm) cm.corpseFade = Mathf.Clamp01(1f - (t - Hold) / Mathf.Max(0.05f, Fade));
+            if (t >= Hold + Fade + 0.1f) Destroy(gameObject);
         }
     }
 }

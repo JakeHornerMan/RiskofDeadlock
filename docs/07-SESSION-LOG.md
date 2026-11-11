@@ -1901,3 +1901,11 @@ DLL twice); `ENEMIES=stages` and `ENEMIES=lineup` tests.
 **Results:** see the commit; the stage checks 9/9; the game's Lemurian list = the creator's base-game list plus Siren's Call.
 **Lessons:** an attack clip and "idle" are per enemy (the creator wanted only the shooters idle); read the build log, not the exit
 code, until the script was fixed; compare the line-up against the creator's Deadlock pictures before calling the materials right.
+
+### 2026-11-11 (night) · Troopers: fade out on death · DLL build only
+**Request (verbatim):** "OK NOW LET WORK ON THE DEATH OF THE TROOPER WTF ALL THE BONES ON THE RIG ARE GONUIG EVERY WHERE AND SPAZING
+OUT... CAN THEY DIE LIKE ALL THE OTHER ENEMYS ANMD JSUT FADE OUT PLEASE!" (and before it: had the DLL build's icon been replaced? —
+no: `DllBuilds/package/icon.png` is pixel-identical to the creator's `Desktopiskofdeadlock.png` and in every zip).
+**Done:** the ragdoll is gone (no rigidbodies or joints on the bones; `ragdollBones` none); `EnemyDeath` freezes the pose and
+`EnemyFade` fades the model out with `CharacterModel.corpseFade` (vanilla corpses' dither fade), the model kept past the body so the
+fade finishes; `trooper-death-fade` test; 1.6.6.

@@ -222,7 +222,9 @@ namespace DeadlockOfRain.Enemies
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Death;
     }
 
-    /// <summary>Death: the shown look goes limp (its ragdoll), the candle goes out, Deadlock's death sound.</summary>
+    /// <summary>Death like RoR2's own monsters (creator, 2026-11-11: "die like all the other enemys and just fade out"): the pose
+    /// holds where it is (no ragdoll: it threw every bone about), the candle goes out, Deadlock's death sound, and the model fades
+    /// out (EnemyFade). The model is kept past the body (preserveModel) so the fade is never cut short; EnemyFade removes it.</summary>
     public sealed class EnemyDeath : GenericCharacterDeath
     {
         protected override void PlayDeathSound()
@@ -234,8 +236,19 @@ namespace DeadlockOfRain.Enemies
         protected override void PlayDeathAnimation(float crossfadeDuration = 0.1f)
         {
             var look = EnemyLook.Of(characterBody);
-            var rd = look ? look.Ragdoll : null;
-            if (rd) rd.BeginRagdoll(characterDirection ? -characterDirection.forward * 200f + Vector3.up * 200f : Vector3.up * 200f);
+            var anim = look ? look.Animator : null;
+            if (anim)
+            {
+                // the clips stop sampling: the bones keep the pose they have
+                anim.enabled = false;
+                var a = anim.GetComponent<Animation>();
+                if (a) a.enabled = false;
+            }
+            var model = cachedModelTransform;
+            if (!model) return;
+            if (modelLocator) { modelLocator.preserveModel = true; modelLocator.noCorpse = true; }
+            if (!model.GetComponent<EnemyFade>()) model.gameObject.AddComponent<EnemyFade>();
+            MeltyTest.EnemyNote("death", characterBody);
         }
     }
 

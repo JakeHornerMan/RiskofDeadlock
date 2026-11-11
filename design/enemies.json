@@ -1,6 +1,6 @@
 {
   "sheet": "enemies",
-  "about": "Monsters built from Deadlock NPCs (2026-11-11, the creator's Trooper spec; docs/11-ENEMIES.md). Each row is one enemy type: a clone of a vanilla monster's body and master (cloneBody/cloneMaster: its AI drivers, hull and death come along), with a Deadlock model read from the creator's own NPC files (models: one per look, picked per spawn by its network id; vmdls: their paths in the rip). Stats are RoR2 base values (health/damage per level as RoR2 levels them). costFrom is the vanilla spawn card whose credit cost and weight are multiplied by costMult/weightMult on every stage. family: enemies sharing it make a family event. keepMin/keepMax: the distance band the AI holds from its target while its secondary is ready (0 = the vanilla drivers' own); fleeRange: backs off when the player is closer (0 = never). sourceHeight: the body's height in Deadlock metres (the extractor's 'height', without the Medic's banner), scaled by the heroes' shared factor; width: the hurtbox radius in Deadlock metres. sizeMult: the body, model, hitbox and capsule scaled on top of that (creator, 2026-11-11: \"make all trooper like 1.5 time thir height\"). Clip columns name the model's own clips; meshes: the model's meshes read (every look's main mesh; its gib copy, *_fractured_model, is left out). healthMeshes: Deadlock's melting-candle health readout, the head meshes shown from full to low health (one at a time, by thirds). localOnly: the creator's own DLL build only (Troopers: 2026-11-11). Unused cells are 0 or none. muzzleRaise: shots start this many Deadlock metres above the muzzle bone (creator, 2026-11-11: \"the shooting point is too low ... so it doesnt hit into the floor as often\"). vertexColorMaterials: materials Deadlock colours by the mesh's vertex colours (their texture is a blank 1 px white): the extractor keeps the colours and the plugin paints them into a texture (RoR2's shader shows none; they came out white, 2026-11-11). lookTints: one \"r,g,b\" per look (models order) multiplied into every material of that look, a small tone toward Deadlock's muted copper and steel-teal (creator, 2026-11-11: \"VALIDATE THAT THE MATREIAL IN GAME MATCH WHAT WE ARE SEEING IN DEADLOCK DONT BE AFRAID TO EDIT THEM A TINY BIT TO FIT THE ROR2 STYLE\").",
+  "about": "Monsters built from Deadlock NPCs (2026-11-11, the creator's Trooper spec; docs/11-ENEMIES.md). Each row is one enemy type: a clone of a vanilla monster's body and master (cloneBody/cloneMaster: its AI drivers, hull and death come along), with a Deadlock model read from the creator's own NPC files (models: one per look, picked per spawn by its network id; vmdls: their paths in the rip). Stats are RoR2 base values (health/damage per level as RoR2 levels them). costFrom is the vanilla spawn card whose credit cost and weight are multiplied by costMult/weightMult on every stage. family: enemies sharing it make a family event. keepMin/keepMax: the distance band the AI holds from its target while its secondary is ready (0 = the vanilla drivers' own); fleeRange: backs off when the player is closer (0 = never). sourceHeight: the body's height in Deadlock metres (the extractor's 'height', without the Medic's banner), scaled by the heroes' shared factor; width: the hurtbox radius in Deadlock metres. sizeMult: the body, model, hitbox and capsule scaled on top of that (creator, 2026-11-11: \"make all trooper like 1.5 time thir height\"). Clip columns name the model's own clips; meshes: the model's meshes read (every look's main mesh; its gib copy, *_fractured_model, is left out). healthMeshes: Deadlock's melting-candle health readout, the head meshes shown from full to low health (one at a time, by thirds). localOnly: the creator's own DLL build only (Troopers: 2026-11-11). Unused cells are 0 or none. muzzleRaise: shots start this many Deadlock metres above the muzzle bone (creator, 2026-11-11: \"the shooting point is too low ... so it doesnt hit into the floor as often\"). vertexColorMaterials: materials Deadlock colours by the mesh's vertex colours (their texture is a blank 1 px white): the extractor keeps the colours and the plugin paints them into a texture (RoR2's shader shows none; they came out white, 2026-11-11). lookTints: one \"r,g,b\" per look (models order) multiplied into every material of that look, a small tone toward Deadlock's muted copper and steel-teal (creator, 2026-11-11: \"VALIDATE THAT THE MATREIAL IN GAME MATCH WHAT WE ARE SEEING IN DEADLOCK DONT BE AFRAID TO EDIT THEM A TINY BIT TO FIT THE ROR2 STYLE\"). ragdollBones: unused since 2026-11-11 (none): a dead enemy holds its pose and fades out like RoR2's monsters; the ragdoll threw every bone about.",
   "columns": [
     "id",
     "name",
@@ -111,18 +111,7 @@
       "muzzleBone": "laser_melee",
       "muzzleRaise": 0.0,
       "ragdollBones": [
-        "pelvis",
-        "spine_0",
-        "spine_1",
-        "head",
-        "arm_upper_L",
-        "arm_lower_L",
-        "arm_upper_R",
-        "arm_lower_R",
-        "leg_upper_L",
-        "leg_lower_L",
-        "leg_upper_R",
-        "leg_lower_R"
+        "none"
       ],
       "spawnSound": "Trooper.Deploy.Impact",
       "deathSound": "Trooper.Death",
@@ -193,18 +182,7 @@
       "muzzleBone": "laser",
       "muzzleRaise": 0.9,
       "ragdollBones": [
-        "pelvis",
-        "spine_0",
-        "spine_1",
-        "head",
-        "arm_upper_L",
-        "arm_lower_L",
-        "arm_upper_R",
-        "arm_lower_R",
-        "leg_upper_L",
-        "leg_lower_L",
-        "leg_upper_R",
-        "leg_lower_R"
+        "none"
       ],
       "spawnSound": "Trooper.Deploy.Impact",
       "deathSound": "Trooper.Death",
@@ -276,18 +254,7 @@
       "muzzleBone": "laser",
       "muzzleRaise": 0.9,
       "ragdollBones": [
-        "pelvis",
-        "spine_0",
-        "spine_1",
-        "head",
-        "arm_upper_L",
-        "arm_lower_L",
-        "arm_upper_R",
-        "arm_lower_R",
-        "leg_upper_L",
-        "leg_lower_L",
-        "leg_upper_R",
-        "leg_lower_R"
+        "none"
       ],
       "spawnSound": "Trooper.Deploy.Impact",
       "deathSound": "Trooper.Death",

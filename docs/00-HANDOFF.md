@@ -288,6 +288,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 ## 9. Last work: the Troopers, an enemy system (2026-11-11; playtest fixes done, 21/21 in game)
 - Evening: Mending Medic, the lobby stage dropdown (`TrooperStages`, `TrooperStagesUi`), idle shooters, material fixes; 1.6.5 for
   r2modman (doc 07, doc 11 §3b/§4).
+- Night: Troopers fade out on death like vanilla monsters (no ragdoll), 1.6.6.
 - Later the same day: animations on spawned Troopers fixed (`EnemyLookPart`), 1.5x size, the right sounds, arcing shots, the lobby
   Troopers box; installed for the creator (doc 07).
 - Deadlock's Melee, Ranged and Medic Troopers as RoR2 monsters, the creator's DLL build only (doc 11, doc 07 entry).

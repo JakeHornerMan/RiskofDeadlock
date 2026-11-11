@@ -31,8 +31,9 @@ plugin/Enemies/TrooperDirector.cs: R2API.Director MonsterActions ─► every st
   the model swapped as heroes' are (`ModelLocator._modelTransform`, `CharacterModel.body`, hurtboxes). Stats from the row;
   `rootMotionInMainState` off (the Beetle walks by its Mecanim root motion, which our clips lack: it never moved).
   The vanilla capsule is scaled to `sourceHeight × GlobalScale` (the heroes' shared factor: Deadlock size, creator's choice).
-  Spawn state `EnemySpawn` (Lemurian's spawn effect and sound, the deploy sound, the landing clip), death `EnemyDeath` (the shown
-  look's ragdoll, Deadlock's death sound), stagger `EnemyHurt` at `staggerPct` (SetStateOnHurt.hitThreshold). The vanilla death and
+  Spawn state `EnemySpawn` (Lemurian's spawn effect and sound, the deploy sound, the landing clip), death `EnemyDeath` (like RoR2's
+  monsters: the pose holds, Deadlock's death sound, the model fades out through `CharacterModel.corpseFade` over 1 s after 0.5 s,
+  `EnemyFade`; no ragdoll since 2026-11-11, it threw every bone about), stagger `EnemyHurt` at `staggerPct` (SetStateOnHurt.hitThreshold). The vanilla death and
   bark sounds and the logbook unlock are cleared.
 - **Model** (`EnemyModel`): every look (amber, sapphire) under one root, all their renderers listed in `CharacterModel` (it turns
   every listed renderer on each frame), the unshown look and health heads switched off through their GameObjects. `EnemyLook`
@@ -55,7 +56,7 @@ plugin/Enemies/TrooperDirector.cs: R2API.Director MonsterActions ─► every st
   model, capsule, hurtbox and melee hitbox (`EnemyModel.Scale`).
 - **Unity copies**: per-look data lives on an `EnemyLookPart` component on each look's root (Unity objects, strings, numbers and
   arrays of them only). A `[Serializable]` class from our assembly came out empty on every spawned body (no look, no attack clip,
-  no candle, no ragdoll; only the prefab had them) — test on a spawned copy (`enemy-look-spawned`), never on the prefab.
+  no candle; only the prefab had them) — test on a spawned copy (`enemy-look-spawned`), never on the prefab.
 - **AI** (`Drivers`): the vanilla drivers are replaced by our list (first match wins):
   - Melee: Hit (≤ reach, skill ready) · Close (≤ reach, stand beside) · ChaseDirect (≤ 8 m, straight at it, off the node graph:
     on the graph it overshot a standing target) · Chase.

@@ -186,6 +186,7 @@ namespace DeadlockOfRain
             if (TestEnemies.Contains("melee")) yield return MeleeTest(body, side, Check);
             if (TestEnemies.Contains("ranged")) yield return RangedTest(body, Check);
             if (TestEnemies.Contains("medic")) yield return MedicTest(body, side, Check);
+            if (TestEnemies.Contains("melee") || TestEnemies.Contains("ranged") || TestEnemies.Contains("medic")) yield return DeathTest(body, side, Check);
 
             walk = Vector3.zero;
             Clear();
@@ -314,6 +315,50 @@ namespace DeadlockOfRain
             Log.Info("enemy lineup: " + string.Join(", ", made.Select(e => $"{e.name} look {EnemyLook.Of(e)?.Shown}")));
             Clear();
             yield return new WaitForSeconds(1f);
+        }
+
+        /// <summary>Each Trooper killed (AI off): no bone flies (no rigidbody that moves, no bone more than 0.3 m from its pose at
+        /// death, measured within the model: the corpse itself may settle), the model fades out (corpseFade to 0) and is gone within 3 s (creator, 2026-11-11: "just fade out").</summary>
+        IEnumerator DeathTest(CharacterBody p, Vector3 side, System.Action<string, bool, string> Check)
+        {
+            Put(p, arena);
+            var rows = EnemyRow.All.Where(r => Enemies.Enemies.Masters.ContainsKey(r.Id)).ToList();
+            var bodies = rows.Select((r, i) => SpawnEnemy(r.Id, arena + arenaForward * 8f + side * ((i - (rows.Count - 1) * 0.5f) * 3.5f), false)).Where(b => b).ToList();
+            yield return new WaitForSeconds(2f);
+            var watch = new List<(string id, Transform model, Transform[] bones, Vector3[] start)>();
+            foreach (var b in bodies)
+            {
+                var model = b.modelLocator ? b.modelLocator.modelTransform : null;
+                var bones = model ? model.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.gameObject.activeInHierarchy).SelectMany(r => r.bones).Where(x => x).Distinct().ToArray() : new Transform[0];
+                watch.Add((EnemyTag.Of(b), model, bones, null));
+                b.healthComponent.Suicide();
+            }
+            yield return new WaitForSeconds(0.05f);
+            // bone positions in the model's own space: the whole corpse may settle as the body lands; a bone may not move on its own
+            for (int i = 0; i < watch.Count; i++) { var w = watch[i]; watch[i] = (w.id, w.model, w.bones, w.bones.Select(x => x && w.model ? w.model.InverseTransformPoint(x.position) : Vector3.zero).ToArray()); }
+            float moved = 0f; bool movingBody = false, faded = false; float fadeAt = -1f;
+            float t0 = Time.time;
+            bool shot1 = false, shot2 = false;
+            while (Time.time - t0 < 3f)
+            {
+                foreach (var w in watch)
+                {
+                    if (!w.model) continue;
+                    for (int k = 0; k < w.bones.Length; k++) if (w.bones[k]) moved = Mathf.Max(moved, Vector3.Distance(w.model.InverseTransformPoint(w.bones[k].position), w.start[k]) * w.model.lossyScale.x);
+                    if (w.model.GetComponentsInChildren<Rigidbody>().Any(r => !r.isKinematic)) movingBody = true;
+                    var f = w.model.GetComponent<EnemyFade>();
+                    if (f && f.Value <= 0.001f && fadeAt < 0f) fadeAt = Time.time - t0;
+                }
+                if (!shot1 && Time.time - t0 > 0.3f) { shot1 = true; Shot("trooper_death_hold"); }
+                if (!shot2 && Time.time - t0 > 1.0f) { shot2 = true; Shot("trooper_death_fading"); }
+                yield return null;
+            }
+            bool gone = watch.All(w => !w.model);
+            faded = fadeAt >= 0f && fadeAt <= 2.5f;
+            Check("trooper-death-fade", !movingBody && moved <= 0.3f && faded && gone,
+                $"{watch.Count} killed: bones moved at most {moved:F2} m, moving rigidbodies {movingBody}, faded out at {fadeAt:F1} s, models gone {gone}");
+            foreach (var b in bodies) targets.Remove(b);
+            yield return new WaitForSeconds(0.5f);
         }
 
         IEnumerator MeleeTest(CharacterBody p, Vector3 side, System.Action<string, bool, string> Check)
