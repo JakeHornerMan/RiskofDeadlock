@@ -175,7 +175,9 @@ namespace DeadlockOfRain.Enemies
     public sealed class MedicFollow : MonoBehaviour
     {
         public const string FollowDriver = "FollowAllies", StayDriver = "StayBehindAllies";
-        const float Search = 40f, Group = 10f, Behind = 20f;
+        // Behind: past the group's middle, away from the target, but close enough that the pulse (15 m) reaches the group's far side
+        // (2026-11-11: 20 m left the far members out of reach)
+        const float Search = 40f, Group = 10f, Behind = 7f;
         BaseAI ai;
         CharacterMaster master;
         AISkillDriver[] follow;

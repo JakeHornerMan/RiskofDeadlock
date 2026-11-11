@@ -59,6 +59,10 @@ namespace DeadlockOfRain
             var m = new MasterSummon { masterPrefab = prefab, position = Ground(at), rotation = Quaternion.identity, teamIndexOverride = TeamIndex.Monster, ignoreTeamMemberLimit = true }.Perform();
             if (!m) return null;
             if (!ai) foreach (var a in m.GetComponents<BaseAI>()) a.enabled = false;
+            // as the combat director does for its spawns: the player is its target from the start (a monster's AI otherwise sees only
+            // what is within 90 degrees in front of it, and the test spawns it facing any way)
+            else if (enemyTarget)
+                foreach (var a in m.GetComponents<BaseAI>()) { a.currentEnemy.gameObject = enemyTarget.gameObject; a.enemyAttention = a.enemyAttentionDuration; }
             var b = m.GetBody();
             if (b) targets.Add(b);
             return b;
@@ -81,14 +85,27 @@ namespace DeadlockOfRain
             targets.Clear();
         }
 
+        /// <summary>One line on what the enemy's AI is doing (target, driver, state, distance): for reading a failed check.</summary>
+        static void LogAi(CharacterBody e, CharacterBody p)
+        {
+            var ai = e && e.master ? e.master.GetComponent<BaseAI>() : null;
+            var esm = e ? EntityStateMachine.FindByCustomName(e.gameObject, "Body") : null;
+            Log.Info($"enemy ai {(e ? e.name : "none")}: ai {(ai ? (ai.enabled ? "on" : "off") : "none")}, target {(ai && ai.currentEnemy != null && ai.currentEnemy.gameObject ? ai.currentEnemy.gameObject.name : "none")}, " +
+                $"driver {(ai && ai.skillDriverEvaluation.dominantSkillDriver ? ai.skillDriverEvaluation.dominantSkillDriver.customName : "none")}, state {(esm ? esm.state?.GetType().Name : "?")}, " +
+                $"move {(e && e.inputBank ? e.inputBank.moveVector.ToString("F2") : "?")}, dist {Dist(e, p):F1}, player at {(p ? p.footPosition.ToString("F1") : "?")} vis {(p ? p.GetVisibilityLevel(TeamIndex.Monster).ToString() : "?")}; " +
+                $"body at {(e ? e.footPosition.ToString("F1") : "?")} speed {(e ? e.moveSpeed : 0f):F1}, motor {(e && e.characterMotor ? $"{(e.characterMotor.enabled ? "on" : "off")} grounded {e.characterMotor.isGrounded} vel {e.characterMotor.velocity:F1} dir {e.characterMotor.moveDirection:F2} kcm {(e.characterMotor.Motor ? e.characterMotor.Motor.enabled.ToString() : "none")}" : "none")}" +
+                $", capsule {(e && e.GetComponent<CapsuleCollider>() ? $"h {e.GetComponent<CapsuleCollider>().height:F2} r {e.GetComponent<CapsuleCollider>().radius:F2} c {e.GetComponent<CapsuleCollider>().center.y:F2}" : "none")}");
+        }
+
         static float Dist(CharacterBody a, CharacterBody b) => a && b ? Vector3.Distance(Flat(a.footPosition), Flat(b.footPosition)) : -1f;
 
-        /// <summary>The player walks (its own controller off, the test pushes the move input each physics step).</summary>
+        /// <summary>The player walks: the test moves its body each physics step (root motion at its move speed). Its controller stays
+        /// on: with no enabled PlayerCharacterMasterController the stage counts every player gone and ends the run (Stage.FixedUpdate).</summary>
         static Vector3 walk;
-        static PlayerCharacterMasterController walkerPcmc;
         void FixedUpdate()
         {
-            if (walkerPcmc && enemyTarget && enemyTarget.inputBank) enemyTarget.inputBank.moveVector = walk;
+            if (walk != Vector3.zero && enemyTarget && enemyTarget.characterMotor)
+                enemyTarget.characterMotor.rootMotion += walk * enemyTarget.moveSpeed * Time.fixedDeltaTime;
         }
 
         IEnumerator EnemyRun(LocalUser user)
@@ -100,8 +117,6 @@ namespace DeadlockOfRain
             arenaForward = body.inputBank.aimDirection; arenaForward.y = 0; arenaForward.Normalize();
             arena = FindArena(body.footPosition, ref arenaForward);
             Put(body, arena);
-            walkerPcmc = user.cachedMaster.GetComponent<PlayerCharacterMasterController>();
-            if (walkerPcmc) walkerPcmc.enabled = false;
             var side = Vector3.Cross(Vector3.up, arenaForward);
             int passed = 0, total = 0;
             void Check(string name, bool ok, string why) { total++; if (ok) passed++; Write(name, ok, why); }
@@ -126,7 +141,6 @@ namespace DeadlockOfRain
             if (TestEnemies.Contains("medic")) yield return MedicTest(body, side, Check);
 
             walk = Vector3.zero;
-            if (walkerPcmc) walkerPcmc.enabled = true;
             Clear();
             Log.Info($"Melty test finished: enemies {passed}/{total} checks passed");
         }
@@ -145,6 +159,7 @@ namespace DeadlockOfRain
             {
                 walk = (((int)(s / 3f)) % 2 == 0 ? side : -side) * 0.6f;
                 closest = Mathf.Min(closest, Dist(p, t));
+                if (Mathf.Repeat(s, 1f) < Time.fixedDeltaTime) LogAi(t, p);
                 yield return new WaitForFixedUpdate();
             }
             walk = Vector3.zero;
@@ -156,6 +171,7 @@ namespace DeadlockOfRain
             for (float s = 0f; s < 8f; s += 0.1f)
             {
                 if (s > 2f) wander = Mathf.Max(wander, Dist(p, t));
+                if (Mathf.Repeat(s + 0.01f, 0.5f) < 0.1f) LogAi(t, p);
                 yield return new WaitForSeconds(0.1f);
             }
             Shot("trooper_melee_hold");

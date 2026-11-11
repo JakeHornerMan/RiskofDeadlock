@@ -127,6 +127,9 @@ namespace DeadlockOfRain.Enemies
             cb.baseMaxHealth = row.Health; cb.levelMaxHealth = row.HealthLvl;
             cb.baseDamage = row.Damage; cb.levelDamage = row.DamageLvl;
             cb.baseMoveSpeed = row.Speed; cb.levelMoveSpeed = 0f;
+            // the Beetle walks by its Mecanim clip's root motion (GenericCharacterMain then ignores the move input); our clips play
+            // without it, so the body moves from its input like a Lemurian (2026-11-11: the Melee Trooper never took a step)
+            cb.rootMotionInMainState = false;
             cb.baseArmor = row.Armor; cb.levelArmor = 0f;
 
             // size: the vanilla capsule scaled to the trooper's height (Deadlock metres x the heroes' shared factor)
@@ -254,7 +257,13 @@ namespace DeadlockOfRain.Enemies
             {
                 D("Hit", SkillSlot.Primary, 0f, prim.Reach, chase);
                 if (prim.MaxRange > prim.Reach) D("CloseChase", SkillSlot.None, 0f, prim.MaxRange, chase);
-                else D("Close", SkillSlot.None, 0f, Mathf.Max(1f, prim.Reach - 1f), stop);
+                else
+                {
+                    // waits beside the target for the whole reach; close up it walks straight at it, off the node graph, as the
+                    // vanilla melee monsters do (2026-11-11: on the graph it overshot a player standing still and wandered 4-7 m off)
+                    D("Close", SkillSlot.None, 0f, prim.Reach, stop);
+                    D("ChaseDirect", SkillSlot.None, 0f, 8f, chase).ignoreNodeGraph = true;
+                }
             }
             if (sec != null)
             {

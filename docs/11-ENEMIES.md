@@ -28,7 +28,8 @@ plugin/Enemies/TrooperDirector.cs: R2API.Director MonsterActions ─► every st
 
 ## 3. How a Trooper is built (Enemies.cs)
 - **Body**: the `cloneBody` prefab (Beetle / Lemurian) instantiated under the inactive prefab holder, a stable network asset id,
-  the model swapped as heroes' are (`ModelLocator._modelTransform`, `CharacterModel.body`, hurtboxes). Stats from the row.
+  the model swapped as heroes' are (`ModelLocator._modelTransform`, `CharacterModel.body`, hurtboxes). Stats from the row;
+  `rootMotionInMainState` off (the Beetle walks by its Mecanim root motion, which our clips lack: it never moved).
   The vanilla capsule is scaled to `sourceHeight × GlobalScale` (the heroes' shared factor: Deadlock size, creator's choice).
   Spawn state `EnemySpawn` (Lemurian's spawn effect and sound, the deploy sound, the landing clip), death `EnemyDeath` (the shown
   look's ragdoll, Deadlock's death sound), stagger `EnemyHurt` at `staggerPct` (SetStateOnHurt.hitThreshold). The vanilla death and
@@ -43,7 +44,8 @@ plugin/Enemies/TrooperDirector.cs: R2API.Director MonsterActions ─► every st
   `TrooperMelee` hitbox after the windup, rooted meanwhile. Shot: the muzzle glows for the windup, then the Lemurian's fireball
   (recoloured ghost, `projectileSpeed`). The clip is sped so its swing lands at the end of the windup.
 - **AI** (`Drivers`): the vanilla drivers are replaced by our list (first match wins):
-  - Melee: Hit (≤ reach, skill ready) · Close (stand beside) · Chase.
+  - Melee: Hit (≤ reach, skill ready) · Close (≤ reach, stand beside) · ChaseDirect (≤ 8 m, straight at it, off the node graph:
+    on the graph it overshot a standing target) · Chase.
   - Ranged: Hit (≤ 3 m) · CloseChase (≤ 7 m) · Shoot (7–30 m, line of sight, **stands still**) · BackOff (7–15 m) · Hold (15–30 m) · Chase.
     The spec says "strafe while waiting" but its test fails a Trooper that keeps moving once the target is back in range, so it
     stands (2026-11-11).
@@ -52,8 +54,8 @@ plugin/Enemies/TrooperDirector.cs: R2API.Director MonsterActions ─► every st
 - **Medic** (`Medic.cs`): `MedicPulse` (server, every `interval`): every other living, hurt monster of its team within `radius`,
   not another Medic, heals `healPct` (`healPctBoss` on champions). Visuals through two of our own `EffectDef`s (sent to every
   player once): a green ground ring with RoR2's heal-nova chime (`ror2Sound`), a green beam to each healed monster and crosses
-  rising off it; RoR2's own heal flash shows on their bodies. `MedicFollow` keeps a marker 20 m beyond the nearest ally group,
-  away from its target. Its death drops Monster Tooth's `HealPack` (8 + 2 %, 10 s) for the players.
+  rising off it; RoR2's own heal flash shows on their bodies. `MedicFollow` keeps a marker 7 m beyond the middle of the nearest ally
+  group, away from its target (behind them but with the whole group inside its 15 m pulse; 20 m left the far side unhealed). Its death drops Monster Tooth's `HealPack` (8 + 2 %, 10 s) for the players.
 - **Spawn cards**: human hull, ground graph, never on `NoCharacterSpawn` nodes, cost = the `costFrom` vanilla card's × `costMult`
   (read at load: the spec's "read the Lemurian's cost from the game data").
 

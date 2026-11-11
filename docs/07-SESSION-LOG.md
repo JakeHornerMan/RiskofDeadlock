@@ -1862,3 +1862,9 @@ signed in, then tuning; a co-op run; `build_local_hero.sh all charactersFinal --
 `build_local_hero.sh --uninstall` so the Steam copy is main's dev build again.
 **Lessons:** read clip names from the `edit/*.glb` before choosing clips; check models for gib copies; Deadlock's trooper health
 readout is mesh swapping, not a clip.
+**Test runs (after Steam sign-in, creator: "please clsoe and run your test!"):** 12/16 → 15/16. Fixed: the test switched the
+player's controller off to walk them, and a stage with no enabled PlayerCharacterMasterController ends the run (now root motion,
+controller on); test spawns get the player as target, as the director's do (AI sees only 90° ahead); the Beetle walks by Mecanim root
+motion (`rootMotionInMainState` off, the Melee Trooper never moved); the Medic stood 20 m behind its group with a 15 m pulse (now
+7 m, the far Lemurian went unhealed); the Melee Trooper overshot on the node graph (Close ≤ reach, ChaseDirect ≤ 8 m off-graph).
+The last full run (for the melee-hold fix) was stopped by Claude Code for low memory; not rerun yet.
