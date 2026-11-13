@@ -8,8 +8,9 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat
 - **Balance pages:** [Balance overview](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3). These are just design sheets: how I make sure every hero is balanced for the Risk of Rain 2 universe.
 
 ## Requirements
-- Built with Risk of Rain 2 build 25921972 (2026-11-10).
+- Built with Risk of Rain 2 build 25921972 (2026-11-11).
 - Risk of Rain 2 on Steam, with **BepInExPack** (bbepis, 5.4.2122) and **RoR2BepInExPack** (RiskofThunder, 1.49.0 or newer). r2modman lists both as this package's dependencies.
+- **R2API_Core** and **R2API_Director** (RiskofThunder) for the Troopers' spawning; r2modman lists them as dependencies too.
 - No Deadlock install needed. Every hero's files come with the mod, in the `heroes` folder beside the DLL.
 
 ## Installation
@@ -44,6 +45,9 @@ Every hero's abilities, numbers and measured damage next to their Risk of Rain 2
 - **Pocket:** The Black Sheep, Barrage, Flying Cloak, Enchanter's Satchel; Q **Frog Form** (the case pops open and you leap out as a frog; every landing, on the ground or on an enemy, slams and stuns). One jump plus an air dash.
 - **Victor:** **Memento Mori** on Left Click (a gun that spins up while you hold it), **Jumpstart** on Right Click (shock yourself for 10 health: +1 Pain and +30 % move speed for 5 s), Pain Battery, **Aura of Suffering** (a toggle that hurts you and siphons everything near you, growing with Pain); Q **Shocking Reanimation** (rise into a lightning strike that stuns everything within 30 m, then 20 s of 10 Ukuleles and 10 Tesla Coils). Every enemy hit you take adds a **Pain** stack: +15 % attack speed each, up to 10.
 - **Paige:** **Chapter's End** on Left Click (glowing spirit pages that pierce up to 3 enemies), **Bookwyrm** on Right Click (her ghostly wyvern flies through the target breathing green fire on the floor, leaving it burning), **Captivating Read** on Shift (a magic circle that slows, then her giant spirit sword slams down and immobilizes), **Rallying Charge** on R (a row of 5 spectral knights charges, trampling and stunning enemies and healing allies); Q **The Green Knight** (one giant green knight that grows stronger the further it rides). **Plot Armor:** +25 % damage while you're below 40 % health. Every spirit is see-through ghost green.
+- **Deadlock's Troopers as enemies** on every stage: the **Melee Trooper** (swings after a clear wind-up), the **Ranged Trooper**
+  (shoots from 15-30 m) and the **Medic Trooper** (heals the monsters around it every second; kill it first, it drops a healing
+  orb). Amber or sapphire, their candles melt as they lose health. Some stages are a Trooper family event. Config: Enemies / Troopers.
 - Deadlock voice lines at the right moments; co-op with up to 4 players (everyone needs the same build).
 
 ## Community

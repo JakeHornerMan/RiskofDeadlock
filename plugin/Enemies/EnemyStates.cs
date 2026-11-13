@@ -244,6 +244,8 @@ namespace DeadlockOfRain.Enemies
                 var a = anim.GetComponent<Animation>();
                 if (a) a.enabled = false;
             }
+            // plumes of smoke in the look's colour (enemyDrops.json)
+            DeathSmoke.Play(characterBody);
             var model = cachedModelTransform;
             if (!model) return;
             if (modelLocator) { modelLocator.preserveModel = true; modelLocator.noCorpse = true; }

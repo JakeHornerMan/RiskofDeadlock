@@ -2,6 +2,42 @@
 
 One version line, one number up per build. Newest first.
 
+## 1.6.6
+- Built with Risk of Rain 2 build 25921972 (2026-11-11).
+- **Troopers die like RoR2's monsters:** they stop where they fall and fade out, instead of their bones flying about.
+
+## 1.6.5
+- Built with Risk of Rain 2 build 25921972 (2026-11-11).
+- **Pick the Troopers' stages.** Under the Troopers tick in the lobby's Risk of Deadlock box there is now a stage list: tick the
+  stages Troopers may spawn on, grouped Stage 1-5, Final, Hidden Realms and Simulacrum. By default it's every stage the Lemurian
+  spawns on; "Reset to default" brings that back. It greys out while the Troopers are switched off, and in multiplayer the host's
+  list counts. A change takes effect from the next stage.
+- **The Medic Trooper heals like a Mending elite:** green, with Mending's healing beams, up to 3 monsters at once and hard enough that
+  you'll want to kill it first. It leaves Mending's healing core when it dies.
+- The Ranged and Medic Troopers shoot from higher up (fewer shots into the floor) and stand still while they do; the Melee Trooper's
+  swing plays at its natural speed.
+- The Troopers' colours now match Deadlock: parts that showed plain white (the sapphire Melee Trooper's head, some trim) have their
+  real colours, and the candles are a little less bright.
+
+## 1.6.4
+- Built with Risk of Rain 2 build 25921972 (2026-11-11).
+- **New enemies: Deadlock's Troopers.** Three Troopers now join the monsters on every stage from the start of a run, in amber or
+  sapphire at random, with twice the health of the monster they copy:
+  - **Melee Trooper** (like a Beetle): runs at you and swings after a clear wind-up, so you can back off or dodge.
+  - **Ranged Trooper** (like a Lemurian): stops 15-30 m away and shoots a bolt you can see and sidestep; up close it hits you.
+  - **Medic Trooper:** hangs back behind the other monsters and heals every one near it each second (green ring, beams and
+    crosses), but never itself or another Medic. Kill it first: it drops a healing orb.
+  - Their candle shows how hurt they are, melting down as they lose health, and goes out when they die.
+  - They stand 1.5 times taller than before, the Ranged and Medic shots fly in an arc you can see coming, and each Trooper plays
+    its own Deadlock sounds (the Melee Trooper's heavy swing, the rifle shot and its impact, the drop-in and the death cry).
+  - Some stages are a **Trooper family event**.
+  - **Troopers box in the lobby**, under Karma: an orange box with a tick. Untick it to play a run without Troopers.
+    (They can also be switched off for good in the config, Enemies / Troopers.)
+  - Needs **R2API** (Core and Director), now listed as dependencies: r2modman installs them.
+- **Smoother with Paige and Victor:** Paige no longer freezes for over a second the first time she uses each move (her
+  wyvern, knights, sword and magic-circle textures are now built on the loading screen, which takes a few seconds longer).
+  Victor's gun makes far fewer flash and spark effects while it is spun up. On the test both now run as smoothly as Haze.
+
 ## 1.6.3
 - Built with Risk of Rain 2 build 25921972 (2026-11-10).
 - **Victor's Jumpstart blasts:** as the lightning lands on him, everything within 5 m takes 250 % damage: green bolts strike

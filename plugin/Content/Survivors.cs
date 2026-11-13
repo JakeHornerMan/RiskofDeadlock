@@ -714,6 +714,7 @@ namespace DeadlockOfRain
                 pack.skillFamilies.Add(Enemies.Enemies.Families.ToArray());
                 pack.projectilePrefabs.Add(Enemies.Enemies.Projectiles.ToArray());
                 pack.effectDefs.Add(Enemies.Enemies.EffectDefs.ToArray());
+                if (Enemies.SoulOrb.Body) pack.bodyPrefabs.Add(new[] { Enemies.SoulOrb.Body });
             }
 #endif
             FirstRun.BuildEnd();

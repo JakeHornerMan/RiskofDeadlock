@@ -1905,7 +1905,22 @@ code, until the script was fixed; compare the line-up against the creator's Dead
 ### 2026-11-11 (night) · Troopers: fade out on death · DLL build only
 **Request (verbatim):** "OK NOW LET WORK ON THE DEATH OF THE TROOPER WTF ALL THE BONES ON THE RIG ARE GONUIG EVERY WHERE AND SPAZING
 OUT... CAN THEY DIE LIKE ALL THE OTHER ENEMYS ANMD JSUT FADE OUT PLEASE!" (and before it: had the DLL build's icon been replaced? —
-no: `DllBuilds/package/icon.png` is pixel-identical to the creator's `Desktopiskofdeadlock.png` and in every zip).
+no: `DllBuilds/package/icon.png` is pixel-identical to the creator's `Desktop
+iskofdeadlock.png` and in every zip).
 **Done:** the ragdoll is gone (no rigidbodies or joints on the bones; `ragdollBones` none); `EnemyDeath` freezes the pose and
 `EnemyFade` fades the model out with `CharacterModel.corpseFade` (vanilla corpses' dither fade), the model kept past the body so the
 fade finishes; `trooper-death-fade` test; 1.6.6.
+
+### 2026-11-11/12 · Troopers: coloured death smoke and soul orbs · DLL build only
+**Request (verbatim):** "ok new feature, when the trooper explod they alwa have plooms of smoke in their color variant and a sould will
+arise from the heath is you shoot you will gain 5 currency money ... soould ord disappear after 5 scond and if you dont destroy them
+you dont get the money and they disapear! please use the correct sfx for soulorbs either breaking them or missing them!"; later
+"mkase sure this work is not very impactful on performance!".
+**Asked → answered:** where the orb files come from → "do i not have my own sfx??? if not do not use them and do not steal anything
+that isnt mine" (so RoR2's own sounds, the creator's own glow texture from charactersFinal/npc/walker); money → always 5; co-op →
+the player who broke it.
+**Done:** `design/enemyDrops.json` (gen, preflight: own folders only), walker images extracted, `SoulOrb.cs` (Time Crystal clone,
+states, reward, look) and `DeathSmoke`, tests. Performance: shared materials and mesh (a new material per orb/smoke was never
+freed), no per-orb light, the stage scan releases the pools it read, the Medic's Mending lookup stops after 5 tries.
+**Results:** `ENEMIES=melee` 17/17 (smoke, orb +5, orb miss). Full run and install: see the commit.
+**Not done:** a co-op run of the Troopers (orbs and smoke on a joining copy) has never been made.

@@ -141,6 +141,8 @@ namespace DeadlockOfRain.Enemies
                     var h = Addressables.LoadAssetAsync<DccsPool>(key);
                     while (!h.IsDone) yield return null;
                     if (h.Result && HasCard(h.Result, lemName, lemGuid)) lem = true;
+                    // read once and let go (the stage loads its own pool when it plays)
+                    Addressables.Release(h);
                 }
                 var st = new Stage { Key = KeyOf(scene), Scene = scene, Lemurian = lem };
                 (st.Group, st.GroupOrder) = GroupOf(scene);

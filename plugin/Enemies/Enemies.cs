@@ -66,6 +66,7 @@ namespace DeadlockOfRain.Enemies
             SpawnEffect = Load<GameObject>("RoR2/Base/Lemurian/SpawnLemurian.prefab");
             HealPack = Load<GameObject>("RoR2/Base/Tooth/HealPack.prefab");
             MedicFx.Build(holder);
+            SoulOrb.Build(holder);
             foreach (var row in EnemyRow.All)
             {
                 if (!row.Models.Any(m => LocalHero.Enemies.Contains(m) && DeadlockCache.LoadHero(m) != null))
@@ -82,6 +83,8 @@ namespace DeadlockOfRain.Enemies
             }
             Log.Info($"Enemies built: {string.Join(", ", Bodies.Keys)}");
         }
+
+        internal static void AssetIdOf(GameObject go) => AssetId(go);
 
         static void AssetId(GameObject go)
         {
@@ -332,7 +335,10 @@ namespace DeadlockOfRain.Enemies
         /// <summary>The Medic's kill reward (creator's spec): one healing orb, the one Monster Tooth drops, for the players.</summary>
         static void OnDeath(DamageReport report)
         {
-            if (!NetworkServer.active || report == null || !IsMedic(report.victimBody) || !HealPack) return;
+            if (!NetworkServer.active || report == null) return;
+            // a Trooper's soul orb (enemyDrops.json)
+            SoulOrb.SpawnFor(report.victimBody);
+            if (!IsMedic(report.victimBody) || !HealPack) return;
             var orb = UnityEngine.Object.Instantiate(HealPack, report.victimBody.corePosition, UnityEngine.Random.rotation);
             var tf = orb.GetComponent<TeamFilter>();
             if (tf) tf.teamIndex = TeamIndex.Player;

@@ -27,6 +27,7 @@ namespace DeadlockOfRain.Enemies
         /// <summary>The row's elite buff (affix column), carried for good: it does the healing and its visuals.</summary>
         public BuffDef Affix;
         HealNearbyController mend;
+        int mendTries;
 
         void Start()
         {
@@ -55,7 +56,8 @@ namespace DeadlockOfRain.Enemies
                 // Mending's attachment draws the tethers to the nearest hurt allies: its reach and count set to the row's, its own
                 // (damage-based) heal off; the heal is ours, a share of each one's max health, so the Medic stays a big problem at
                 // every level (creator, 2026-11-11: "heal up to 3 enemys at a time make them a big problem")
-                if (!mend)
+                // searched for only while the Mending attachment can still be appearing (its first seconds), never every second for good
+                if (!mend && mendTries++ < 5)
                 {
                     mend = Object.FindObjectsOfType<HealNearbyController>().FirstOrDefault(h => h.GetComponent<NetworkedBodyAttachment>()?.attachedBody == body);
                     if (mend)

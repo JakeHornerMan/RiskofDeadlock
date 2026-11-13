@@ -1098,6 +1098,34 @@ namespace DeadlockOfRain.Sheets
         };
     }
 
+    /// <summary>Row of design/enemyDrops.json. What an enemy leaves when it dies (creator, 2026-11-11: "when the trooper explod they alwa have plooms of smoke in their color variant and a sould will arise .....</summary>
+    public sealed class EnemyDropRow
+    {
+        public string Id;
+        public string[] Enemies;
+        public float Gold;
+        public float Lifetime;
+        public float Rise;
+        public float RiseTime;
+        public float Radius;
+        public string OrbTexture;
+        public string GlowTexture;
+        public string ShellTexture;
+        public string GlowFolder;
+        public string OrbColor;
+        public string BreakSound;
+        public string MissSound;
+        public string SmokeTexture;
+        public string[] SmokeColors;
+        public float SmokePuffs;
+        public float SmokeTime;
+
+        public static readonly EnemyDropRow[] All = new EnemyDropRow[]
+        {
+            new EnemyDropRow { Id = "trooper_soul_orb", Enemies = new string[] { "trooper_melee", "trooper_ranged", "trooper_medic" }, Gold = 5.0f, Lifetime = 5.0f, Rise = 2.0f, RiseTime = 1.0f, Radius = 0.22f, OrbTexture = "materials/models/particle/generic_soul_orb_vmat_g_tcolor_7d46cca1.vtex", GlowTexture = "materials/models/particle/generic_soul_orb_vmat_g_tselfillummask_2b2ebb3f.vtex", ShellTexture = "materials/particle/noise/noise_voronoi_tiled/images/noise_voronoi_alphatest_tif_28c93f8a.vtex", GlowFolder = "dealockRip/props/souls/deadlock", OrbColor = "#2ec8ff", BreakSound = "Play_item_proc_ghostOnKill", MissSound = "Play_TrailStage_ChampRush_SoulSphere_Despawn", SmokeTexture = "materials/particle/smoke/clouds/cartoon_cloud.vtex", SmokeColors = new string[] { "#d9893a", "#4f8fd6" }, SmokePuffs = 14.0f, SmokeTime = 2.2f },
+        };
+    }
+
     public static class SheetInfo
     {
         public const string AnchorHero = "haze";

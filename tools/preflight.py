@@ -24,7 +24,7 @@ def load(name):
     with open(os.path.join(D, name + '.json'), encoding='utf-8') as f:
         return json.load(f)
 
-sheets = {n: load(n) for n in ['heroes', 'stats', 'skills', 'equipment', 'buffs', 'animations', 'sounds', 'effects', 'hooks', 'voice', 'teasers', 'enemies', 'enemySkills']}
+sheets = {n: load(n) for n in ['heroes', 'stats', 'skills', 'equipment', 'buffs', 'animations', 'sounds', 'effects', 'hooks', 'voice', 'teasers', 'enemies', 'enemySkills', 'enemyDrops']}
 
 # 1. every cell filled
 for name, s in sheets.items():
@@ -314,6 +314,19 @@ for e in enemies.values():
     if e['keepMin'] > e['keepMax']: bad(f'enemies[{e["id"]}].keepMin: above keepMax')
     if not e['localOnly']: bad(f'enemies[{e["id"]}].localOnly: enemies are in the DLL build only for now (creator, 2026-11-11)')
     if sum(1 for s in sheets['enemySkills']['rows'] if s['enemy'] == e['id'] and s['slot'] != 'passive') < 1: bad(f'enemySkills: {e["id"]} has no attack')
+# drops (enemyDrops.json): only the creator's own files (a charactersFinal folder), never the Deadlock install or dealockRip
+for d in sheets['enemyDrops']['rows']:
+    for e in d['enemies']: ref('enemyDrops', d['id'], 'enemies', e, enemies, False)
+    if d['gold'] < 0 or d['lifetime'] <= 0 or d['radius'] <= 0: bad(f'enemyDrops[{d["id"]}]: gold >= 0, lifetime and radius > 0')
+    if d['glowFolder'] != 'none':
+        if not d['glowFolder'].replace('\\', '/').startswith(('charactersFinal/', 'dealockRip/')): bad(f'enemyDrops[{d["id"]}].glowFolder: only the creator\'s own folders (charactersFinal/..., dealockRip/...)')
+        else:
+            for c in ('orbTexture', 'glowTexture', 'shellTexture'):
+                if d[c] != 'none' and not os.path.exists(os.path.join(ROOT, d['glowFolder'], d[c] + '_c')): bad(f'enemyDrops[{d["id"]}].{c}: {d[c]}_c is not in {d["glowFolder"]}')
+    for c in ('breakSound', 'missSound'):
+        if d[c] != 'none' and not d[c].startswith('Play_'): bad(f'enemyDrops[{d["id"]}].{c}: a RoR2 sound event (Play_...) or none')
+    looks = {e['id']: len(e['models']) for e in sheets['enemies']['rows']}
+    if any(len(d['smokeColors']) < looks.get(e, 0) for e in d['enemies']): bad(f'enemyDrops[{d["id"]}].smokeColors: one per look')
 for s in sheets['enemySkills']['rows']:
     ref('enemySkills', s['id'], 'enemy', s['enemy'], enemies, False)
     ref('enemySkills', s['id'], 'slot', s['slot'], {'primary', 'secondary', 'passive'}, False)

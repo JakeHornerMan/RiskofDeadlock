@@ -90,6 +90,31 @@ plugin/Enemies/TrooperDirector.cs: R2API.Director MonsterActions ─► every st
   the extractor keeps them and `EnemyModel` paints them into a texture as heroes' are (`asset.AtlasVertexColors`); they were white.
   `lookTints` (one per look) tone each look a little toward Deadlock's muted copper and steel-teal.
 
+### 3c. What a Trooper leaves (enemyDrops.json, 2026-11-11)
+The creator: "when the trooper explod they alwa have plooms of smoke in their color variant and a sould will arise ... if you shoot
+you will gain 5 currency ... soould ord disappear after 5 scond and if you dont destroy them you dont get the money". Only the
+creator's own files are used ("do not steal anything that isnt mine"): `glowFolder` must be one of their folders, `charactersFinal/` or
+`dealockRip/` (preflight); never the Deadlock install.
+- **Smoke** (`DeathSmoke`, from `EnemyDeath` on every machine): one burst of the Trooper rip's own `cartoon_cloud` puff on RoR2's
+  `matGenericSmoke` with its ramp in the look's colour (`smokeColors`: amber `#d9893a`, sapphire `#4f8fd6`), rising and spreading
+  for `smokeTime` s. One material per colour, made once.
+- **Soul orb** (`SoulOrb`): a clone of RoR2's floating Time Crystal (`RoR2/Base/WeeklyRun/TimeCrystalBody.prefab`, a shootable Neutral
+  destructible) with 1 health; its crystal (renderers, skin controller, lights, particles) removed outright: switched off, its skin
+  controller turned it back on. The look (`SoulOrbLook`) follows Deadlock's soul orb (`generic_soul_orb` + `generic_soul_orb_shell`
+  on a sphere; both colour maps are blank 1 px, the colour comes from Deadlock's last_hit particle, which the creator's files lack):
+  a self-lit core and the shell's voronoi noise (`shellTexture`, from the creator's `dealockRip/props/souls`, their choice) cut out by
+  its alpha, both faces, scrolling, in `orbColor` (#2ec8ff, tune it there); head-sized (`radius` 0.22 m, creator: "around the size
+  of a head"), hurtbox 1.5x for fair hits. It appears in the Trooper's chest and the body itself drifts up `rise` 2 m over
+  `riseTime` 1 s on every machine (creator: "Rise from the chest, slow"), then bobs. Shared mesh and materials, no light.
+  States on every machine: `SoulOrbIdle` → after `lifetime` s `SoulOrbFade` (RoR2's soul-sphere despawn sound, shrinks, no money)
+  or, when shot, `SoulOrbBreak` (RoR2's ghost pop, a burst, and on the server `gold` (5, flat) to the player who broke it, or to
+  the player whose drone or minion did, with RoR2's coin effect).
+- **Sounds**: the creator's files have no orb sounds, so these are RoR2's own events played by name (nothing copied); swap them in
+  the sheet if the creator adds their own.
+- Images: `extractor/manifest-enemyfx-souls.json` (gen) → `DeadlockExtract --loose dealockRip/props/souls/deadlock --out
+  charactersFinal/npc/souls/mod-cache` (merged by `build_local_hero.sh all`); the smoke puff is in `manifest-enemies.json` images (the Troopers' own rip).
+- Tests: `trooper-death-smoke`, `trooper-soul-orb` (+5 exactly, gone), `trooper-soul-orb-miss` (gone after 5 s + 0.6 s fade, no money).
+
 ## 4. Spawning (TrooperDirector.cs, R2API.Director 3.1.3)
 - `DirectorAPI.MonsterActions`: on every stage's `DccsPool` (Simulacrum's waves, Commencement and the Void stages use these
   pools too) each Trooper is added to Basic Monsters (`Helpers.AddNewMonster`), `minimumStageCompletions` 0, weight = the copied

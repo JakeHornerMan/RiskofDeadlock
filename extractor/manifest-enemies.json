@@ -209,7 +209,9 @@
       ]
     }
   ],
-  "images": [],
+  "images": [
+    "materials/particle/smoke/clouds/cartoon_cloud.vtex"
+  ],
   "soundEvents": [
     "Trooper.Death",
     "Trooper.Deploy.Impact",

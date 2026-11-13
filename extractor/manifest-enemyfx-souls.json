@@ -1,0 +1,14 @@
+{
+  "heroes": [],
+  "images": [
+    "materials/models/particle/generic_soul_orb_vmat_g_tcolor_7d46cca1.vtex",
+    "materials/models/particle/generic_soul_orb_vmat_g_tselfillummask_2b2ebb3f.vtex",
+    "materials/particle/noise/noise_voronoi_tiled/images/noise_voronoi_alphatest_tif_28c93f8a.vtex"
+  ],
+  "soundEvents": [],
+  "soundEventFiles": [],
+  "voiceGroups": [],
+  "voiceAllTakes": [],
+  "props": [],
+  "owners": {}
+}

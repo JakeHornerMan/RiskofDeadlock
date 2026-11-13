@@ -187,6 +187,7 @@ namespace DeadlockOfRain
             if (TestEnemies.Contains("ranged")) yield return RangedTest(body, Check);
             if (TestEnemies.Contains("medic")) yield return MedicTest(body, side, Check);
             if (TestEnemies.Contains("melee") || TestEnemies.Contains("ranged") || TestEnemies.Contains("medic")) yield return DeathTest(body, side, Check);
+            if (TestEnemies.Contains("melee")) yield return SoulOrbTest(body, Check);
 
             walk = Vector3.zero;
             Clear();
@@ -359,6 +360,57 @@ namespace DeadlockOfRain
                 $"{watch.Count} killed: bones moved at most {moved:F2} m, moving rigidbodies {movingBody}, faded out at {fadeAt:F1} s, models gone {gone}");
             foreach (var b in bodies) targets.Remove(b);
             yield return new WaitForSeconds(0.5f);
+        }
+
+        /// <summary>A Trooper's death: smoke in its look's colour; a soul orb rises from it; breaking it pays its breaker the row's gold
+        /// exactly; one left alone goes after its lifetime and pays nothing (creator, 2026-11-11).</summary>
+        IEnumerator SoulOrbTest(CharacterBody p, System.Action<string, bool, string> Check)
+        {
+            var row = SoulOrb.Row;
+            if (row == null || !SoulOrb.Body) { Check("trooper-soul-orb", false, "no soul orb built"); yield break; }
+            Put(p, arena);
+            yield return new WaitForSeconds(0.5f);
+            var master = p.master;
+            // 1. broken: smoke, an orb above the body, +gold
+            var t1 = SpawnEnemy("trooper_melee", arena + arenaForward * 7f, false);
+            yield return new WaitForSeconds(1.5f);
+            var look = EnemyLook.Of(t1);
+            var want = Sheet.Color(row.SmokeColors[Mathf.Clamp(look ? look.Shown : 0, 0, row.SmokeColors.Length - 1)]);
+            int smoke0 = DeathSmoke.Played, spawned0 = SoulOrb.Spawned;
+            var deathAt = t1.footPosition;
+            targets.Remove(t1);
+            t1.healthComponent.Suicide();
+            yield return new WaitForSeconds(0.4f);
+            Shot("trooper_death_smoke");
+            Check("trooper-death-smoke", DeathSmoke.Played > smoke0 && Mathf.Abs(DeathSmoke.LastColor.r - want.r) + Mathf.Abs(DeathSmoke.LastColor.g - want.g) + Mathf.Abs(DeathSmoke.LastColor.b - want.b) < 0.02f,
+                $"smoke {DeathSmoke.Played - smoke0}, colour {ColorUtility.ToHtmlStringRGB(DeathSmoke.LastColor)} for look {(look ? look.Shown : -1)} (want {ColorUtility.ToHtmlStringRGB(want)})");
+            yield return new WaitForSeconds(1.2f);
+            var orb = SoulOrb.Live.LastOrDefault(o => o);
+            Shot("trooper_soul_orb");
+            // a close look: the player 3 m from the orb, facing it
+            if (orb) { Put(p, Ground(orb.transform.position - arenaForward * 3f)); yield return new WaitForSeconds(0.4f); Shot("trooper_soul_orb_close"); }
+            bool up = orb && orb.transform.position.y > deathAt.y + SoulOrb.Row.Rise;
+            bool neutral = orb && orb.teamComponent && orb.teamComponent.teamIndex == TeamIndex.Neutral;
+            uint money0 = master ? master.money : 0;
+            if (orb) orb.healthComponent.TakeDamage(new DamageInfo { damage = 50f, attacker = p.gameObject, inflictor = p.gameObject, position = orb.corePosition, procCoefficient = 0f, damageColorIndex = DamageColorIndex.Default });
+            yield return new WaitForSeconds(0.6f);
+            uint gained = master ? master.money - money0 : 0;
+            Check("trooper-soul-orb", SoulOrb.Spawned > spawned0 && up && neutral && gained == (uint)Mathf.RoundToInt(row.Gold) && !orb,
+                $"orb spawned {SoulOrb.Spawned - spawned0}, above the body {up}, Neutral {neutral}; shot: +{gained} money (want {row.Gold}), orb gone {!orb}");
+            // 2. left alone: gone after its lifetime, no money
+            var t2 = SpawnEnemy("trooper_melee", arena + arenaForward * 7f, false);
+            yield return new WaitForSeconds(1.5f);
+            targets.Remove(t2);
+            int missed0 = SoulOrb.Missed;
+            t2.healthComponent.Suicide();
+            yield return new WaitForSeconds(0.8f);
+            var orb2 = SoulOrb.Live.LastOrDefault(o => o);
+            uint money1 = master ? master.money : 0;
+            float t0 = Time.time;
+            while (orb2 && Time.time - t0 < row.Lifetime + 2f) yield return null;
+            float lasted = Time.time - t0 + 0.8f;
+            Check("trooper-soul-orb-miss", orb2 == null && SoulOrb.Missed > missed0 && master && master.money == money1 && Mathf.Abs(lasted - row.Lifetime - 0.6f) < 1f,
+                $"unbroken orb gone after {lasted:F1} s (lifetime {row.Lifetime} + 0.6 s fade), missed {SoulOrb.Missed - missed0}, money unchanged {(master ? master.money == money1 : false)}");
         }
 
         IEnumerator MeleeTest(CharacterBody p, Vector3 side, System.Action<string, bool, string> Check)
