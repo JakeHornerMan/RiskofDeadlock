@@ -154,6 +154,12 @@ namespace DeadlockOfRain.Enemies
             col.color = g;
             if (!glowMat) glowMat = Vfx.Mat("mat_glow", c);
             glowGo.GetComponent<ParticleSystemRenderer>().sharedMaterial = glowMat;
+            // the dark smoky trail it leaves as it rises out of the body (Deadlock's soul orb, the creator's picture)
+            var trail = gameObject.AddComponent<TrailRenderer>();
+            trail.time = 1.1f; trail.minVertexDistance = 0.05f; trail.startWidth = r * 1.3f; trail.endWidth = 0f;
+            trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            trail.startColor = new Color(0.05f, 0.09f, 0.08f, 0.9f); trail.endColor = new Color(0.05f, 0.09f, 0.08f, 0f);
+            trail.sharedMaterial = TrailMat();
             ps.Play();
         }
 
@@ -175,12 +181,12 @@ namespace DeadlockOfRain.Enemies
             coreMat = ModelBuilder.Template ? new Material(ModelBuilder.Template) : new Material(Vfx.Mat("mat_glow", c));
             coreMat.name = "matDeadlockSoulOrbCore";
             foreach (var k in coreMat.shaderKeywords) if (k.Contains("LIMB") || k.Contains("SPLATMAP") || k.Contains("FLOWMAP") || k.Contains("VERTEX")) coreMat.DisableKeyword(k);
-            if (coreMat.HasProperty("_Color")) coreMat.SetColor("_Color", c);
+            if (coreMat.HasProperty("_Color")) coreMat.SetColor("_Color", c * 0.12f);
             if (coreMat.HasProperty("_MainTex")) coreMat.SetTexture("_MainTex", Texture2D.whiteTexture);
             if (coreMat.HasProperty("_NormalTex")) coreMat.SetTexture("_NormalTex", null);
             if (coreMat.HasProperty("_EmTex")) coreMat.SetTexture("_EmTex", Texture2D.whiteTexture);
-            if (coreMat.HasProperty("_EmColor")) coreMat.SetColor("_EmColor", c);
-            if (coreMat.HasProperty("_EmPower")) coreMat.SetFloat("_EmPower", 2.2f);
+            if (coreMat.HasProperty("_EmColor")) coreMat.SetColor("_EmColor", c * 0.25f);
+            if (coreMat.HasProperty("_EmPower")) coreMat.SetFloat("_EmPower", 0.6f);
             if (coreMat.HasProperty("_LimbRemovalOn")) coreMat.SetFloat("_LimbRemovalOn", 0f);
             return coreMat;
         }
@@ -200,13 +206,23 @@ namespace DeadlockOfRain.Enemies
             if (shellMat.HasProperty("_NormalTex")) shellMat.SetTexture("_NormalTex", null);
             if (shellMat.HasProperty("_EmTex")) shellMat.SetTexture("_EmTex", Texture2D.whiteTexture);
             if (shellMat.HasProperty("_EmColor")) shellMat.SetColor("_EmColor", c);
-            if (shellMat.HasProperty("_EmPower")) shellMat.SetFloat("_EmPower", 1.4f);
+            if (shellMat.HasProperty("_EmPower")) shellMat.SetFloat("_EmPower", 2.4f);
             if (shellMat.HasProperty("_EnableCutout")) shellMat.SetFloat("_EnableCutout", 1f);
             shellMat.EnableKeyword("CUTOUT");
             if (shellMat.HasProperty("_Cutoff")) shellMat.SetFloat("_Cutoff", 0.45f);
             if (shellMat.HasProperty("_Cull")) shellMat.SetFloat("_Cull", 0f);
             if (shellMat.HasProperty("_LimbRemovalOn")) shellMat.SetFloat("_LimbRemovalOn", 0f);
             return shellMat;
+        }
+
+        static Material trailMat;
+
+        // RoR2's smoke, darkened: the trail is a dark wisp under a bright orb
+        static Material TrailMat()
+        {
+            if (trailMat) return trailMat;
+            trailMat = new Material(Vfx.Remapped("mat_smoke", new Color(0.06f, 0.1f, 0.09f, 0.9f)));
+            return trailMat;
         }
 
         static Mesh SphereMesh()

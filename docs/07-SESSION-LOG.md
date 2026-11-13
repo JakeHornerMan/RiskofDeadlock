@@ -1943,3 +1943,10 @@ fall though it".
 **Done:** whole-body corpse (`EnemyFade`: the pose holds, a capsule rigidbody topples it, rests `corpseTime`, sinks `sinkTime` fading);
 orbs brighter with a larger halo (still head-sized). `trooper-death-fade` now checks it fell over, sank and went, bones still never
 move on their own. **Results:** melee run all pass; 1.6.9 installed.
+
+### 2026-11-13 (evening) · Troopers: the soul orb closer to Deadlock's picture · DLL build only
+**Request (verbatim):** "are we using the orb asset from our files??? it should look like this [picture: a teal-green glowing orb, dark
+centre, a dark smoky trail below it, rising over a dead trooper] and it should rise slowly from the enemy after death".
+**Answer given:** only the shell's noise texture is from the creator's files (dealockRip/props/souls); the glow, colour and trail are
+Deadlock's last_hit particle effect, which none of their folders has, so they are rebuilt to the picture.
+**Done:** orbColor #3cf0c3, dark core + bright shell, a dark smoke trail, rise 2.5 m over 2.5 s; test screenshots mid-rise. 1.6.10.

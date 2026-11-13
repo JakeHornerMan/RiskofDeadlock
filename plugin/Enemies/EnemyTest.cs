@@ -428,7 +428,10 @@ namespace DeadlockOfRain
             Shot("trooper_death_smoke");
             Check("trooper-death-smoke", DeathSmoke.Played > smoke0 && Mathf.Abs(DeathSmoke.LastColor.r - want.r) + Mathf.Abs(DeathSmoke.LastColor.g - want.g) + Mathf.Abs(DeathSmoke.LastColor.b - want.b) < 0.02f,
                 $"smoke {DeathSmoke.Played - smoke0}, colour {ColorUtility.ToHtmlStringRGB(DeathSmoke.LastColor)} for look {(look ? look.Shown : -1)} (want {ColorUtility.ToHtmlStringRGB(want)})");
-            yield return new WaitForSeconds(1.2f);
+            // mid-rise, then once it has risen
+            yield return new WaitForSeconds(row.RiseTime * 0.5f);
+            Shot("trooper_soul_orb_rising");
+            yield return new WaitForSeconds(row.RiseTime * 0.5f + 0.3f);
             var orb = SoulOrb.Live.LastOrDefault(o => o);
             Shot("trooper_soul_orb");
             // a close look: the player 3 m from the orb, facing it
