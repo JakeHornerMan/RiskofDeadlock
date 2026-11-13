@@ -245,20 +245,22 @@ namespace DeadlockOfRain
             LobbyCheck("stages-reset", reset, "Reset to default gives the Lemurian list back");
         }
 
-        /// <summary>The lobby: the Enemy test scene ticked by the host's vote, with its label beside its box.</summary>
+        /// <summary>The lobby: the Risk of Deadlock box (Troopers tick and the stage list inside it) and the Play Test scene button
+        /// under it; pressing it starts the run on the test scene.</summary>
         internal static IEnumerator LobbyTestScene()
         {
             float t0 = Time.unscaledTime;
-            while (TrooperRule.TestDef == null && Time.unscaledTime - t0 < 20f) yield return null;
-            var voter = PreGameRuleVoteController.FindForUser(LocalUserManager.GetFirstLocalUser()?.currentNetworkUser);
-            if (voter && TrooperRule.TestDef != null) voter.SetVote(TrooperRule.TestDef.globalIndex, 1);
-            t0 = Time.unscaledTime;
-            while (!TrooperRule.TestSceneOn() && Time.unscaledTime - t0 < 5f) yield return null;
+            while ((!TrooperStagesUi.Instance || !TrooperStagesUi.Instance.HasPlayButton) && Time.unscaledTime - t0 < 30f) yield return null;
             yield return new WaitForSeconds(0.5f);
-            Shot("lobby_enemy_test_scene");
-            bool label = Object.FindObjectsOfType<TMPro.TMP_Text>().Any(x => x.text == (EnemyTestSceneRow.All.FirstOrDefault()?.Name ?? "?"));
-            LobbyCheck("enemytest-lobby", TrooperRule.TestDef != null && TrooperRule.TestSceneOn() && label,
-                $"Enemy test scene in the Risk of Deadlock box {TrooperRule.TestDef != null}, ticked {TrooperRule.TestSceneOn()}, labelled {label}");
+            Shot("lobby_risk_of_deadlock_box");
+            var ui = TrooperStagesUi.Instance;
+            bool tickHidden = TrooperRule.TestDef != null && TrooperRule.TestDef.hideLobbyDisplay;
+            LobbyCheck("enemytest-lobby", ui && ui.HasPlayButton && tickHidden && !TrooperRule.TestSceneOn(),
+                $"Play Test scene button {(ui && ui.HasPlayButton)}, no test-scene tick in the box {tickHidden}, off until pressed {!TrooperRule.TestSceneOn()}");
+            if (ui) ui.PressPlay();
+            // the button starts the run itself: the test's own start (pregame_start_run) finds no lobby
+            t0 = Time.unscaledTime;
+            while (PreGameController.instance && Time.unscaledTime - t0 < 10f) yield return null;
         }
 
         /// <summary>The run on the test scene: its stage, no stage spawning, waves of one of each every interval, the cap.</summary>

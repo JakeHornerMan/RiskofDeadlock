@@ -150,8 +150,10 @@ creator's own files are used ("do not steal anything that isnt mine"): `glowFold
 
 - **Enemy test scene** (`EnemyTestScene`, `design/enemyTestScene.json`; creator, 2026-11-13: "set up a test level where we spawn 1
   of each of these trooper every 5 seconds. call it enemy test scene you access it through our custom risk of deadlock section"):
-  a second tick in the lobby's Risk of Deadlock box (`TrooperRule.TestDef`, off by default; the box's grid is one item per row, each
-  labelled). Ticked: the run's first stage becomes `scene` (Titanic Plains; postfix on `Run.PickNextStageScene`), the stage's own
+  the orange **Play Test scene** button under the lobby's Risk of Deadlock box (2026-11-13: "inside is the troopers check box and
+  then below it within the box is the selection for the levels ... outside of the box at the bottom ... an orange button labeled Play
+  Test scene"; the stage list now sits inside the box's icon panel). It votes the hidden rule `TrooperRule.TestDef` on (so the run
+  and every player know) and starts the run; a lobby that opens later sets it back off. Then: the run's first stage becomes `scene` (Titanic Plains; postfix on `Run.PickNextStageScene`), the stage's own
   combat directors are off (the teleporter's boss director stays), and every `interval` s (5) one of each enemy appears `distance`
   m (20) from a random living player, targeting them, never more than `maxAlive` (18) at once. Test: `ENEMIES=testscene`
   (`enemytest-lobby`, `-stage`, `-waves`).

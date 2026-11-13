@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DeadlockOfRain.Sheets;
 using HarmonyLib;
 using RoR2;
 using RoR2.UI;
@@ -55,7 +56,7 @@ namespace DeadlockOfRain.Enemies
 
         void OnEnable() { Instance = this; TrooperStages.Changed += Refresh; }
         void OnDisable() { TrooperStages.Changed -= Refresh; if (panel) panel.SetActive(false); if (blocker) blocker.SetActive(false); }
-        void OnDestroy() { if (panel) Destroy(panel); if (blocker) Destroy(blocker); if (Instance == this) Instance = null; }
+        void OnDestroy() { if (panel) Destroy(panel); if (blocker) Destroy(blocker); if (playButton) Destroy(playButton); if (Instance == this) Instance = null; }
 
         void Build()
         {
@@ -67,24 +68,24 @@ namespace DeadlockOfRain.Enemies
             font = cat.categoryHeaderLanguageController ? cat.categoryHeaderLanguageController.GetComponent<TMP_Text>() : null;
             if (!font) font = Object.FindObjectOfType<TextMeshProUGUI>();
 
-            // under the icon grid, inside the box
+            // inside the box, under the Troopers tick (creator, 2026-11-13: "a Risk of deadlock box ... inside is the troopers check
+            // box and then below it within the box is the selection for the levels"): a child of the box's icon panel, out of its grid
+            // layout, at the bottom of a room the grid leaves free
             var grid = cat.voteResultGridContainer;
-            var parent = grid ? grid.parent : cat.transform;
+            var parent = grid ? (Transform)grid : cat.transform;
+            var gl = grid ? grid.GetComponent<GridLayoutGroup>() : null;
+            if (gl) gl.padding = new RectOffset(gl.padding.left, gl.padding.right, gl.padding.top, gl.padding.bottom + (int)Room);
             var holder = new GameObject("DeadlockTrooperStages", typeof(RectTransform));
             var hr = (RectTransform)holder.transform;
             hr.SetParent(parent, false);
-            if (grid) hr.SetSiblingIndex(grid.GetSiblingIndex() + 1);
+            holder.AddComponent<LayoutElement>().ignoreLayout = true;
+            hr.anchorMin = new Vector2(0f, 0f); hr.anchorMax = new Vector2(1f, 0f); hr.pivot = new Vector2(0.5f, 0f);
+            hr.anchoredPosition = new Vector2(0f, 4f); hr.sizeDelta = new Vector2(-12f, Room - 8f);
             var vl = holder.AddComponent<VerticalLayoutGroup>();
-            vl.childControlHeight = true; vl.childControlWidth = true; vl.childForceExpandHeight = false; vl.spacing = 4f;
-            vl.padding = new RectOffset(8, 8, 4, 6);
-            var hle = holder.AddComponent<LayoutElement>(); hle.minHeight = 44f; hle.flexibleWidth = 1f;
+            vl.childControlHeight = true; vl.childControlWidth = true; vl.childForceExpandHeight = false; vl.spacing = 2f;
+            vl.padding = new RectOffset(4, 4, 0, 0);
             group = holder.AddComponent<CanvasGroup>();
-            if (!parent.GetComponent<LayoutGroup>())
-            {
-                // no layout to sit in: put it right under the grid by hand
-                hr.anchorMin = new Vector2(0f, 0f); hr.anchorMax = new Vector2(1f, 0f); hr.pivot = new Vector2(0.5f, 1f);
-                hr.anchoredPosition = new Vector2(0f, -4f); hr.sizeDelta = new Vector2(0f, 44f);
-            }
+            BuildPlayButton();
 
             var btn = Box(hr, "StagesButton", new Color(0.12f, 0.1f, 0.08f, 0.95f), 34f);
             buttonRect = (RectTransform)btn.transform;
@@ -104,6 +105,56 @@ namespace DeadlockOfRain.Enemies
             BuildPanel();
             Refresh();
         }
+
+        const float Room = 66f;
+        GameObject playButton;
+        CanvasGroup playGroup;
+        bool starting;
+
+        /// <summary>Below the Risk of Deadlock box (creator, 2026-11-13: "outside of the box at the bottom we can have an orange button
+        /// labeled Play Test scene"): starts a run on the Enemy test scene at once. The host's: it votes the hidden test-scene rule on
+        /// (so the run, and every player's game, knows it) and starts the run.</summary>
+        void BuildPlayButton()
+        {
+            var parent = cat.transform.parent;
+            if (!parent) return;
+            playButton = new GameObject("DeadlockPlayTestScene", typeof(RectTransform), typeof(Image));
+            var pr = (RectTransform)playButton.transform;
+            pr.SetParent(parent, false);
+            pr.SetSiblingIndex(cat.transform.GetSiblingIndex() + 1);
+            playButton.GetComponent<Image>().color = TrooperRule.Orange;
+            var le = playButton.AddComponent<LayoutElement>(); le.minHeight = 46f; le.preferredHeight = 46f; le.flexibleWidth = 1f;
+            playGroup = playButton.AddComponent<CanvasGroup>();
+            var label = Text(pr, (EnemyTestSceneRow.All.FirstOrDefault() != null ? "Play Test scene" : "Play Test scene"), 22f, TextAlignmentOptions.Center, Vector2.zero, Vector2.zero);
+            label.color = Color.white;
+            Click(playButton, () => { if (!starting && NetworkServer.active && PreGameController.instance) StartCoroutine(PlayTestScene()); });
+            if (!parent.GetComponent<LayoutGroup>())
+            {
+                var cr = (RectTransform)cat.transform;
+                pr.anchorMin = cr.anchorMin; pr.anchorMax = cr.anchorMax; pr.pivot = new Vector2(0.5f, 1f);
+                pr.sizeDelta = new Vector2(cr.sizeDelta.x, 46f);
+                pr.anchoredPosition = cr.anchoredPosition - new Vector2(0f, cr.rect.height + 8f);
+            }
+        }
+
+        public static int PlayPressed;
+
+        System.Collections.IEnumerator PlayTestScene()
+        {
+            starting = true;
+            PlayPressed++;
+            var voter = PreGameRuleVoteController.FindForUser(LocalUserManager.GetFirstLocalUser()?.currentNetworkUser);
+            if (voter && TrooperRule.TestDef != null) voter.SetVote(TrooperRule.TestDef.globalIndex, 1);
+            float t0 = Time.unscaledTime;
+            while (!TrooperRule.TestSceneOn() && Time.unscaledTime - t0 < 3f) yield return null;
+            var pg = PreGameController.instance;
+            if (pg && TrooperRule.TestSceneOn()) AccessTools.Method(typeof(PreGameController), "StartRun").Invoke(pg, null);
+            else { Log.Warn("Enemy test scene: the lobby didn't take the vote; not started"); starting = false; }
+        }
+
+        /// <summary>Public for the test: press the button.</summary>
+        public void PressPlay() { if (!starting && NetworkServer.active && PreGameController.instance) StartCoroutine(PlayTestScene()); }
+        public bool HasPlayButton => playButton;
 
         void BuildPanel()
         {
@@ -233,6 +284,12 @@ namespace DeadlockOfRain.Enemies
             if (pg && TrooperRule.Def != null && pg.readOnlyRuleBook != null)
                 ruleOn = !(pg.readOnlyRuleBook.GetRuleChoice(TrooperRule.Def)?.extraData is bool b) || b;
             Interactable = ruleOn && NetworkServer.active && TrooperStages.Ready;
+            if (!starting && NetworkServer.active && pg && TrooperRule.TestDef != null && TrooperRule.TestSceneOn())
+            {
+                var voter = PreGameRuleVoteController.FindForUser(LocalUserManager.GetFirstLocalUser()?.currentNetworkUser);
+                if (voter) voter.SetVote(TrooperRule.TestDef.globalIndex, 0);
+            }
+            if (playGroup) { bool canPlay = NetworkServer.active && !starting; playGroup.interactable = canPlay; playGroup.alpha = canPlay ? 1f : 0.4f; }
             if (group) { group.interactable = Interactable; group.alpha = Interactable ? 1f : 0.4f; }
             if (!Interactable && PanelOpen) Open(false);
             bool en = Interactable;

@@ -72,7 +72,8 @@ namespace DeadlockOfRain.Enemies
                 tokens["DLR_RULE_ENEMYTEST_NAME"] = ts.Name;
                 tokens["DLR_RULE_ENEMYTEST_ON_DESC"] = $"<style=cIsHealing>On:</style> the run starts on a test stage where one of each Trooper appears every {ts.Interval:0.#} seconds (at most {ts.MaxAlive} at once); the stage spawns no other monsters.";
                 tokens["DLR_RULE_ENEMYTEST_OFF_DESC"] = "<style=cDeath>Off:</style> a normal run.";
-                var test = new RuleDef(TestRuleName, "DLR_RULE_ENEMYTEST_NAME") { forceLobbyDisplay = true };
+                // hidden: the Play Test scene button under the box sets it (creator, 2026-11-13)
+                var test = new RuleDef(TestRuleName, "DLR_RULE_ENEMYTEST_NAME") { hideLobbyDisplay = true };
                 var tOff = test.AddChoice("Off", false);
                 tOff.tooltipNameToken = "DLR_RULE_ENEMYTEST_NAME"; tOff.tooltipBodyToken = "DLR_RULE_ENEMYTEST_OFF_DESC";
                 tOff.tooltipNameColor = Orange; tOff.sprite = Box(false); tOff.onlyShowInGameBrowserIfNonDefault = true;
@@ -83,7 +84,7 @@ namespace DeadlockOfRain.Enemies
                 AccessTools.Method(typeof(RuleCatalog), "AddRule").Invoke(null, new object[] { test });
                 TestDef = test;
             }
-            Log.Info("Enemies: the lobby has a Risk of Deadlock box: Troopers (on by default), Enemy test scene (off by default)");
+            Log.Info("Enemies: the lobby has a Risk of Deadlock box: Troopers (on by default) and the stage list; Play Test scene under it");
         }
 
         /// <summary>The lobby ticked the Enemy test scene for this run (or the lobby that is open has it ticked).</summary>

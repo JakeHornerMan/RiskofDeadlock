@@ -1950,3 +1950,11 @@ centre, a dark smoky trail below it, rising over a dead trooper] and it should r
 **Answer given:** only the shell's noise texture is from the creator's files (dealockRip/props/souls); the glow, colour and trail are
 Deadlock's last_hit particle effect, which none of their folders has, so they are rebuilt to the picture.
 **Done:** orbColor #3cf0c3, dark core + bright shell, a dark smoke trail, rise 2.5 m over 2.5 s; test screenshots mid-rise. 1.6.10.
+
+### 2026-11-13 (night) · The lobby's Risk of Deadlock box laid out; Play Test scene button · DLL build only
+**Request (verbatim):** "ok let fix the risk of deadlock sectino on the character select screen it should be a Risk of deadlock box like
+we have inside is the troopers check bx and then below it withing the box is the selction for the levels... outside of teh box at the
+bottom we can ahve an orange button labled Play Test scene".
+**Done:** stage list moved inside the box (child of the icon panel, the grid's bottom padding makes room); the test-scene tick hidden
+and an orange Play Test scene button under the box that votes it on and starts the run. `ENEMIES=testscene` 3/3, `ENEMIES=stages`
+17/17. 1.6.11. Next (asked): a research write-up on making enemies as simple as heroes (docs/12).
