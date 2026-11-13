@@ -1,5 +1,7 @@
 #if OWN_FILES
 using System;
+using System.Linq;
+using DeadlockOfRain.Sheets;
 using HarmonyLib;
 using RoR2;
 using RoR2.UI;
@@ -21,6 +23,9 @@ namespace DeadlockOfRain.Enemies
         public const string Header = "DLR_RULE_HEADER_TROOPERS", RuleName = "Deadlock.Troopers";
         public static readonly Color Orange = new Color32(236, 132, 32, 255);
         public static RuleDef Def;
+        /// <summary>The Enemy test scene tick (enemyTestScene.json; off by default).</summary>
+        public static RuleDef TestDef;
+        public const string TestRuleName = "Deadlock.EnemyTestScene";
         static bool adding;
 
         // the catalogue adds its categories in order; ours goes in just before Items, so it sits under Karma
@@ -59,7 +64,34 @@ namespace DeadlockOfRain.Enemies
             def.defaultChoiceIndex = 0;
             AccessTools.Method(typeof(RuleCatalog), "AddRule").Invoke(null, new object[] { def });
             Def = def;
-            Log.Info("Enemies: the lobby has a Troopers box (on by default)");
+            // the Enemy test scene (creator, 2026-11-13: "call it enemy test scene you access it through our custom risk of deadlock
+            // section on the character selection screen"): off by default
+            var ts = EnemyTestSceneRow.All.FirstOrDefault();
+            if (ts != null)
+            {
+                tokens["DLR_RULE_ENEMYTEST_NAME"] = ts.Name;
+                tokens["DLR_RULE_ENEMYTEST_ON_DESC"] = $"<style=cIsHealing>On:</style> the run starts on a test stage where one of each Trooper appears every {ts.Interval:0.#} seconds (at most {ts.MaxAlive} at once); the stage spawns no other monsters.";
+                tokens["DLR_RULE_ENEMYTEST_OFF_DESC"] = "<style=cDeath>Off:</style> a normal run.";
+                var test = new RuleDef(TestRuleName, "DLR_RULE_ENEMYTEST_NAME") { forceLobbyDisplay = true };
+                var tOff = test.AddChoice("Off", false);
+                tOff.tooltipNameToken = "DLR_RULE_ENEMYTEST_NAME"; tOff.tooltipBodyToken = "DLR_RULE_ENEMYTEST_OFF_DESC";
+                tOff.tooltipNameColor = Orange; tOff.sprite = Box(false); tOff.onlyShowInGameBrowserIfNonDefault = true;
+                var tOn = test.AddChoice("On", true);
+                tOn.tooltipNameToken = "DLR_RULE_ENEMYTEST_NAME"; tOn.tooltipBodyToken = "DLR_RULE_ENEMYTEST_ON_DESC";
+                tOn.tooltipNameColor = Orange; tOn.sprite = Box(true); tOn.onlyShowInGameBrowserIfNonDefault = true;
+                test.defaultChoiceIndex = 0;
+                AccessTools.Method(typeof(RuleCatalog), "AddRule").Invoke(null, new object[] { test });
+                TestDef = test;
+            }
+            Log.Info("Enemies: the lobby has a Risk of Deadlock box: Troopers (on by default), Enemy test scene (off by default)");
+        }
+
+        /// <summary>The lobby ticked the Enemy test scene for this run (or the lobby that is open has it ticked).</summary>
+        public static bool TestSceneOn()
+        {
+            if (TestDef == null) return false;
+            var book = Run.instance && Run.instance.ruleBook != null ? Run.instance.ruleBook : PreGameController.instance ? PreGameController.instance.readOnlyRuleBook : null;
+            return book != null && book.GetRuleChoice(TestDef)?.extraData is bool b && b;
         }
 
         /// <summary>This run's choice: true unless the lobby switched the Troopers off (and true outside a run, or without the rule).</summary>
@@ -80,10 +112,12 @@ namespace DeadlockOfRain.Enemies
             {
                 try
                 {
-                    bool ours = Def != null && newChoiceDef != null && newChoiceDef.ruleDef == Def;
+                    string label = newChoiceDef == null ? null : Def != null && newChoiceDef.ruleDef == Def ? "Troopers"
+                        : TestDef != null && newChoiceDef.ruleDef == TestDef ? (EnemyTestSceneRow.All.FirstOrDefault()?.Name ?? "Enemy test scene") : null;
+                    bool ours = label != null;
                     var old = __instance.transform.Find(Name);
                     if (!ours) { if (old) old.gameObject.SetActive(false); return; }
-                    if (old) { old.gameObject.SetActive(true); return; }
+                    if (old) { old.gameObject.SetActive(true); var ot = old.GetComponent<TMP_Text>(); if (ot) ot.text = label; return; }
                     var cat = __instance.GetComponentInParent<RuleCategoryController>();
                     TMP_Text src = cat && cat.categoryHeaderLanguageController ? cat.categoryHeaderLanguageController.GetComponent<TMP_Text>() : null;
                     if (!src) src = Object.FindObjectOfType<TextMeshProUGUI>();
@@ -97,7 +131,7 @@ namespace DeadlockOfRain.Enemies
                     var le = go.AddComponent<UnityEngine.UI.LayoutElement>(); le.ignoreLayout = true;
                     var text = go.AddComponent<HGTextMeshProUGUI>();
                     if (src) { text.font = src.font; text.fontSharedMaterial = src.fontSharedMaterial; }
-                    text.text = "Troopers";
+                    text.text = label;
                     text.fontSize = src ? Mathf.Max(18f, src.fontSize * 0.85f) : 24f;
                     text.alignment = TextAlignmentOptions.MidlineLeft;
                     text.color = Color.white;

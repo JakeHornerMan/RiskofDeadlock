@@ -24,7 +24,7 @@ def load(name):
     with open(os.path.join(D, name + '.json'), encoding='utf-8') as f:
         return json.load(f)
 
-sheets = {n: load(n) for n in ['heroes', 'stats', 'skills', 'equipment', 'buffs', 'animations', 'sounds', 'effects', 'hooks', 'voice', 'teasers', 'enemies', 'enemySkills', 'enemyDrops']}
+sheets = {n: load(n) for n in ['heroes', 'stats', 'skills', 'equipment', 'buffs', 'animations', 'sounds', 'effects', 'hooks', 'voice', 'teasers', 'enemies', 'enemySkills', 'enemyDrops', 'enemyTestScene']}
 
 # 1. every cell filled
 for name, s in sheets.items():
@@ -314,6 +314,10 @@ for e in enemies.values():
     if e['keepMin'] > e['keepMax']: bad(f'enemies[{e["id"]}].keepMin: above keepMax')
     if not e['localOnly']: bad(f'enemies[{e["id"]}].localOnly: enemies are in the DLL build only for now (creator, 2026-11-11)')
     if sum(1 for s in sheets['enemySkills']['rows'] if s['enemy'] == e['id'] and s['slot'] != 'passive') < 1: bad(f'enemySkills: {e["id"]} has no attack')
+# the lobby's enemy test scene (enemyTestScene.json)
+for s in sheets['enemyTestScene']['rows']:
+    for e in s['enemies']: ref('enemyTestScene', s['id'], 'enemies', e, enemies, False)
+    if s['interval'] <= 0 or s['distance'] <= 0 or s['maxAlive'] < len(s['enemies']): bad(f'enemyTestScene[{s["id"]}]: interval and distance > 0, maxAlive at least one wave')
 # drops (enemyDrops.json): only the creator's own files (a charactersFinal folder), never the Deadlock install or dealockRip
 for d in sheets['enemyDrops']['rows']:
     for e in d['enemies']: ref('enemyDrops', d['id'], 'enemies', e, enemies, False)

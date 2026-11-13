@@ -163,7 +163,7 @@ namespace DeadlockOfRain
             void Check(string name, bool ok, string why) { total++; if (ok) passed++; Write(name, ok, why); }
 
             // content: every enemy built with both looks; spawn cards; the stage's pool reached; the family; the Medic's gate
-            var built = (TestEnemies ?? new List<string>()).Where(e => e != "stages" && e != "lineup").Select(e => "trooper_" + e).ToList();
+            var built = (TestEnemies ?? new List<string>()).Where(e => e != "stages" && e != "lineup" && e != "testscene").Select(e => "trooper_" + e).ToList();
             var missing = built.Where(e => !Enemies.Enemies.Bodies.ContainsKey(e)).ToList();
             Check("enemies-built", missing.Count == 0, missing.Count == 0 ? $"{Enemies.Enemies.Bodies.Count} built" : "missing " + string.Join(", ", missing));
             var looks = Enemies.Enemies.Bodies.Values.Select(b => b.GetComponent<ModelLocator>().modelTransform.GetComponent<EnemyLook>()).ToList();
@@ -181,6 +181,7 @@ namespace DeadlockOfRain
             Check("enemy-family", TrooperDirector.Family("troopers") != null, "Trooper family event made");
             Check("medic-spawn-gate", !MedicSpawnGate.AlliesNear(arena + Vector3.up * 500f), "a spot with no monsters near turns the Medic down");
 
+            if (TestEnemies.Contains("testscene")) { yield return TestSceneRun(Check); walk = Vector3.zero; Log.Info($"Melty test finished: enemies {passed + lobbyPassed}/{total + lobbyTotal} checks passed"); yield break; }
             if (TestEnemies.Contains("stages")) { yield return StagesRun(user, Check); walk = Vector3.zero; Log.Info($"Melty test finished: enemies {passed + lobbyPassed}/{total + lobbyTotal} checks passed"); yield break; }
             if (TestEnemies.Contains("lineup")) yield return LineupTest(body, side);
             if (TestEnemies.Contains("melee")) yield return MeleeTest(body, side, Check);
@@ -242,6 +243,45 @@ namespace DeadlockOfRain
             bool reset = TrooperStages.Current().SetEquals(lem);
             TrooperStages.Set(lem.Where(k => k != "golemplains").Concat(new[] { "skymeadow" }));
             LobbyCheck("stages-reset", reset, "Reset to default gives the Lemurian list back");
+        }
+
+        /// <summary>The lobby: the Enemy test scene ticked by the host's vote, with its label beside its box.</summary>
+        internal static IEnumerator LobbyTestScene()
+        {
+            float t0 = Time.unscaledTime;
+            while (TrooperRule.TestDef == null && Time.unscaledTime - t0 < 20f) yield return null;
+            var voter = PreGameRuleVoteController.FindForUser(LocalUserManager.GetFirstLocalUser()?.currentNetworkUser);
+            if (voter && TrooperRule.TestDef != null) voter.SetVote(TrooperRule.TestDef.globalIndex, 1);
+            t0 = Time.unscaledTime;
+            while (!TrooperRule.TestSceneOn() && Time.unscaledTime - t0 < 5f) yield return null;
+            yield return new WaitForSeconds(0.5f);
+            Shot("lobby_enemy_test_scene");
+            bool label = Object.FindObjectsOfType<TMPro.TMP_Text>().Any(x => x.text == (EnemyTestSceneRow.All.FirstOrDefault()?.Name ?? "?"));
+            LobbyCheck("enemytest-lobby", TrooperRule.TestDef != null && TrooperRule.TestSceneOn() && label,
+                $"Enemy test scene in the Risk of Deadlock box {TrooperRule.TestDef != null}, ticked {TrooperRule.TestSceneOn()}, labelled {label}");
+        }
+
+        /// <summary>The run on the test scene: its stage, no stage spawning, waves of one of each every interval, the cap.</summary>
+        IEnumerator TestSceneRun(System.Action<string, bool, string> Check)
+        {
+            var row = EnemyTestSceneRow.All.FirstOrDefault();
+            var scene = SceneCatalog.mostRecentSceneDef ? SceneCatalog.mostRecentSceneDef.cachedName : "?";
+            bool directorsOff = !Object.FindObjectsOfType<CombatDirector>().Any(d => d.enabled && !d.GetComponentInParent<TeleporterInteraction>());
+            Check("enemytest-stage", row != null && scene == row.Scene && directorsOff, $"stage {scene} (want {row?.Scene}), the stage's own spawning off {directorsOff}");
+            int waves0 = EnemyTestScene.Waves;
+            float t0 = Time.time, wait = row != null ? row.Interval * 2f + 1.5f : 12f;
+            int most = 0;
+            while (Time.time - t0 < wait)
+            {
+                most = Mathf.Max(most, TeamComponent.GetTeamMembers(TeamIndex.Monster).Count(tc => tc && tc.body && tc.body.healthComponent && tc.body.healthComponent.alive && EnemyTag.Of(tc.body) != null));
+                yield return new WaitForSeconds(0.25f);
+            }
+            Shot("enemy_test_scene");
+            var ids = TeamComponent.GetTeamMembers(TeamIndex.Monster).Where(tc => tc && tc.body && tc.body.healthComponent && tc.body.healthComponent.alive).Select(tc => EnemyTag.Of(tc.body)).Where(x => x != null).ToList();
+            int waves = EnemyTestScene.Waves - waves0;
+            bool each = row != null && row.Enemies.All(e => ids.Contains(e));
+            Check("enemytest-waves", row != null && waves >= 2 && each && most <= row.MaxAlive,
+                $"{waves} waves in {wait:F0} s (every {row?.Interval} s), alive now: {string.Join(", ", ids.GroupBy(x => x).Select(g => $"{g.Key} x{g.Count()}"))}; most at once {most} (cap {row?.MaxAlive})");
         }
 
         static IEnumerator GoTo(LocalUser user, string scene)

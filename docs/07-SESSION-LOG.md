@@ -1924,3 +1924,15 @@ states, reward, look) and `DeathSmoke`, tests. Performance: shared materials and
 freed), no per-orb light, the stage scan releases the pools it read, the Medic's Mending lookup stops after 5 tries.
 **Results:** `ENEMIES=melee` 17/17 (smoke, orb +5, orb miss). Full run and install: see the commit.
 **Not done:** a co-op run of the Troopers (orbs and smoke on a joining copy) has never been made.
+
+### 2026-11-13 · Troopers: the soul orb fixed, the Enemy test scene · DLL build only
+**Requests (verbatim):** "we are not using the crorrect asset form the orb and it is not rising our of the enemy when it dies. sould orb
+look nothing like the one form deadlock"; "thoul orb in the previous work was fuckin huge ... they are quite small around the size od a
+head in ror2"; "ok pleay the game and let set up a test level where we spawn 1 of each each of these trooper every 5 seconds. call it
+enemy test scene you access it theough our custom risk of deadlock section on the character selection screen".
+**Asked → answered:** orb files → "Use dealockRip/props/souls"; how it rises → "Rise from the chest, slow".
+**Done:** the Time Crystal's own model removed outright (its skin controller turned it back on: the pink crystal); the orb rebuilt as
+Deadlock's (self-lit core + generic_soul_orb_shell's voronoi cut-out shell, both colour maps of Deadlock's are blank, colour a sheet
+cell), head-sized (0.22 m), rising 2 m over 1 s from the chest on every machine; the Enemy test scene (sheet, lobby tick, first-stage
+override, spawner, test).
+**Results:** orb checks pass (17/17 melee run); `ENEMIES=testscene` all pass.

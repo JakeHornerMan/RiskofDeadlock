@@ -242,6 +242,8 @@ namespace DeadlockOfRain
 #if OWN_FILES
             // ENEMIES=stages: the lobby's Trooper stage dropdown (EnemyTest.LobbyStages)
             if (TestEnemies != null && TestEnemies.Contains("stages")) yield return LobbyStages();
+            // ENEMIES=testscene: tick the Enemy test scene in the lobby (EnemyTest.LobbyTestScene)
+            if (TestEnemies != null && TestEnemies.Contains("testscene")) yield return LobbyTestScene();
 #endif
             yield return new WaitForSeconds(0.5f);
             if (PreGameController.instance) RoR2.Console.instance.SubmitCmd(null, "pregame_start_run");

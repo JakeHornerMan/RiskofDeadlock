@@ -290,6 +290,7 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
   r2modman (doc 07, doc 11 §3b/§4).
 - Night: Troopers fade out on death like vanilla monsters (no ragdoll), 1.6.6.
 - 2026-11-12: death smoke in the look's colour and shootable soul orbs (+5, 5 s), 1.6.7 (doc 11 §3c).
+- 2026-11-13: the orb fixed (Deadlock's shell, head-sized, rises from the chest); the lobby's Enemy test scene; 1.6.8.
 - Open: a co-op run of the Troopers; the amber candles are still brighter than Deadlock's and the melee weapons paler than their
   textures (creator to judge in play); the creator's "each character in a drop down on the artifact" idea was set aside by them.
 - Later the same day: animations on spawned Troopers fixed (`EnemyLookPart`), 1.5x size, the right sounds, arcing shots, the lobby

@@ -145,6 +145,14 @@ creator's own files are used ("do not steal anything that isnt mine"): `glowFold
   while the Troopers box is unticked (the list is kept) and on a joining client (the host's list counts); "No stages selected -
   Troopers won't spawn." when none.
 
+- **Enemy test scene** (`EnemyTestScene`, `design/enemyTestScene.json`; creator, 2026-11-13: "set up a test level where we spawn 1
+  of each of these trooper every 5 seconds. call it enemy test scene you access it through our custom risk of deadlock section"):
+  a second tick in the lobby's Risk of Deadlock box (`TrooperRule.TestDef`, off by default; the box's grid is one item per row, each
+  labelled). Ticked: the run's first stage becomes `scene` (Titanic Plains; postfix on `Run.PickNextStageScene`), the stage's own
+  combat directors are off (the teleporter's boss director stays), and every `interval` s (5) one of each enemy appears `distance`
+  m (20) from a random living player, targeting them, never more than `maxAlive` (18) at once. Test: `ENEMIES=testscene`
+  (`enemytest-lobby`, `-stage`, `-waves`).
+
 ## 5. R2API: how it is used (R2Wiki Cookbook)
 - Never bundled. `DllBuilds/package/manifest.json` lists `RiskofThunder-R2API_Core-5.3.0` and `RiskofThunder-R2API_Director-3.1.3`
   (the Cookbook's `Owner-Name-Version`); r2modman needs HookGenPatcher and R2API_Addressables too, which come as their dependencies.

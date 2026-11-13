@@ -42,6 +42,9 @@ namespace DeadlockOfRain.Enemies
                 try
                 {
                     if (TrooperRule.Def == null || categoryDef != TrooperRule.Def.category) return;
+                    // one item per row (Troopers, Enemy test scene), each with its label beside it
+                    var grid = __instance.voteResultGridContainer ? __instance.voteResultGridContainer.GetComponent<UnityEngine.UI.GridLayoutGroup>() : null;
+                    if (grid) { grid.constraint = UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount; grid.constraintCount = 1; grid.childAlignment = TextAnchor.UpperLeft; grid.spacing = new Vector2(grid.spacing.x, 6f); }
                     var ui = __instance.GetComponent<TrooperStagesUi>() ?? __instance.gameObject.AddComponent<TrooperStagesUi>();
                     ui.cat = __instance;
                     ui.Build();

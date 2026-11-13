@@ -1,0 +1,28 @@
+{
+  "sheet": "enemyTestScene",
+  "about": "The lobby's Enemy test scene (creator, 2026-11-13: \"set up a test level where we spawn 1 of each of these trooper every 5 seconds. call it enemy test scene you access it through our custom risk of deadlock section on the character selection screen\"; docs/11). Ticked in the Risk of Deadlock box, the run starts on scene with the stage's own monster spawning off, and every interval seconds one of each enemy (enemies) appears distance metres from a player and goes for them, never more than maxAlive enemies at once (performance). Everything else (items, the teleporter, soul orbs, smoke) works as in a normal run. The creator's own DLL build only.",
+  "columns": [
+    "id",
+    "name",
+    "scene",
+    "enemies",
+    "interval",
+    "distance",
+    "maxAlive"
+  ],
+  "rows": [
+    {
+      "id": "enemy_test_scene",
+      "name": "Enemy test scene",
+      "scene": "golemplains",
+      "enemies": [
+        "trooper_melee",
+        "trooper_ranged",
+        "trooper_medic"
+      ],
+      "interval": 5.0,
+      "distance": 20.0,
+      "maxAlive": 18
+    }
+  ]
+}

@@ -74,6 +74,7 @@ namespace DeadlockOfRain
 #if OWN_FILES
             Enemies.Enemies.Init(Config);
             Enemies.TrooperDirector.Init();
+            Enemies.EnemyTestScene.Init();
 #endif
             // a player's freeze log ended inside this method (1.0.2): how long it took, so the next log shows it
             Log.Info($"mod start took {started.Elapsed.TotalSeconds:F1} s (the sounds load on their own thread)");

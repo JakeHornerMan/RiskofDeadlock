@@ -569,6 +569,14 @@
       "purpose": "adds the Trooper stage dropdown under the Troopers checkbox in the lobby's Risk of Deadlock box (DLL build only)",
       "reads": "enemies.*",
       "side": "client"
+    },
+    {
+      "id": "enemy_test_scene_first_stage",
+      "method": "harmony-postfix",
+      "target": "RoR2.Run.PickNextStageScene",
+      "purpose": "with the lobby's Enemy test scene ticked, the run's first stage becomes the test scene (DLL build only)",
+      "reads": "enemyTestScene.*",
+      "side": "server"
     }
   ]
 }

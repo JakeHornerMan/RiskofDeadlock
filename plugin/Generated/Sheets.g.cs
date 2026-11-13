@@ -834,6 +834,7 @@ namespace DeadlockOfRain.Sheets
             new HookRow { Id = "medic_pulse", Method = "component", Target = "DeadlockOfRain.Enemies.MedicPulse / MedicFollow", Purpose = "the Medic's heal pulse and its place behind its allies (custom AI target, drivers switched on and off)", Reads = "enemySkills.*", Side = "server" },
             new HookRow { Id = "troopers_lobby_rule", Method = "harmony-prefix", Target = "RoR2.RuleCatalog.AddCategory", Purpose = "adds the lobby's orange Troopers box (a rule category with an On/Off rule) just before Items, so it sits under Karma (DLL build only)", Reads = "enemies.*", Side = "both" },
             new HookRow { Id = "troopers_stage_dropdown", Method = "harmony-postfix", Target = "RoR2.UI.RuleCategoryController.SetData", Purpose = "adds the Trooper stage dropdown under the Troopers checkbox in the lobby's Risk of Deadlock box (DLL build only)", Reads = "enemies.*", Side = "client" },
+            new HookRow { Id = "enemy_test_scene_first_stage", Method = "harmony-postfix", Target = "RoR2.Run.PickNextStageScene", Purpose = "with the lobby's Enemy test scene ticked, the run's first stage becomes the test scene (DLL build only)", Reads = "enemyTestScene.*", Side = "server" },
         };
     }
 
@@ -1123,6 +1124,23 @@ namespace DeadlockOfRain.Sheets
         public static readonly EnemyDropRow[] All = new EnemyDropRow[]
         {
             new EnemyDropRow { Id = "trooper_soul_orb", Enemies = new string[] { "trooper_melee", "trooper_ranged", "trooper_medic" }, Gold = 5.0f, Lifetime = 5.0f, Rise = 2.0f, RiseTime = 1.0f, Radius = 0.22f, OrbTexture = "materials/models/particle/generic_soul_orb_vmat_g_tcolor_7d46cca1.vtex", GlowTexture = "materials/models/particle/generic_soul_orb_vmat_g_tselfillummask_2b2ebb3f.vtex", ShellTexture = "materials/particle/noise/noise_voronoi_tiled/images/noise_voronoi_alphatest_tif_28c93f8a.vtex", GlowFolder = "dealockRip/props/souls/deadlock", OrbColor = "#2ec8ff", BreakSound = "Play_item_proc_ghostOnKill", MissSound = "Play_TrailStage_ChampRush_SoulSphere_Despawn", SmokeTexture = "materials/particle/smoke/clouds/cartoon_cloud.vtex", SmokeColors = new string[] { "#d9893a", "#4f8fd6" }, SmokePuffs = 14.0f, SmokeTime = 2.2f },
+        };
+    }
+
+    /// <summary>Row of design/enemyTestScene.json. The lobby's Enemy test scene (creator, 2026-11-13: "set up a test level where we spawn 1 of each of these trooper every 5 seconds. call it enemy test scene you ...</summary>
+    public sealed class EnemyTestSceneRow
+    {
+        public string Id;
+        public string Name;
+        public string Scene;
+        public string[] Enemies;
+        public float Interval;
+        public float Distance;
+        public float MaxAlive;
+
+        public static readonly EnemyTestSceneRow[] All = new EnemyTestSceneRow[]
+        {
+            new EnemyTestSceneRow { Id = "enemy_test_scene", Name = "Enemy test scene", Scene = "golemplains", Enemies = new string[] { "trooper_melee", "trooper_ranged", "trooper_medic" }, Interval = 5.0f, Distance = 20.0f, MaxAlive = 18.0f },
         };
     }
 
