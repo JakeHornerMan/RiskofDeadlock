@@ -377,27 +377,31 @@ namespace DeadlockOfRain
             yield return new WaitForSeconds(0.05f);
             // bone positions in the model's own space: the whole corpse may settle as the body lands; a bone may not move on its own
             for (int i = 0; i < watch.Count; i++) { var w = watch[i]; watch[i] = (w.id, w.model, w.bones, w.bones.Select(x => x && w.model ? w.model.InverseTransformPoint(x.position) : Vector3.zero).ToArray()); }
-            float moved = 0f; bool movingBody = false, faded = false; float fadeAt = -1f;
+            float moved = 0f, tipped = 0f, sankAt = -1f; bool boneBodies = false;
             float t0 = Time.time;
-            bool shot1 = false, shot2 = false;
-            while (Time.time - t0 < 3f)
+            bool shot1 = false, shot2 = false, shot3 = false;
+            var startY = watch.Select(w => w.model ? w.model.position.y : 0f).ToArray();
+            while (Time.time - t0 < 6f && watch.Any(w => w.model))
             {
-                foreach (var w in watch)
+                for (int i = 0; i < watch.Count; i++)
                 {
+                    var w = watch[i];
                     if (!w.model) continue;
                     for (int k = 0; k < w.bones.Length; k++) if (w.bones[k]) moved = Mathf.Max(moved, Vector3.Distance(w.model.InverseTransformPoint(w.bones[k].position), w.start[k]) * w.model.lossyScale.x);
-                    if (w.model.GetComponentsInChildren<Rigidbody>().Any(r => !r.isKinematic)) movingBody = true;
+                    // only the corpse's own body may be physical: no rigidbody on any bone
+                    if (w.bones.Any(b => b && b.GetComponent<Rigidbody>())) boneBodies = true;
+                    tipped = Mathf.Max(tipped, Vector3.Angle(w.model.up, Vector3.up));
                     var f = w.model.GetComponent<EnemyFade>();
-                    if (f && f.Value <= 0.001f && fadeAt < 0f) fadeAt = Time.time - t0;
+                    if (f && f.Sinking && w.model.position.y < startY[i] - 0.5f && sankAt < 0f) sankAt = Time.time - t0;
                 }
-                if (!shot1 && Time.time - t0 > 0.3f) { shot1 = true; Shot("trooper_death_hold"); }
-                if (!shot2 && Time.time - t0 > 1.0f) { shot2 = true; Shot("trooper_death_fading"); }
+                if (!shot1 && Time.time - t0 > 0.6f) { shot1 = true; Shot("trooper_death_fallen"); }
+                if (!shot2 && sankAt > 0f) { shot2 = true; Shot("trooper_death_sinking"); }
                 yield return null;
             }
+            float goneAt = Time.time - t0;
             bool gone = watch.All(w => !w.model);
-            faded = fadeAt >= 0f && fadeAt <= 2.5f;
-            Check("trooper-death-fade", !movingBody && moved <= 0.3f && faded && gone,
-                $"{watch.Count} killed: bones moved at most {moved:F2} m, moving rigidbodies {movingBody}, faded out at {fadeAt:F1} s, models gone {gone}");
+            Check("trooper-death-fade", !boneBodies && moved <= 0.3f && tipped >= 45f && sankAt > 0f && gone && goneAt <= 6f,
+                $"{watch.Count} killed: fell over {tipped:F0} degrees, sank through the floor at {sankAt:F1} s, gone at {goneAt:F1} s; bones moved on their own at most {moved:F2} m, rigidbodies on bones {boneBodies}");
             foreach (var b in bodies) targets.Remove(b);
             yield return new WaitForSeconds(0.5f);
         }

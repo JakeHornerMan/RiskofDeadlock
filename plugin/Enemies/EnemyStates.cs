@@ -222,9 +222,10 @@ namespace DeadlockOfRain.Enemies
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Death;
     }
 
-    /// <summary>Death like RoR2's own monsters (creator, 2026-11-11: "die like all the other enemys and just fade out"): the pose
-    /// holds where it is (no ragdoll: it threw every bone about), the candle goes out, Deadlock's death sound, and the model fades
-    /// out (EnemyFade). The model is kept past the body (preserveModel) so the fade is never cut short; EnemyFade removes it.</summary>
+    /// <summary>Death: the pose holds (no per-bone ragdoll: it threw every bone about), the candle goes out, Deadlock's death sound,
+    /// smoke in the look's colour; the corpse topples onto the floor as one body, lies there, then sinks through it fading (EnemyFade;
+    /// creator, 2026-11-13: "die like a rag doll on the floor and after a second they fall through it"). The model is kept past the
+    /// body (preserveModel) and EnemyFade removes it.</summary>
     public sealed class EnemyDeath : GenericCharacterDeath
     {
         protected override void PlayDeathSound()
@@ -248,8 +249,22 @@ namespace DeadlockOfRain.Enemies
             DeathSmoke.Play(characterBody);
             var model = cachedModelTransform;
             if (!model) return;
-            if (modelLocator) { modelLocator.preserveModel = true; modelLocator.noCorpse = true; }
-            if (!model.GetComponent<EnemyFade>()) model.gameObject.AddComponent<EnemyFade>();
+            // the corpse leaves the body: the locator would keep putting it back where the body is
+            if (modelLocator) { modelLocator.preserveModel = true; modelLocator.noCorpse = true; modelLocator.autoUpdateModelTransform = false; }
+            model.SetParent(null, true);
+            if (!model.GetComponent<EnemyFade>())
+            {
+                var row = Sheet.Enemy(EnemyTag.Of(characterBody));
+                var f = model.gameObject.AddComponent<EnemyFade>();
+                if (row != null)
+                {
+                    f.Rest = row.CorpseTime; f.Sink = row.SinkTime;
+                    f.Height = row.SourceHeight * EnemyModel.Scale(row); f.Radius = Mathf.Max(0.3f, row.Width * EnemyModel.Scale(row) * 1.6f);
+                }
+                // pushed away from whoever killed it
+                var killer = healthComponent ? healthComponent.lastHitAttacker : null;
+                if (killer) f.Push = transform.position - killer.transform.position;
+            }
             MeltyTest.EnemyNote("death", characterBody);
         }
     }

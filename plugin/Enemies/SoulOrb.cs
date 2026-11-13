@@ -143,14 +143,14 @@ namespace DeadlockOfRain.Enemies
             var ps = glowGo.AddComponent<ParticleSystem>();
             ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             var main = ps.main; main.loop = true; main.duration = 1f; main.startLifetime = 0.6f; main.startSpeed = 0f;
-            main.startSize = r * 2.6f; main.startColor = new Color(c.r, c.g, c.b, 0.6f); main.simulationSpace = ParticleSystemSimulationSpace.Local; main.maxParticles = 4;
+            main.startSize = r * 6f; main.startColor = new Color(c.r, c.g, c.b, 1f); main.simulationSpace = ParticleSystemSimulationSpace.Local; main.maxParticles = 4;
             main.scalingMode = ParticleSystemScalingMode.Hierarchy;
             var em = ps.emission; em.rateOverTime = 5f;
             var shape = ps.shape; shape.enabled = false;
             var col = ps.colorOverLifetime; col.enabled = true;
             var g = new Gradient();
             g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
-                      new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(0.8f, 0.3f), new GradientAlphaKey(0f, 1f) });
+                      new[] { new GradientAlphaKey(0.5f, 0f), new GradientAlphaKey(1f, 0.3f), new GradientAlphaKey(0.5f, 1f) });
             col.color = g;
             if (!glowMat) glowMat = Vfx.Mat("mat_glow", c);
             glowGo.GetComponent<ParticleSystemRenderer>().sharedMaterial = glowMat;
@@ -180,7 +180,7 @@ namespace DeadlockOfRain.Enemies
             if (coreMat.HasProperty("_NormalTex")) coreMat.SetTexture("_NormalTex", null);
             if (coreMat.HasProperty("_EmTex")) coreMat.SetTexture("_EmTex", Texture2D.whiteTexture);
             if (coreMat.HasProperty("_EmColor")) coreMat.SetColor("_EmColor", c);
-            if (coreMat.HasProperty("_EmPower")) coreMat.SetFloat("_EmPower", 0.7f);
+            if (coreMat.HasProperty("_EmPower")) coreMat.SetFloat("_EmPower", 2.2f);
             if (coreMat.HasProperty("_LimbRemovalOn")) coreMat.SetFloat("_LimbRemovalOn", 0f);
             return coreMat;
         }
@@ -200,7 +200,7 @@ namespace DeadlockOfRain.Enemies
             if (shellMat.HasProperty("_NormalTex")) shellMat.SetTexture("_NormalTex", null);
             if (shellMat.HasProperty("_EmTex")) shellMat.SetTexture("_EmTex", Texture2D.whiteTexture);
             if (shellMat.HasProperty("_EmColor")) shellMat.SetColor("_EmColor", c);
-            if (shellMat.HasProperty("_EmPower")) shellMat.SetFloat("_EmPower", 0.5f);
+            if (shellMat.HasProperty("_EmPower")) shellMat.SetFloat("_EmPower", 1.4f);
             if (shellMat.HasProperty("_EnableCutout")) shellMat.SetFloat("_EnableCutout", 1f);
             shellMat.EnableKeyword("CUTOUT");
             if (shellMat.HasProperty("_Cutoff")) shellMat.SetFloat("_Cutoff", 0.45f);

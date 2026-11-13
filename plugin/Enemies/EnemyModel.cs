@@ -262,24 +262,60 @@ namespace DeadlockOfRain.Enemies
         }
     }
 
-    /// <summary>A dead enemy's model fading out the way RoR2's corpses do (creator, 2026-11-11: "can they die like all the other
-    /// enemys and just fade out ... dont make all the bones on the rig spaz out"; the old ragdoll threw the bones about): it holds its
-    /// last pose for Hold seconds, then CharacterModel.corpseFade (the dither fade of RoR2's shader) goes from 1 to 0 over Fade seconds
-    /// (vanilla Corpse.dissolveTime), and the model goes. Runs on every machine.</summary>
+    /// <summary>A dead enemy's corpse (creator, 2026-11-13: "can the enemy die like a rag doll on the floor and after a second they
+    /// fall through it"): the model, frozen in the pose it died in, topples onto the ground as one physics body (a capsule its size:
+    /// the per-bone ragdoll threw the bones about), lies there corpseTime seconds after it comes to rest, then sinks through the floor
+    /// over sinkTime seconds while fading (CharacterModel.corpseFade, RoR2's corpse fade), and goes. Every machine runs its own.</summary>
     public sealed class EnemyFade : MonoBehaviour
     {
-        public float Hold = 0.5f, Fade = 1f;
+        public float Rest = 1f, Sink = 1.2f, Height = 2f, Radius = 0.5f;
+        public Vector3 Push;
         CharacterModel cm;
-        float t;
+        Rigidbody rb;
+        CapsuleCollider col;
+        float t, still, sinkT = -1f;
         public float Value => cm ? cm.corpseFade : 0f;
+        public bool Sinking => sinkT >= 0f;
 
-        void Start() { cm = GetComponent<CharacterModel>(); }
+        void Start()
+        {
+            cm = GetComponent<CharacterModel>();
+            col = gameObject.AddComponent<CapsuleCollider>();
+            col.direction = 1; col.height = Height; col.radius = Mathf.Min(Radius, Height * 0.5f);
+            col.center = transform.InverseTransformVector(Vector3.up * Height * 0.5f);
+            col.height = Height / Mathf.Max(0.001f, transform.lossyScale.y);
+            col.radius = col.radius / Mathf.Max(0.001f, transform.lossyScale.x);
+            gameObject.layer = LayerIndex.ragdoll.intVal;   // the world, not players or bullets
+            rb = gameObject.AddComponent<Rigidbody>();
+            rb.mass = 60f; rb.drag = 0.4f; rb.angularDrag = 1.5f; rb.interpolation = RigidbodyInterpolation.Interpolate;
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            // a shove the way it was hit and a turn about the axis across it, so it falls over rather than standing
+            var push = Push.sqrMagnitude > 0.01f ? Push : Random.onUnitSphere;
+            push.y = 0f; push = push.sqrMagnitude > 0.01f ? push.normalized : Vector3.forward;
+            rb.AddForce((push * 2.5f + Vector3.up * 1.5f), ForceMode.VelocityChange);
+            rb.AddTorque(Vector3.Cross(Vector3.up, push) * 4f, ForceMode.VelocityChange);
+        }
 
         void Update()
         {
             t += Time.deltaTime;
-            if (cm) cm.corpseFade = Mathf.Clamp01(1f - (t - Hold) / Mathf.Max(0.05f, Fade));
-            if (t >= Hold + Fade + 0.1f) Destroy(gameObject);
+            if (sinkT < 0f)
+            {
+                // on the floor and still (or a hard limit): it lies there Rest seconds, then sinks
+                bool atRest = rb && rb.velocity.sqrMagnitude < 0.05f && rb.angularVelocity.sqrMagnitude < 0.05f && t > 0.4f;
+                still = atRest ? still + Time.deltaTime : 0f;
+                if (still >= Rest || t > Rest + 3f)
+                {
+                    sinkT = 0f;
+                    if (rb) { rb.isKinematic = true; rb.detectCollisions = false; }
+                    if (col) col.enabled = false;
+                }
+                return;
+            }
+            sinkT += Time.deltaTime;
+            transform.position += Vector3.down * (Height * 0.6f / Mathf.Max(0.05f, Sink)) * Time.deltaTime;
+            if (cm) cm.corpseFade = Mathf.Clamp01(1f - sinkT / Mathf.Max(0.05f, Sink));
+            if (sinkT >= Sink + 0.05f) Destroy(gameObject);
         }
     }
 }

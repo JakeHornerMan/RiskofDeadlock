@@ -32,8 +32,10 @@ plugin/Enemies/TrooperDirector.cs: R2API.Director MonsterActions ─► every st
   `rootMotionInMainState` off (the Beetle walks by its Mecanim root motion, which our clips lack: it never moved).
   The vanilla capsule is scaled to `sourceHeight × GlobalScale` (the heroes' shared factor: Deadlock size, creator's choice).
   Spawn state `EnemySpawn` (Lemurian's spawn effect and sound, the deploy sound, the landing clip), death `EnemyDeath` (like RoR2's
-  monsters: the pose holds, Deadlock's death sound, the model fades out through `CharacterModel.corpseFade` over 1 s after 0.5 s,
-  `EnemyFade`; no ragdoll since 2026-11-11, it threw every bone about), stagger `EnemyHurt` at `staggerPct` (SetStateOnHurt.hitThreshold). The vanilla death and
+  monsters: the pose holds, Deadlock's death sound; `EnemyFade` (2026-11-13, "die like a rag doll on the floor and after a second
+  they fall through it"): the corpse, detached from the body, topples onto the floor as one physics capsule its size (ragdoll layer:
+  the world only), lies `corpseTime` s after it comes to rest, then sinks through the floor over `sinkTime` s fading through
+  `CharacterModel.corpseFade`; no per-bone ragdoll, it threw every bone about), stagger `EnemyHurt` at `staggerPct` (SetStateOnHurt.hitThreshold). The vanilla death and
   bark sounds and the logbook unlock are cleared.
 - **Model** (`EnemyModel`): every look (amber, sapphire) under one root, all their renderers listed in `CharacterModel` (it turns
   every listed renderer on each frame), the unshown look and health heads switched off through their GameObjects. `EnemyLook`

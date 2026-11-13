@@ -1936,3 +1936,10 @@ Deadlock's (self-lit core + generic_soul_orb_shell's voronoi cut-out shell, both
 cell), head-sized (0.22 m), rising 2 m over 1 s from the chest on every machine; the Enemy test scene (sheet, lobby tick, first-stage
 override, spawner, test).
 **Results:** orb checks pass (17/17 melee run); `ENEMIES=testscene` all pass.
+
+### 2026-11-13 (later) · Troopers: corpses fall over and sink; brighter orbs · DLL build only
+**Requests (verbatim):** "im not really seeing the orbs?"; "and can the enemy die like a rag doll on the floor and tafter a sceond they
+fall though it".
+**Done:** whole-body corpse (`EnemyFade`: the pose holds, a capsule rigidbody topples it, rests `corpseTime`, sinks `sinkTime` fading);
+orbs brighter with a larger halo (still head-sized). `trooper-death-fade` now checks it fell over, sank and went, bones still never
+move on their own. **Results:** melee run all pass; 1.6.9 installed.
