@@ -2,6 +2,33 @@
 
 One version line, one number up per build. Newest first.
 
+## 1.6.11
+- Built with Risk of Rain 2 build 25921972 (2026-11-13).
+- **Tidier Risk of Deadlock box** in the lobby: the Troopers tick with the stage list under it, inside the box, and an orange
+  **Play Test scene** button below it that starts the enemy test run straight away (the old test-scene tick is gone).
+
+## 1.6.10
+- Built with Risk of Rain 2 build 25921972 (2026-11-13).
+- **Soul orbs look more like Deadlock's:** teal-green, a dark centre in a glowing shell, and they rise slowly out of the dead Trooper
+  (2.5 seconds) leaving a dark smoky trail.
+
+## 1.6.9
+- Built with Risk of Rain 2 build 25921972 (2026-11-13).
+- **Troopers fall over when they die:** the body topples onto the ground as it died, lies there a second, then sinks through the
+  floor and fades.
+- **Soul orbs are much easier to see:** a bright glow around them, the orb itself still head-sized.
+
+## 1.6.8
+- Built with Risk of Rain 2 build 25921972 (2026-11-13).
+- **Enemy test scene:** a new tick in the lobby's Risk of Deadlock box. Tick it and the run starts on Titanic Plains with no
+  normal monsters; instead one Melee, one Ranged and one Medic Trooper arrive every 5 seconds (at most 18 at once).
+
+## 1.6.7
+- Built with Risk of Rain 2 build 25921972 (2026-11-13).
+- **Troopers go up in smoke** in their own colour (amber or sapphire) when they die.
+- **Soul orbs:** a glowing orb rises out of every dead Trooper. Shoot it within 5 seconds for 5 money (the player who breaks it gets
+  it); leave it and it fades away.
+
 ## 1.6.6
 - Built with Risk of Rain 2 build 25921972 (2026-11-11).
 - **Troopers die like RoR2's monsters:** they stop where they fall and fade out, instead of their bones flying about.

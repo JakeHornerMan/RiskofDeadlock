@@ -8,7 +8,7 @@ Play Risk of Rain 2 as **Haze, Abrams, Seven, Infernus, Mo & Krill, Viscous, Rat
 - **Balance pages:** [Balance overview](https://claude.ai/artifact/5zx1qdr3LnXL2vhzJiebo3). These are just design sheets: how I make sure every hero is balanced for the Risk of Rain 2 universe.
 
 ## Requirements
-- Built with Risk of Rain 2 build 25921972 (2026-11-11).
+- Built with Risk of Rain 2 build 25921972 (2026-11-13).
 - Risk of Rain 2 on Steam, with **BepInExPack** (bbepis, 5.4.2122) and **RoR2BepInExPack** (RiskofThunder, 1.49.0 or newer). r2modman lists both as this package's dependencies.
 - **R2API_Core** and **R2API_Director** (RiskofThunder) for the Troopers' spawning; r2modman lists them as dependencies too.
 - No Deadlock install needed. Every hero's files come with the mod, in the `heroes` folder beside the DLL.
