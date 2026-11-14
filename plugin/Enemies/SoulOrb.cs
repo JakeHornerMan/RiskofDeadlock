@@ -143,9 +143,9 @@ namespace DeadlockOfRain.Enemies
             var ps = glowGo.AddComponent<ParticleSystem>();
             ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             var main = ps.main; main.loop = true; main.duration = 1f; main.startLifetime = 0.6f; main.startSpeed = 0f;
-            main.startSize = r * 6f; main.startColor = new Color(c.r, c.g, c.b, 1f); main.simulationSpace = ParticleSystemSimulationSpace.Local; main.maxParticles = 4;
+            main.startSize = r * 3.6f; main.startColor = new Color(c.r * 0.55f, c.g * 0.55f, c.b * 0.55f, 0.55f);   // a halo, not a white-out: the veined shell must show (2026-11-14) main.simulationSpace = ParticleSystemSimulationSpace.Local; main.maxParticles = 4;
             main.scalingMode = ParticleSystemScalingMode.Hierarchy;
-            var em = ps.emission; em.rateOverTime = 5f;
+            var em = ps.emission; em.rateOverTime = 3f;
             var shape = ps.shape; shape.enabled = false;
             var col = ps.colorOverLifetime; col.enabled = true;
             var g = new Gradient();
@@ -161,6 +161,10 @@ namespace DeadlockOfRain.Enemies
             trail.startColor = new Color(0.05f, 0.09f, 0.08f, 0.9f); trail.endColor = new Color(0.05f, 0.09f, 0.08f, 0f);
             trail.sharedMaterial = TrailMat();
             ps.Play();
+            // Deadlock's own layers for the dropped soul orb (spirit_orb_dropped_*; creator, 2026-11-14: "make sure they are pretty
+            // accurate to how they look in deadlock"): rays streaming off it, a green wisp under it, a ring where it appears
+            Vfx.SoulOrbAmbient(gameObject, c, r);
+            Vfx.SoulOrbAppear(transform.position, c, r);
         }
 
         Transform Part(string name, float size, Material m)
@@ -205,8 +209,8 @@ namespace DeadlockOfRain.Enemies
             if (shellMat.HasProperty("_Color")) shellMat.SetColor("_Color", c);
             if (shellMat.HasProperty("_NormalTex")) shellMat.SetTexture("_NormalTex", null);
             if (shellMat.HasProperty("_EmTex")) shellMat.SetTexture("_EmTex", Texture2D.whiteTexture);
-            if (shellMat.HasProperty("_EmColor")) shellMat.SetColor("_EmColor", c);
-            if (shellMat.HasProperty("_EmPower")) shellMat.SetFloat("_EmPower", 2.4f);
+            if (shellMat.HasProperty("_EmColor")) shellMat.SetColor("_EmColor", c * 0.8f);
+            if (shellMat.HasProperty("_EmPower")) shellMat.SetFloat("_EmPower", 0.9f);   // was 2.4: the shell burned out to white; Deadlock's stays teal-green (2026-11-14)
             if (shellMat.HasProperty("_EnableCutout")) shellMat.SetFloat("_EnableCutout", 1f);
             shellMat.EnableKeyword("CUTOUT");
             if (shellMat.HasProperty("_Cutoff")) shellMat.SetFloat("_Cutoff", 0.45f);
@@ -297,6 +301,7 @@ namespace DeadlockOfRain.Enemies
             foreach (var hb in gameObject.GetComponentsInChildren<HurtBox>(true)) foreach (var c in hb.GetComponents<Collider>()) c.enabled = false;
             var look = gameObject.GetComponentInChildren<SoulOrbLook>(true);
             if (look) look.Vanish();
+            if (row != null) Vfx.SoulOrbEnd(transform.position, Sheet.Color(row.OrbColor), row.Radius, 8);
             if (NetworkServer.active) SoulOrb.Missed++;
         }
 
@@ -321,7 +326,7 @@ namespace DeadlockOfRain.Enemies
             if (row != null)
             {
                 if (row.BreakSound != "none") Util.PlaySound(row.BreakSound, gameObject);
-                Vfx.Burst(at, "mat_glow", Sheet.Color(row.OrbColor), 14, 0.45f, 5f, 0.5f, 0.2f);
+                Vfx.SoulOrbClaim(at, Sheet.Color(row.OrbColor), row.Radius);
             }
             var look = gameObject.GetComponentInChildren<SoulOrbLook>(true);
             if (look) look.gameObject.SetActive(false);
