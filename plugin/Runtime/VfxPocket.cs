@@ -5,16 +5,46 @@ using UnityEngine;
 
 namespace DeadlockOfRain
 {
-    /// <summary>Pocket's visuals (v1.2.0a): violet spirit magic like Deadlock's, built from RoR2's glow, tracer, smoke and spark
+    /// <summary>Pocket's visuals (v1.2.0a; recoloured in the 2026-11 rebuild, docs/VfxRebuild/pocketVfxRebuild.md: Deadlock's
+    /// current Pocket, the recipes named pocket_*, is teal spirit magic; the violet we had came from his older "synth" recipes).
+    /// Built from RoR2's glow, tracer, smoke and spark
     /// materials, with Deadlock's own suitcase and frog models (effects props) where the move shows them. The Flying Cloak is a
     /// living cloth made in code (a rippling, twisting sheet with glowing edges); the Satchel's tendrils are bent lines that writhe.</summary>
     public static partial class Vfx
     {
-        static readonly Color pocketViolet = new Color(0.55f, 0.32f, 0.95f), pocketLilac = new Color(0.8f, 0.66f, 1f),
-                              pocketDeep = new Color(0.22f, 0.1f, 0.42f), pocketSmoke = new Color(0.72f, 0.56f, 1f, 1f),
+        // particles/abilities/pocket: spirit teal #4CDECD / #35978E, pale #8AFFEB / #5EF9E9, deep #06534B / #123B36;
+        // weapon_fx/pocket: muzzle #CB1C05 / #E46C11 / #FECF78, pellets #FFB23E
+        static readonly Color pocketSpirit = Hex("4CDECD"), pocketPale = Hex("8AFFEB"),
+                              pocketDeep = Hex("06534B"), pocketSmoke = new Color(0.37f, 0.9f, 0.84f, 1f),
                               pocketRed = new Color(1f, 0.22f, 0.28f),
                               pocketTeal = new Color(0.25f, 0.95f, 0.8f), pocketTealDeep = new Color(0.1f, 0.6f, 0.55f),
                               treasure = new Color(0.4f, 1f, 0.35f), gold = new Color(1f, 0.82f, 0.3f), slime = new Color(0.5f, 0.66f, 0.32f), water = new Color(0.66f, 0.85f, 0.95f);
+
+        static readonly Color pocketSlime = Hex("14A693", 0.8f), pocketSlimeDark = Hex("06201D", 0.7f), frogSlime = Hex("5FA01A", 0.8f), frogSlimeDark = Hex("12200A", 0.7f);
+
+        /// <summary>A splat left on the world where Pocket's magic lands (creator, 2026-11-14: "pocket should have more splat like effect
+        /// on the world like he does in deadlock, non functional just visual"; Deadlock: pocket_barrage_explosion_proj,
+        /// pocket_affliction_aoe_ground_proj_detail / _splatter): a dark wet stain with a slick of slime on it and smaller blots
+        /// thrown round it, a quick splash ring, and droplets flung up. It stays a few seconds and fades. Looks only: no damage.</summary>
+        static void PocketSplat(Vector3 at, float radius, Color goo, Color dark, float life = 3.5f)
+        {
+            if (!Every("pocket_splat", 0.1f)) return;
+            float r = Mathf.Clamp(radius, 1.2f, 9f);
+            var g = Ground(at);
+            QuadAt(g, Soft("fx_puff", dark), r * 0.9f, r * 1.5f, life, Face.Ground, 0f, 0.03f, 0.7f, Random.Range(0f, 360f));
+            QuadAt(g, Soft("fx_puff", goo), r * 0.55f, r * 1.25f, life * 0.85f, Face.Ground, 0f, 0.03f, 0.65f, Random.Range(0f, 360f));
+            QuadAt(g, Glow("fx_ring_burst", new Color(goo.r * 2f, goo.g * 2f, goo.b * 2f, 0.8f)), r * 0.4f, r * 1.9f, 0.3f, Face.Ground, 0f, 0.03f, 0.3f, Random.Range(0f, 360f));
+            int blots = Rich ? 4 : 2;
+            for (int i = 0; i < blots; i++)
+            {
+                var o = Random.insideUnitCircle.normalized * r * Random.Range(0.55f, 1.05f);
+                float b = r * Random.Range(0.18f, 0.38f);
+                QuadAt(g + new Vector3(o.x, 0.3f, o.y), Soft("fx_puff", i % 2 == 0 ? goo : dark), b * 0.5f, b, life * Random.Range(0.6f, 0.9f), Face.Ground, 0f, 0.03f, 0.65f, Random.Range(0f, 360f));
+            }
+            Puff(at + Vector3.up * 0.2f, new P { Mat = Soft("fx_fleks", Color.white), Count = 10, LifeMin = 0.4f, LifeMax = 0.8f, SpeedMin = 2f, SpeedMax = Mathf.Clamp(r * 2.2f, 4f, 11f),
+                                                 SizeMin = 0.1f, SizeMax = 0.24f, A = new Color(goo.r * 1.6f, goo.g * 1.6f, goo.b * 1.6f, 0.9f), B = dark, Shape = Shape.Up, Angle = 65f,
+                                                 Gravity = 2.4f, FadeIn = 0.02f, FadeOutFrom = 0.8f, TilesX = 8, TilesY = 8, SpinMin = -7f, SpinMax = 7f, Max = 12 });
+        }
 
         static GameObject Pocket(string id, string moment, Vector3 at, float radius, Transform follow, Vector3? to, float angle)
         {
@@ -37,16 +67,21 @@ namespace DeadlockOfRain
             {
                 case "muzzle":
                 {
-                    var root = Root(at, 0.5f, null);
-                    Particles(root, "mat_glow", pocketLilac, count: 3, life: 0.08f, speed: 0.5f, size: 0.5f, world: true);
-                    Particles(root, "mat_smoke", pocketSmoke, count: 5, life: 0.45f, speed: 1.2f, size: 0.35f, shapeRadius: 0.1f, world: true);
-                    Particles(root, "mat_spark", pocketViolet, count: 6, life: 0.2f, speed: 6f, size: 0.05f, world: true, stretch: 2f);
-                    Flash(at, pocketLilac, 4f, 0.08f, 3f);
-                    return root;
+                    // pocket_muzzle_flash: a ragged red-orange flame, a pale core, sparks, a wisp of grey smoke
+                    if (!Every("pocket_mz", 0.07f)) return null;
+                    QuadAt(at, Glow("fx_muzzle", Hex("E46C11")), 0.55f, 1.5f, 0.09f, Face.Camera, 0f, 0f, 0.25f, Random.Range(0f, 360f));
+                    QuadAt(at, Glow("fx_glow", Hex("FECF78", 0.8f)), 0.4f, 0.9f, 0.1f, Face.Camera, 0f, 0f, 0.2f);
+                    Puff(at, new P { Mat = Mat("mat_spark", Hex("E46C11")), Count = 5, LifeMin = 0.12f, LifeMax = 0.22f, SpeedMin = 3f, SpeedMax = 7f, SizeMin = 0.04f, SizeMax = 0.06f,
+                                     A = Hex("FECF78"), B = Hex("CB1C05"), Stretch = 2f, Max = 6 });
+                    if (Rich && Every("pocket_mz_smoke", 0.2f))
+                        Puff(at, new P { Mat = Soft("fx_cloud", Color.white), Count = 2, LifeMin = 0.4f, LifeMax = 0.6f, SpeedMin = 0.5f, SpeedMax = 1.4f, SizeMin = 0.35f, SizeMax = 0.55f,
+                                         A = Hex("A59E89", 0.4f), B = Hex("9C9C9C", 0.15f), Size0 = 0.5f, Size1 = 1.6f, Drag = 2f, Max = 3 });
+                    return null;
                 }
                 case "hit":
-                    Burst(at, "mat_spark", pocketViolet, 5, 0.25f, 4f, 0.05f);
-                    Burst(at, "mat_glow", pocketLilac, 1, 0.12f, 0f, 0.25f);
+                    if (!Every("pocket_hit", 0.06f)) return null;
+                    QuadAt(at, Glow("fx_star", Hex("FFFDE5")), 0.25f, 0.8f, 0.1f, Face.Camera, 0f, 0f, 0.3f, Random.Range(0f, 360f));
+                    Burst(at, "mat_spark", Hex("FFB23E"), 5, 0.25f, 4f, 0.05f);
                     return null;
             }
             return null;
@@ -60,11 +95,11 @@ namespace DeadlockOfRain
                 case "cast":
                 {
                     Burst(at, "mat_smoke", pocketSmoke, 10, 0.6f, 2f, 0.6f, 0.4f);
-                    Burst(at, "mat_glow", pocketViolet, 8, 0.4f, 3f, 0.2f, 0.3f);
+                    Burst(at, "mat_glow", pocketSpirit, 8, 0.4f, 3f, 0.2f, 0.3f);
                     var root = Root(at, 0f, follow);
                     var tip = new GameObject("streak"); tip.transform.SetParent(root.transform, false); tip.transform.localPosition = Vector3.up * 1f;
-                    Trail(tip, pocketViolet, 0.35f, 0.25f);
-                    Particles(tip, "mat_glow", pocketLilac, rate: 40, life: 0.3f, speed: 0.3f, size: 0.18f, shapeRadius: 0.3f, world: true);
+                    Trail(tip, pocketSpirit, 0.35f, 0.25f);
+                    Particles(tip, "mat_glow", pocketPale, rate: 40, life: 0.3f, speed: 0.3f, size: 0.18f, shapeRadius: 0.3f, world: true);
                     return root;
                 }
                 case "end":
@@ -85,10 +120,10 @@ namespace DeadlockOfRain
                     var root = Root(at, 0f, follow);
                     var ring = new GameObject("ring"); ring.transform.SetParent(root.transform, false); ring.transform.localPosition = Vector3.up * 0.4f;
                     ring.AddComponent<Spin>().DegPerSec = 240f;
-                    Circle(ring.transform, pocketViolet, 0.45f, 0.05f, 32, true);
-                    Particles(root, "mat_glow", pocketViolet, rate: 25, life: 0.5f, speed: 1.2f, size: 0.22f, shapeRadius: 0.25f, upward: true);
+                    Circle(ring.transform, pocketSpirit, 0.45f, 0.05f, 32, true);
+                    Particles(root, "mat_glow", pocketSpirit, rate: 25, life: 0.5f, speed: 1.2f, size: 0.22f, shapeRadius: 0.25f, upward: true);
                     Particles(root, "mat_smoke", pocketSmoke, rate: 8, life: 0.7f, speed: 0.6f, size: 0.4f, shapeRadius: 0.2f, world: true, upward: true);
-                    Light(root, pocketViolet, 5f, 2.5f, Vector3.up * 0.4f);
+                    Light(root, pocketSpirit, 5f, 2.5f, Vector3.up * 0.4f);
                     return root;
                 }
                 case "aim":
@@ -96,29 +131,30 @@ namespace DeadlockOfRain
                     // the owner's landing circle under the crosshair
                     var root = Root(at, 0f, null);
                     var lift = new GameObject("lift"); lift.transform.SetParent(root.transform, false); lift.transform.localPosition = Vector3.up * 0.15f;
-                    Circle(lift.transform, pocketLilac, radius, 0.06f, 48, true);
-                    Particles(root, "mat_glow", pocketViolet, rate: 18, life: 0.5f, speed: 0.4f, size: 0.25f, shapeRadius: radius, ring: true);
+                    Circle(lift.transform, pocketPale, radius, 0.06f, 48, true);
+                    Particles(root, "mat_glow", pocketSpirit, rate: 18, life: 0.5f, speed: 0.4f, size: 0.25f, shapeRadius: radius, ring: true);
                     return root;
                 }
                 case "orb":
                 {
                     // a glowing purple spirit with a ribbon tail
                     var root = Root(at, 0f, follow);
-                    Particles(root, "mat_glow", pocketLilac, rate: 40, life: 0.15f, speed: 0f, size: 0.7f);
-                    Particles(root, "mat_glow", pocketViolet, rate: 30, life: 0.35f, speed: 0.4f, size: 0.3f, shapeRadius: 0.2f, world: true);
-                    Trail(root, pocketViolet, 0.3f, 0.3f);
-                    Light(root, pocketViolet, 4f, 2f, Vector3.zero);
+                    Quad(root, Glow("fx_glow", pocketPale), 0.7f, 0.7f, 1f, Face.Camera, loop: true);
+                    Particles(root, "mat_glow", pocketSpirit, rate: 30, life: 0.35f, speed: 0.4f, size: 0.3f, shapeRadius: 0.2f, world: true);
+                    Trail(root, pocketSpirit, 0.3f, 0.3f);
+                    Light(root, pocketSpirit, 4f, 2f, Vector3.zero);
                     return root;
                 }
                 case "muzzle":
-                    Burst(at, "mat_glow", pocketLilac, 6, 0.25f, 3f, 0.25f, 0.15f);
+                    Burst(at, "mat_glow", pocketPale, 6, 0.25f, 3f, 0.25f, 0.15f);
                     return null;
                 case "hit":
                 {
-                    Flash(at + Vector3.up, pocketViolet, radius * 2.5f, 0.25f, 5f);
-                    Ring(at + Vector3.up * 0.2f, pocketLilac, 0.5f, radius, 0.35f, 0.25f);
-                    Burst(at + Vector3.up * 0.5f, "mat_glow", pocketViolet, 18, 0.5f, radius * 2f, 0.35f, 0.4f);
-                    Burst(at, "mat_spark", pocketLilac, 16, 0.4f, radius * 2.5f, 0.07f, 0.3f, upward: true, gravity: 1f);
+                    Flash(at + Vector3.up, pocketSpirit, radius * 2.5f, 0.25f, 5f);
+                    PocketSplat(at, radius, pocketSlime, pocketSlimeDark);
+                    Ring(at + Vector3.up * 0.2f, pocketPale, 0.5f, radius, 0.35f, 0.25f);
+                    Burst(at + Vector3.up * 0.5f, "mat_glow", pocketSpirit, 18, 0.5f, radius * 2f, 0.35f, 0.4f);
+                    Burst(at, "mat_spark", pocketPale, 16, 0.4f, radius * 2.5f, 0.07f, 0.3f, upward: true, gravity: 1f);
                     Burst(at, "mat_smoke", pocketSmoke, 8, 0.8f, radius * 0.6f, radius * 0.35f, radius * 0.4f, flat: true);
                     Shake(at, radius * 3f, 1f, 0.15f);
                     return null;
@@ -133,7 +169,7 @@ namespace DeadlockOfRain
                     {
                         var m = new GameObject("mote"); m.transform.SetParent(spin.transform, false);
                         float a = i * 120f * Mathf.Deg2Rad; m.transform.localPosition = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * 0.45f;
-                        Particles(m, "mat_glow", pocketLilac, rate: 20, life: 0.25f, speed: 0f, size: 0.18f, world: true);
+                        Particles(m, "mat_glow", pocketPale, rate: 20, life: 0.25f, speed: 0f, size: 0.18f, world: true);
                     }
                     return root;
                 }
@@ -174,15 +210,16 @@ namespace DeadlockOfRain
                     var side = dir.sqrMagnitude > 0.01f ? Vector3.Cross(Vector3.up, dir.normalized) : Vector3.right;
                     var lr = Line(root.transform, pocketTeal, 0.12f, -side * 0.9f + Vector3.up * 0.4f, side * 0.9f - Vector3.up * 0.4f);
                     lr.gameObject.AddComponent<FadeLine>().Life = 0.3f;
-                    Burst(at, "mat_spark", pocketLilac, 10, 0.3f, 5f, 0.06f, 0.2f);
-                    Burst(at, "mat_glow", pocketViolet, 4, 0.25f, 1f, 0.35f);
+                    Burst(at, "mat_spark", pocketPale, 10, 0.3f, 5f, 0.06f, 0.2f);
+                    Burst(at, "mat_glow", pocketSpirit, 4, 0.25f, 1f, 0.35f);
                     return root;
                 }
                 case "stick":
-                    Burst(at, "mat_spark", pocketViolet, 10, 0.3f, 4f, 0.06f);
+                    Burst(at, "mat_spark", pocketSpirit, 10, 0.3f, 4f, 0.06f);
                     return null;
                 case "end":
                 case "port":
+                    PocketSplat(at, 2.2f, pocketSlime, pocketSlimeDark, 2.5f);
                     Burst(at, "mat_smoke", new Color(0.55f, 1f, 0.9f, 1f), 12, 0.7f, 2f, 0.7f, 0.5f);
                     Burst(at, "mat_glow", pocketTeal, 14, 0.4f, 4f, 0.3f, 0.4f);
                     Flash(at, pocketTeal, 7f, 0.2f, 3f);
@@ -198,36 +235,36 @@ namespace DeadlockOfRain
             {
                 case "cast":
                     Burst(at, "mat_smoke", pocketSmoke, 14, 0.7f, 2f, 0.8f, 0.6f);
-                    Burst(at, "mat_glow", pocketViolet, 10, 0.4f, 3f, 0.3f, 0.5f);
+                    Burst(at, "mat_glow", pocketSpirit, 10, 0.4f, 3f, 0.3f, 0.5f);
                     return null;
                 case "loop":
                 {
                     // a violet glow round the floating case and its reach on the ground
                     var root = Root(at, 0f, follow);
-                    Particles(root, "mat_glow", pocketViolet, rate: 30, life: 0.5f, speed: 0.4f, size: 0.5f, shapeRadius: 0.5f);
+                    Particles(root, "mat_glow", pocketSpirit, rate: 30, life: 0.5f, speed: 0.4f, size: 0.5f, shapeRadius: 0.5f);
                     Particles(root, "mat_smoke", pocketSmoke, rate: 6, life: 1f, speed: 0.3f, size: 0.6f, shapeRadius: 0.4f, world: true);
-                    Light(root, pocketViolet, 7f, 2.5f, Vector3.zero);
+                    Light(root, pocketSpirit, 7f, 2.5f, Vector3.zero);
                     var ground = new GameObject("ground"); ground.transform.SetParent(root.transform, false);
                     ground.transform.position = PocketParts.Floor(at) + Vector3.up * 0.1f;
                     var turn = new GameObject("turn"); turn.transform.SetParent(ground.transform, false);
                     turn.AddComponent<Spin>().DegPerSec = 20f;
-                    Circle(turn.transform, pocketLilac, radius, 0.07f, 64, true);
-                    Particles(ground, "mat_glow", pocketViolet, rate: 30, life: 0.8f, speed: 0.6f, size: 0.25f, shapeRadius: radius, ring: true);
+                    Circle(turn.transform, pocketPale, radius, 0.07f, 64, true);
+                    Particles(ground, "mat_glow", pocketSpirit, rate: 30, life: 0.8f, speed: 0.6f, size: 0.25f, shapeRadius: radius, ring: true);
                     return root;
                 }
                 case "enter":
                     // he is in: the lid slams, a purple shockwave and a shake
-                    Flash(at, pocketViolet, 8f, 0.2f, 5f);
-                    Ring(PocketParts.Floor(at) + Vector3.up * 0.15f, pocketLilac, 0.5f, radius * 0.6f, 0.4f, 0.3f);
+                    Flash(at, pocketSpirit, 8f, 0.2f, 5f);
+                    Ring(PocketParts.Floor(at) + Vector3.up * 0.15f, pocketPale, 0.5f, radius * 0.6f, 0.4f, 0.3f);
                     Burst(at, "mat_smoke", pocketSmoke, 20, 0.8f, 3.5f, 0.9f, 0.6f);
-                    Burst(at, "mat_glow", pocketViolet, 16, 0.4f, 5f, 0.3f, 0.4f);
-                    Burst(at, "mat_spark", pocketLilac, 14, 0.35f, 6f, 0.07f, 0.3f);
+                    Burst(at, "mat_glow", pocketSpirit, 16, 0.4f, 5f, 0.3f, 0.4f);
+                    Burst(at, "mat_spark", pocketPale, 14, 0.35f, 6f, 0.07f, 0.3f);
                     Shake(at, 25f, 2.5f, 0.25f);
                     return null;
                 case "tether":
                 {
                     var root = Root(at, 0f, null);
-                    root.AddComponent<PocketTendrils>().Mat = Mat("mat_tracer", pocketViolet);
+                    root.AddComponent<PocketTendrils>().Mat = Mat("mat_tracer", pocketSpirit);
                     return root;
                 }
                 case "drain":
@@ -241,12 +278,13 @@ namespace DeadlockOfRain
                 case "end":
                 {
                     // the lid bursts open: a 12 m spirit blast
-                    Flash(at, pocketLilac, radius * 1.5f, 0.35f, 6f);
-                    Ring(PocketParts.Floor(at) + Vector3.up * 0.2f, pocketLilac, 1f, radius, 0.45f, 0.35f);
-                    Ring(at, pocketViolet, 0.5f, radius * 0.8f, 0.35f, 0.25f, true);
-                    Burst(at, "mat_glow", pocketViolet, 40, 0.6f, radius * 1.6f, 0.4f, 0.5f);
+                    Flash(at, pocketPale, radius * 1.5f, 0.35f, 6f);
+                    PocketSplat(PocketParts.Floor(at) + Vector3.up * 0.3f, radius * 0.6f, pocketSlime, pocketSlimeDark, 4.5f);
+                    Ring(PocketParts.Floor(at) + Vector3.up * 0.2f, pocketPale, 1f, radius, 0.45f, 0.35f);
+                    Ring(at, pocketSpirit, 0.5f, radius * 0.8f, 0.35f, 0.25f, true);
+                    Burst(at, "mat_glow", pocketSpirit, 40, 0.6f, radius * 1.6f, 0.4f, 0.5f);
                     Burst(at, "mat_smoke", pocketSmoke, 18, 1f, radius * 0.5f, 1f, 0.8f);
-                    Burst(at, "mat_spark", pocketLilac, 30, 0.5f, radius * 2f, 0.08f, 0.4f);
+                    Burst(at, "mat_spark", pocketPale, 30, 0.5f, radius * 2f, 0.08f, 0.4f);
                     Shake(at, radius * 2f, 2f, 0.25f);
                     return null;
                 }
@@ -262,12 +300,14 @@ namespace DeadlockOfRain
                 case "cast":
                 case "end":
                     // a puff of smoke: the carrier vanishes into the frog, or pops back out of it
+                    PocketSplat(at, Mathf.Max(2f, radius * 0.5f), frogSlime, frogSlimeDark, 4f);
                     Burst(at, "mat_smoke", new Color(0.75f, 0.9f, 0.7f, 1f), 16, 0.8f, 2.5f, radius * 0.4f, radius * 0.3f);
-                    Burst(at, "mat_glow", pocketViolet, 10, 0.4f, 3f, 0.3f, 0.4f);
+                    Burst(at, "mat_glow", pocketSpirit, 10, 0.4f, 3f, 0.3f, 0.4f);
                     return null;
                 case "land":
                     // the thrown case thuds down
                     Burst(at, "mat_dust", new Color(0.55f, 0.5f, 0.45f), 6, 0.6f, 2f, 0.4f, 0.5f, flat: true);
+                    PocketSplat(at, 1.6f, frogSlime, frogSlimeDark, 3f);
                     Shake(at, 15f, 1f, 0.15f);
                     return null;
                 case "jolt":
@@ -299,6 +339,7 @@ namespace DeadlockOfRain
                     // a very heavy landing: a flash, two shockwaves over the 10 m it damages and one to the 15 m ring it stuns, a column of
                     // dust and slime, water and debris thrown out, a hard shake and small frogs hopping out of it
                     bool high = angle > 0.5f;
+                    PocketSplat(at, radius * 0.55f, frogSlime, frogSlimeDark, 5f);
                     float stun = radius * 1.5f;
                     var floor = PocketParts.Floor(at + Vector3.up * 0.5f) + Vector3.up * 0.15f;
                     Flash(floor + Vector3.up, treasure, radius * 2.5f, 0.3f, high ? 8f : 5f);
