@@ -161,8 +161,11 @@ namespace DeadlockOfRain
         {
             if (moment != "muzzle") return null;
             // a violet flash and a small curl of purple smoke off the barrel (ten times a second: kept light)
-            Burst(at, "mat_glow", wraithLilac, 1, 0.06f, 0f, 0.45f);
-            Burst(at, "mat_smoke", wraithSmoke, 1, 0.45f, 0.8f, 0.25f, shapeRadius: 0.05f, upward: true);
+            // 2026-11 rebuild: Deadlock's warm muzzle flash (wraith_muzzle #FF8D22) inside a pink-violet glow (wraith_shoot_glow)
+            if (!Every("wraith_mz", 0.06f)) return null;
+            QuadAt(at, Glow("fx_muzzle", Hex("FF8D22", 0.85f)), 0.3f, 0.85f, 0.07f, Face.Camera, 0f, 0f, 0.25f, Random.Range(0f, 360f));
+            QuadAt(at, Glow("fx_glow", new Color(1f, 0.79f, 0.97f, 0.7f)), 0.3f, 0.7f, 0.08f, Face.Camera, 0f, 0f, 0.2f);
+            if (Rich && Every("wraith_mz_smoke", 0.15f)) Burst(at, "mat_smoke", wraithSmoke, 1, 0.45f, 0.8f, 0.25f, shapeRadius: 0.05f, upward: true);
             Burst(at, "mat_spark", wraithMagenta, 2, 0.1f, 6f, 0.04f);
             return null;
         }
@@ -201,9 +204,9 @@ namespace DeadlockOfRain
                         quad.GetComponent<MeshRenderer>().sharedMaterial = new Material(ModelBuilder.Template) { color = new Color(0.95f, 0.92f, 0.85f) };
                     }
                     spin.AddComponent<Tumble>().DegPerSec = 900f;
-                    Particles(root, "mat_smoke", wraithSmoke, rate: 60, life: 0.7f, speed: 0.4f, size: 0.7f, shapeRadius: 0.1f, world: true);
-                    Particles(root, "mat_glow", wraithViolet, rate: 40, life: 0.35f, speed: 0.2f, size: 0.6f, shapeRadius: 0.1f, world: true);
-                    Particles(root, "mat_glow", c, rate: 25, life: 0.12f, speed: 0f, size: 0.7f);
+                    Particles(root, "mat_smoke", wraithSmoke, rate: N(34f), life: 0.7f, speed: 0.4f, size: 0.75f, shapeRadius: 0.1f, world: true);
+                    Particles(root, "mat_glow", wraithViolet, rate: N(22f), life: 0.35f, speed: 0.2f, size: 0.65f, shapeRadius: 0.1f, world: true);
+                    Quad(root, Glow("fx_glow", c), 0.7f, 0.7f, 1f, Face.Camera, loop: true);
                     Particles(root, "mat_spark", wraithLilac, rate: 30, life: 0.25f, speed: 1f, size: 0.04f, world: true);
                     Symbols(root, "wraith_suits_tex", frame, c, rate: 22, life: 0.5f, speed: 0.6f, size: 0.32f, shapeRadius: 0.1f, world: true);
                     Trail(root, wraithViolet, 0.22f, 0.3f);
@@ -282,7 +285,7 @@ namespace DeadlockOfRain
                     // on each enemy the splash reaches: the trick's suit pops over it in its colour with a small flash and the trick's touch
                     var root = Root(at, 1.4f, follow);
                     Symbols(root, "wraith_suits_tex", frame, c, count: 4, life: 0.8f, speed: 1.5f, size: 0.45f, shapeRadius: 0.3f, world: true, upward: true);
-                    Particles(root, "mat_glow", c, count: 3, life: 0.3f, speed: 0f, size: 1.4f);
+                    Quad(root, Glow("fx_glow", c), 1.4f * 0.55f, 1.4f * 1.25f, 0.3f, Face.Camera, 0f, 0.1f, 0.3f);
                     Particles(root, "mat_spark", c, count: 12, life: 0.4f, speed: 4f, size: 0.05f, shapeRadius: 0.2f, world: true);
                     SymbolPulse(at + Vector3.up * 1.2f, "wraith_suits_tex", c, 0.3f, 1.6f, 0.4f, true);
                     switch (Mathf.RoundToInt(suit))
@@ -299,8 +302,8 @@ namespace DeadlockOfRain
                     // behind each stored card over her head (Deadlock's cards are dark purple aces): a bright lilac glow so the
                     // hand reads on any stage, and the odd lilac glint
                     var root = Root(at, 0f, follow);
-                    Particles(root, "mat_glow", wraithLilac, rate: 14, life: 0.5f, speed: 0f, size: 0.7f);
-                    Particles(root, "mat_glow", wraithMagenta, rate: 6, life: 0.4f, speed: 0f, size: 0.45f);
+                    Quad(root, Glow("fx_glow", wraithLilac), 0.7f, 0.7f, 1f, Face.Camera, loop: true);
+                    Quad(root, Glow("fx_glow", wraithMagenta), 0.45f, 0.45f, 1f, Face.Camera, loop: true);
                     Particles(root, "mat_spark", wraithLilac, rate: 3, life: 0.6f, speed: 0.3f, size: 0.025f, shapeRadius: 0.1f, world: true, upward: true);
                     return root;
                 }
@@ -326,7 +329,7 @@ namespace DeadlockOfRain
                     var ring = new GameObject("ring"); ring.transform.SetParent(good.transform, false); ring.transform.localPosition = Vector3.up * 0.04f;
                     ring.AddComponent<Spin>().DegPerSec = -25f;
                     SymbolQuad(ring, "wraith_ring_tex", new Color(0.62f, 0.35f, 0.95f, 0.55f), radius * 3.4f, false);
-                    Particles(swirl, "mat_smoke", wraithSmoke, rate: 40, life: 1f, speed: 0.4f, size: 1.1f, shapeRadius: radius, ring: true);
+                    Particles(swirl, "mat_smoke", wraithSmoke, rate: N(24f), life: 1f, speed: 0.4f, size: 1.2f, shapeRadius: radius, ring: true);
                     Particles(swirl, "mat_glow", wraithMagenta, rate: 30, life: 0.5f, speed: 0.2f, size: 0.45f, shapeRadius: radius, ring: true);
                     Particles(good, "mat_glow", wraithViolet, rate: 18, life: 0.8f, speed: 1.2f, size: 0.8f, shapeRadius: radius * 0.6f, upward: true);
                     Particles(good, "mat_spark", wraithLilac, rate: 20, life: 0.6f, speed: 1.8f, size: 0.04f, shapeRadius: radius * 0.6f, upward: true);
@@ -343,11 +346,11 @@ namespace DeadlockOfRain
                     // her flight (MindTravel, every machine, riding her hidden body): a dense cloud of purple smoke with a lilac
                     // core, cards whirling round it, suits and sparks shedding behind, a ribbon trail and a light
                     var root = Root(at, 0f, follow);
-                    Particles(root, "mat_smoke", wraithSmoke, rate: 90, life: 0.7f, speed: 0.6f, size: 1.4f, shapeRadius: 0.5f, world: true);
-                    Particles(root, "mat_smoke", wraithSmokeDark, rate: 40, life: 0.9f, speed: 0.4f, size: 1.8f, shapeRadius: 0.4f, world: true);
-                    Particles(root, "mat_glow", wraithLilac, rate: 40, life: 0.25f, speed: 0f, size: 1.6f);
-                    Particles(root, "mat_glow", wraithViolet, rate: 50, life: 0.5f, speed: 0.4f, size: 1f, shapeRadius: 0.4f, world: true);
-                    Particles(root, "mat_spark", wraithMagenta, rate: 50, life: 0.4f, speed: 2f, size: 0.05f, shapeRadius: 0.4f, world: true);
+                    Particles(root, "mat_smoke", wraithSmoke, rate: N(48f), life: 0.7f, speed: 0.6f, size: 1.5f, shapeRadius: 0.5f, world: true);
+                    Particles(root, "mat_smoke", wraithSmokeDark, rate: N(22f), life: 0.9f, speed: 0.4f, size: 1.9f, shapeRadius: 0.4f, world: true);
+                    Quad(root, Glow("fx_glow", wraithLilac), 1.6f, 1.6f, 1f, Face.Camera, loop: true);
+                    Particles(root, "mat_glow", wraithViolet, rate: N(26f), life: 0.5f, speed: 0.4f, size: 1.05f, shapeRadius: 0.4f, world: true);
+                    Particles(root, "mat_spark", wraithMagenta, rate: N(30f), life: 0.4f, speed: 2f, size: 0.05f, shapeRadius: 0.4f, world: true);
                     for (int f = 0; f < 4; f++)
                         Symbols(root, "wraith_suits_tex", f, f % 2 == 0 ? wraithLilac : wraithMagenta, rate: 10, life: 0.6f, speed: 1f, size: 0.35f, shapeRadius: 0.5f, world: true);
                     var whirl = new GameObject("whirl"); whirl.transform.SetParent(root.transform, false);
@@ -484,7 +487,7 @@ namespace DeadlockOfRain
                         card.Root.transform.localScale = Vector3.one * ModelBuilder.GlobalScale * 3.2f;
                     }
                     holder.AddComponent<Tumble>().DegPerSec = 200f + i * 40f;
-                    Particles(holder, "mat_glow", wraithViolet, rate: 10, life: 0.3f, speed: 0f, size: 0.4f);
+                    Quad(holder, Glow("fx_glow", wraithViolet), 0.4f, 0.4f, 1f, Face.Camera, loop: true);
                     Trail(holder, wraithLilac, 0.06f, 0.25f);
                     cards.Add(holder.transform);
                 }
@@ -518,7 +521,7 @@ namespace DeadlockOfRain
                     Particles(root, "mat_smoke", wraithSmoke, count: 26, life: 1.1f, speed: 3f, size: 1.1f, shapeRadius: radius + 0.3f, ring: true);
                     Particles(root, "mat_smoke", wraithSmokeDark, count: 12, life: 1.3f, speed: 1.5f, size: 1.4f, shapeRadius: radius, upward: true);
                     Particles(root, "mat_spark", wraithLilac, count: 35, life: 0.6f, speed: 5f, size: 0.05f, shapeRadius: radius, upward: true);
-                    Particles(root, "mat_glow", wraithMagenta, count: 4, life: 0.3f, speed: 0f, size: 3f);
+                    Quad(root, Glow("fx_glow", wraithMagenta), 3f * 0.55f, 3f * 1.25f, 0.3f, Face.Camera, 0f, 0.1f, 0.3f);
                     SymbolPulse(at - Vector3.up * 0.85f, "wraith_ring_tex", new Color(0.75f, 0.45f, 1f, 0.9f), 1f, 6f, 0.6f);
                     SuitScatter(at, 12, 3.5f, 0.35f, radius);
                     Ring(at - Vector3.up * 0.6f, wraithViolet, 0.5f, 4f, 0.45f, 0.4f);
@@ -570,9 +573,9 @@ namespace DeadlockOfRain
                     // each lifted enemy: smoke pouring off it, her eye over it, a ring under it and a violet beam from her hand
                     // (to: where she stood) to it (radius = how long)
                     var root = Root(at, radius, follow);
-                    Particles(root, "mat_smoke", wraithSmoke, rate: 45, life: 1.1f, speed: 1.2f, size: 1.8f, shapeRadius: 1f, world: true);
+                    Particles(root, "mat_smoke", wraithSmoke, rate: N(26f), life: 1.1f, speed: 1.2f, size: 1.9f, shapeRadius: 1f, world: true);
                     Particles(root, "mat_smoke", wraithSmokeDark, rate: 20, life: 1.3f, speed: 1.5f, size: 2.2f, shapeRadius: 0.8f, world: true, down: true);
-                    Particles(root, "mat_glow", wraithViolet, rate: 30, life: 0.6f, speed: 0.6f, size: 1.6f, shapeRadius: 0.9f, world: true);
+                    Particles(root, "mat_glow", wraithViolet, rate: N(16f), life: 0.6f, speed: 0.6f, size: 1.7f, shapeRadius: 0.9f, world: true);
                     Particles(root, "mat_glow", wraithMagenta, rate: 12, life: 0.3f, speed: 0.3f, size: 2.2f, shapeRadius: 0.4f);
                     Particles(root, "mat_spark", wraithLilac, rate: 25, life: 0.5f, speed: 1.5f, size: 0.05f, shapeRadius: 0.8f, world: true);
                     var eye = new GameObject("eye"); eye.transform.SetParent(root.transform, false); eye.transform.localPosition = Vector3.up * 2.2f;
@@ -594,8 +597,8 @@ namespace DeadlockOfRain
                     // thrown: a violet smoke trail behind it, suits shedding off it (radius = the flight's length)
                     var root = Root(at, radius, follow);
                     Trail(root, wraithViolet, 0.5f, 0.35f);
-                    Particles(root, "mat_smoke", wraithSmoke, rate: 70, life: 0.9f, speed: 0.3f, size: 1.6f, shapeRadius: 0.5f, world: true);
-                    Particles(root, "mat_glow", wraithViolet, rate: 40, life: 0.4f, speed: 0.2f, size: 1.2f, shapeRadius: 0.4f, world: true);
+                    Particles(root, "mat_smoke", wraithSmoke, rate: N(38f), life: 0.9f, speed: 0.3f, size: 1.7f, shapeRadius: 0.5f, world: true);
+                    Particles(root, "mat_glow", wraithViolet, rate: N(22f), life: 0.4f, speed: 0.2f, size: 1.25f, shapeRadius: 0.4f, world: true);
                     Particles(root, "mat_spark", wraithMagenta, rate: 30, life: 0.3f, speed: 1f, size: 0.05f, shapeRadius: 0.4f, world: true);
                     Symbols(root, "wraith_suits_tex", 3, wraithLilac, rate: 12, life: 0.6f, speed: 0.5f, size: 0.35f, shapeRadius: 0.5f, world: true);
                     return root;
