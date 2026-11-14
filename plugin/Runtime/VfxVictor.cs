@@ -113,10 +113,12 @@ namespace DeadlockOfRain
                 case "muzzle":
                 {
                     var root = Root(at, 0.5f, null);
-                    Particles(root, "mat_glow", victorRed, count: 2, life: 0.07f, speed: 0.3f, size: 0.45f, world: true);
-                    Particles(root, "mat_smoke", new Color(0.75f, 0.6f, 0.65f, 1f), count: 3, life: 0.4f, speed: 1f, size: 0.3f, shapeRadius: 0.08f, world: true);
+                    // 2026-11 rebuild (docs/VfxRebuild/victorVfxRebuild.md): Deadlock's warm flash (frank_muzzle_flash #FBBF76 / #FFDC7B)
+                    // with a pale green wisp of his charge in it (#B9E1B7), over his red sparks
+                    Quad(root, Glow("fx_muzzle", Hex("FBBF76")), 0.45f, 1.2f, 0.08f, Face.Camera, 0f, 0f, 0.25f, default, Random.Range(0f, 360f));
+                    Quad(root, Glow("fx_glow", Hex("B9E1B7", 0.7f)), 0.3f, 0.8f, 0.1f, Face.Camera, 0f, 0f, 0.2f);
                     Particles(root, "mat_spark", victorRed, count: 4, life: 0.15f, speed: 6f, size: 0.04f, world: true, stretch: 2f);
-                    Flash(at, victorRed, 3.5f, 0.06f, 2.5f);
+                    Glint(at, Hex("FFDC7B"), 3.5f, 0.06f, 2.5f);
                     return root;
                 }
                 case "hit":
@@ -189,6 +191,8 @@ namespace DeadlockOfRain
                         float ang = i / 14f * Mathf.PI * 2f + Random.Range(-0.2f, 0.2f);
                         Bolt(at + Vector3.up * 0.12f, at + new Vector3(Mathf.Cos(ang), 0.12f, Mathf.Sin(ang)) * radius, victorBolt, 0.2f, 0.35f, 28, 0.4f, true, true);
                     }
+                    // frank_painaura_aura_start: a burst of pale rays as it switches on
+                    QuadAt(at + Vector3.up, Glow("fx_ring_burst", Hex("DDEA7B")), 1f, Mathf.Min(radius, 10f) * 1.2f, 0.35f, Face.Camera, 0f, 0f, 0.3f, Random.Range(0f, 360f));
                     Burst(at + Vector3.up, "mat_spark", victorArc, 40, 0.4f, 14f, 0.08f, 0.5f);
                     Flash(at + Vector3.up, victorBolt, radius * 1.5f, 0.3f, 8f);
                     Shake(at, radius, 1.2f, 0.25f);
@@ -203,11 +207,29 @@ namespace DeadlockOfRain
                     Object.Destroy(dome.GetComponent<Collider>());
                     dome.transform.SetParent(root.transform, false);
                     dome.transform.localScale = Vector3.one * radius * 2f;
-                    dome.GetComponent<MeshRenderer>().sharedMaterial = Mat("mat_area", victorField);
+                    dome.GetComponent<MeshRenderer>().sharedMaterial = Mat("mat_area", Hex("99BB63"));
                     dome.AddComponent<Heartbeat>();
                     var edge = new GameObject("edge"); edge.transform.SetParent(root.transform, false); edge.transform.localPosition = Vector3.up * 0.3f;
-                    Particles(edge, "mat_glow", victorField, rate: 60, life: 0.7f, speed: 0.8f, size: 0.5f, shapeRadius: radius, ring: true);
-                    Particles(edge, "mat_spark", victorArc, rate: 45, life: 0.3f, speed: 4f, size: 0.06f, shapeRadius: radius, ring: true, stretch: 2.5f);
+                    // Closer to Deadlock's frank_painaura (creator, 2026-11-14: "his aura of suffering should look more like their ability
+                    // in deadlock"), in its pale sickly yellow-green (#BCD48F / #99BB63 / #DCCA8D): the ground inside the field goes dark,
+                    // a ring of streaks flows round its edge with lightning arcs snapping along it, pale smoke drifts off the edge and
+                    // off Victor, and arcs crawl over him. His wavy green strikes and heartbeat (the creator's own) stay
+                    var pale = Hex("BCD48F"); var mid = Hex("99BB63");
+                    Quad(root, Soft("fx_glow_soft", Hex("0B0E0B", 0.6f)), radius * 2.1f, radius * 2.1f, 1f, Face.Ground, 0f, offset: Vector3.up * 0.08f, loop: true);
+                    Quad(edge, Glow("fx_ring_spiral", new Color(pale.r, pale.g, pale.b, 0.75f)), radius * 2.06f, radius * 2.06f, 1f, Face.Ground, 38f, loop: true);
+                    Quad(edge, Glow("fx_ring_soft", new Color(mid.r, mid.g, mid.b, 0.7f)), radius * 2f, radius * 2f, 1f, Face.Ground, -22f, loop: true);
+                    Emit(edge, new P { Mat = Glow("fx_arc", Hex("B5E773"), arcA), Rate = 9, LifeMin = 0.12f, LifeMax = 0.2f, SizeMin = 1.2f, SizeMax = 2.4f, A = Hex("D8EF86"), B = mid,
+                                       Shape = Shape.Ring, Radius = radius, FadeIn = 0.02f, FadeOutFrom = 0.5f, World = false, Max = 6 }, "edgeArcs");
+                    Emit(edge, new P { Mat = Soft("fx_dust", Color.white), Rate = 9, LifeMin = 0.9f, LifeMax = 1.5f, SpeedMin = 0.2f, SpeedMax = 0.6f, SizeMin = 1.2f, SizeMax = 2f,
+                                       A = new Color(0.71f, 0.83f, 0.56f, 0.3f), B = new Color(0.6f, 0.73f, 0.39f, 0f), Shape = Shape.Ring, Radius = radius, Velocity = Vector3.up * 0.7f,
+                                       Size0 = 0.6f, Size1 = 1.4f, FadeIn = 0.2f, FadeOutFrom = 0.4f, World = false, Max = 14 }, "edgeSmoke");
+                    Particles(edge, "mat_spark", victorArc, rate: 20, life: 0.3f, speed: 4f, size: 0.06f, shapeRadius: radius, ring: true, stretch: 2.5f);
+                    var body = new GameObject("body"); body.transform.SetParent(root.transform, false); body.transform.localPosition = Vector3.up * 1.1f;
+                    Emit(body, new P { Mat = Soft("fx_dust", Color.white), Rate = 8, LifeMin = 0.4f, LifeMax = 0.8f, SpeedMin = 0.2f, SpeedMax = 0.7f, SizeMin = 0.6f, SizeMax = 1f,
+                                       A = new Color(0.71f, 0.83f, 0.56f, 0.35f), B = new Color(0.86f, 0.79f, 0.55f, 0f), Radius = 0.6f, Velocity = Vector3.up * 0.9f,
+                                       Size0 = 0.6f, Size1 = 1.4f, FadeIn = 0.2f, FadeOutFrom = 0.4f, World = false, Max = 8 }, "bodySmoke");
+                    Emit(body, new P { Mat = Glow("fx_arc", Hex("B5E773"), arcB), Rate = 5, LifeMin = 0.1f, LifeMax = 0.18f, SizeMin = 0.7f, SizeMax = 1.3f, A = Hex("D8EF86"), B = mid,
+                                       Radius = 0.6f, FadeIn = 0.02f, FadeOutFrom = 0.5f, World = false, Max = 4 }, "bodyArcs");
                     var core = new GameObject("core"); core.transform.SetParent(root.transform, false); core.transform.localPosition = Vector3.up * 1.2f;
                     var st = core.AddComponent<AuraStrikes>(); st.BaseRadius = radius;
                     var l = Light(root, victorBolt, radius * 1.4f, 2.2f, Vector3.up * 1.5f);
@@ -228,6 +250,8 @@ namespace DeadlockOfRain
                     // an enemy inside the field (taking +33 % from him): a short green arc from Victor to it and a spark on it
                     var from = to ?? at;
                     Bolt(from + Vector3.up * 0.5f, at, victorField, 0.06f, 0.18f, 10, 0.25f, true);
+                    // frank_painaura_aura_debuff_base: the ground cracks pale green under an enemy the field has hold of
+                    if (Every("victor_aura_crack", 0.25f)) QuadAt(Ground(at), Glow("fx_ring_burst", Hex("B8DF6F", 0.7f)), 0.8f, 2.4f, 0.6f, Face.Ground, 0f, 0.05f, 0.4f, Random.Range(0f, 360f));
                     Burst(at, "mat_spark", victorArc, 4, 0.2f, 3f, 0.04f);
                     Burst(at, "mat_glow", victorField, 1, 0.25f, 0f, 0.5f);
                     return null;
