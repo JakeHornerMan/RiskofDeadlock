@@ -62,6 +62,7 @@ namespace DeadlockOfRain.States
                 if (row.Buff == "smoke") characterBody.AddTimedBuff(RoR2Content.Buffs.Cloak, row.Duration);
             }
             if (row.Effect != "none") Fx.Impact(row.Effect, transform.position);
+            Vfx.Play(row.Vfx, "cast", characterBody.footPosition, row.Radius);
             if (row.Buff == "smoke" && rt != null) rt.SmokeUntil = Time.time + row.Duration;
         }
         public override void FixedUpdate()
@@ -79,6 +80,9 @@ namespace DeadlockOfRain.States
         public override void OnEnter()
         {
             base.OnEnter();
+            Vfx.Play(row.Vfx, "cast", characterBody.footPosition, row.Radius);
+            // the aura for as long as the drain lasts: on him, at his feet and out to the drain's reach (it ends by itself)
+            Vfx.Play(row.Vfx, "loop", characterBody.footPosition, row.Radius, transform, life: row.Duration);
             Sound("cast");
             if (anim) anim.Gesture("secondary");
             // the drain's loop sound for every player; the urn itself is RoR2's networked attachment, spawned by the server
@@ -164,7 +168,8 @@ namespace DeadlockOfRain.States
                     Fx.Stun(hb.healthComponent, row.StunDuration);
                     // knocked to the side of his path, out of his way
                     Fx.KnockAside(characterBody, hb.healthComponent, dir, row.Knockback);
-                    Relay.Impact(row.Effect, hb.transform.position);
+                    if (row.Effect != "none") Relay.Impact(row.Effect, hb.transform.position);
+                    Relay.Vfx(row.Vfx, "hit", hb.transform.position);
                     Relay.Sound(row.Id, "hit", hb.transform.position);
                 }
             }

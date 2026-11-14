@@ -37,6 +37,15 @@ namespace DeadlockOfRain
         static int repeat = 1;
         // optional "portraits": a folder; studio renders of every hero, its RoR2 match and its ult figure go there first
         static string portraits = "";
+        // optional "fps": 1 = the fps bench (docs/VfxRebuild/README.md; creator, 2026-11-11: "fps benchmarks on before and after"):
+        // always the same stage and spot, a pack that cannot die, no frame cap, and per hero the passes idle, each slot alone,
+        // the ult, all and x4 (four copies of the hero at once). Writes "fps <hero> <pass>: key=value ..." lines.
+        static bool fps;
+        static string fpsStage = "golemplains";
+        // optional "shots": a folder; before each measured single-move pass the move is used once more and a timed run of
+        // screenshots goes there (<hero>_<pass>_NN.png), for the before/after effect sheets
+        static string shotsDir = "";
+        bool shooting;
         public static bool Active => outFile != null;
 
         public static void Init()
@@ -52,6 +61,9 @@ namespace DeadlockOfRain
                 survivorsMode = Value(text, "survivors") ?? "";
                 if (int.TryParse(Value(text, "repeat"), out var rp) && rp > 0) repeat = rp;
                 ults = (Value(text, "ults") ?? "0") != "0";
+                fps = (Value(text, "fps") ?? "0") != "0";
+                var st = Value(text, "stage"); if (!string.IsNullOrEmpty(st)) fpsStage = st;
+                shotsDir = Value(text, "shots") ?? "";
                 // seconds 0: portraits only, no passes
                 if (float.TryParse(Value(text, "seconds"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s) && s >= 0) seconds = s;
                 Log.Info($"DPS bench: {seconds}s passes, writing to {outFile}");
@@ -74,7 +86,33 @@ namespace DeadlockOfRain
         }
 
         static List<float> frameMs;
-        void Update() { if (frameMs != null) frameMs.Add(Time.unscaledDeltaTime * 1000f); }
+        // fps bench: what is alive, looked at four times a second (the look itself costs time, so the frame after it is left out)
+        static int peakParticles, peakSystems, peakLights, peakLines, samples; static long sumParticles;
+        static float nextSample, passStart, firstWorst; static bool skipFrame;
+        void Update()
+        {
+            if (frameMs == null) return;
+            if (fps && (QualitySettings.vSyncCount != 0 || Application.targetFrameRate != -1)) { QualitySettings.vSyncCount = 0; Application.targetFrameRate = -1; }
+            float ms = Time.unscaledDeltaTime * 1000f;
+            if (skipFrame) skipFrame = false;
+            else
+            {
+                frameMs.Add(ms);
+                if (Time.unscaledTime - passStart < 2f && ms > firstWorst) firstWorst = ms;
+            }
+            if (fps && Time.unscaledTime >= nextSample)
+            {
+                nextSample = Time.unscaledTime + 0.25f;
+                int parts = 0, sys = 0;
+                foreach (var p in FindObjectsOfType<ParticleSystem>()) { sys++; parts += p.particleCount; }
+                int lights = FindObjectsOfType<Light>().Count(l => l.enabled);
+                int lines = FindObjectsOfType<LineRenderer>().Length + FindObjectsOfType<TrailRenderer>().Length;
+                peakParticles = Mathf.Max(peakParticles, parts); peakSystems = Mathf.Max(peakSystems, sys);
+                peakLights = Mathf.Max(peakLights, lights); peakLines = Mathf.Max(peakLines, lines);
+                sumParticles += parts; samples++;
+                skipFrame = true;
+            }
+        }
 
         static void Write(string line)
         {
@@ -105,9 +143,67 @@ namespace DeadlockOfRain
 
         void SpawnPack()
         {
+            if (fps && pack.Count == packSpots.Count && pack.All(b => b && b.healthComponent && b.healthComponent.alive))
+            {
+                // fps bench: the same pack all run long (nothing dies, no bodies pile up); moved back to its spots
+                for (int i = 0; i < pack.Count; i++)
+                {
+                    TeleportHelper.TeleportBody(pack[i], packSpots[i], false);
+                    if (pack[i].characterMotor) pack[i].characterMotor.velocity = Vector3.zero;
+                    var rb = pack[i].rigidbody; if (rb && !rb.isKinematic) rb.velocity = Vector3.zero;
+                }
+                return;
+            }
             foreach (var b in pack) if (b && b.master) b.master.TrueKill();
             pack.Clear();
             for (int i = 0; i < packSpots.Count; i++) pack.Add(Summon(packMasters[i], packSpots[i]));
+        }
+
+        sealed class PackFreeze : MonoBehaviour
+        {
+            GenericSkill[] skills; CharacterBody body;
+            void Start() { skills = GetComponents<GenericSkill>(); body = GetComponent<CharacterBody>(); }
+            void FixedUpdate()
+            {
+                foreach (var g in skills) if (g) g.stock = 0;
+                if (body && body.inputBank) body.inputBank.moveVector = Vector3.zero;
+            }
+        }
+
+        // fps bench "x4": three more copies of the hero beside the player, pressing the same keys (the 4-player worst case)
+        readonly List<CharacterMaster> copies = new List<CharacterMaster>();
+        void SpawnCopies(CharacterBody of)
+        {
+            var prefab = MasterCatalog.FindMasterPrefab("CommandoMonsterMaster");
+            var bodyPrefab = BodyCatalog.FindBodyPrefab(of.name.Replace("(Clone)", ""));
+            if (!prefab || !bodyPrefab) return;
+            var right = Vector3.Cross(Vector3.up, forward);
+            foreach (float off in new[] { -5f, -2.5f, 2.5f })
+            {
+                var at = arena + right * off + Vector3.up * 0.5f;
+                var m = new MasterSummon { masterPrefab = prefab, position = at, rotation = Quaternion.LookRotation(forward), teamIndexOverride = TeamIndex.Player, ignoreTeamMemberLimit = true,
+                    preSpawnSetupCallback = cm => cm.bodyPrefab = bodyPrefab }.Perform();
+                if (!m) { Write("x4: a copy did not spawn"); continue; }
+                foreach (var ai in m.GetComponents<RoR2.CharacterAI.BaseAI>()) ai.enabled = false;
+                var b = m.GetBody();
+                if (b && b.healthComponent) b.healthComponent.godMode = true;
+                // each copy holds the hero's ult, as a player would
+                var def = Equipment.OfHero(Survivors.HeroOf(of));
+                if (def && m.inventory) m.inventory.SetEquipment(new EquipmentState(def.equipmentIndex, Run.FixedTimeStamp.now, 1), m.inventory.activeEquipmentLocation);
+                copies.Add(m);
+            }
+        }
+        void RemoveCopies()
+        {
+            foreach (var m in copies)
+            {
+                if (!m) continue;
+                KillMinions(m);
+                var b = m.GetBody();
+                if (b) NetworkServer.Destroy(b.gameObject);
+                NetworkServer.Destroy(m.gameObject);
+            }
+            copies.Clear();
         }
 
         void RefillPack()
@@ -125,7 +221,16 @@ namespace DeadlockOfRain
             foreach (var ai in m.GetComponents<RoR2.CharacterAI.BaseAI>()) ai.enabled = false;
             // sturdy enough to live through every pass (×101 health), so nothing dies, no XP is gained and levels stay put
             if (m.inventory) m.inventory.GiveItem(RoR2Content.Items.BoostHp, 1000);
-            return m.GetBody();
+            var sb = m.GetBody();
+            if (fps && sb && sb.healthComponent)
+            {
+                sb.healthComponent.godMode = true;
+                // since RoR2 1.5.0 a switched-off AI component still walks and attacks (the pack ended up on top of the player):
+                // the fps bench's pack cannot move and has no skills to use
+                sb.baseMoveSpeed = 0f; sb.baseAcceleration = 0f; sb.MarkAllStatsDirty();
+                sb.gameObject.AddComponent<PackFreeze>();
+            }
+            return sb;
         }
 
         // ---------------------------------------------------------------- recording
@@ -186,6 +291,21 @@ namespace DeadlockOfRain
             t0 = Time.unscaledTime;
             while ((user.cachedBody == null || !Run.instance) && Time.unscaledTime - t0 < 120f) yield return null;
             if (!user.cachedBody) { Write("FAILED: the run did not start"); yield break; }
+            // the bench swaps bodies and stages, which the run counts as the player's death: without this the Defeat screen (and its
+            // blur) sits over the whole fps run
+            if (fps) HarmonyLib.AccessTools.Property(typeof(Run), "preventGameOver").SetValue(Run.instance, true, null);
+            if (fps && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != fpsStage)
+            {
+                // the fps bench always runs on the same stage; moved at once, still in the drop pod (as the test mode does)
+                var old0 = user.cachedBody;
+                // a real stage change (as the teleporter does): a bare scene change counts as the player's death and puts the
+                // Defeat screen (and its blur) over the whole run
+                var sd = SceneCatalog.GetSceneDefFromSceneName(fpsStage);
+                if (sd) Run.instance.AdvanceStage(sd); else UnityEngine.Networking.NetworkManager.singleton.ServerChangeScene(fpsStage);
+                t0 = Time.unscaledTime;
+                while ((UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != fpsStage || !user.cachedBody || user.cachedBody == old0) && Time.unscaledTime - t0 < 90f) yield return null;
+            }
+            if (fps) Write($"fps bench: stage {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
             yield return new WaitForSeconds(4f);
             Run.instance.selectedDifficulty = DifficultyIndex.Hard; // Monsoon
             var first = user.cachedBody;
@@ -211,11 +331,12 @@ namespace DeadlockOfRain
             {
             if (attempt > 0)
             {
+                string scene = "golemplains";
                 Write("arena: no flat spot on this stage; moving the run to golemplains");
                 var old = user.cachedBody;
-                UnityEngine.Networking.NetworkManager.singleton.ServerChangeScene("golemplains");
+                UnityEngine.Networking.NetworkManager.singleton.ServerChangeScene(scene);
                 float tc = Time.unscaledTime;
-                while ((UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "golemplains" || !user.cachedBody || user.cachedBody == old) && Time.unscaledTime - tc < 90f) yield return null;
+                while ((UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != scene || !user.cachedBody || user.cachedBody == old) && Time.unscaledTime - tc < 90f) yield return null;
                 yield return new WaitForSeconds(4f);
                 var pod = user.cachedBody;
                 if (pod && pod.currentVehicle) pod.currentVehicle.EjectPassenger(pod.gameObject);
@@ -226,6 +347,14 @@ namespace DeadlockOfRain
             body = user.cachedBody;
             var start = body.footPosition;
             var aim0 = body.inputBank.aimDirection; aim0.y = 0; aim0.Normalize();
+            if (fps)
+            {
+                // the same spot every run: the search starts from the middle ground node of the stage, facing +z
+                // (the stage's ground nodes are part of the map; its spawn points are placed at random each run)
+                var gn = SceneInfo.instance ? SceneInfo.instance.groundNodes : null;
+                if (gn && gn.GetNodeCount() > 0 && gn.GetNodePosition(new RoR2.Navigation.NodeGraph.NodeIndex(gn.GetNodeCount() / 2), out var np)) start = np;
+                aim0 = Vector3.forward;
+            }
             List<Vector3> best = null; Vector3 bestCentre = default, bestFwd = default;
             for (int t = 0; t < 16 && spots == null; t++)
             {
@@ -317,6 +446,22 @@ namespace DeadlockOfRain
                     if (run == 1 && !ults) { WriteStats(bodyName); WriteSkills(master.GetBody(), bodyName); }
                     // the Q pass only where it is shown: the heroes' ults and Commando's Preon Accumulator
                     bool equip = survivorsMode != "all" || bodyName == "CommandoBody" || Survivors.HeroOf(master.GetBody()) != null;
+                    if (fps)
+                    {
+                        // no frame cap while the fps bench runs (in memory only; the player's settings file is not touched)
+                        QualitySettings.vSyncCount = 0; Application.targetFrameRate = -1;
+                        foreach (var mode in new[] { "idle", "primary", "secondary", "utility", "special", "equipment", "all", "idle2" })
+                        {
+                            if (shotsDir != "" && mode != "idle" && mode != "all" && mode != "x4")
+                            {
+                                shooting = true;
+                                yield return Pass(master, pcmc, bodyName.Replace("Body", ""), mode);
+                                shooting = false;
+                            }
+                            yield return Pass(master, pcmc, bodyName.Replace("Body", ""), mode);
+                        }
+                        continue;
+                    }
                     foreach (var mode in new[] { "all", "primary", "secondary", "utility", "special", "equipment" })
                     {
                         if (mode == "equipment" && !equip || ults && mode != "equipment") continue;
@@ -501,7 +646,27 @@ namespace DeadlockOfRain
             if (vh != null && vh.PassiveBuff != "none") Buffs.Clear(body, vh.PassiveBuff);
             Buffs.Clear(body, States.VictorAura.Buff);
             foreach (var ur in SkillRow.All) if (ur.Kind == "ult_reanimation") Buffs.Clear(body, ur.Buff);
-            bool useEquip = mode == "equipment";
+            bool useEquip = mode == "equipment" || fps && (mode == "all" || mode == "x4");
+            bool everything = mode == "all" || mode == "x4";
+            float seconds = DpsBench.seconds;
+            if (fps && everything) seconds *= 1.5f;
+            if (shooting) seconds = mode == "equipment" ? 8f : 4f;
+            if (mode == "x4")
+            {
+                SpawnCopies(body); yield return new WaitForSeconds(1.5f);
+                foreach (var cm in copies) { var cb = cm ? cm.GetBody() : null; if (cb && cb.healthComponent) cb.healthComponent.godMode = true; }
+            }
+            int objs0 = 0, sys0 = 0;
+            if (fps)
+            {
+                yield return new WaitForSeconds(2f);
+                objs0 = FindObjectsOfType<GameObject>().Length; sys0 = FindObjectsOfType<ParticleSystem>().Length;
+                peakParticles = peakSystems = peakLights = peakLines = samples = 0; sumParticles = 0; firstWorst = 0f;
+                passStart = Time.unscaledTime; nextSample = passStart + 0.1f; skipFrame = false;
+                if (pack.Count > 11 && pack[0] && pack[11])
+                    Write($"where {who} {mode}: player {body.footPosition:F1}, arena {arena:F1}, pack0 {pack[0].footPosition:F1} (spot {packSpots[0]:F1}), pack11 {pack[11].footPosition:F1} (spot {packSpots[11]:F1})");
+            }
+            int shotN = 0; float nextShot = 0.05f;
             var inv = body.inventory;
             if (inv)
             {
@@ -543,20 +708,36 @@ namespace DeadlockOfRain
                 if (ib)
                 {
                     // a primary that fires on release (Captain's Vulcan Shotgun charges while held) is let go for one frame every 0.6 s
-                    bool hold = mode == "all" || mode == "primary";
+                    bool hold = everything || mode == "primary";
                     if (ReleasePrimary.Contains(body.name.Replace("(Clone)", "")) && frame % 36 == 0) hold = false;
-                    bool m2 = (mode == "all" || mode == "secondary") && tap;
+                    bool m2 = (everything || mode == "secondary") && tap;
                     // a gun on M2 is held down like M1 (no hero has one now; Victor's Memento Mori moved back to M1 on 2026-11-05)
                     var gunSlot = Survivors.GunSlot(body);
-                    if (gunSlot && sl && gunSlot == sl.secondary) m2 = mode == "all" || mode == "secondary";
+                    if (gunSlot && sl && gunSlot == sl.secondary) m2 = everything || mode == "secondary";
                     // a toggled R (Victor's Aura of Suffering) is switched on once and left on
-                    bool r = (mode == "all" || mode == "special") && tap;
+                    bool r = (everything || mode == "special") && tap;
                     if (r && Survivors.RowFor(sl ? sl.special : null)?.Kind == "aura_toggle" && Buffs.Count(body, States.VictorAura.Buff) > 0) r = false;
                     ib.skill1.PushState(hold);
                     ib.skill2.PushState(m2);
-                    ib.skill3.PushState((mode == "all" || mode == "utility") && tap);
+                    bool sh = (everything || mode == "utility") && tap;
+                    ib.skill3.PushState(sh);
                     ib.skill4.PushState(r);
                     ib.activateEquipment.PushState(useEquip && tap);
+                    // x4: the copies aim at the same enemy and press the same keys
+                    foreach (var cm in copies)
+                    {
+                        var cb = cm ? cm.GetBody() : null; var cib = cb ? cb.inputBank : null;
+                        if (!cib) continue;
+                        if (aimAt) cib.aimDirection = (aimAt.corePosition - cib.aimOrigin).normalized;
+                        cib.moveVector = Vector3.zero;
+                        cib.skill1.PushState(hold); cib.skill2.PushState(m2); cib.skill3.PushState(sh); cib.skill4.PushState(r);
+                        cib.activateEquipment.PushState(useEquip && tap);
+                    }
+                }
+                if (shooting && Time.time - start >= nextShot)
+                {
+                    nextShot += seconds / 16f;
+                    try { Directory.CreateDirectory(shotsDir); ScreenCapture.CaptureScreenshot(System.IO.Path.Combine(shotsDir, $"{who.ToLowerInvariant()}_{mode}_{shotN++:00}.png")); } catch { }
                 }
                 // dashes and leaps carry the survivor off the spot: once they are back in their main state, put them back
                 var esm = EntityStateMachine.FindByCustomName(body.gameObject, "Body");
@@ -576,6 +757,33 @@ namespace DeadlockOfRain
             EquipmentSlot.onServerEquipmentActivated -= OnEquipment;
             var b2 = master.GetBody();
             if (b2 && b2.inputBank) { b2.inputBank.skill1.PushState(false); b2.inputBank.skill2.PushState(false); b2.inputBank.skill3.PushState(false); b2.inputBank.skill4.PushState(false); b2.inputBank.activateEquipment.PushState(false); }
+            foreach (var cm in copies) { var cb = cm ? cm.GetBody() : null; if (cb && cb.inputBank) { cb.inputBank.skill1.PushState(false); cb.inputBank.skill2.PushState(false); cb.inputBank.skill3.PushState(false); cb.inputBank.skill4.PushState(false); cb.inputBank.activateEquipment.PushState(false); } }
+            if (fps)
+            {
+                int pkP = peakParticles, pkS = peakSystems, pkL = peakLights, pkLn = peakLines, smp = samples; long sumP = sumParticles; float fw = firstWorst;
+                int ncopies = copies.Count(c => c && c.GetBody());
+                if (mode == "x4") RemoveCopies();
+                // a long move (a rolling ball, a flight) ends before the next pass; then 5 s for everything it left to go
+                float tw = Time.time;
+                while (Time.time - tw < 25f)
+                {
+                    var bb = master.GetBody(); var em = bb ? EntityStateMachine.FindByCustomName(bb.gameObject, "Body") : null;
+                    if (!em || em.state is EntityStates.GenericCharacterMain) break;
+                    yield return null;
+                }
+                yield return new WaitForSeconds(5f);
+                if (!shooting && fms != null && fms.Count > 0)
+                {
+                    fms.Sort();
+                    int n = fms.Count;
+                    float avg = fms.Average(), p95 = fms[Mathf.Min(n - 1, (int)(n * 0.95f))], p99 = fms[Mathf.Min(n - 1, (int)(n * 0.99f))];
+                    int objs = FindObjectsOfType<GameObject>().Length, sys = FindObjectsOfType<ParticleSystem>().Length;
+                    Write(FormattableString.Invariant($"fps {who} {mode}: frames={n} avg={avg:F3} p95={p95:F3} p99={p99:F3} worst={fms[n - 1]:F2} low1={1000f / p99:F1} first={fw:F2} gc={gcs} ") +
+                          FormattableString.Invariant($"particles_peak={pkP} particles_avg={(smp > 0 ? sumP / smp : 0)} systems_peak={pkS} lights_peak={pkL} lines_peak={pkLn} leak_objects={objs - objs0} leak_systems={sys - sys0} ") +
+                          FormattableString.Invariant($"uses={t.Uses[0]}/{t.Uses[1]}/{t.Uses[2]}/{t.Uses[3]}/{t.Uses[4]} copies={ncopies} hits={t.Hits} res={Screen.width}x{Screen.height} quality={QualitySettings.GetQualityLevel()} stage={UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}"));
+                }
+                yield break;
+            }
             float dur = Mathf.Max(0.1f, seconds);
             var sb = new StringBuilder();
             sb.Append($"{who} {mode}: raw {t.Raw:F0} ({t.Raw / dur:F1}/s), {t.Pct:F0}% of damage ({t.Pct / dur:F0}%/s), hits {t.Hits}, enemies hit {t.Victims.Count}, ");

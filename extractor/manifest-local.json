@@ -39,7 +39,8 @@
       "meshes": [
         "abrams_model",
         "abrams_face_model",
-        "gun_model"
+        "gun_model",
+        "book_model"
       ],
       "clips": [
         "ability_leap_hover_loop",
@@ -444,15 +445,40 @@
     "materials/particle/abilities/bookworm/bookworm_graphic_dragon.vtex",
     "materials/particle/abilities/bookworm/bookworm_graphic_knight.vtex",
     "materials/particle/abilities/bookworm/bookworm_graphic_sword.vtex",
+    "materials/particle/abilities/haze/haze_dagger.vtex",
     "materials/particle/abilities/vampirebat/vampirebat_blink_preview_marker_symbol_psd_7dd7528f.vtex",
     "materials/particle/abilities/vampirebat/vampirebat_lovebites_icon.vtex",
     "materials/particle/abilities/wraith/wraith_card_suit.vtex",
     "materials/particle/abilities/wraith/wraith_crosshair.vtex",
     "materials/particle/abilities/wraith/wraith_rapid_fire_ring_trans_psd_c28add01.vtex",
     "materials/particle/abilities/wraith/wraith_symbols.vtex",
+    "materials/particle/alpha/alpha_puddle.vtex",
+    "materials/particle/beam_generic_2.vtex",
+    "materials/particle/beam_plasma_06.vtex",
+    "materials/particle/dust/dust_alpha.vtex",
+    "materials/particle/electricity/electric_beam_arc_stylized.vtex",
+    "materials/particle/fire/fire_stylized/fire_stylized_licks.vtex",
+    "materials/particle/glows/glow03.vtex",
+    "materials/particle/glows/glow07.vtex",
     "materials/particle/glyphs/astrological_ring.vtex",
+    "materials/particle/glyphs/deadlock_glyphs.vtex",
     "materials/particle/ground/ground_streak_bookworm_psd_5a44028c.vtex",
+    "materials/particle/impact/fleks3.vtex",
+    "materials/particle/muzzle/muzzle_flash.vtex",
+    "materials/particle/paper/paper_sheet.vtex",
+    "materials/particle/particle_flares/particle_flare_001.vtex",
+    "materials/particle/particle_flares/particle_flare_006_white.vtex",
+    "materials/particle/particle_glow_04.vtex",
+    "materials/particle/particle_heroring_bad.vtex",
+    "materials/particle/particle_ring_softouter.vtex",
+    "materials/particle/particle_ring_wave.vtex",
+    "materials/particle/particle_ring_wavy6.vtex",
     "materials/particle/projected/vampirebat_steallife_preview_cone_projected_psd_4f7edd39.vtex",
+    "materials/particle/ring/particle_ring_spiral.vtex",
+    "materials/particle/smoke/clouds/cartoon_cloud.vtex",
+    "materials/particle/smoke1/smoke1.vtex",
+    "materials/particle/spin_generic_01.vtex",
+    "materials/particle/swoop_09.vtex",
     "materials/particle/symbols/symbol_heptagram_psd_89a8c10c.vtex",
     "materials/particle/text/text_atlas.vtex",
     "panorama/images/heroes/bookworm_card_psd.vtex",
@@ -2079,6 +2105,9 @@
     "materials/particle/abilities/bookworm/bookworm_graphic_sword.vtex": [
       "paige"
     ],
+    "materials/particle/abilities/haze/haze_dagger.vtex": [
+      "haze"
+    ],
     "materials/particle/abilities/vampirebat/vampirebat_blink_preview_marker_symbol_psd_7dd7528f.vtex": [
       "mina"
     ],
@@ -2102,6 +2131,9 @@
     ],
     "materials/particle/ground/ground_streak_bookworm_psd_5a44028c.vtex": [
       "paige"
+    ],
+    "materials/particle/paper/paper_sheet.vtex": [
+      "abrams"
     ],
     "materials/particle/projected/vampirebat_steallife_preview_cone_projected_psd_4f7edd39.vtex": [
       "mina"

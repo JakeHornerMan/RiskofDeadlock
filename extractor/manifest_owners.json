@@ -981,6 +981,9 @@
   "materials/particle/abilities/bookworm/bookworm_graphic_sword.vtex": [
     "paige"
   ],
+  "materials/particle/abilities/haze/haze_dagger.vtex": [
+    "haze"
+  ],
   "materials/particle/abilities/vampirebat/vampirebat_blink_preview_marker_symbol_psd_7dd7528f.vtex": [
     "mina"
   ],
@@ -1004,6 +1007,9 @@
   ],
   "materials/particle/ground/ground_streak_bookworm_psd_5a44028c.vtex": [
     "paige"
+  ],
+  "materials/particle/paper/paper_sheet.vtex": [
+    "abrams"
   ],
   "materials/particle/projected/vampirebat_steallife_preview_cone_projected_psd_4f7edd39.vtex": [
     "mina"

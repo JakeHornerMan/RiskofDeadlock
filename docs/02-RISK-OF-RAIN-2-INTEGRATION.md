@@ -792,6 +792,15 @@ Steam invites and RoR2's lobby work as in vanilla; the Melty line is an extra wa
 - **Effects** (`effects.json`) are RoR2's own prefabs by Addressables key, e.g. `RoR2/Base/Commando/TracerCommandoDefault.prefab`. Prefabs with an `EffectComponent` go through `EffectManager.SpawnEffect` (scale = radius when `scaleWithRadius`). Others are instantiated and destroyed after 3 s. Ghost prefabs (dagger, lightning orb, Napalm's `flask`) have their `ProjectileGhostController` and colliders stripped. Kinds `attachment` (Mired Urn) and `ward` (Warbanner) are RoR2 objects the skill kinds spawn themselves. Check any new key against `tools/dev/addressable_keys.txt` (preflight does).
 
 ### 8.1 Our own visual effects (`Runtime/Vfx.cs`, effects of kind `custom`)
+**Since the VFX rebuild (branch `vfx-rebuild`, 2026-11-11; `docs/VfxRebuild/README.md` and one file per character there):**
+effects are built with the kit in `Runtime/VfxKit.cs`. `Glow` / `Soft` / `Raw` draw Deadlock's particle textures (`texture`
+rows in `effects.json`, shared ones start `fx_`); `Emit` / `Puff` make one particle system from one description; `Quad` /
+`QuadAt` are single textured quads for rings, flares and ground marks; `Ribbon`, `Beam`, `Swoosh`; `Every` throttles repeated
+effects; `Rich`, `N`, `Glint` give way when many effects are alive. Each hero's colours come from Deadlock's own recipes,
+quoted at the top of its `Vfx<Hero>.cs`. The older helpers below (`Burst`, `Ring`, `Flash`, `Particles`) still work;
+`Ring` and `Burst` now draw with Deadlock's ring, glow and cartoon cloud. Fps is checked with the fps bench
+(`FPS=1 bash tools/run_bench.sh 12 <heroes>`, `tools/fps_compare.py`).
+
 The creator asked for effects that look like Deadlock's but are **built by us in Unity**, not ripped from Deadlock's
 particle files. A skill's `vfx` column names a `custom` effects row; `Vfx.Play(id, moment, at, radius, follow, to)`
 builds it at runtime from `ParticleSystem`, `LineRenderer`, `TrailRenderer` and `Light` objects, drawn with RoR2's own

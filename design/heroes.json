@@ -139,7 +139,8 @@
       "meshInclude": [
         "abrams_model",
         "abrams_face_model",
-        "gun_model"
+        "gun_model",
+        "book_model"
       ],
       "imageSmall": "panorama/images/heroes/bull_sm_psd.vtex",
       "imageCard": "panorama/images/heroes/bull_card_psd.vtex",

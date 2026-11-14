@@ -28,8 +28,12 @@ Related documents:
    `materials/particle/text` are left out). Nothing in it is read by the mod or shipped. The creator renamed it `characterRip/` (2026-11-01, also gitignored).
 
 ---
-- **Visual effects are never taken from Deadlock.** Deadlock's particle systems (`.vpcf`) are not read or exported.
-  The abilities' looks are rebuilt by our own code in Unity with Risk of Rain 2's materials (doc 02 §8.1).
+- **Visual effects are built in our own code, from Deadlock's recipes and particle textures** (creator, 2026-11-11, the
+  `vfx-rebuild` branch; before that nothing of Deadlock's effects was read). Deadlock's particle systems (`.vpcf`) are
+  read **on the dev PC only**, as reference for each ability's colours, layers, sizes and timing; they are never exported
+  or shipped. Deadlock's particle **textures** (glows, rings, flares, smoke puffs, arcs, flecks) are `texture` rows in
+  `design/effects.json`, read from the player's own install like the icons. The effects themselves are still built by our
+  code in Unity (doc 02 §8.1, `docs/VfxRebuild/README.md`).
 
 ## 2. Versions this was built and verified against
 

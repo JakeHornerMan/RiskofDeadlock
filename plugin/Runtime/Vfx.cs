@@ -9,7 +9,8 @@ namespace DeadlockOfRain
 {
     /// <summary>Our own visual effects (effects rows of kind custom), built at runtime from Unity particle systems, line and
     /// trail renderers and lights, drawn with Risk of Rain 2's own materials (effects rows of kind material). They are made
-    /// to look like the Deadlock abilities; nothing is read from Deadlock's particle files.
+    /// to look like the Deadlock abilities. Since the 2026-11 rebuild (VfxKit.cs, docs/VfxRebuild) their colours, layers and
+    /// timing follow Deadlock's own particle recipes and they draw with Deadlock's particle textures where the cache has them.
     /// Each skill's vfx id answers moments like its sounds do: cast, loop (returns an object to keep or move), hit, trigger, end.</summary>
     public static partial class Vfx
     {
@@ -23,21 +24,17 @@ namespace DeadlockOfRain
             {
                 switch (id)
                 {
-                    case "haze_dance": return HazeDance(moment, at, radius, follow);
-                    case "abrams_slam": return AbramsSlam(moment, at, radius, follow);
-                    case "abrams_charge": return AbramsCharge(moment, at, follow);
-                    case "seven_ball": return SevenBall(moment, at, radius, follow, to);
-                    case "seven_static": return SevenStatic(moment, at, radius, follow);
-                    case "seven_storm": return SevenStorm(moment, at, radius, to);
+                    case "haze_gun": case "haze_dagger": case "haze_smoke": case "haze_phantom": case "haze_dance": case "haze_fixation":
+                        return Haze(id, moment, at, radius, follow, to);
+                    case "abrams_gun": case "abrams_siphon": case "abrams_charge": case "abrams_haymaker": case "abrams_slam":
+                        return Abrams(id, moment, at, radius, follow, to, angle, life);
+                    case "seven_gun": case "seven_ball": case "seven_static": case "seven_flight": case "seven_storm":
+                        return Seven(id, moment, at, radius, follow, to);
                     case "infernus_afterburn": return InfernusAfterburn(moment, at, follow);
                     case "infernus_napalm": return InfernusNapalm(moment, at, radius, follow);
                     case "infernus_trail": return InfernusTrail(moment, at, radius, follow, life);
                     case "infernus_bomb": return InfernusBomb(moment, at, radius, follow);
                     case "infernus_pulse": return InfernusPulse(moment, at, radius, follow);
-                    case "haze_phantom": return HazePhantom(moment, at, radius, to);
-                    case "haze_dagger": return HazeDagger(moment, at, follow);
-                    case "abrams_haymaker": return AbramsHaymaker(moment, at, radius, follow, to, angle);
-                    case "seven_flight": return SevenFlight(moment, at, radius, follow, to);
                     case "mokrill_gun": return MokrillGun(moment, at, follow);
                     case "mokrill_sand": return MokrillSand(moment, at, radius, follow, to, angle, life);
                     case "mokrill_burrow": return MokrillBurrow(moment, at, radius, follow);
@@ -70,362 +67,6 @@ namespace DeadlockOfRain
             return null;
         }
 
-        // ------------------------------------------------------------------ Haze: Bullet Dance
-        static readonly Color hazePink = new Color(1f, 0.37f, 0.64f), hazeViolet = new Color(0.62f, 0.42f, 1f);
-
-        static GameObject HazeDance(string moment, Vector3 at, float radius, Transform follow)
-        {
-            switch (moment)
-            {
-                case "loop":
-                {
-                    // a spinning ring of blades around Haze's waist, three afterimage ribbons, a violet glow and a faint range ring
-                    var root = Root(at, 0f, follow);
-                    var spin = new GameObject("spin"); spin.transform.SetParent(root.transform, false); spin.transform.localPosition = Vector3.up * 1.0f;
-                    spin.AddComponent<Spin>().DegPerSec = 900f;
-                    for (int i = 0; i < 3; i++)
-                    {
-                        var arm = new GameObject("arm" + i); arm.transform.SetParent(spin.transform, false);
-                        float a = i * 120f * Mathf.Deg2Rad;
-                        arm.transform.localPosition = new Vector3(Mathf.Cos(a), (i - 1) * 0.25f, Mathf.Sin(a)) * 1.3f;
-                        Trail(arm, i == 1 ? hazeViolet : hazePink, 0.35f, 0.18f);
-                        Particles(arm, "mat_glow", hazePink, rate: 30, life: 0.25f, speed: 0.2f, size: 0.35f, world: true);
-                    }
-                    Particles(spin, "mat_spark", hazeViolet, rate: 60, life: 0.4f, speed: 4f, size: 0.08f, shapeRadius: 1.3f, world: true);
-                    Light(root, hazeViolet, 8f, 2.5f, Vector3.up);
-                    return root;
-                }
-                case "cast":
-                    Burst(at, "mat_glow", hazePink, 6, 0.12f, 0.5f, 0.6f);
-                    Burst(at, "mat_spark", hazeViolet, 10, 0.2f, 6f, 0.06f);
-                    return null;
-                case "hit":
-                    Burst(at, "mat_spark", hazePink, 8, 0.25f, 7f, 0.07f);
-                    Burst(at, "mat_glow", hazeViolet, 2, 0.15f, 0f, 0.8f);
-                    return null;
-                case "end":
-                    Ring(at + Vector3.up * 0.2f, hazePink, 0.5f, 6f, 0.4f, 0.25f);
-                    Flash(at + Vector3.up, hazeViolet, 10f, 0.3f);
-                    return null;
-            }
-            return null;
-        }
-
-        // ------------------------------------------------------------------ Abrams: Seismic Impact
-        static readonly Color abramsRed = new Color(1f, 0.35f, 0.15f), abramsDust = new Color(0.62f, 0.52f, 0.42f);
-
-        static GameObject AbramsSlam(string moment, Vector3 at, float radius, Transform follow)
-        {
-            switch (moment)
-            {
-                case "aim":
-                {
-                    // the reticle: RoR2's area indicator dome (it draws where it meets the ground), a spinning dashed ring, an inner
-                    // ring, a centre beam and a glow; the state moves it every frame
-                    var root = Root(at, 0f, null);
-                    var dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    Object.Destroy(dome.GetComponent<Collider>());
-                    dome.transform.SetParent(root.transform, false);
-                    dome.transform.localScale = Vector3.one * radius * 2f;
-                    dome.GetComponent<MeshRenderer>().sharedMaterial = Mat("mat_area", abramsRed);
-                    // embers rising from the edge of the circle, and a glow at its centre
-                    var edge = new GameObject("edge"); edge.transform.SetParent(root.transform, false); edge.transform.localPosition = Vector3.up * 0.4f;
-                    Particles(edge, "mat_glow", abramsRed, rate: 90, life: 0.6f, speed: 1.5f, size: 0.7f, shapeRadius: radius, world: true, ring: true);
-                    Particles(edge, "mat_glow", new Color(1f, 0.75f, 0.4f), rate: 10, life: 0.5f, speed: 0f, size: 2.5f);
-                    var beam = Line(root.transform, abramsRed, 0.4f, Vector3.up * 0.2f, Vector3.up * 14f, "mat_tracer");
-                    beam.widthCurve = new AnimationCurve(new Keyframe(0, 1), new Keyframe(1, 0));
-                    Light(root, abramsRed, radius, 3f, Vector3.up * 2f);
-                    return root;
-                }
-                case "cast":
-                    Burst(at, "mat_smoke", abramsDust, 14, 1.0f, 6f, 2.2f, shapeRadius: 1.5f, flat: true);
-                    Ring(at + Vector3.up * 0.2f, abramsDust, 0.5f, 5f, 0.5f, 0.6f);
-                    return null;
-                case "loop":
-                {
-                    // the dive: burning streaks behind Abrams
-                    var root = Root(at, 0f, follow);
-                    root.transform.localPosition = Vector3.up;
-                    Trail(root, abramsRed, 1.6f, 0.35f);
-                    Particles(root, "mat_fire", abramsRed, rate: 80, life: 0.35f, speed: 1f, size: 0.9f, shapeRadius: 0.6f, world: true);
-                    return root;
-                }
-                case "hit":
-                    Ring(at + Vector3.up * 0.3f, abramsRed, 1f, radius * 1.15f, 0.45f, 1.2f);
-                    Ring(at + Vector3.up * 0.3f, new Color(1f, 0.8f, 0.5f), 0.5f, radius * 0.7f, 0.3f, 0.6f);
-                    Burst(at, "mat_smoke", abramsDust, 40, 1.6f, radius * 0.9f, 3.5f, shapeRadius: 2f, flat: true);
-                    Burst(at, "mat_spark", new Color(1f, 0.6f, 0.3f), 60, 1.2f, 18f, 0.2f, gravity: 2.5f, upward: true);
-                    Burst(at, "mat_glow", abramsRed, 4, 0.35f, 0f, radius * 0.8f);
-                    Flash(at + Vector3.up * 2f, abramsRed, radius * 2.5f, 0.5f, 8f);
-                    Shake(at, radius * 3f, 3f, 0.6f);
-                    return null;
-            }
-            return null;
-        }
-
-        // ------------------------------------------------------------------ Abrams: Shoulder Charge
-        static readonly Color chargeYellow = new Color(1f, 0.8f, 0.2f), chargeHot = new Color(1f, 0.95f, 0.7f);
-
-        static GameObject AbramsCharge(string moment, Vector3 at, Transform follow)
-        {
-            switch (moment)
-            {
-                case "loop":
-                {
-                    // rocketing forward: the state turns this root to face the charge each frame, so +z is his front
-                    var root = Root(at, 0f, follow);
-                    // a hot yellow glow on his front, like a shield pushing the air, throwing sparks that stream back past him
-                    var front = new GameObject("front"); front.transform.SetParent(root.transform, false); front.transform.localPosition = new Vector3(0f, 1.2f, 1.0f);
-                    Particles(front, "mat_glow", chargeYellow, rate: 40, life: 0.18f, speed: 0f, size: 3.2f);
-                    Particles(front, "mat_glow", chargeHot, rate: 30, life: 0.12f, speed: 0f, size: 1.6f);
-                    Particles(front, "mat_spark", chargeYellow, rate: 140, life: 0.35f, speed: 7f, size: 0.09f, shapeRadius: 0.9f, world: true, stretch: 0.15f);
-                    Light(front, chargeYellow, 9f, 4f, Vector3.zero).gameObject.AddComponent<Flicker>();
-                    // the trail running behind: thin yellow streaks off both shoulders and a brighter core (wider ones hid the view from the camera behind him), flame puffs like exhaust
-                    foreach (var x in new[] { -0.55f, 0.55f })
-                    {
-                        var s = new GameObject("shoulder"); s.transform.SetParent(root.transform, false); s.transform.localPosition = new Vector3(x, 1.5f, 0f);
-                        Trail(s, chargeYellow, 0.3f, 0.4f);
-                    }
-                    var core = new GameObject("core"); core.transform.SetParent(root.transform, false); core.transform.localPosition = new Vector3(0f, 1.1f, 0f);
-                    Trail(core, chargeYellow, 0.5f, 0.2f);
-                    var back = new GameObject("back"); back.transform.SetParent(root.transform, false); back.transform.localPosition = new Vector3(0f, 1.1f, -0.5f);
-                    Particles(back, "mat_fire_puff", chargeYellow, rate: 50, life: 0.45f, speed: 0.6f, size: 1.2f, shapeRadius: 0.5f, world: true);
-                    // dust kicked up at his feet
-                    Particles(root, "mat_dust", abramsDust, rate: 45, life: 0.8f, speed: 1.5f, size: 1.6f, shapeRadius: 0.8f, world: true, flat: true);
-                    return root;
-                }
-                case "cast":
-                    // the launch: a kick of dust, a yellow ring and a flash where he sets off
-                    Burst(at, "mat_dust", abramsDust, 18, 0.9f, 7f, 2f, shapeRadius: 1f, flat: true);
-                    Ring(at + Vector3.up * 0.3f, chargeYellow, 0.5f, 4.5f, 0.35f, 0.8f);
-                    Flash(at + Vector3.up * 1.2f, chargeYellow, 8f, 0.3f, 5f);
-                    return null;
-            }
-            return null;
-        }
-
-        // ------------------------------------------------------------------ Seven: Lightning Ball, Static Charge, Storm Cloud, Thunderhead
-        // Deadlock's Seven is yellow (since the 2026-10-21 redesign); Thunderhead keeps the blue storm for now
-        static readonly Color sevenBlue = new Color(0.5f, 0.83f, 1f), sevenWhite = new Color(0.85f, 0.95f, 1f),
-            sevenYellow = new Color(1f, 0.85f, 0.2f), sevenGold = new Color(1f, 0.97f, 0.75f);
-
-        static float nextBallImpact;
-
-        /// <summary>A see-through sphere of influence: RoR2's lightning sphere, tinted, radius metres round, slowly turning, with
-        /// sparks winking on its surface so its edge reads against any ground.</summary>
-        /// <param name="inside">also drawn from inside (the ball, seen from outside nearly always). Storm Cloud's camera is inside its
-        /// sphere, so there the sphere is drawn from outside only (other players see it) and RoR2's area dome draws where it meets
-        /// the ground: a yellow ring of its reach under him.</param>
-        static void Shell(GameObject root, float radius, Color c, bool inside = true)
-        {
-            var shell = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            Object.Destroy(shell.GetComponent<Collider>());
-            shell.transform.SetParent(root.transform, false);
-            shell.transform.localScale = Vector3.one * radius * 2f;
-            var mr = shell.GetComponent<MeshRenderer>();
-            mr.sharedMaterial = Remapped("mat_shell", new Color(c.r, c.g, c.b, 0.5f), inside);
-            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            mr.receiveShadows = false;
-            shell.AddComponent<Spin>().DegPerSec = 25f;
-            var edge = Particles(root, "mat_glow", c, rate: 6f * radius, life: 0.5f, speed: 0f, size: 0.5f, shapeRadius: radius);
-            var shape = edge.shape; shape.radiusThickness = 0f;
-            if (inside) return;
-            var dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            Object.Destroy(dome.GetComponent<Collider>());
-            dome.transform.SetParent(root.transform, false);
-            dome.transform.localScale = Vector3.one * radius * 2f;
-            dome.GetComponent<MeshRenderer>().sharedMaterial = Mat("mat_area", c);
-        }
-
-        static GameObject SevenBall(string moment, Vector3 at, float radius, Transform follow, Vector3? to)
-        {
-            switch (moment)
-            {
-                case "loop":
-                {
-                    // a white-gold core, a yellow halo, crackling arcs around it and a light, inside a clear sphere showing its reach
-                    var root = Root(at, 0f, follow);
-                    Particles(root, "mat_glow", sevenGold, rate: 40, life: 0.2f, speed: 0f, size: 1.4f);
-                    Particles(root, "mat_glow", sevenYellow, rate: 20, life: 0.4f, speed: 0f, size: 3.2f);
-                    Particles(root, "mat_spark", sevenYellow, rate: 50, life: 0.3f, speed: 5f, size: 0.06f, shapeRadius: 0.5f, world: true);
-                    var c = root.AddComponent<Crackle>(); c.Color = sevenYellow; c.Recolor = true; c.Radius = 2.2f; c.Count = 4;
-                    Light(root, sevenYellow, 12f, 4f, Vector3.zero).gameObject.AddComponent<Flicker>();
-                    Shell(root, radius, sevenYellow);
-                    return root;
-                }
-                case "hit":
-                {
-                    if (!to.HasValue) return null;
-                    // a clear lightning strike from the ball to the enemy: white-gold core, yellow glow, sparks and a flash on it,
-                    // and RoR2's lightning impact (rate-limited, it is bright)
-                    Bolt(at, to.Value, sevenGold, 0.25f, 0.16f, 10, 0.6f, recolor: true);
-                    Bolt(at, to.Value, sevenYellow, 0.7f, 0.12f, 8, 0.9f, recolor: true);
-                    Burst(to.Value, "mat_spark", sevenGold, 8, 0.3f, 7f, 0.07f);
-                    Flash(to.Value, sevenYellow, 5f, 0.12f, 2f);
-                    if (Time.time >= nextBallImpact) { nextBallImpact = Time.time + 0.1f; Fx.Impact("storm_strike_seven", to.Value); }
-                    return null;
-                }
-                case "end":
-                    Burst(at, "mat_glow", sevenGold, 3, 0.3f, 0f, 5f);
-                    Burst(at, "mat_spark", sevenYellow, 40, 0.5f, 14f, 0.1f);
-                    Ring(at, sevenYellow, 0.5f, 7f, 0.35f, 0.4f, vertical: true);
-                    Flash(at, sevenYellow, 14f, 0.3f, 6f);
-                    return null;
-            }
-            return null;
-        }
-
-        /// <summary>Storm Cloud (R): Seven flies inside a clear yellow sphere of radius that shocks everything in it.</summary>
-        static GameObject SevenFlight(string moment, Vector3 at, float radius, Transform follow, Vector3? to)
-        {
-            switch (moment)
-            {
-                case "cast":
-                    Ring(at, sevenYellow, 0.5f, radius * 0.6f, 0.4f, 0.4f);
-                    Burst(at, "mat_spark", sevenGold, 30, 0.4f, 10f, 0.08f, upward: true);
-                    Burst(at, "mat_smoke", new Color(0.35f, 0.33f, 0.25f, 0.6f), 10, 0.8f, 5f, 2f, shapeRadius: 1.5f, flat: true);
-                    Flash(at, sevenYellow, 12f, 0.35f, 6f);
-                    return null;
-                case "loop":
-                {
-                    // Seven as the living storm: a faint dark haze and crackles on him, sparks, a yellow light, and the sphere
-                    var root = Root(at, 0f, follow);
-                    Particles(root, "mat_smoke", new Color(0.3f, 0.3f, 0.26f, 0.35f), rate: 6, life: 1.2f, speed: 0.5f, size: 3f, shapeRadius: 1.2f, world: true);
-                    Particles(root, "mat_glow", sevenYellow, rate: 12, life: 0.3f, speed: 0f, size: 2.2f);
-                    Particles(root, "mat_spark", sevenGold, rate: 40, life: 0.35f, speed: 4f, size: 0.06f, shapeRadius: 0.8f, world: true);
-                    var c = root.AddComponent<Crackle>(); c.Color = sevenYellow; c.Recolor = true; c.Radius = 1.8f; c.Count = 3;
-                    Light(root, sevenYellow, radius, 3f, Vector3.zero).gameObject.AddComponent<Flicker>();
-                    Shell(root, radius, sevenYellow, inside: false);
-                    return root;
-                }
-                case "hit":
-                {
-                    if (!to.HasValue) return null;
-                    Bolt(at, to.Value, sevenGold, 0.3f, 0.18f, 12, 0.8f, recolor: true);
-                    Bolt(at, to.Value, sevenYellow, 0.8f, 0.14f, 10, 1.2f, recolor: true);
-                    Burst(to.Value, "mat_spark", sevenGold, 10, 0.3f, 8f, 0.07f);
-                    Flash(to.Value, sevenYellow, 6f, 0.15f, 2.5f);
-                    if (Time.time >= nextBallImpact) { nextBallImpact = Time.time + 0.1f; Fx.Impact("storm_strike_seven", to.Value); }
-                    return null;
-                }
-                case "end":
-                    Burst(at, "mat_glow", sevenGold, 3, 0.3f, 0f, 6f);
-                    Burst(at, "mat_spark", sevenYellow, 50, 0.5f, 16f, 0.1f);
-                    Ring(at, sevenYellow, 0.5f, radius * 0.6f, 0.4f, 0.5f, vertical: true);
-                    Flash(at, sevenYellow, 16f, 0.3f, 6f);
-                    return null;
-            }
-            return null;
-        }
-
-        static GameObject SevenStatic(string moment, Vector3 at, float radius, Transform follow)
-        {
-            switch (moment)
-            {
-                case "cast":
-                {
-                    // the charge: a ring that closes in on the target while it counts down, sparks and a pulsing light
-                    var root = Root(at, 0f, follow);
-                    var ring = new GameObject("ring"); ring.transform.SetParent(root.transform, false); ring.transform.localPosition = Vector3.up * 0.4f;
-                    Particles(ring, "mat_glow", sevenYellow, rate: 120, life: 0.25f, speed: 0f, size: 0.5f, shapeRadius: radius, ring: true);
-                    ring.AddComponent<Spin>().DegPerSec = 200f;
-                    ring.AddComponent<Shrink>().To = 0.12f;
-                    Particles(root, "mat_spark", sevenYellow, rate: 40, life: 0.3f, speed: 3f, size: 0.07f, shapeRadius: 0.8f, world: true);
-                    Particles(root, "mat_glow", sevenGold, rate: 12, life: 0.25f, speed: 0f, size: 1.2f);
-                    var c = root.AddComponent<Crackle>(); c.Color = sevenYellow; c.Recolor = true; c.Radius = 1.4f; c.Count = 2;
-                    Light(root, sevenYellow, 6f, 3f, Vector3.up).gameObject.AddComponent<Flicker>();
-                    return root;
-                }
-                case "hit":
-                {
-                    // a thunderbolt from the sky like Risk of Rain 2's lightning strikes, a flash and a shock ring
-                    var sky = at + Vector3.up * 40f + new Vector3(Random.Range(-3f, 3f), 0, Random.Range(-3f, 3f));
-                    Bolt(sky, at, sevenGold, 1.4f, 0.35f, 14, 2.5f, recolor: true);
-                    Bolt(sky, at, sevenYellow, 2.6f, 0.25f, 10, 4f, recolor: true);
-                    Ring(at + Vector3.up * 0.3f, sevenYellow, 0.5f, radius, 0.35f, 0.7f);
-                    Burst(at, "mat_spark", sevenGold, 50, 0.6f, 16f, 0.12f, upward: true);
-                    Burst(at, "mat_glow", sevenYellow, 3, 0.3f, 0f, radius * 0.9f);
-                    Flash(at + Vector3.up * 3f, sevenGold, radius * 3f, 0.25f, 10f);
-                    Shake(at, radius * 3f, 1.5f, 0.3f);
-                    return null;
-                }
-            }
-            return null;
-        }
-
-        static GameObject SevenStorm(string moment, Vector3 at, float radius, Vector3? to)
-        {
-            const float cloudHeight = 35f;
-            var stormDark = new Color(0.07f, 0.08f, 0.12f, 0.95f);
-            switch (moment)
-            {
-                case "loop":
-                {
-                    // the thunderhead: a thick, dark, churning cloud deck over the zone (RoR2's opaque dust, so it really is
-                    // dark), a dim haze under it that darkens the area, lightning flickering inside the clouds, and bolts
-                    // cracking down from the cloud base onto the ground all over the storm
-                    var root = Root(at, 0f, null);
-                    var cloud = new GameObject("cloud"); cloud.transform.SetParent(root.transform, false); cloud.transform.localPosition = Vector3.up * cloudHeight;
-                    // build the deck at once, then keep it churning
-                    var deck = Particles(cloud, "mat_dust", stormDark, rate: 45, life: 4f, speed: 0.4f, size: radius * 0.45f, shapeRadius: radius * 1.05f, flat: true);
-                    deck.Emit(70);
-                    var belly = Particles(cloud, "mat_dust", new Color(0.13f, 0.15f, 0.22f, 0.9f), rate: 30, life: 3.5f, speed: 0.3f, size: radius * 0.35f, shapeRadius: radius * 0.9f, flat: true);
-                    belly.transform.localPosition = Vector3.down * 2.5f;
-                    belly.Emit(40);
-                    var top = Particles(cloud, "mat_dust", new Color(0.2f, 0.22f, 0.3f, 0.85f), rate: 15, life: 4f, speed: 0.2f, size: radius * 0.4f, shapeRadius: radius * 0.75f, flat: true);
-                    top.transform.localPosition = Vector3.up * 3f;
-                    top.Emit(20);
-                    cloud.AddComponent<Spin>().DegPerSec = 10f;
-                    // the dim haze filling the storm, from the ground up to the clouds
-                    var haze = new GameObject("haze"); haze.transform.SetParent(root.transform, false); haze.transform.localPosition = Vector3.up * (cloudHeight * 0.45f);
-                    var hz = Particles(haze, "mat_dust", new Color(0.05f, 0.06f, 0.09f, 0.22f), rate: 25, life: 4f, speed: 0.2f, size: radius * 0.5f, shapeRadius: radius * 0.85f, flat: true);
-                    hz.Emit(30);
-                    // lightning lighting the clouds from inside
-                    var flash = Light(cloud, sevenBlue, radius * 1.4f, 0f, Vector3.down * 3f);
-                    flash.gameObject.AddComponent<StormFlash>();
-                    // bolts striking the ground at random inside the storm (looks only; the damage strikes are "hit")
-                    var amb = root.AddComponent<StormBolts>();
-                    amb.Radius = radius * 0.9f; amb.Height = cloudHeight - 2f;
-                    return root;
-                }
-                case "hit":
-                {
-                    if (!to.HasValue) return null;
-                    var from = new Vector3(to.Value.x + Random.Range(-2f, 2f), at.y + cloudHeight - 2f, to.Value.z + Random.Range(-2f, 2f));
-                    StrikeDown(from, to.Value, true);
-                    return null;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>One lightning strike from the cloud base down to a point: a white core, a blue glow around it, sparks
-        /// and a short light on the ground.</summary>
-        static void StrikeDown(Vector3 from, Vector3 to, bool big)
-        {
-            Bolt(from, to, sevenWhite, big ? 0.35f : 0.22f, 0.16f, 12, big ? 1.6f : 1.2f);
-            Bolt(from, to, sevenBlue, big ? 0.9f : 0.55f, 0.12f, 9, big ? 2.2f : 1.6f);
-            Burst(to, "mat_spark", sevenWhite, big ? 14 : 6, 0.35f, 8f, 0.07f, upward: true);
-            Flash(to + Vector3.up * 1.5f, sevenBlue, big ? 9f : 6f, 0.12f, big ? 2.2f : 1.4f);
-        }
-
-        /// <summary>Thunderhead's extra bolts: every 0.15–0.45 s a bolt from the cloud to a random spot on the ground inside the storm.</summary>
-        sealed class StormBolts : MonoBehaviour
-        {
-            public float Radius, Height;
-            float next;
-            void Update()
-            {
-                if (Time.time < next) return;
-                next = Time.time + Random.Range(0.15f, 0.45f);
-                var c = Random.insideUnitCircle * Radius;
-                var top = transform.position + new Vector3(c.x, Height, c.y);
-                var ground = top + Vector3.down * Height;
-                if (Physics.Raycast(top, Vector3.down, out var hit, Height * 2f, LayerIndex.world.mask, QueryTriggerInteraction.Ignore)) ground = hit.point;
-                StrikeDown(top, ground, false);
-            }
-        }
-
         // ------------------------------------------------------------------ Infernus: Afterburn, Napalm
         static readonly Color fireOrange = new Color(1f, 0.48f, 0.12f), fireYellow = new Color(1f, 0.8f, 0.35f), bombYellow = new Color(1f, 0.9f, 0.15f);
 
@@ -434,10 +75,7 @@ namespace DeadlockOfRain
             if (moment == "muzzle")
             {
                 // every Flame Gun shot: a hot flash and a puff of smoke rolling off the muzzle
-                Burst(at, "mat_glow", fireYellow, 1, 0.06f, 0f, 0.9f);
-                Burst(at, "mat_fire_puff", fireOrange, 3, 0.15f, 3f, 0.35f, shapeRadius: 0.05f);
-                Burst(at, "mat_dust", new Color(0.32f, 0.28f, 0.25f, 0.45f), 2, 0.9f, 1.2f, 0.6f, shapeRadius: 0.1f, upward: true);
-                Flash(at, fireOrange, 4f, 0.06f, 2f);
+                InfernusMuzzle(at);
                 return null;
             }
             var body = follow ? follow.GetComponent<CharacterBody>() : null;
@@ -453,8 +91,7 @@ namespace DeadlockOfRain
                     Fx.Impact("helfire_ignite", body.corePosition);
                     Burst(body.corePosition, "mat_fire_large", fireOrange, 18, 0.7f, 4f, 1.8f * Mathf.Max(1f, body.radius), shapeRadius: body.radius * 0.6f, upward: true);
                     Burst(body.corePosition, "mat_fire_puff", fireYellow, 10, 0.5f, 6f, 0.9f * Mathf.Max(1f, body.radius), upward: true);
-                    Burst(body.corePosition, "mat_glow", fireYellow, 3, 0.25f, 0f, 3f * Mathf.Max(1f, body.radius));
-                    Flash(body.corePosition, fireOrange, 10f, 0.35f, 6f);
+                    InfernusIgnite(body.corePosition, Mathf.Max(1f, body.radius));
                     return null;
             }
             return null;
@@ -505,12 +142,15 @@ namespace DeadlockOfRain
                     return root;
                 }
                 case "hit":
+                    // on the floor under the hit, never floating where the flask struck an enemy (creator, 2026-11-14: "the vfx must
+                    // always play on the floor not on where the projectile hit the enemy")
+                    at = Floor(at);
                     FireRing(at, radius, 0.35f);
                     Burst(at, "mat_fire_large", fireOrange, 26, 0.9f, radius * 1.1f, 2.2f, shapeRadius: radius * 0.4f, upward: true);
                     Burst(at, "mat_fire_puff", fireYellow, 14, 0.6f, radius * 1.5f, 1.2f, shapeRadius: radius * 0.3f, upward: true);
-                    Burst(at, "mat_dust", new Color(0.18f, 0.13f, 0.1f, 0.7f), 8, 1.8f, 1.5f, 3f, shapeRadius: radius * 0.5f, upward: true);
+                    InfernusNapalmSplash(at, radius);
                     GroundFire(at, radius * 0.8f, 2.5f);
-                    Flash(at + Vector3.up, fireOrange, radius * 3f, 0.4f, 7f);
+                    Glint(at + Vector3.up, fireOrange, radius * 3f, 0.4f, 7f);
                     return null;
             }
             return null;
@@ -520,10 +160,10 @@ namespace DeadlockOfRain
         static void GroundFire(Vector3 at, float radius, float life)
         {
             var root = Root(at + Vector3.up * 0.1f, life + 1.2f, null);
-            Particles(root, "mat_gas_fire", fireOrange, rate: 10f * radius, life: 0.9f, speed: 0.3f, size: 1.1f, shapeRadius: radius, world: true, flat: true);
-            Particles(root, "mat_fire_large", fireOrange, rate: 5f * radius, life: 0.7f, speed: 1.6f, size: 1.0f, shapeRadius: radius * 0.8f, world: true, flat: true);
-            Particles(root, "mat_spark", fireYellow, rate: 6f * radius, life: 1f, speed: 2f, size: 0.07f, shapeRadius: radius, world: true, flat: true, gravity: -0.4f);
-            Light(root, fireOrange, radius * 2.5f, 1.5f, Vector3.up).gameObject.AddComponent<Flicker>();
+            Particles(root, "mat_gas_fire", fireOrange, rate: N(6f * radius), life: 0.9f, speed: 0.3f, size: 1.3f, shapeRadius: radius, world: true, flat: true);
+            Particles(root, "mat_fire_large", fireOrange, rate: N(3f * radius), life: 0.7f, speed: 1.6f, size: 1.2f, shapeRadius: radius * 0.8f, world: true, flat: true);
+            InfernusGroundLayers(root, radius, life);
+            if (Alive < 50) Light(root, fireOrange, radius * 2.5f, 1.5f, Vector3.up).gameObject.AddComponent<Flicker>();
             root.AddComponent<StopAfter>().After = life;
         }
 
@@ -531,12 +171,10 @@ namespace DeadlockOfRain
         static void FireRing(Vector3 at, float radius, float life)
         {
             var root = Root(at + Vector3.up * 0.3f, life + 0.8f, null);
-            int n = Mathf.Clamp((int)(radius * 7f), 24, 140);
-            Particles(root, "mat_fire_large", fireOrange, count: n, life: life + 0.3f, speed: radius / life, size: Mathf.Clamp(radius * 0.22f, 1.4f, 3f), shapeRadius: 0.4f, world: true, ring: true);
-            Particles(root, "mat_fire_puff", fireYellow, count: n, life: life, speed: radius / life * 0.9f, size: 1.1f, shapeRadius: 0.4f, world: true, ring: true);
-            Particles(root, "mat_gas_fire", fireOrange, count: n / 2, life: life + 0.5f, speed: radius / life * 0.8f, size: 1.6f, shapeRadius: 0.4f, world: true, ring: true);
-            Ring(at + Vector3.up * 0.25f, fireOrange, 0.5f, radius, life + 0.1f, 1.2f);
-            Flash(at + Vector3.up, fireOrange, radius * 1.5f, life, 4f);
+            int n = N(Mathf.Clamp((int)(radius * 3f), 12, 44));
+            Particles(root, "mat_fire_large", fireOrange, count: n, life: life + 0.3f, speed: radius / life, size: Mathf.Clamp(radius * 0.26f, 1.6f, 3.4f), shapeRadius: 0.4f, world: true, ring: true);
+            Particles(root, "mat_fire_puff", fireYellow, count: n / 2, life: life, speed: radius / life * 0.9f, size: 1.3f, shapeRadius: 0.4f, world: true, ring: true);
+            InfernusRingLayers(at, radius, life);
         }
 
         static GameObject InfernusTrail(string moment, Vector3 at, float radius, Transform follow, float life)
@@ -548,7 +186,8 @@ namespace DeadlockOfRain
                     // flames licking around his legs and a heat glow while he runs
                     var root = Root(at, 0f, follow);
                     Particles(root, "mat_fire_large", fireOrange, rate: 45, life: 0.45f, speed: 1.5f, size: 1.1f, shapeRadius: 0.6f, world: true, upward: true);
-                    Particles(root, "mat_spark", fireYellow, rate: 40, life: 0.6f, speed: 3f, size: 0.08f, shapeRadius: 0.5f, world: true, upward: true, gravity: -0.3f);
+                    InfernusEmbers(root, 26f, 0.6f, 3f);
+                    Quad(root, Glow("fx_glow_soft", Hex("FF952B")), 2.6f, 2.6f, 1f, Face.Ground, 30f, offset: Vector3.up * 0.1f, loop: true);
                     Light(root, fireOrange, 7f, 3f, Vector3.up).gameObject.AddComponent<Flicker>();
                     return root;
                 }
@@ -615,9 +254,8 @@ namespace DeadlockOfRain
                 }
                 case "hit":
                     FireRing(at, radius, 0.45f);
-                    Burst(at + Vector3.up, "mat_fire_large", fireOrange, 60, 1.1f, radius * 0.7f, 4f, shapeRadius: 1.5f, upward: true);
-                    Burst(at + Vector3.up, "mat_glow", fireYellow, 4, 0.35f, 0f, radius * 0.9f);
-                    Burst(at, "mat_dust", new Color(0.16f, 0.12f, 0.1f, 0.75f), 18, 2.4f, radius * 0.35f, 5f, shapeRadius: 2f, upward: true);
+                    Burst(at + Vector3.up, "mat_fire_large", fireOrange, N(34), 1.1f, radius * 0.7f, 4.6f, shapeRadius: 1.5f, upward: true);
+                    InfernusBombBlast(at, radius);
                     GroundFire(at, radius * 0.45f, 3f);
                     Flash(at + Vector3.up * 2f, fireOrange, radius * 3f, 0.6f, 10f);
                     Shake(at, radius * 3f, 4f, 0.7f);
@@ -634,62 +272,18 @@ namespace DeadlockOfRain
                 {
                     // Torment Pulse running: embers rising around him and a hot glow at his feet
                     var root = Root(at, 0f, follow);
-                    Particles(root, "mat_spark", fireOrange, rate: 50, life: 0.9f, speed: 1.5f, size: 0.09f, shapeRadius: 1.4f, world: true, upward: true, gravity: -0.4f);
-                    Particles(root, "mat_fire_puff", fireOrange, rate: 14, life: 0.5f, speed: 0.6f, size: 0.8f, shapeRadius: 1f, world: true, flat: true);
+                    InfernusEmbers(root, 30f, 1.4f, 1.8f);
+                    Particles(root, "mat_fire_puff", fireOrange, rate: 10, life: 0.5f, speed: 0.6f, size: 0.9f, shapeRadius: 1f, world: true, flat: true);
+                    Quad(root, Glow("fx_ring_spiral", Hex("FD953A")), 3.6f, 3.6f, 1f, Face.Ground, 200f, offset: Vector3.up * 0.12f, loop: true);
                     Light(root, fireOrange, 9f, 2.5f, Vector3.up * 0.5f).gameObject.AddComponent<Flicker>();
                     return root;
                 }
                 case "hit":
                     FireRing(at, radius, 0.3f);
-                    Burst(at + Vector3.up, "mat_glow", fireOrange, 2, 0.2f, 0f, 3f);
+                    QuadAt(at + Vector3.up, Glow("fx_glow", fireOrange), 1.5f, 3.6f, 0.2f, Face.Camera, 0f, 0f, 0.2f);
                     return null;
             }
             return null;
-        }
-
-        // ------------------------------------------------------------------ Haze: Phantom Strike
-        static GameObject HazePhantom(string moment, Vector3 at, float radius, Vector3? to)
-        {
-            switch (moment)
-            {
-                case "cast":
-                {
-                    var end = to ?? at;
-                    // smoke where she vanishes and where she lands, a violet streak with afterimage glows between
-                    Burst(at, "mat_dust", new Color(0.35f, 0.3f, 0.45f, 0.8f), 10, 0.9f, 2f, 1.6f, shapeRadius: 0.4f);
-                    Burst(end, "mat_dust", new Color(0.35f, 0.3f, 0.45f, 0.8f), 8, 0.8f, 2.5f, 1.4f, shapeRadius: 0.4f);
-                    var mover = Root(at, 0.6f, null);
-                    Trail(mover, hazeViolet, 0.9f, 0.35f);
-                    var m = mover.AddComponent<Mover>(); m.From = at; m.To = end; m.Time = 0.08f;
-                    int n = Mathf.Clamp((int)Vector3.Distance(at, end), 3, 12);
-                    for (int i = 1; i < n; i++) Burst(Vector3.Lerp(at, end, i / (float)n), "mat_glow", i % 2 == 0 ? hazePink : hazeViolet, 1, 0.35f, 0f, 1.4f);
-                    Flash(end, hazeViolet, 8f, 0.3f, 5f);
-                    return null;
-                }
-                case "hit":
-                {
-                    // a slash arc across the target, alternating sides (radius = which cut)
-                    int cut = Mathf.RoundToInt(radius);
-                    Slash(at, cut % 2 == 0 ? hazePink : hazeViolet, 1.3f, cut * 70f + 25f);
-                    Burst(at, "mat_spark", hazePink, 14, 0.3f, 8f, 0.08f);
-                    Burst(at, "mat_glow", hazeViolet, 2, 0.15f, 0f, 1.6f);
-                    if (cut >= 3) { Ring(at, hazeViolet, 0.3f, 3.5f, 0.3f, 0.2f, true); Flash(at, hazePink, 8f, 0.25f, 6f); }
-                    return null;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>Sleep Dagger in flight: a violet glow and a pink trail that always show, so the throw is seen even when the
-        /// knife model is small or fails to load.</summary>
-        static GameObject HazeDagger(string moment, Vector3 at, Transform follow)
-        {
-            if (moment != "loop") return null;
-            var root = Root(at, 0f, follow);
-            Particles(root, "mat_glow", hazeViolet, rate: 40, life: 0.12f, speed: 0f, size: 0.8f);
-            Trail(root, hazePink, 0.35f, 0.25f);
-            Light(root, hazeViolet, 6f, 2.5f, Vector3.zero);
-            return root;
         }
 
         /// <summary>A bright curved cut facing the camera that fades fast.</summary>
@@ -716,67 +310,6 @@ namespace DeadlockOfRain
             root.AddComponent<FadeLine>().Life = 0.25f;
         }
 
-        // ------------------------------------------------------------------ Abrams: Haymaker
-        static GameObject AbramsHaymaker(string moment, Vector3 at, float radius, Transform follow, Vector3? to, float angle)
-        {
-            switch (moment)
-            {
-                case "cast":
-                {
-                    // the wind-up: the fist glows and smoulders
-                    var root = Root(at, 0f, follow);
-                    Particles(root, "mat_glow", abramsRed, rate: 30, life: 0.2f, speed: 0f, size: 0.9f);
-                    Particles(root, "mat_spark", new Color(1f, 0.7f, 0.35f), rate: 50, life: 0.4f, speed: 2f, size: 0.07f, world: true);
-                    Light(root, abramsRed, 5f, 3f, Vector3.zero);
-                    return root;
-                }
-                case "hit":
-                {
-                    var dir = (to ?? at + Vector3.forward) - at; dir.y = 0; if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward; dir.Normalize();
-                    // the punch lands: a shockwave ring, sparks thrown forward along the punch, dust, a red flash
-                    Ring(at, abramsRed, 0.4f, radius * 1.2f, 0.3f, 0.45f, true);
-                    var cone = Root(at, 1.2f, null); cone.transform.rotation = Quaternion.LookRotation(dir);
-                    var ps = Particles(cone, "mat_spark", new Color(1f, 0.75f, 0.4f), count: 30, life: 0.35f, speed: 18f, size: 0.09f, shapeRadius: 0.2f, world: true, stretch: 2f);
-                    var sh = ps.shape; sh.shapeType = ParticleSystemShapeType.Cone; sh.angle = 30f; sh.rotation = Vector3.zero;
-                    Burst(at, "mat_glow", abramsRed, 3, 0.2f, 0f, radius);
-                    Burst(at + Vector3.down * 0.8f, "mat_dust", abramsDust, 10, 1.2f, 4f, 2f, shapeRadius: 1f, flat: true);
-                    Flash(at, abramsRed, radius * 3f, 0.3f, 7f);
-                    Flash(at, new Color(1f, 0.85f, 0.6f), radius * 2f, 0.1f, 12f);
-                    Ring(at, new Color(1f, 0.8f, 0.5f), 0.3f, radius * 2f, 0.22f, 0.3f, true);
-                    Burst(at, "mat_fire_puff", abramsRed, 10, 0.4f, 10f, 0.8f, shapeRadius: 0.3f);
-                    Shake(at, radius * 6f, 4.5f, 0.45f);
-                    return null;
-                }
-                case "wave":
-                {
-                    // the shockwave rolls forward over the ground in a cone (radius = its length, angle = its half-angle):
-                    // a wall of dust and sparks racing out, and red arcs sweeping across the cone
-                    var dir = (to ?? at + Vector3.forward) - at; dir.y = 0; if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward; dir.Normalize();
-                    float life = 0.35f, half = Mathf.Max(5f, angle);
-                    var ground = at + Vector3.down * 0.8f;
-                    var cone = Root(ground, 1.5f, null); cone.transform.rotation = Quaternion.LookRotation(dir);
-                    var dust = Particles(cone, "mat_dust", abramsDust, count: 40, life: life * 2.5f, speed: radius / life, size: 1.6f, shapeRadius: 0.4f, world: true);
-                    var sh = dust.shape; sh.shapeType = ParticleSystemShapeType.Cone; sh.angle = half; sh.rotation = Vector3.zero;
-                    var dl = dust.limitVelocityOverLifetime; dl.enabled = true; dl.limit = 1f; dl.dampen = 0.15f;
-                    var sparks = Particles(cone, "mat_spark", new Color(1f, 0.6f, 0.3f), count: 40, life: life, speed: radius / life, size: 0.08f, shapeRadius: 0.3f, world: true, stretch: 3f);
-                    var ss = sparks.shape; ss.shapeType = ParticleSystemShapeType.Cone; ss.angle = half; ss.rotation = Vector3.zero;
-                    for (int i = 1; i <= 3; i++)
-                    {
-                        float d = radius * i / 3f;
-                        var arc = Root(ground + dir * d, life, null);
-                        arc.transform.rotation = Quaternion.LookRotation(dir);
-                        var ap = Particles(arc, "mat_glow", abramsRed, count: 14, life: life * 0.8f, speed: 0f, size: 0.9f);
-                        var ash = ap.shape; ash.shapeType = ParticleSystemShapeType.Circle; ash.radius = Mathf.Max(0.2f, d * Mathf.Tan(half * Mathf.Deg2Rad));
-                        ash.arc = 2f * half; ash.rotation = new Vector3(90f, 0f, 90f - half); ash.radiusThickness = 0f;
-                        var am = ap.main; am.startDelay = life * (i - 1) / 3f;
-                    }
-                    Shake(at + dir * radius * 0.5f, radius * 3f, 2f, 0.3f);
-                    return null;
-                }
-            }
-            return null;
-        }
-
         // ------------------------------------------------------------------ Seven: Power Surge
         // ------------------------------------------------------------------ Mo & Krill (colours from Deadlock's own particles)
         // mat_dust is RoR2's opaque dust: keep its particles small, few and light-coloured, or they hide the screen (Dust Devil's
@@ -786,114 +319,6 @@ namespace DeadlockOfRain
             crack = new Color32(51, 46, 41, 220), hotCrack = new Color32(237, 107, 20, 255), krillOrange = new Color32(255, 147, 65, 255),
             krillArc = new Color32(254, 215, 118, 255), tracerHot = new Color32(255, 212, 85, 255), smokeGrey = new Color32(156, 156, 156, 160),
             frenzyRed = new Color32(232, 38, 28, 255), frenzyEmber = new Color32(255, 92, 40, 255);
-
-        static GameObject MokrillGun(string moment, Vector3 at, Transform follow)
-        {
-            switch (moment)
-            {
-                case "muzzle":
-                    // a hot orange puff and a wisp of grey smoke at Krill's muzzle
-                    Burst(at, "mat_glow", tracerHot, 2, 0.08f, 0f, 0.5f);
-                    Burst(at, "mat_smoke", smokeGrey, 2, 0.5f, 0.6f, 0.4f);
-                    return null;
-                case "hit":
-                    // dirt sparks where a pellet lands
-                    Burst(at, "mat_spark", krillOrange, 5, 0.25f, 5f, 0.06f, gravity: 1.5f);
-                    Burst(at, "mat_dust", sandDark, 1, 0.5f, 0.5f, 0.6f);
-                    return null;
-            }
-            return null;
-        }
-
-        static GameObject MokrillSand(string moment, Vector3 at, float radius, Transform follow, Vector3? to, float spreadDeg, float windUp)
-        {
-            switch (moment)
-            {
-                case "telegraph":
-                {
-                    // the wind-up: the cone on the ground (edges and far end following the terrain, faint cross lines) and a
-                    // bright line sweeping out from Mo; it stays while the wave runs along it, then fades
-                    var end = to ?? at + Vector3.forward;
-                    var dir = end - at; dir.y = 0;
-                    float range = dir.magnitude;
-                    var root = Root(at, windUp + 1.2f, null);
-                    var m = root.AddComponent<ConeMarker>();
-                    m.Origin = at; m.Dir = dir.normalized; m.Range = range; m.Near = radius * 0.5f;
-                    m.Tan = Mathf.Tan(spreadDeg * Mathf.Deg2Rad); m.Sweep = Mathf.Max(0.1f, windUp);
-                    return root;
-                }
-                case "gather":
-                {
-                    // Mo scooping up sand: grains drawn in to his hands and an orange glow growing until the throw
-                    var root = Root(at, 0f, follow);
-                    var ps = Particles(root, "mat_spark", sandEdge, rate: 90, life: 0.35f, speed: 0f, size: 0.09f, shapeRadius: 2.2f, stretch: 0.2f);
-                    var vel = ps.velocityOverLifetime; vel.enabled = true; vel.space = ParticleSystemSimulationSpace.Local;
-                    vel.radial = new ParticleSystem.MinMaxCurve(-2.2f / 0.35f);
-                    vel.x = new ParticleSystem.MinMaxCurve(0f); vel.y = new ParticleSystem.MinMaxCurve(0f); vel.z = new ParticleSystem.MinMaxCurve(0f);
-                    Particles(root, "mat_dust", sandTan, rate: 10, life: 0.4f, speed: 0.5f, size: 0.5f, shapeRadius: 0.8f);
-                    var glow = Light(root, moLight, 6f, 0.5f, Vector3.zero);
-                    var g = glow.gameObject.AddComponent<GrowLight>(); g.To = 5f; g.Over = 0.4f;
-                    return root;
-                }
-                case "cast":
-                    // the throw: a shockwave ring and a flash at Mo's hands, a heavy spray of sand and grit along the throw, a shake
-                    Ring(at, moOrange, 0.3f, 4f, 0.35f, 0.5f, true);
-                    Ring(at - Vector3.up * 1f, sandEdge, 0.5f, radius, 0.4f, 0.4f);
-                    Flash(at, moLight, 14f, 0.3f, 6f);
-                    Burst(at, "mat_smoke", sandTan, 22, 0.9f, 12f, 2.4f, shapeRadius: 1f);
-                    Burst(at, "mat_dust", sandTan, 12, 0.7f, 10f, 0.5f, shapeRadius: 0.6f, gravity: 1.5f);
-                    Burst(at, "mat_spark", sandEdge, 70, 0.6f, 18f, 0.14f, shapeRadius: 0.6f, gravity: 1f);
-                    // the spray out of his hands, thrown along the cone
-                    if (to.HasValue) Spray(at, to.Value - at, sandTan, sandEdge);
-                    Shake(at, 18f, 3f, 0.35f);
-                    return null;
-                case "loop":
-                {
-                    // the wave: a tall wall of sand racing along the ground, grains flying ahead of it and dust settling behind;
-                    // SetWave moves it, turns it and sets its width. The wall is mostly mat_dust (opaque, alpha-blended) so it
-                    // reads as sand on bright ground, where additive smoke washes out
-                    var root = Root(at, 0f, null);
-                    var wave = new GameObject("wave"); wave.transform.SetParent(root.transform, false);
-                    foreach (var ps in new[]
-                    {
-                        Particles(wave, "mat_dust", sandTan, rate: 140, life: 0.45f, speed: 3f, size: 1.1f, world: true, gravity: 0.6f),
-                        Particles(wave, "mat_dust", sandEdge, rate: 70, life: 0.5f, speed: 4f, size: 0.7f, world: true, gravity: 1.2f),
-                        Particles(wave, "mat_smoke", sandTan, rate: 200, life: 0.6f, speed: 3f, size: 3f, world: true),
-                        Particles(wave, "mat_smoke", sandDark, rate: 90, life: 0.9f, speed: 1.5f, size: 2.6f, world: true),
-                        Particles(wave, "mat_spark", sandEdge, rate: 320, life: 0.5f, speed: 9f, size: 0.12f, world: true, gravity: 1f, stretch: 0.2f),
-                        Particles(wave, "mat_spark", dirt, rate: 70, life: 0.8f, speed: 8f, size: 0.22f, world: true, gravity: 2.5f, upward: true),
-                    })
-                    {
-                        var sh = ps.shape; sh.shapeType = ParticleSystemShapeType.Box; sh.scale = new Vector3(radius, 2.5f, 0.8f);
-                    }
-                    // dust left hanging on the ground where the wave has passed: it stays put (world space, no speed) and settles
-                    var trail = new GameObject("trail"); trail.transform.SetParent(root.transform, false);
-                    var settle = Particles(trail, "mat_smoke", sandTan, rate: 60, life: 1.6f, speed: 0.3f, size: 2.4f, world: true);
-                    { var sh = settle.shape; sh.shapeType = ParticleSystemShapeType.Box; sh.scale = new Vector3(radius, 0.4f, 0.4f); }
-                    // the cone's edges: sand streaks at both ends of the front
-                    foreach (var side in new[] { "edgeL", "edgeR" })
-                    {
-                        var e = new GameObject(side); e.transform.SetParent(root.transform, false);
-                        Trail(e, sandEdge, 0.7f, 0.6f);
-                        Particles(e, "mat_smoke", sandTan, rate: 40, life: 0.5f, speed: 2f, size: 1.8f, world: true, upward: true);
-                    }
-                    Light(root, moLight, 10f, 1.5f, Vector3.up);
-                    return root;
-                }
-                case "hit":
-                    // a big burst of sand and grit and a flash on each enemy the wave catches, then (SandedFx) its model
-                    // coated in sand and sand swirling round it while it is Sanded
-                    Burst(at, "mat_smoke", sandTan, 16, 0.9f, 7f, 2.4f, shapeRadius: 0.8f);
-                    Burst(at, "mat_dust", sandTan, 14, 0.8f, 8f, 0.5f, shapeRadius: 0.5f, gravity: 2f, upward: true);
-                    Burst(at, "mat_spark", sandEdge, 40, 0.5f, 12f, 0.12f, gravity: 1.5f);
-                    Burst(at, "mat_glow", moOrange, 3, 0.25f, 0f, 3f);
-                    Ring(at, sandEdge, 0.5f, 3.5f, 0.35f, 0.5f, true);
-                    Flash(at, moLight, 8f, 0.25f, 5f);
-                    if (follow && !follow.GetComponent<SandedFx>()) follow.gameObject.AddComponent<SandedFx>();
-                    return null;
-            }
-            return null;
-        }
 
         /// <summary>Move Sand Blast's wave (moment loop) to its front, facing along the cone, halfWidth to each side.</summary>
         public static void SetWave(GameObject wave, Vector3 front, Vector3 dir, float halfWidth)
@@ -915,193 +340,6 @@ namespace DeadlockOfRain
             var r = wave.transform.Find("edgeR"); if (r) r.localPosition = new Vector3(halfWidth, 0.2f, 0f);
         }
 
-        /// <summary>A one-shot spray of sand thrown from at along dir in a narrow cone (Sand Blast's throw).</summary>
-        static void Spray(Vector3 at, Vector3 dir, Color cloud, Color grains)
-        {
-            if (dir.sqrMagnitude < 0.01f) return;
-            var root = Root(at, 1.2f, null);
-            root.transform.rotation = Quaternion.LookRotation(dir);
-            foreach (var ps in new[]
-            {
-                Particles(root, "mat_smoke", cloud, count: 18, life: 0.7f, speed: 22f, size: 2.2f, world: true),
-                Particles(root, "mat_dust", cloud, count: 16, life: 0.6f, speed: 24f, size: 0.5f, world: true, gravity: 1.5f),
-                Particles(root, "mat_spark", grains, count: 60, life: 0.5f, speed: 30f, size: 0.12f, world: true, gravity: 1f, stretch: 0.25f),
-            })
-            {
-                var sh = ps.shape; sh.shapeType = ParticleSystemShapeType.Cone; sh.angle = 18f; sh.radius = 0.4f; sh.rotation = Vector3.zero;
-            }
-        }
-
-        static GameObject MokrillBurrow(string moment, Vector3 at, float radius, Transform follow)
-        {
-            switch (moment)
-            {
-                case "cast":
-                    // digging in: a burst of dirt and debris thrown up as he starts to sink, dust, a dark patch, a thump
-                    Burst(at, "mat_smoke", sandTan, 14, 1f, 6f, 1.8f, shapeRadius: 1.4f, flat: true);
-                    Burst(at, "mat_spark", dirt, 40, 1f, 10f, 0.14f, gravity: 2.5f, upward: true);
-                    Burst(at, "mat_dust", sandTan, 8, 0.8f, 5f, 0.45f, shapeRadius: 1f, gravity: 2f, upward: true);
-                    Ring(at + Vector3.up * 0.2f, sandDark, 0.5f, 3.5f, 0.35f, 0.4f);
-                    Shake(at, 12f, 1.5f, 0.25f);
-                    return null;
-                case "under":
-                    // the ground closing over him: dirt falling in, a ring drawing shut
-                    Burst(at, "mat_spark", dirt, 20, 0.6f, 4f, 0.12f, shapeRadius: 1.2f, gravity: 3f, upward: true);
-                    Burst(at, "mat_smoke", sandTan, 6, 0.8f, 1.5f, 1.5f, shapeRadius: 1f, flat: true);
-                    Ring(at + Vector3.up * 0.15f, crack, 2.5f, 0.3f, 0.3f, 0.35f);
-                    return null;
-                case "loop":
-                {
-                    // the mound travelling with him: dust boiling up, a dark crack trail, rock chunks bobbing, faint orange streaks
-                    var root = Root(at, 0f, follow);
-                    Particles(root, "mat_smoke", sandTan, rate: 18, life: 0.8f, speed: 1.6f, size: 1.4f, shapeRadius: 1.0f, world: true, upward: true);
-                    Particles(root, "mat_dust", sandTan, rate: 10, life: 0.6f, speed: 2f, size: 0.4f, shapeRadius: 0.8f, world: true, upward: true, gravity: 2f);
-                    Particles(root, "mat_spark", dirt, rate: 35, life: 0.6f, speed: 3.5f, size: 0.14f, shapeRadius: 0.9f, world: true, upward: true, gravity: 2f);
-                    Particles(root, "mat_glow", new Color32(162, 93, 34, 255), rate: 12, life: 0.4f, speed: 0.5f, size: 0.8f, shapeRadius: 0.8f, world: true, flat: true);
-                    return root;
-                }
-                case "hit":
-                    // bursting out: glowing cracks and an orange ring at the spin's reach, a flash, tan smoke and debris, a shake
-                    Ring(at + Vector3.up * 0.2f, hotCrack, 0.5f, radius, 0.45f, 0.8f);
-                    Ring(at + Vector3.up * 0.2f, new Color32(254, 132, 62, 255), 0.5f, radius * 0.6f, 0.3f, 0.5f);
-                    Burst(at, "mat_smoke", sandTan, 16, 1.2f, radius * 0.8f, 2.2f, shapeRadius: 1.5f, flat: true);
-                    Burst(at, "mat_spark", dirt, 50, 1.1f, 13f, 0.15f, gravity: 2.5f, upward: true);
-                    // a fountain of rock chunks and a column of dust thrown straight up where he breaks out
-                    Burst(at, "mat_dust", sandTan, 14, 1.4f, 16f, 0.4f, shapeRadius: 0.8f, gravity: 3f, upward: true);
-                    Burst(at + Vector3.up * 0.5f, "mat_smoke", sandTan, 10, 1f, 9f, 2f, shapeRadius: 0.6f, upward: true);
-                    Burst(at + Vector3.up * 0.1f, "mat_glow", hotCrack, 3, 0.4f, 0f, radius * 0.7f);
-                    Flash(at + Vector3.up * 1.5f, moLight, radius * 2.5f, 0.5f, 8f);
-                    Shake(at, radius * 3f, 4f, 0.5f);
-                    return null;
-            }
-            return null;
-        }
-
-        static GameObject MokrillDevil(string moment, Vector3 at, float radius, Transform follow, float pull)
-        {
-            switch (moment)
-            {
-                case "loop":
-                {
-                    // the tornado: a twisting column of sand around Mo, dust swirling at its foot, the damage ring on the
-                    // ground (area dome) and dust streaming inward from the pull's edge
-                    var root = Root(at, 0f, follow);
-                    var spin = new GameObject("spin"); spin.transform.SetParent(root.transform, false);
-                    spin.AddComponent<Spin>().DegPerSec = 720f;
-                    for (int i = 0; i < 4; i++)
-                    {
-                        var arm = new GameObject("arm" + i); arm.transform.SetParent(spin.transform, false);
-                        float a = i * 90f * Mathf.Deg2Rad;
-                        arm.transform.localPosition = new Vector3(Mathf.Cos(a), 0.6f + i * 0.9f, Mathf.Sin(a)) * 1f + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * (1.2f + i * 0.5f);
-                        Particles(arm, "mat_smoke", new Color32(214, 183, 125, 255), rate: 18, life: 0.5f, speed: 0.4f, size: 1f + i * 0.3f, world: true);
-                        Trail(arm, sandEdge, 0.3f, 0.25f);
-                    }
-                    Particles(root, "mat_smoke", sandTan, rate: 16, life: 0.8f, speed: 2.5f, size: 1.6f, shapeRadius: 2f, world: true, flat: true);
-                    var dome = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    Object.Destroy(dome.GetComponent<Collider>());
-                    dome.transform.SetParent(root.transform, false);
-                    dome.transform.localScale = Vector3.one * radius * 2f;
-                    dome.GetComponent<MeshRenderer>().sharedMaterial = Mat("mat_area", sandEdge);
-                    if (pull > radius)
-                    {
-                        // streaks from the pull's edge flowing toward him (particles thrown inward from a ring)
-                        var edge = new GameObject("pull"); edge.transform.SetParent(root.transform, false); edge.transform.localPosition = Vector3.up * 0.6f;
-                        var ps = Particles(edge, "mat_spark", sandEdge, rate: 120, life: 0.7f, speed: 0f, size: 0.12f, shapeRadius: pull, world: false, ring: true, stretch: 0.25f);
-                        var vel = ps.velocityOverLifetime; vel.enabled = true; vel.space = ParticleSystemSimulationSpace.Local;
-                        vel.radial = new ParticleSystem.MinMaxCurve(-pull / 0.7f);
-                        vel.x = new ParticleSystem.MinMaxCurve(0f); vel.y = new ParticleSystem.MinMaxCurve(0f); vel.z = new ParticleSystem.MinMaxCurve(0f);
-                    }
-                    Light(root, moLight, radius * 1.5f, 1.2f, Vector3.up * 2f);
-                    return root;
-                }
-                case "cast":
-                case "end":
-                    Burst(at, "mat_smoke", sandTan, 10, 0.8f, 6f, 1.6f, shapeRadius: 1.5f, flat: true);
-                    Ring(at + Vector3.up * 0.3f, sandEdge, 0.5f, radius, 0.35f, 0.5f);
-                    return null;
-                case "hit":
-                    Burst(at, "mat_dust", sandTan, 2, 0.35f, 2f, 0.5f, shapeRadius: 0.3f);
-                    return null;
-            }
-            return null;
-        }
-
-        static GameObject MokrillKrill(string moment, Vector3 at, float radius, Vector3? to)
-        {
-            switch (moment)
-            {
-                case "cast":
-                    Burst(at, "mat_glow", krillOrange, 3, 0.2f, 0f, 1.2f);
-                    Burst(at, "mat_dust", sandTan, 4, 0.5f, 3f, 0.6f);
-                    return null;
-                case "hop":
-                {
-                    // Krill flying in an arc from where he took off (to) to where he lands (at), tumbling, with an orange trail;
-                    // radius carries the flight time
-                    var from = to ?? at;
-                    float time = Mathf.Max(0.1f, radius);
-                    var root = Root(from, time + 0.05f, null);
-                    var fig = Equipment.FigureFor("mokrill_krill");
-                    if (fig)
-                    {
-                        var k = Object.Instantiate(fig, root.transform);
-                        k.SetActive(true);
-                        k.transform.localPosition = Vector3.zero;
-                        k.transform.localScale = Vector3.one * 0.6f;
-                        var spin = k.AddComponent<Spin>(); spin.DegPerSec = 540f;
-                    }
-                    Trail(root, krillOrange, 0.4f, 0.3f);
-                    Particles(root, "mat_spark", krillArc, rate: 60, life: 0.3f, speed: 1f, size: 0.08f, world: true);
-                    var arc = root.AddComponent<ArcMover>(); arc.From = from; arc.To = at; arc.Time = time; arc.Height = 2f + Vector3.Distance(from, at) * 0.15f;
-                    return null;
-                }
-                case "hit":
-                    // the landing: an orange ring, electric arcs, a flash, the splash's reach on the ground
-                    Ring(at, krillOrange, 0.3f, radius, 0.35f, 0.4f);
-                    Burst(at, "mat_spark", krillArc, 20, 0.35f, 9f, 0.08f);
-                    for (int i = 0; i < 3; i++) Bolt(at, at + Random.onUnitSphere * radius * 0.6f, new Color32(255, 155, 34, 255), 0.15f, 0.15f, 5);
-                    Burst(at, "mat_glow", krillOrange, 2, 0.2f, 0f, radius);
-                    Flash(at, krillOrange, radius * 3f, 0.25f, 5f);
-                    return null;
-                case "end":
-                    Burst(at, "mat_dust", sandTan, 5, 0.5f, 3f, 0.6f);
-                    return null;
-            }
-            return null;
-        }
-
-        static GameObject MokrillPunch(string moment, Vector3 at, float radius, Transform follow)
-        {
-            switch (moment)
-            {
-                case "hit":
-                    // a Frenzy punch landing: a red-orange flash, a burst of sparks and dust, a small shockwave
-                    Burst(at, "mat_dust", sandTan, 4, 0.5f, 5f, 0.7f, shapeRadius: 0.3f);
-                    Burst(at, "mat_glow", frenzyRed, 2, 0.2f, 0f, 2.4f);
-                    Burst(at, "mat_spark", frenzyEmber, 18, 0.35f, 11f, 0.08f);
-                    Ring(at, frenzyEmber, 0.3f, 2.5f, 0.25f, 0.3f, true);
-                    Flash(at, frenzyRed, 6f, 0.15f, 4f);
-                    return null;
-                case "frenzy":
-                {
-                    // Mo's Frenzy (Krill is away): red embers rising around him, a pulsing red ring at his feet, a red glow
-                    var root = Root(at, 0f, follow);
-                    var feet = new GameObject("feet"); feet.transform.SetParent(root.transform, false);
-                    if (follow) feet.transform.localPosition = at - follow.position;
-                    float r = Mathf.Max(1f, radius);
-                    Particles(feet, "mat_glow", frenzyEmber, rate: 30, life: 0.9f, speed: 2.5f, size: 0.3f, shapeRadius: r, world: true, upward: true);
-                    Particles(feet, "mat_spark", frenzyRed, rate: 45, life: 0.5f, speed: 4f, size: 0.07f, shapeRadius: r, world: true, upward: true, stretch: 0.2f);
-                    Particles(feet, "mat_glow", frenzyRed, rate: 6, life: 0.5f, speed: 0f, size: r * 2.2f);
-                    var ring = new GameObject("ring"); ring.transform.SetParent(feet.transform, false); ring.transform.localPosition = Vector3.up * 0.1f;
-                    Circle(ring.transform, frenzyRed, r * 1.3f, 0.15f);
-                    ring.AddComponent<Pulse>().Speed = 4f;
-                    Light(feet, frenzyRed, r * 5f, 2.5f, Vector3.up * 1.5f).gameObject.AddComponent<Flicker>();
-                    return root;
-                }
-            }
-            return null;
-        }
-
         /// <summary>A Sanded enemy while the buff lasts (read from the synced buff, so every player sees it): its whole model
         /// coated in sand (a TemporaryOverlay of mat_sand_overlay), sand swirling round its head and pouring off it.</summary>
         sealed class SandedFx : MonoBehaviour
@@ -1118,10 +356,13 @@ namespace DeadlockOfRain
                 root = Root(head, 0f, body.coreTransform ? body.coreTransform : transform);
                 var spin = new GameObject("spin"); spin.transform.SetParent(root.transform, false); spin.transform.localPosition = Vector3.up * r;
                 spin.AddComponent<Spin>().DegPerSec = 300f;
-                Particles(spin, "mat_dust", sandTan, rate: 45, life: 0.6f, speed: 0.2f, size: 0.6f, shapeRadius: r * 1.2f, ring: true);
-                Particles(spin, "mat_spark", sandEdge, rate: 60, life: 0.5f, speed: 0.3f, size: 0.09f, shapeRadius: r * 1.2f, ring: true);
-                // sand pouring off the body
-                Particles(root, "mat_dust", sandTan, rate: 20, life: 0.7f, speed: 0.5f, size: 0.35f, shapeRadius: r, world: true, gravity: 1.5f);
+                // digger_throw_sand_debuff: cartoon sand clouds and grit whirling round its head, sand pouring off it
+                Emit(spin, new P { Mat = Soft("fx_cloud", Color.white), Rate = 8, LifeMin = 0.6f, LifeMax = 0.9f, SpeedMin = 0.1f, SpeedMax = 0.3f, SizeMin = 0.5f, SizeMax = 0.85f,
+                                   A = moSand, B = moSandEnd, Shape = Shape.Ring, Radius = r * 1.2f, World = false, Size0 = 0.6f, Size1 = 1.3f, FadeIn = 0.15f, FadeOutFrom = 0.4f, Max = 9 }, "clouds");
+                Emit(spin, new P { Mat = Mat("mat_spark", sandEdge), Rate = 22, LifeMin = 0.4f, LifeMax = 0.5f, SpeedMin = 0.2f, SpeedMax = 0.4f, SizeMin = 0.07f, SizeMax = 0.1f,
+                                   A = Hex("FFBF9A"), B = Hex("EC9749"), Shape = Shape.Ring, Radius = r * 1.2f, World = false, Max = 12 }, "grit");
+                Emit(root, new P { Mat = Soft("fx_fleks", Color.white), Rate = 9, LifeMin = 0.5f, LifeMax = 0.8f, SpeedMin = 0.2f, SpeedMax = 0.6f, SizeMin = 0.08f, SizeMax = 0.16f,
+                                   A = sandTan, B = sandDark, Radius = r, Gravity = 1.5f, FadeIn = 0.02f, FadeOutFrom = 0.8f, TilesX = 8, TilesY = 8, Max = 8 }, "pour");
                 Coat();
             }
 
@@ -1300,6 +541,7 @@ namespace DeadlockOfRain
         public static void Preload()
         {
             foreach (var e in EffectRow.All) if (e.Kind == "material") Mat(e.Id, Color.white);
+            WarmKit();
             WarmHeroFx();
         }
 
@@ -1317,6 +559,11 @@ namespace DeadlockOfRain
             float speed = 1f, float size = 0.5f, float shapeRadius = 0f, bool world = false, bool flat = false, bool upward = false,
             bool down = false, float gravity = 0f, float stretch = 0f, bool ring = false)
         {
+            if (IsFireMat(mat) && !down)
+            {
+                var flames = FlameEmit(parent, c, rate, count, life, speed, size, shapeRadius, world, flat, upward, ring);
+                if (flames) return flames;
+            }
             var go = new GameObject("ps");
             go.transform.SetParent(parent.transform, false);
             var ps = go.AddComponent<ParticleSystem>();
@@ -1365,12 +612,33 @@ namespace DeadlockOfRain
             return ps;
         }
 
-        /// <summary>A one-shot burst of particles at a point that cleans itself up.</summary>
+        /// <summary>A one-shot burst of particles at a point that cleans itself up. Since the 2026-11 rebuild (docs/VfxRebuild)
+        /// the two commonest kinds are drawn the way Deadlock draws them: a still glow (mat_glow, no speed) is one soft glow
+        /// quad with a star core instead of a few stacked sprites, and smoke (mat_smoke) is Deadlock's cartoon cloud, fewer and
+        /// swelling as they thin. Other materials are RoR2's as before, their counts following the effects quality.</summary>
         public static void Burst(Vector3 at, string mat, Color c, int count, float life, float speed, float size, float shapeRadius = 0.2f,
             bool flat = false, bool upward = false, float gravity = 0f)
         {
+            if (mat == "mat_glow" && speed <= 0.01f && gravity == 0f)
+            {
+                float s = Mathf.Min(size, 14f);
+                QuadAt(at, Glow("fx_glow", new Color(c.r, c.g, c.b, Mathf.Min(c.a, 0.65f))), s * 0.5f, s * 1.05f, Mathf.Max(0.1f, life), Face.Camera, 0f, 0.1f, 0.3f);
+                if (count >= 3 && Rich) QuadAt(at, Glow("fx_star", new Color(c.r, c.g, c.b, Mathf.Min(c.a, 0.7f))), s * 0.3f, s * 0.9f, Mathf.Max(0.08f, life * 0.7f), Face.Camera, 0f, 0.05f, 0.3f, Random.Range(0f, 360f));
+                return;
+            }
+            // dust only (grey, tan): coloured magic smoke stays RoR2's smoke. As cartoon clouds Wraith's purple smoke drew as flat pink blobs (2026-11-13)
+            if (mat == "mat_smoke" && gravity == 0f && Mathf.Max(c.r, Mathf.Max(c.g, c.b)) - Mathf.Min(c.r, Mathf.Min(c.g, c.b)) < 0.22f)
+            {
+                int n = Mathf.Max(2, Mathf.RoundToInt(count * 0.45f));   // big see-through clouds cost frames by the area they cover: fewer, thinner (Billy's slam, 2026-11-13)
+                float a = Mathf.Min(c.a, 0.5f);
+                Puff(at, new P { Mat = Soft("fx_cloud", Color.white), Count = n, LifeMin = life * 0.7f, LifeMax = life * 1.1f, SpeedMin = speed * 0.4f, SpeedMax = speed,
+                                 SizeMin = size * 0.7f, SizeMax = size * 1.1f, A = new Color(c.r, c.g, c.b, a), B = new Color(c.r * 0.85f, c.g * 0.85f, c.b * 0.85f, a * 0.35f),
+                                 FadeIn = 0.08f, FadeOutFrom = 0.4f, Size0 = 0.5f, Size1 = 1.45f, Shape = flat ? Shape.Disc : upward ? Shape.Up : Shape.Sphere, Angle = 60f,
+                                 Radius = Mathf.Max(0.05f, shapeRadius), Drag = 1.8f, SpinMin = -0.5f, SpinMax = 0.5f, Max = n + 2 });
+                return;
+            }
             var root = Root(at, life + 0.2f, null);
-            Particles(root, mat, c, count: count, life: life, speed: speed, size: size, shapeRadius: shapeRadius, world: true, flat: flat, upward: upward, gravity: gravity);
+            Particles(root, mat, c, count: N(count), life: life, speed: speed, size: size, shapeRadius: shapeRadius, world: true, flat: flat, upward: upward, gravity: gravity);
         }
 
         static TrailRenderer Trail(GameObject parent, Color c, float width, float time)
@@ -1421,14 +689,16 @@ namespace DeadlockOfRain
         }
 
         /// <summary>An expanding, fading ring (a shockwave), flat on the ground or facing the camera-ish (vertical).</summary>
+        /// <remarks>Since the 2026-11 rebuild this is one quad with Deadlock's shockwave ring on it (a thick one for wide rings)
+        /// instead of a 64-point line: laid on the terrain's slope when the ground is just below, level in the air otherwise.</remarks>
         public static void Ring(Vector3 at, Color c, float from, float to, float life, float width, bool vertical = false)
         {
-            var root = Root(at, life, null);
-            var lr = Circle(root.transform, c, 1f, width, 64);
-            if (vertical) lr.transform.localRotation = Quaternion.Euler(90f, 0, 0);
-            var g = lr.gameObject.AddComponent<RingGrow>();
-            g.From = from; g.To = to; g.Life = life; g.Width = width;
-            lr.transform.localScale = Vector3.one * from;
+            var mat = Glow(width >= 0.8f ? "fx_ring_thick" : "fx_ring", c);
+            if (vertical) { QuadAt(at, mat, from * 2f, to * 2f, life, Face.Camera, 0f, 0.05f, 0.3f); return; }
+            if (Physics.Raycast(at + Vector3.up * 0.5f, Vector3.down, 1.7f, RoR2.LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
+            { QuadAt(at, mat, from * 2f, to * 2f, life, Face.Ground, 0f, 0.05f, 0.3f); return; }
+            var root = Root(at, life + 0.1f, null);
+            Quad(root, mat, from * 2f, to * 2f, life, Face.Ground, 0f, 0.05f, 0.3f);
         }
 
         /// <summary>A jagged lightning bolt between two points that flickers and fades.</summary>
@@ -1448,6 +718,7 @@ namespace DeadlockOfRain
 
         public static void Flash(Vector3 at, Color c, float range, float life, float intensity = 4f)
         {
+            if (Alive > 110) return;   // a great many effects alive (four ults at once): the flash lights go first
             var root = Root(at, life, null);
             var l = Light(root, c, range, intensity, Vector3.zero);
             var f = l.gameObject.AddComponent<FadeLight>(); f.Life = life; f.From = intensity;
@@ -1474,6 +745,8 @@ namespace DeadlockOfRain
         {
             public Transform Follow; public bool Following; public float Life;
             float age;
+            void OnEnable() { Alive++; }
+            void OnDisable() { Alive--; }
             void LateUpdate()
             {
                 age += Time.deltaTime;
@@ -1494,7 +767,12 @@ namespace DeadlockOfRain
             foreach (var l in go.GetComponentsInChildren<Light>()) { var f = l.gameObject.AddComponent<FadeLight>(); f.Life = 0.3f; f.From = l.intensity; }
             foreach (var lr in go.GetComponentsInChildren<LineRenderer>()) lr.enabled = false;
             // solid models riding on the visual (Napalm's bottle) vanish with the thing they belong to
-            foreach (var mr in go.GetComponentsInChildren<MeshRenderer>()) mr.enabled = false;
+            foreach (var mr in go.GetComponentsInChildren<MeshRenderer>())
+            {
+                // the kit's quads fade out by themselves instead of blinking off
+                var q = mr.GetComponent<QuadFx>();
+                if (q) q.FadeOut(Mathf.Min(0.25f, linger)); else mr.enabled = false;
+            }
             var life = go.GetComponent<VfxLife>();
             if (life) { life.Following = false; }
             Object.Destroy(go, linger);

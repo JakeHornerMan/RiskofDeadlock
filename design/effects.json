@@ -1,6 +1,6 @@
 {
   "sheet": "effects",
-  "about": "Visual effect ids used by skills.effect/vfx/extra. Deadlock's particle systems (.vpcf) are never read or copied: visuals reuse Risk of Rain 2's own effect prefabs and materials (Addressables keys checked against the installed catalog.json) or are built by our own code in Unity (kind custom: plugin/Runtime/Vfx.cs, made to look like Deadlock). kind: tracer (bullet line muzzle->hit), impact (one-shot at a point, scaled by radius when scaleWithRadius), ghost (attached visual that follows a mod-simulated projectile), orb (RoR2 OrbManager lightning orb), trail (vanilla DamageTrail fire trail), attachment (a RoR2 NetworkedBodyAttachment put on the hero), ward (a RoR2 BuffWard placed on the ground), material (a RoR2 material our custom visuals are drawn with), custom (built by Vfx.cs; addressable none), none. prop: a Deadlock model the extractor reads from the player's install as a plain mesh (addressable = its vmdl path; extractor 1.5.0+), drawn by Vfx with our own materials; a prop that could not be read falls back to a simple shape. meshes / clips (props only, extractor 1.6.0+): the model's meshes to read (none = all) and the clips to read with its skeleton (none = a still mesh): Rat King's rat runs and leaps, his banner's sewer rises out of the ground. tint: a RoR2 prefab (tracer, impact) recoloured to this colour (#RRGGBB) as our own copy, registered as an effect of the mod (Fx.Prefab); its materials' colour ramps are redrawn in it (Seven's yellow Shock Rifle tracer), none = as RoR2 has it. texture: a Deadlock particle texture the extractor reads like an icon (addressable = its vtex path; no new extractor), drawn by Vfx with the Sprites/Default shader: Wraith's card suits (a 4 x 4 sheet: club, diamond, heart, spade across the top), her eye sigil, the Full Auto ring and her eye.",
+  "about": "Visual effect ids used by skills.effect/vfx/extra. Deadlock's particle systems (.vpcf) are never exported or shipped; since the 2026-11 VFX rebuild (docs/VfxRebuild) they are read on the dev PC as reference for colours, layers and timing, and Deadlock's particle textures are drawn (kind texture, ids starting fx_ are shared by every hero). Visuals reuse Risk of Rain 2's own effect prefabs and materials (Addressables keys checked against the installed catalog.json) or are built by our own code in Unity (kind custom: plugin/Runtime/Vfx*.cs and the kit in VfxKit.cs). kind: tracer (bullet line muzzle->hit), impact (one-shot at a point, scaled by radius when scaleWithRadius), ghost (attached visual that follows a mod-simulated projectile), orb (RoR2 OrbManager lightning orb), trail (vanilla DamageTrail fire trail), attachment (a RoR2 NetworkedBodyAttachment put on the hero), ward (a RoR2 BuffWard placed on the ground), material (a RoR2 material our custom visuals are drawn with), custom (built by Vfx.cs; addressable none), none. prop: a Deadlock model the extractor reads from the player's install as a plain mesh (addressable = its vmdl path; extractor 1.5.0+), drawn by Vfx with our own materials; a prop that could not be read falls back to a simple shape. meshes / clips (props only, extractor 1.6.0+): the model's meshes to read (none = all) and the clips to read with its skeleton (none = a still mesh): Rat King's rat runs and leaps, his banner's sewer rises out of the ground. tint: a RoR2 prefab (tracer, impact) recoloured to this colour (#RRGGBB) as our own copy, registered as an effect of the mod (Fx.Prefab); its materials' colour ramps are redrawn in it (Seven's yellow Shock Rifle tracer), none = as RoR2 has it. texture: a Deadlock particle texture the extractor reads like an icon (addressable = its vtex path; no new extractor), drawn by Vfx with the Sprites/Default shader: Wraith's card suits (a 4 x 4 sheet: club, diamond, heart, spade across the top), her eye sigil, the Full Auto ring and her eye.",
   "columns": [
     "id",
     "kind",
@@ -31,7 +31,7 @@
       "kind": "tracer",
       "addressable": "RoR2/Base/Commando/TracerCommandoDefault.prefab",
       "scaleWithRadius": false,
-      "tint": "none",
+      "tint": "#FFB04A",
       "notes": "SMG tracer",
       "meshes": [
         "none"
@@ -59,7 +59,7 @@
       "kind": "tracer",
       "addressable": "RoR2/Base/Huntress/TracerHuntressSnipe.prefab",
       "scaleWithRadius": false,
-      "tint": "#FFD633",
+      "tint": "#FFA53F",
       "notes": "Shock Rifle: Huntress' snipe tracer, an electric line, recoloured Deadlock yellow (the creator kept its look in the 0.9.1a redesign)",
       "meshes": [
         "none"
@@ -213,7 +213,7 @@
       "kind": "ghost",
       "addressable": "RoR2/Base/Mage/MageLightningBombGhost.prefab",
       "scaleWithRadius": false,
-      "tint": "#FFD633",
+      "tint": "#FFA53F",
       "notes": "Lightning Ball's core: Artificer's lightning bomb, recoloured Deadlock yellow",
       "meshes": [
         "none"
@@ -269,7 +269,7 @@
       "kind": "impact",
       "addressable": "RoR2/Base/Common/VFX/OmniImpactVFXLightning.prefab",
       "scaleWithRadius": false,
-      "tint": "#FFD633",
+      "tint": "#FFA53F",
       "notes": "the same lightning impact in Deadlock yellow: Seven's Lightning Ball and Storm Cloud shocks (Thunderhead keeps storm_strike)",
       "meshes": [
         "none"
@@ -1724,8 +1724,8 @@
       "clips": [
         "none"
       ],
-      "tint": "#B48CFF",
-      "notes": "The Black Sheep's pellet tracers, Commando's tracer in Pocket's lilac"
+      "tint": "#FFB23E",
+      "notes": "The Black Sheep's pellet tracers, Commando's tracer in the gold of Deadlock's pellets (pocket_tracer)"
     },
     {
       "id": "pocket_gun",
@@ -2190,6 +2190,440 @@
       ],
       "tint": "none",
       "notes": "The green text streak scorched on the floor along the wyvern's burning trail"
+    },
+    {
+      "id": "fx_glow",
+      "kind": "texture",
+      "addressable": "materials/particle/particle_glow_04.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared Deadlock particle texture: round soft glow (cores, flashes)"
+    },
+    {
+      "id": "fx_glow_soft",
+      "kind": "texture",
+      "addressable": "materials/particle/glows/glow07.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: wide faint glow (halos)"
+    },
+    {
+      "id": "fx_star",
+      "kind": "texture",
+      "addressable": "materials/particle/glows/glow03.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: spiky star burst (impact flashes)"
+    },
+    {
+      "id": "fx_flare",
+      "kind": "texture",
+      "addressable": "materials/particle/particle_flares/particle_flare_001.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: small hot flare with rays (muzzle and hit cores)"
+    },
+    {
+      "id": "fx_flare_wide",
+      "kind": "texture",
+      "addressable": "materials/particle/particle_flares/particle_flare_006_white.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: wide horizontal flare (muzzle flashes, glints)"
+    },
+    {
+      "id": "fx_ring",
+      "kind": "texture",
+      "addressable": "materials/particle/particle_ring_wave.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: clean shockwave ring"
+    },
+    {
+      "id": "fx_ring_burst",
+      "kind": "texture",
+      "addressable": "materials/particle/particle_ring_wavy6.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: spiky burst ring (impacts, casts)"
+    },
+    {
+      "id": "fx_ring_spiral",
+      "kind": "texture",
+      "addressable": "materials/particle/ring/particle_ring_spiral.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: swirling ring (vortexes, charge-ups)"
+    },
+    {
+      "id": "fx_swoop",
+      "kind": "texture",
+      "addressable": "materials/particle/swoop_09.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: curved swoop (melee cuts, spinning edges)"
+    },
+    {
+      "id": "fx_cloud",
+      "kind": "texture",
+      "addressable": "materials/particle/smoke/clouds/cartoon_cloud.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: Deadlock's cartoon cloud puff (smoke, dust)"
+    },
+    {
+      "id": "fx_puff",
+      "kind": "texture",
+      "addressable": "materials/particle/alpha/alpha_puddle.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: soft blotch (gas, ground stains)"
+    },
+    {
+      "id": "fx_plasma",
+      "kind": "texture",
+      "addressable": "materials/particle/beam_plasma_06.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: plasma wisps (energy, magic smoke)"
+    },
+    {
+      "id": "fx_arc",
+      "kind": "texture",
+      "addressable": "materials/particle/electricity/electric_beam_arc_stylized.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: two stylised lightning arcs (cut out per arc)"
+    },
+    {
+      "id": "fx_fleks",
+      "kind": "texture",
+      "addressable": "materials/particle/impact/fleks3.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: 8 x 8 sheet of debris flecks"
+    },
+    {
+      "id": "fx_spin",
+      "kind": "texture",
+      "addressable": "materials/particle/spin_generic_01.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: spinning fan (whirling blades, spin-ups)"
+    },
+    {
+      "id": "fx_dust",
+      "kind": "texture",
+      "addressable": "materials/particle/dust/dust_alpha.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: wispy dust"
+    },
+    {
+      "id": "fx_smoke",
+      "kind": "texture",
+      "addressable": "materials/particle/smoke1/smoke1.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: smoke puff atlas (cut out per puff)"
+    },
+    {
+      "id": "fx_beam",
+      "kind": "texture",
+      "addressable": "materials/particle/beam_generic_2.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: soft-edged beam strip (ribbons, tracers)"
+    },
+    {
+      "id": "haze_dagger_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/abilities/haze/haze_dagger.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Haze's Sleep Dagger blade shape, glowing around the thrown knife"
+    },
+    {
+      "id": "haze_gun",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Haze's SMGs: an amber anime muzzle flare, star sparks on hits, chips off walls"
+    },
+    {
+      "id": "haze_smoke",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Smoke Bomb: a burst of inky nightmare smoke, a pale flash, a tan ground ring, dream sand"
+    },
+    {
+      "id": "haze_fixation",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Fixation: an amber sight closing on the first stack; a burst ring and orange streaks at ten"
+    },
+    {
+      "id": "abrams_paper_tex",
+      "kind": "texture",
+      "addressable": "materials/particle/paper/paper_sheet.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "The pages of Abrams' book (4 x 4 tumbling sheets), thrown up by Seismic Impact and Siphon Life"
+    },
+    {
+      "id": "fx_muzzle",
+      "kind": "texture",
+      "addressable": "materials/particle/muzzle/muzzle_flash.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: ragged muzzle flash"
+    },
+    {
+      "id": "fx_fire",
+      "kind": "texture",
+      "addressable": "materials/particle/fire/fire_stylized/fire_stylized_licks.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: Deadlock's three stylised flame licks (cut out and drawn as rising tongues of fire)"
+    },
+    {
+      "id": "fx_ring_thick",
+      "kind": "texture",
+      "addressable": "materials/particle/particle_heroring_bad.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: thick soft ring (shields, heavy shockwaves)"
+    },
+    {
+      "id": "fx_ring_soft",
+      "kind": "texture",
+      "addressable": "materials/particle/particle_ring_softouter.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: ring with a soft outer edge"
+    },
+    {
+      "id": "fx_glyphs",
+      "kind": "texture",
+      "addressable": "materials/particle/glyphs/deadlock_glyphs.vtex",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Shared: Deadlock's 4 x 4 sheet of occult glyphs"
+    },
+    {
+      "id": "abrams_gun",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Abrams' shotgun: a ragged orange flash with hot gas, embers and smoke; orange sparks on hits"
+    },
+    {
+      "id": "abrams_siphon",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Siphon Life: his book opens: a blue wave on the ground, a glyph, blue motes, pages, a flick of crimson"
+    },
+    {
+      "id": "seven_gun",
+      "kind": "custom",
+      "addressable": "none",
+      "scaleWithRadius": false,
+      "meshes": [
+        "none"
+      ],
+      "clips": [
+        "none"
+      ],
+      "tint": "none",
+      "notes": "Seven's rifle: a lick of orange plasma and a small arc at the muzzle; a star, an arc and sparks on hits"
     }
   ]
 }

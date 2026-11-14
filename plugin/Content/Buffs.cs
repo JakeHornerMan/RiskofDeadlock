@@ -154,6 +154,8 @@ namespace DeadlockOfRain
             // server only: every player sees the flash and arcs through the relay
             var color = Sheet.Color(row.Color);
             Relay.Flash(victim.corePosition, color, 6f, 0.25f);
+            // the buff's own burst (Haze's Fixation), where it has one
+            if (row.Vfx != "none") Relay.Vfx(row.Vfx, "trigger", victim.corePosition, row.TriggerRadius);
             foreach (var hb in hit)
             {
                 var b = hb.healthComponent.body;

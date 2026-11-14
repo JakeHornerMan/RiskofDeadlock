@@ -115,6 +115,7 @@ namespace DeadlockOfRain
                 Fx.Stun(hb.healthComponent, row.StunDuration);
             }
             Fx.Impact("stun", at);
+            Vfx.Play(row.Vfx, "hit", at);
             Fx.Sound(row.Id, "hit", at);
         }
 

@@ -24,6 +24,15 @@ OUT="$(cygpath -aw "$(dirname "$0")/../build")\\bench_results.txt"
 # ULTS=1: the ult bench (every hero's Q and Commando's Preon once, against 30 enemies + a Beetle Queen) into build/bench_ults.txt;
 # copy it to docs/ult-bench.txt for the pages' "just for fun" table (tools/kit_pages.py). Never merge it into the DPS library.
 [ -n "$ULTS" ] && OUT="$(cygpath -aw "$(dirname "$0")/../build")\\bench_ults.txt"
+# FPS=1 tools/run_bench.sh 12 haze: the fps bench instead (docs/VfxRebuild/README.md): always STAGE (golemplains), the same spot,
+# a pack that cannot die, no frame cap; per hero the passes idle, M1, M2, Shift, R, Q, all, x4 into build/fps_results.txt
+# (FPSOUT=<file> for another name). SHOTS=<folder> also saves a timed run of screenshots of each move there. DLL=<file> runs
+# that build (dev_run.sh). Compare two results with tools/fps_compare.py.
+FPSDIR=""
+if [ -n "$FPS" ]; then
+  OUT="$(cygpath -aw "$(dirname "$0")/../build")\\fps_results.txt"; [ -n "$FPSOUT" ] && OUT="$(cygpath -aw "$FPSOUT")"
+  [ -n "$SHOTS" ] && { mkdir -p "$SHOTS"; FPSDIR="$(cygpath -aw "$SHOTS")"; }
+fi
 B="$LOCALAPPDATA/DeadlockOfRain/bench.json"
 . "$(dirname "$0")/game_guard.sh"
 guard_open_game
@@ -32,12 +41,12 @@ rm -f "$L" "$(cygpath -u "$OUT")"
 rm -f "$LOCALAPPDATA/Melty/test/deadlock-of-rain.json" "$LOCALAPPDATA/Melty/test/risk-of-deadlock-2.json"
 mkdir -p "$LOCALAPPDATA/DeadlockOfRain"
 MODE=heroes; [ -n "$BASE" ] && MODE=""; [ -n "$ALL" ] && MODE=all
-printf '{ "out": "%s", "seconds": %s, "only": "%s", "portraits": "%s", "survivors": "%s", "repeat": %s, "ults": %s }\n' "${OUT//\\/\\\\}" "$SECS" "$ONLY" "${PDIR//\\/\\\\}" "$MODE" "${REPEAT:-1}" "${ULTS:-0}" >"$B"
+printf '{ "out": "%s", "seconds": %s, "only": "%s", "portraits": "%s", "survivors": "%s", "repeat": %s, "ults": %s, "fps": %s, "stage": "%s", "shots": "%s" }\n' "${OUT//\\/\\\\}" "$SECS" "$ONLY" "${PDIR//\\/\\\\}" "$MODE" "${REPEAT:-1}" "${ULTS:-0}" "${FPS:-0}" "${STAGE:-}" "${FPSDIR//\\/\\\\}" >"$B"
 bash "$(dirname "$0")/dev_run.sh" /nonexistent 3 || { rm -f "$B"; exit 1; }
 for i in $(seq 1 40); do tasklist | grep -qi "Risk of Rain" && break; sleep 3; done
 tasklist | grep -qi "Risk of Rain" || { echo "NOT_STARTED (is Steam signed in?)"; rm -f "$B"; bash "$(dirname "$0")/lab_restore.sh" >/dev/null 2>&1; exit 1; }
 # give up after 40 minutes, or 100 minutes per repeat for the whole library
-WAIT=800; [ -n "$ALL" ] && WAIT=$((2000 * ${REPEAT:-1}))
+WAIT=800; [ -n "$FPS" ] && WAIT=1600; [ -n "$ALL" ] && WAIT=$((2000 * ${REPEAT:-1}))
 for i in $(seq 1 $WAIT); do
   grep -qE "DPS bench finished|DPS bench: FAILED" "$L" 2>/dev/null && break
   tasklist | grep -qi "Risk of Rain" || { echo GAME_EXITED; break; }

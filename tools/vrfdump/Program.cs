@@ -66,6 +66,88 @@ switch (mode)
         File.WriteAllText(outp, txt);
         break;
     }
+    case "texts":
+    {
+        // every particle recipe (.vpcf) whose path contains <path>, decompiled to text in the folder <out> (docs/VfxRebuild/README.md);
+        // "pngs" does the same for textures (.vtex). Looked at only; never copied into the repo.
+        Directory.CreateDirectory(outp);
+        foreach (var e in package.Entries.Where(kv => kv.Key == "vpcf_c").SelectMany(kv => kv.Value))
+        {
+            var full = e.GetFullPath();
+            if (!full.Contains(path, StringComparison.OrdinalIgnoreCase)) continue;
+            try
+            {
+                var res = loader.LoadFileCompiled(full.Substring(0, full.Length - 2));
+                File.WriteAllText(Path.Combine(outp, Path.GetFileNameWithoutExtension(full) + ".txt"), res.DataBlock is BinaryKV3 kv3 ? kv3.ToString() : res.DataBlock.ToString());
+            }
+            catch (Exception ex) { Console.WriteLine("failed " + full + ": " + ex.Message); }
+        }
+        break;
+    }
+    case "pngs":
+    {
+        Directory.CreateDirectory(outp);
+        foreach (var e in package.Entries.Where(kv => kv.Key == "vtex_c").SelectMany(kv => kv.Value))
+        {
+            var full = e.GetFullPath();
+            if (!full.Contains(path, StringComparison.OrdinalIgnoreCase)) continue;
+            try
+            {
+                var res = loader.LoadFileCompiled(full.Substring(0, full.Length - 2));
+                using var bmp = ((Texture)res.DataBlock).GenerateBitmap();
+                File.WriteAllBytes(Path.Combine(outp, Path.GetFileNameWithoutExtension(full) + ".png"), TextureExtract.ToPngImage(bmp));
+            }
+            catch (Exception ex) { Console.WriteLine("failed " + full + ": " + ex.Message); }
+        }
+        break;
+    }
+    case "cacheimages":
+    {
+        // every image of a manifest (<path> = extractor/manifest.json) that the cache folder <out> does not hold yet, exported the way
+        // the extractor does (png, at most 512 px, the same file name): adds effect textures to a dev cache without a full rebuild
+        var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+        Directory.CreateDirectory(outp);
+        int added = 0, missing = 0;
+        foreach (var el in doc.RootElement.GetProperty("images").EnumerateArray())
+        {
+            var img = el.GetString();
+            var f = Path.Combine(outp, img.Replace(".vtex", "").Replace('/', '_') + ".png");
+            if (File.Exists(f)) continue;
+            try
+            {
+                var res = loader.LoadFileCompiled(img);
+                if (res?.DataBlock is not Texture tex) { missing++; continue; }
+                using var bmp = tex.GenerateBitmap();
+                if (bmp.Width <= 512 && bmp.Height <= 512) File.WriteAllBytes(f, TextureExtract.ToPngImage(bmp));
+                else
+                {
+                    float k = 512f / Math.Max(bmp.Width, bmp.Height);
+                    var info = new SkiaSharp.SKImageInfo(Math.Max(1, (int)(bmp.Width * k)), Math.Max(1, (int)(bmp.Height * k)), SkiaSharp.SKColorType.Rgba8888, SkiaSharp.SKAlphaType.Unpremul);
+                    using var scaled = bmp.Resize(info, new SkiaSharp.SKSamplingOptions(SkiaSharp.SKCubicResampler.Mitchell));
+                    File.WriteAllBytes(f, TextureExtract.ToPngImage(scaled));
+                }
+                added++;
+            }
+            catch (Exception) { missing++; }
+        }
+        Console.WriteLine($"images added {added}, not in this source {missing}");
+        break;
+    }
+    case "sheet":
+    {
+        // a texture's size and its sprite-sheet frames (sequence: frame rects in 0..1), to cut a flipbook in Unity
+        var res = loader.LoadFileCompiled(path);
+        var tex = (Texture)res.DataBlock;
+        Console.WriteLine($"{path}: {tex.Width}x{tex.Height} {tex.Format}");
+        var sd = tex.GetSpriteSheetData();
+        if (sd == null) { Console.WriteLine("  no sprite sheet"); break; }
+        for (int i = 0; i < sd.Sequences.Length; i++)
+        {
+            var q = sd.Sequences[i];
+            Console.WriteLine($"  seq {i}: {q.Frames.Length} frames: " + string.Join(" ", q.Frames.Take(4).Select(fr => fr.Images.Length > 0 ? $"[{fr.Images[0].CroppedMin.X:F3},{fr.Images[0].CroppedMin.Y:F3}-{fr.Images[0].CroppedMax.X:F3},{fr.Images[0].CroppedMax.Y:F3}]" : "[]")));
+        }
+        break;
+    }
     case "png":
     {
         var res = loader.LoadFileCompiled(path);

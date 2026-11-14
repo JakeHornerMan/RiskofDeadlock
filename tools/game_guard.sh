@@ -5,14 +5,27 @@
 # $LOCALAPPDATA/DeadlockOfRain/lab-game-pids.txt; any other running copy is the creator's and is left alone.
 # FORCE_CLOSE=1 closes every copy (the unattended daily watch at 04:00 sets it, doc 10).
 GG_UM=/c/Users/jakeh/tools/universal-modder/bin/um
-GG_OURS="$LOCALAPPDATA/DeadlockOfRain/lab-game-pids.txt"
+# one list per checkout of the repo (2026-11-11: two agents worked at once, one in a worktree): a copy started from another
+# checkout is not ours, so it is never closed from here and its scripts never close ours
+GG_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+GG_OURS="$LOCALAPPDATA/DeadlockOfRain/lab-game-pids-$(basename "$GG_ROOT").txt"
+[ "$(basename "$GG_ROOT")" = "RiskofDeadlock" ] && GG_OURS="$LOCALAPPDATA/DeadlockOfRain/lab-game-pids.txt"
 
 game_pids() { powershell -NoProfile -Command "(Get-Process -Name \"Risk of Rain 2\" -ErrorAction SilentlyContinue).Id" | tr -d '\r'; }
 game_is_ours() { [ -f "$GG_OURS" ] && grep -qx "$1" "$GG_OURS"; }
 
 # before a script starts the game: stop if a copy we didn't start is running (exit 2), close our own leftovers
 guard_open_game() {
-  local p theirs=""
+  local p theirs="" w
+  # WAIT_GAME=<minutes>: wait that long for someone else's copy to close and for a cache rebuild (DeadlockExtract) to end
+  if [ -n "$WAIT_GAME" ]; then
+    for w in $(seq 1 $((WAIT_GAME * 4))); do
+      theirs=""; for p in $(game_pids); do game_is_ours "$p" || theirs=1; done
+      tasklist | grep -qi "DeadlockExtract" && theirs=1
+      [ -z "$theirs" ] && break; sleep 15
+    done
+    theirs=""
+  fi
   for p in $(game_pids); do game_is_ours "$p" || [ -n "$FORCE_CLOSE" ] || theirs="$theirs $p"; done
   if [ -n "$theirs" ]; then
     echo "GAME_OPEN: Risk of Rain 2 is running and no lab script started it (the creator may be playing); left alone. Close it, or run with FORCE_CLOSE=1."
