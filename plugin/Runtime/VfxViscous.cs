@@ -210,13 +210,36 @@ namespace DeadlockOfRain
             }
         }
 
+        // particles/abilities/viscous (2026-11 rebuild, docs/VfxRebuild/viscousVfxRebuild.md): flash #47E83C / #6DDA14, shock ring
+        // #15AA15, glowing bits #24EB38 > #073514, steam #16B90D / #42B419, highlights #D6FDDB, muzzle #ADDD13 / #60D51C, portal #3A9721
+        static readonly Color gooFlash = Hex("47E83C"), gooShock = Hex("15AA15"), gooBit = Hex("24EB38"), gooBitDeep = Hex("073514"), gooSteam = Hex("42B419", 0.35f);
+
+        /// <summary>What Deadlock lays over every goo burst: a green flash, a shock ring racing over the ground to the reach, and
+        /// glowing bits of goo flung up and falling (goo_grenade_explode_flash / _aoe / _bits); a big one also steams.</summary>
+        static void GooBurstLayers(Vector3 at, float radius, bool big)
+        {
+            float fl = Mathf.Clamp(radius, 1.5f, 8f);
+            QuadAt(at + Vector3.up * 0.6f, Glow("fx_glow", new Color(gooFlash.r, gooFlash.g, gooFlash.b, 0.75f)), fl * 0.4f, fl * (big ? 1.5f : 1.1f), 0.2f, Face.Camera, 0f, 0f, 0.2f);
+            if (big) QuadAt(at + Vector3.up * 0.6f, Glow("fx_flare", Hex("6DDA14", 0.8f)), fl * 0.3f, fl * 1.1f, 0.18f, Face.Camera, 0f, 0f, 0.2f);
+            QuadAt(Ground(at), Glow("fx_ring", gooShock), 0.6f, radius * 2f, big ? 0.4f : 0.3f, Face.Ground, 0f, 0.04f, 0.3f);
+            if (big) QuadAt(Ground(at), Glow("fx_ring_burst", new Color(gooBit.r, gooBit.g, gooBit.b, 0.7f)), 0.5f, radius * 1.3f, 0.3f, Face.Ground, 0f, 0.04f, 0.3f, Random.Range(0f, 360f));
+            Puff(at + Vector3.up * 0.3f, new P { Mat = Glow("fx_fleks", gooBit), Count = big ? 26 : 14, LifeMin = 0.5f, LifeMax = big ? 1.6f : 1.1f, SpeedMin = 3f, SpeedMax = Mathf.Clamp(radius * 1.4f, 5f, 15f),
+                                                 SizeMin = 0.08f, SizeMax = 0.2f, A = gooBit, B = gooBitDeep, Shape = Shape.Up, Angle = 65f, Radius = radius * 0.15f, Gravity = 1.4f, Drag = 0.6f,
+                                                 TilesX = 8, TilesY = 8, SpinMin = -6f, SpinMax = 6f, Max = big ? 28 : 16 });
+            if (big && Rich)
+                Puff(at + Vector3.up * 0.4f, new P { Mat = Soft("fx_dust", Color.white), Count = 7, LifeMin = 1f, LifeMax = 2.2f, SpeedMin = 0.5f, SpeedMax = 2f, SizeMin = radius * 0.3f, SizeMax = radius * 0.5f,
+                                                     A = gooSteam, B = new Color(0.09f, 0.72f, 0.05f, 0f), Shape = Shape.Disc, Radius = radius * 0.4f, Size0 = 0.6f, Size1 = 1.5f, FadeIn = 0.2f,
+                                                     FadeOutFrom = 0.4f, Velocity = Vector3.up * 0.9f, SpinMin = -0.3f, SpinMax = 0.3f, Max = 8 });
+        }
+
         /// <summary>A big wet splash: globs and droplets flung up and out, a dark wet ring of drops along the ground, a soft light.</summary>
         static void Splash(Vector3 at, float radius, int globs)
         {
             Globs(at + Vector3.up * 0.3f, Mathf.Min(globs, 14), Mathf.Clamp(radius * 1.2f, 4f, 14f), Mathf.Clamp(radius * 0.08f, 0.25f, 0.8f));
             DropBurst(at, gooBase, globs, 0.9f, radius * 1.2f, Mathf.Clamp(radius * 0.06f, 0.2f, 0.6f), radius * 0.2f);
             DropBurst(at, gooSheen, globs / 2, 0.7f, radius * 0.9f, 0.18f, radius * 0.2f);
-            Flash(at + Vector3.up, gooSheen, radius * 1.5f, 0.25f, 2.5f);
+            GooBurstLayers(at, radius, false);
+            Glint(at + Vector3.up, gooSheen, radius * 1.5f, 0.25f, 2.5f);
         }
 
         /// <summary>A heavy goo explosion (Splatter's splash, The Cube breaking open; creator, 2026-10-20: "more visually impactful"):
@@ -230,11 +253,10 @@ namespace DeadlockOfRain
             var b = holder.AddComponent<Bloom>(); b.To = Mathf.Clamp(radius * 0.9f, 3f, 12f); b.Life = 0.45f;
             Globs(at + Vector3.up * 0.5f, 12, Mathf.Clamp(radius * 1.8f, 9f, 22f), Mathf.Clamp(radius * 0.11f, 0.4f, 1.1f));
             Globs(at + Vector3.up * 0.3f, 18, Mathf.Clamp(radius * 1.3f, 5f, 16f), Mathf.Clamp(radius * 0.08f, 0.25f, 0.8f));
-            DropBurst(at, gooBase, 60, 1.1f, radius * 1.6f, Mathf.Clamp(radius * 0.07f, 0.25f, 0.7f), radius * 0.25f, 2f);
-            DropBurst(at, gooSheen, 30, 0.8f, radius * 1.1f, 0.25f, radius * 0.2f);
-            Ring(at + Vector3.up * 0.25f, gooRim, 0.5f, radius, 0.4f, 0.6f);
-            Ring(at + Vector3.up * 0.2f, gooBase, 0.3f, radius * 0.75f, 0.55f, 1.1f);
-            Flash(at + Vector3.up, gooSheen, radius * 2.2f, 0.35f, 5f);
+            DropBurst(at, gooBase, N(40), 1.1f, radius * 1.6f, Mathf.Clamp(radius * 0.07f, 0.25f, 0.7f), radius * 0.25f, 2f);
+            DropBurst(at, gooSheen, N(20), 0.8f, radius * 1.1f, 0.25f, radius * 0.2f);
+            GooBurstLayers(at, radius, true);
+            Flash(at + Vector3.up, gooSheen, radius * 2.2f, 0.35f, 4f);
             Stain(at, Vector3.up, Mathf.Min(radius * 0.45f, 6f), null, 4f);
         }
 
@@ -257,10 +279,22 @@ namespace DeadlockOfRain
                     var normal = to.HasValue ? to.Value - at : Vector3.up;
                     DropBurst(at, gooBase, 7, 0.45f, 3f, 0.14f, 0.1f);
                     Stain(at, normal, 0.6f, follow);
+                    if (Every("viscous_goo_hit", 0.06f))
+                    {
+                        QuadAt(at, Glow("fx_glow", new Color(gooFlash.r, gooFlash.g, gooFlash.b, 0.7f)), 0.3f, 1.1f, 0.12f, Face.Camera, 0f, 0f, 0.25f);
+                        Puff(at, new P { Mat = Glow("fx_fleks", gooBit), Count = 4, LifeMin = 0.3f, LifeMax = 0.6f, SpeedMin = 2f, SpeedMax = 5f, SizeMin = 0.06f, SizeMax = 0.12f,
+                                         A = gooBit, B = gooBitDeep, Gravity = 1.4f, TilesX = 8, TilesY = 8, SpinMin = -6f, SpinMax = 6f, Max = 5 });
+                    }
                     return null;
                 }
                 case "muzzle":
+                    // viscous_chargeup_firing: a lick of yellow-green fluid and a puff of green gas at the muzzle
                     DropBurst(at, gooSheen, 3, 0.15f, 2f, 0.1f, 0.05f);
+                    if (Every("viscous_mz", 0.06f))
+                    {
+                        QuadAt(at, Glow("fx_muzzle", Hex("ADDD13", 0.8f)), 0.35f, 0.9f, 0.09f, Face.Camera, 0f, 0f, 0.25f, Random.Range(0f, 360f));
+                        QuadAt(at, Glow("fx_glow", Hex("60D51C", 0.7f)), 0.3f, 0.7f, 0.1f, Face.Camera, 0f, 0f, 0.2f);
+                    }
                     return null;
             }
             return null;
@@ -278,7 +312,9 @@ namespace DeadlockOfRain
                     var root = Root(at, 0f, null);
                     root.AddComponent<FloorDisc>().Radius = radius;
                     var edge = new GameObject("edge"); edge.transform.SetParent(root.transform, false); edge.transform.localPosition = Vector3.up * 0.3f;
-                    Particles(edge, "mat_glow", gooRim, rate: 90, life: 0.45f, speed: 0.8f, size: 0.55f, shapeRadius: radius, world: true, ring: true);
+                    Quad(edge, Glow("fx_ring_soft", gooRim), radius * 2.15f, radius * 2.15f, 1f, Face.Ground, 40f, loop: true);
+                    Emit(edge, new P { Mat = Glow("fx_glow", gooRim), Rate = 24, LifeMin = 0.4f, LifeMax = 0.5f, SpeedMin = 0.5f, SpeedMax = 0.9f, SizeMin = 0.4f, SizeMax = 0.6f,
+                                       A = gooRim, B = gooBit, Shape = Shape.Ring, Radius = radius, Max = 14 }, "motes");
                     var arc = Line(root.transform, gooRim, 0.12f, Vector3.zero, Vector3.zero);
                     arc.name = "arc"; arc.useWorldSpace = true; arc.sharedMaterial = Solid(gooRim);
                     arc.widthCurve = new AnimationCurve(new Keyframe(0, 0.3f), new Keyframe(0.15f, 1f), new Keyframe(1, 1f));
@@ -301,10 +337,12 @@ namespace DeadlockOfRain
                 {
                     // a puddle gave the hero rounds (puddleAmmo): goo spirals up out of the floor into him, a green flash
                     var root = Root(at, 1f, follow);
-                    Particles(root, "mat_glow", gooRim, count: 40, life: 0.6f, speed: 3f, size: 0.4f, shapeRadius: 1.2f, world: true, upward: true, ring: true);
-                    Drops(root, gooSheen, count: 24, life: 0.7f, speed: 4f, size: 0.25f, shapeRadius: 0.8f, upward: true, gravity: 0.5f);
-                    Ring(at + Vector3.up * 0.2f, gooRim, 1.6f, 0.3f, 0.35f, 0.25f);
-                    Flash(at + Vector3.up, gooRim, 6f, 0.3f, 3f);
+                    Emit(root, new P { Mat = Glow("fx_glow", gooRim), Count = 16, LifeMin = 0.5f, LifeMax = 0.65f, SizeMin = 0.3f, SizeMax = 0.45f, A = gooRim, B = gooBit,
+                                       Shape = Shape.Ring, Radius = 1.2f, Velocity = Vector3.up * 3f, Orbit = 4f, World = false, Max = 18 }, "spiral");
+                    Drops(root, gooSheen, count: 14, life: 0.7f, speed: 4f, size: 0.25f, shapeRadius: 0.8f, upward: true, gravity: 0.5f);
+                    QuadAt(Ground(at), Glow("fx_ring_spiral", gooRim), 3.4f, 0.6f, 0.4f, Face.Ground, -300f, 0.05f, 0.5f);
+                    QuadAt(at + Vector3.up, Glow("fx_glow", new Color(gooFlash.r, gooFlash.g, gooFlash.b, 0.7f)), 0.8f, 2.6f, 0.25f, Face.Camera, 0f, 0f, 0.2f);
+                    Glint(at + Vector3.up, gooRim, 6f, 0.3f, 3f);
                     return root;
                 }
                 case "puddle":
@@ -415,7 +453,9 @@ namespace DeadlockOfRain
                     var root = Root(at, 0f, null);
                     Dome(root.transform, radius, gooRim);
                     var edge = new GameObject("edge"); edge.transform.SetParent(root.transform, false); edge.transform.localPosition = Vector3.up * 0.3f;
-                    Particles(edge, "mat_glow", gooRim, rate: 70, life: 0.4f, speed: 0.6f, size: 0.45f, shapeRadius: radius, world: true, ring: true);
+                    Quad(edge, Glow("fx_ring_soft", gooRim), radius * 2.15f, radius * 2.15f, 1f, Face.Ground, 40f, loop: true);
+                    Emit(edge, new P { Mat = Glow("fx_glow", gooRim), Rate = 20, LifeMin = 0.35f, LifeMax = 0.45f, SpeedMin = 0.4f, SpeedMax = 0.7f, SizeMin = 0.35f, SizeMax = 0.5f,
+                                       A = gooRim, B = gooBit, Shape = Shape.Ring, Radius = radius, Max = 12 }, "motes");
                     var beam = Line(root.transform, gooRim, 0.25f, Vector3.up * 0.2f, Vector3.up * 6f);
                     beam.widthCurve = new AnimationCurve(new Keyframe(0, 1), new Keyframe(1, 0));
                     return root;
@@ -425,6 +465,9 @@ namespace DeadlockOfRain
                     // the ground bubbles where the fist will come up
                     var root = Root(at, 0f, null);
                     Dome(root.transform, radius, gooBase);
+                    // viscous_glob_portal_ground: two spirals of goo turning on the ground where it will open
+                    Quad(root, Soft("fx_ring_spiral", Hex("3A9721", 0.85f)), radius * 1.9f, radius * 1.9f, 1f, Face.Ground, 260f, offset: Vector3.up * 0.12f, loop: true);
+                    Quad(root, Glow("fx_ring_spiral", new Color(gooBit.r, gooBit.g, gooBit.b, 0.6f)), radius * 1.3f, radius * 1.3f, 1f, Face.Ground, -340f, offset: Vector3.up * 0.14f, loop: true);
                     var bubbles = root.AddComponent<Bubbler>(); bubbles.Radius = radius * 0.7f; bubbles.Rate = radius * 8f;
                     return root;
                 }
@@ -469,8 +512,10 @@ namespace DeadlockOfRain
                     Splash(at, radius * 1.5f, 16);
                     return null;
                 case "hit":
+                    if (!Every("viscous_ball_hit", 0.06f)) return null;
                     Globs(at, 5, 7f, 0.35f);
                     DropBurst(at, gooBase, 12, 0.6f, 7f, 0.22f, 0.3f);
+                    QuadAt(at, Glow("fx_glow", new Color(gooFlash.r, gooFlash.g, gooFlash.b, 0.7f)), 0.6f, 2.2f, 0.15f, Face.Camera, 0f, 0f, 0.2f);
                     return null;
                 case "slam":
                     Splash(at, radius, 26);
@@ -478,6 +523,8 @@ namespace DeadlockOfRain
                     Stain(at, Vector3.up, radius * 0.5f, null, 3f);
                     return null;
                 case "bounce":
+                    // viscous_bowling_ball_movement_dust_ring: a dull green ring puffing out where it lands
+                    if (Every("viscous_bounce", 0.08f)) QuadAt(Ground(at), Soft("fx_ring", Hex("768E76", 0.7f)), radius * 0.8f, radius * 3.2f, 0.45f, Face.Ground, 0f, 0.05f, 0.3f);
                     DropBurst(at, gooBase, 6, 0.5f, 4f, 0.2f, radius * 0.4f);
                     Stain(at, Vector3.up, radius * 0.7f);
                     return null;
@@ -485,7 +532,8 @@ namespace DeadlockOfRain
                     // the ball pops
                     Globs(at, 12, radius * 4f, 0.45f);
                     DropBurst(at, gooBase, 24, 0.8f, radius * 3f, 0.3f, radius * 0.6f);
-                    Flash(at, gooSheen, radius * 3f, 0.3f, 2.5f);
+                    GooBurstLayers(at, radius * 2.5f, true);
+                    Glint(at, gooSheen, radius * 3f, 0.3f, 2.5f);
                     return null;
             }
             return null;
