@@ -62,7 +62,7 @@ namespace DeadlockOfRain
                 {
                     // a bright crimson flash at the pistol's muzzle with a quick light (about 0.05 s)
                     var root = Root(at, 0.25f, follow);
-                    Particles(root, "mat_glow", minaRose, count: 3, life: 0.06f, speed: 0f, size: 0.55f);
+                    Quad(root, Glow("fx_glow", minaRose), 0.55f * 0.55f, 0.55f * 1.25f, 0.06f, Face.Camera, 0f, 0.1f, 0.3f);
                     Particles(root, "mat_spark", minaCrimson, count: 6, life: 0.12f, speed: 6f, size: 0.05f, shapeRadius: 0.03f, stretch: 3f);
                     var l = Light(root, minaGlow, 5f, 6f, Vector3.zero);
                     var f = l.gameObject.AddComponent<FadeLight>(); f.Life = 0.06f; f.From = 6f;
@@ -169,7 +169,7 @@ namespace DeadlockOfRain
                         var mr = q.GetComponent<MeshRenderer>(); mr.sharedMaterial = mat; mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                         var p = q.AddComponent<QuadPulse>(); p.From = 0.5f; p.To = 1.1f; p.Life = 0.8f; p.Tint = Color.white;
                     }
-                    Particles(root, "mat_glow", minaCrimson, count: 4, life: 0.25f, speed: 0f, size: 0.9f);
+                    Quad(root, Glow("fx_glow", minaCrimson), 0.9f * 0.55f, 0.9f * 1.25f, 0.25f, Face.Camera, 0f, 0.1f, 0.3f);
                     if (to.HasValue) Motes(at, to.Value, minaRose, 3, 0.4f);
                     return root;
                 }
@@ -194,7 +194,7 @@ namespace DeadlockOfRain
             // a soft crimson glow under the open umbrella, dark petals and motes drifting off its rim
             var root = Root(at, 0f, follow);
             Light(root, minaGlow, 3.5f, 1.4f, Vector3.down * 0.3f);
-            Particles(root, "mat_glow", minaCrimson, rate: 6, life: 0.6f, speed: 0f, size: 0.8f);
+            Quad(root, Glow("fx_glow", minaCrimson), 0.8f, 0.8f, 1f, Face.Camera, loop: true);
             Particles(root, "mat_glow", minaRose, rate: 14, life: 1.1f, speed: 0.3f, size: 0.08f, shapeRadius: 0.6f, ring: true, world: true, gravity: 0.05f);
             Particles(root, "mat_smoke", minaDark, rate: 5, life: 1.2f, speed: 0.2f, size: 0.18f, shapeRadius: 0.65f, ring: true, world: true, gravity: 0.08f);
             return root;
@@ -341,7 +341,7 @@ namespace DeadlockOfRain
                     // Deadlock's marker where she will reform
                     var root = Root(at, 0f, null);
                     SymbolQuad(root, "mina_marker_tex", new Color(minaRose.r, minaRose.g, minaRose.b, 0.85f), 1.1f, true);
-                    Particles(root, "mat_glow", minaCrimson, rate: 10, life: 0.4f, speed: 0f, size: 0.6f);
+                    Quad(root, Glow("fx_glow", minaCrimson), 0.6f, 0.6f, 1f, Face.Camera, loop: true);
                     return root;
                 }
                 case "end":
@@ -350,7 +350,7 @@ namespace DeadlockOfRain
                     var root = Root(at, 1.2f, follow);
                     Ring(at, minaRing, 2.2f, 0.3f, 0.25f, 0.06f, true);
                     Burst(at, "mat_smoke", minaSmoke, 6, 0.5f, 1.5f, 0.6f, 0.5f);
-                    Particles(root, "mat_glow", minaRose, count: 3, life: 0.2f, speed: 0f, size: 1.2f);
+                    Quad(root, Glow("fx_glow", minaRose), 1.2f * 0.55f, 1.2f * 1.25f, 0.2f, Face.Camera, 0f, 0.1f, 0.3f);
                     Flash(at, minaGlow, 5f, 0.25f, 3f);
                     return root;
                 }
