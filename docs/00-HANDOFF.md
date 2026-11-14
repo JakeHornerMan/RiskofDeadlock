@@ -285,6 +285,20 @@ screenshots, if the folder exists), the Claude Code transcripts under `~/.claude
 
 ---
 
+## 9-vfx. The VFX rebuild, merged into `main` 2026-11-14 (not released, no package built)
+- Every hero's effects are rebuilt or relayered from Deadlock's own effect recipes and particle textures, and the Troopers'
+  soul orb is matched to Deadlock's. **How to make the same choices for a new hero or enemy: `docs/14-VFX-LOOK-GUIDE.md`**
+  (wired into doc 08 §4 and §8, doc 11 §2, doc 12 §2.8). Method and tools: `docs/VfxRebuild/README.md`; one file per character there.
+- Before/after page: https://claude.ai/artifact/BvL6LjctELNqDEYv2PE7Ue (private until the creator shares it).
+- Every hero was seen in game on the new build. Frame cost is level with the old build within one run's noise on most moves;
+  the moves that ran 2.5 to 4 ms dearer in one run, and the tweaks not seen again, are listed in doc 14 §8.
+- Not released: no Melty version, no r2modman package (build one only when the creator asks). The `all` DLL build takes the
+  shared `fx_` textures from the normal cache by itself. `charactersFinal/abramsFiles/mod-cache` has not been re-read, so the
+  DLL build's Abrams has no book until it is (`--heroes abrams`, with the creator's go-ahead since it is their folder).
+- Not run on the merged code: `run_test.sh` for any hero, the co-op test. Paige's sword fix (it came down pommel-first) came in
+  with this merge.
+- Open for the creator: sign-off per hero; Pocket teal or violet; the Troopers' other effects.
+
 ## 9. Last work: the Troopers, an enemy system (2026-11-11; playtest fixes done, 21/21 in game)
 - Evening: Mending Medic, the lobby stage dropdown (`TrooperStages`, `TrooperStagesUi`), idle shooters, material fixes; 1.6.5 for
   r2modman (doc 07, doc 11 §3b/§4).

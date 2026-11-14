@@ -121,6 +121,8 @@ target (walker/hover) or holds its band (shooter); each attack fires only in ran
 2. `python tools/add_enemy.py <group>` → paste the rows, adjust numbers.
 3. `--extract`; `python tools/gen.py` → PREFLIGHT CLEAN.
 4. Line-up screenshots against the creator's Deadlock pictures (materials, size).
+4b. Effects by `docs/14-VFX-LOOK-GUIDE.md` (recipes from the group's `particles/` folder, `VfxEnemies.cs`, its checklist in §7);
+   `add_enemy.py` should also print the group's recipe names and their colours (`tools/vpcf_summary.py --brief`).
 5. `ENEMIES=<group>` until every check passes; Play Test scene for the creator.
 6. Docs, CHANGELOG, `--r2modman-install`.
 

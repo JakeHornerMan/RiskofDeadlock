@@ -24,7 +24,12 @@ plugin/Enemies/TrooperDirector.cs: R2API.Director MonsterActions ─► every st
 3. `build/extract/DeadlockExtract.exe --loose charactersFinal/npc/<group>/deadlock --out charactersFinal/npc/<group>/mod-cache --manifest extractor/manifest-enemies.json`
    Every model must report `N/N clips`; a clip the model lacks is in neither the model nor its `edit` glb: pick another.
 4. A new attack kind is an `EnemyAttack` subclass with `[Kind("...")]` in `plugin/Enemies/` (preflight checks it exists).
-5. `ENEMIES=<ids> STAGE=golemplains bash tools/run_test.sh haze` (needs the DLL build installed and R2API in the Steam copy, §5).
+5. **Its effects** (muzzle, shot, hit, spawn, death, anything it leaves): follow `docs/14-VFX-LOOK-GUIDE.md`. Recipes are in
+   `charactersFinal/npc/<group>/deadlock/particles/`; the code goes in `plugin/Runtime/VfxEnemies.cs` (the kit, as the soul orb
+   does), colours that a designer may change go in the sheet (`enemyDrops.json` `orbColor`). Budget for twenty on screen: no
+   light per enemy, shared materials, a handful of particles each. Write-up: `docs/VfxRebuild/<group>VfxRebuild.md` (the
+   Troopers' file lists what Deadlock does for each of their effects and what is still to build).
+6. `ENEMIES=<ids> STAGE=golemplains bash tools/run_test.sh haze` (needs the DLL build installed and R2API in the Steam copy, §5).
 
 ## 3. How a Trooper is built (Enemies.cs)
 - **Body**: the `cloneBody` prefab (Beetle / Lemurian) instantiated under the inactive prefab holder, a stable network asset id,

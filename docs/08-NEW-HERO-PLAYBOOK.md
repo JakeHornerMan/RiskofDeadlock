@@ -71,6 +71,18 @@ Say up front how many game launches the build needs (§6) and why. The creator d
   `hunt` and `happy` (idle). Never write the lines out on pages or docs. Test check `voice-lines`.
 
 ## 4. Visual effects (built in Unity, in code)
+**Read `docs/14-VFX-LOOK-GUIDE.md` first and follow its checklist (§7).** It says, in order, how to choose a new hero's look:
+Deadlock's recipes (mind the code-name folder), the palette from them, what the creator already chose, Deadlock's layers per
+move, the kit tool for each layer, and the faults to look for on the first in-game look. The write-up for the hero goes in
+`docs/VfxRebuild/<id>VfxRebuild.md`; the closest existing hero's file there is the worked example to copy.
+
+**Since the VFX rebuild (2026-11-11, `docs/VfxRebuild/README.md`):** start from Deadlock's recipes. Dump the hero's
+`particles/` folder to text (`vrfdump.exe ... texts`), read each ability's colours, layers and timing with
+`tools/vpcf_summary.py`, quote the palette at the top of the hero's `Vfx<Hero>.cs`, and build with the kit (`VfxKit.cs`:
+`Glow`, `Soft`, `Emit`, `Puff`, `Quad`, `Ribbon`, `Beam`, `Every`) and Deadlock's shared `fx_` textures. If Deadlock ships
+two sets of recipes for a hero (an old code name and the hero's name, as with Pocket), the set that matches the model in
+`heroes.json` is the current one. Check the look with `FPS=1 SHOTS=<folder>` screenshots and the cost with the fps bench.
+
 Effects are made at runtime in `plugin/Runtime/Vfx.cs` from Unity particle systems, trails, lines and lights tinted
 with RoR2's own materials. Nothing is imported.
 1. **Sheet:** an `effects.json` row `{id: "<hero>_<move>", kind: "custom", addressable: "none", notes: what it looks like}`
@@ -208,6 +220,7 @@ for my r2modman")
 - [ ] `PREFLIGHT CLEAN`, build clean, cache rebuilt with the new content.
 - [ ] `run_test.sh <hero>`: every check passes (including `ragdoll`, `sound-events`, `voice-lines`), `1/1 heroes`.
 - [ ] Every move has its Deadlock sound and a custom effect, checked in the devshots.
+- [ ] The effects pass the look guide's checklist (doc 14 §7): palette from the recipes, seen in game twice, `docs/VfxRebuild/<id>VfxRebuild.md` written.
 - [ ] Bench stored in the library; verdict against the match reported to the creator.
 - [ ] Co-op check passed (or skipped with the creator's OK, recorded as open).
 - [ ] Hero page published and linked; all pages regenerated.

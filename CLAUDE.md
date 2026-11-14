@@ -43,6 +43,9 @@ Deadlock's assets from the player's own install; nothing from either game ships.
    `design/enemies.json` / `enemySkills.json`, `plugin/Enemies/`, R2API.Director spawning, the `ENEMIES=` test plan.
 12. `docs/12-ENEMY-SYSTEM-PLAN.md`: **the plan for making enemies as simple as heroes** (2026-11-13): the Trooper-only shortcuts to
    generalise, sheet columns, attack-kind library, a lobby row per enemy group, `tools/add_enemy.py`, the order of work.
+14. `docs/14-VFX-LOOK-GUIDE.md`: **how to decide what an effect looks like** (2026-11-14, from the VFX rebuild of every hero):
+   Deadlock's recipes first, the palette, the layers, the kit, what went wrong on first looks, the checklist. Read it before making
+   or changing any hero's or enemy's effects; worked examples per character in `docs/VfxRebuild/`. (13 is kept for the enemy playbook.)
 `MODLOG.md` is the short journal of versions, lab notes and gotchas.
 
 **Outside reference: the R2Wiki modding Cookbook** (https://risk-of-thunder.github.io/R2Wiki/Mod-Creation/Cookbook; creator, 2026-11-10:
