@@ -100,8 +100,10 @@ plugin/Enemies/TrooperDirector.cs: R2API.Director MonsterActions ─► every st
 ### 3c. What a Trooper leaves (enemyDrops.json, 2026-11-11)
 The creator: "when the trooper explod they alwa have plooms of smoke in their color variant and a sould will arise ... if you shoot
 you will gain 5 currency ... soould ord disappear after 5 scond and if you dont destroy them you dont get the money". Only the
-creator's own files are used ("do not steal anything that isnt mine"): `glowFolder` must be one of their folders, `charactersFinal/` or
-`dealockRip/` (preflight); never the Deadlock install.
+creator's own files are used ("do not steal anything that isnt mine"): `glowFolder` must be a folder under `charactersFinal/`
+(preflight); never the Deadlock install and never `dealockRip/` (creator, 2026-11-14: "we should only reference
+...\charactersFinal in our dll build nothing else for building our resources"; anything wanted from `dealockRip/` is copied into
+`charactersFinal/` first).
 - **Smoke** (`DeathSmoke`, from `EnemyDeath` on every machine): one burst of the Trooper rip's own `cartoon_cloud` puff on RoR2's
   `matGenericSmoke` with its ramp in the look's colour (`smokeColors`: amber `#d9893a`, sapphire `#4f8fd6`), rising and spreading
   for `smokeTime` s. One material per colour, made once.
@@ -109,7 +111,7 @@ creator's own files are used ("do not steal anything that isnt mine"): `glowFold
   destructible) with 1 health; its crystal (renderers, skin controller, lights, particles) removed outright: switched off, its skin
   controller turned it back on. The look (`SoulOrbLook`) follows Deadlock's soul orb (`generic_soul_orb` + `generic_soul_orb_shell`
   on a sphere; both colour maps are blank 1 px, the colour comes from Deadlock's last_hit particle, which the creator's files lack):
-  a self-lit core and the shell's voronoi noise (`shellTexture`, from the creator's `dealockRip/props/souls`, their choice) cut out by
+  a self-lit core and the shell's voronoi noise (`shellTexture`, from the creator's `charactersFinal/props/souls`, their choice; copied there from `dealockRip/props/souls` on 2026-11-14) cut out by
   its alpha, both faces, scrolling, glowing in `orbColor` (#3cf0c3 teal-green, from the creator's picture of Deadlock's), round a dark
   core, with a dark smoky trail (RoR2's smoke, darkened) as it rises; head-sized (`radius` 0.22 m, creator: "around the size
   of a head"), hurtbox 1.5x for fair hits. It appears in the Trooper's chest and the body itself drifts up `rise` 2.5 m over
@@ -119,7 +121,7 @@ creator's own files are used ("do not steal anything that isnt mine"): `glowFold
   the player whose drone or minion did, with RoR2's coin effect).
 - **Sounds**: the creator's files have no orb sounds, so these are RoR2's own events played by name (nothing copied); swap them in
   the sheet if the creator adds their own.
-- Images: `extractor/manifest-enemyfx-souls.json` (gen) → `DeadlockExtract --loose dealockRip/props/souls/deadlock --out
+- Images: `extractor/manifest-enemyfx-souls.json` (gen) → `DeadlockExtract --loose charactersFinal/props/souls/deadlock --out
   charactersFinal/npc/souls/mod-cache` (merged by `build_local_hero.sh all`); the smoke puff is in `manifest-enemies.json` images (the Troopers' own rip).
 - Tests: `trooper-death-smoke`, `trooper-soul-orb` (+5 exactly, gone), `trooper-soul-orb-miss` (gone after 5 s + 0.6 s fade, no money).
 

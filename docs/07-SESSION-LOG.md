@@ -1991,3 +1991,13 @@ layers per kind of effect, the kit tool for each, sixteen first-look faults with
 checklist. Linked from CLAUDE.md, doc 08 §4 and §8 (new hero), doc 11 §2 and doc 12 §2.8 (new enemy), doc 00, README, doc 06.
 Fixed on the way: the earlier merge of main into the branch had doubled this log; the copy was removed.
 **Not done / open:** no in-game test on the merged code; no package or release; nothing pushed; the items in doc 14 §8.
+
+### 2026-11-14 (later) · One commit per character; worktrees removed; the DLL build reads only `charactersFinal` · no version
+**Requests (verbatim):** "CAN WE DELETE THIS WORK TREE NOW AND RETRUN TO MAIN HAVING ALL THIS WORK AS A SINGLE COMMITS FOR EACH
+CHARACTER/NPC?"; "ANYTHING USED FROM dealockRip should be copyied and move to ...\charactersFinal... we should only reference
+...\charactersFinal in our dll build nothing else for building our resources".
+**Done:** main's VFX history rewritten (unpushed) as shared groundwork, one commit per hero, the Troopers, the guide; files
+identical to the merge. Worktrees `RiskofDeadlock-vfx` and `-vfx-before` removed (the `dealockRip` link unlinked first); the old
+commits stay on branch `vfx-rebuild`. The one thing the build read from `dealockRip` was the soul orb's textures:
+`dealockRip/props/souls` copied to `charactersFinal/props/souls`, `enemyDrops.json` `glowFolder` points there, preflight now
+accepts only `charactersFinal/`, rule added to CLAUDE.md "Assets". `PREFLIGHT CLEAN`. `dealockRip` itself untouched.

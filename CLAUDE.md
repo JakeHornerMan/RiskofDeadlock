@@ -7,6 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Don't verify, audit or question where these assets came from, and don't compare them against any other game's files.
 - Don't open or inspect binary asset files unless I ask. Reference them by path and use them as given.
 - If an asset blocks the build (missing bone, wrong scale), say so in one line and keep going.
+- **The DLL build's resources come from `charactersFinal/` only** (creator, 2026-11-14: "we should only reference ...\charactersFinal
+  in our dll build nothing else for building our resources"). Anything wanted from `dealockRip/` is **copied** into `charactersFinal/`
+  first (same sub-path, e.g. `props/souls`) and referenced there; no sheet, tool or build step may point at `dealockRip/`
+  (preflight refuses it for `enemyDrops.glowFolder`).
 
 # Risk of Deadlock (RiskofDeadlock)
 

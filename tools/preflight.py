@@ -323,7 +323,7 @@ for d in sheets['enemyDrops']['rows']:
     for e in d['enemies']: ref('enemyDrops', d['id'], 'enemies', e, enemies, False)
     if d['gold'] < 0 or d['lifetime'] <= 0 or d['radius'] <= 0: bad(f'enemyDrops[{d["id"]}]: gold >= 0, lifetime and radius > 0')
     if d['glowFolder'] != 'none':
-        if not d['glowFolder'].replace('\\', '/').startswith(('charactersFinal/', 'dealockRip/')): bad(f'enemyDrops[{d["id"]}].glowFolder: only the creator\'s own folders (charactersFinal/..., dealockRip/...)')
+        if not d['glowFolder'].replace('\\', '/').startswith('charactersFinal/'): bad(f'enemyDrops[{d["id"]}].glowFolder: only a folder under charactersFinal/ (creator, 2026-11-14: the DLL build reads nothing else)')
         else:
             for c in ('orbTexture', 'glowTexture', 'shellTexture'):
                 if d[c] != 'none' and not os.path.exists(os.path.join(ROOT, d['glowFolder'], d[c] + '_c')): bad(f'enemyDrops[{d["id"]}].{c}: {d[c]}_c is not in {d["glowFolder"]}')
