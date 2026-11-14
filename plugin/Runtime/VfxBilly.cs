@@ -14,6 +14,20 @@ namespace DeadlockOfRain
         static readonly Color billyPink = new Color(0.95f, 0.32f, 0.72f), billyHot = new Color(1f, 0.75f, 0.9f),
                               billyMagenta = new Color(0.64f, 0.24f, 0.53f), billyDust = new Color(0.62f, 0.56f, 0.48f, 0.65f),
                               billyGrit = new Color(0.72f, 0.66f, 0.58f);
+        // particles/abilities/punkgoat (2026-11 rebuild, docs/VfxRebuild/billyVfxRebuild.md): the bat's spikes #FBEB79 > #EB9D4B, horn glow
+        // #EFCF6F / #FFFF81, sigil gold #F4C03F / #D9B44F with violet #A24BFF / #400086, chains rose #DF7494 > #3D0690, muzzle #FFC072
+        static readonly Color billySpike = Hex("FBEB79"), billyHorn = Hex("EFCF6F"), billyGold = Hex("F4C03F"), billyViolet = Hex("A24BFF"), billyRose = Hex("DF7494");
+
+        /// <summary>Spikes of light standing up out of a slam (punkgoat_sigil_explode_lightspike).</summary>
+        static void LightSpikes(Vector3 at, float radius, int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var o = Quaternion.Euler(0, i * 360f / count + Random.Range(-20f, 20f), 0) * Vector3.forward * radius * Random.Range(0.25f, 0.7f);
+                Beam(at + o + Vector3.up * 0.1f, at + o * 1.15f + Vector3.up * Random.Range(3f, 6f), Glow("fx_beam", Hex("D9B44F")), billySpike, 0.4f, Random.Range(0.3f, 0.5f));
+            }
+        }
+
         static readonly Color[] rockColors = { new Color(0.42f, 0.39f, 0.35f), new Color(0.55f, 0.5f, 0.44f), new Color(0.33f, 0.3f, 0.27f), new Color(0.48f, 0.42f, 0.36f) };
         static readonly Dictionary<Color, Material> rockMats = new Dictionary<Color, Material>();
 
@@ -44,6 +58,10 @@ namespace DeadlockOfRain
             switch (moment)
             {
                 case "muzzle":
+                    if (!Every("billy_mz", 0.07f)) return null;
+                    // punkgoat_muzzle_flash: a ragged warm flash and a glow
+                    QuadAt(at, Glow("fx_muzzle", Hex("FFC072")), 0.5f, 1.4f, 0.09f, Face.Camera, 0f, 0f, 0.25f, Random.Range(0f, 360f));
+                    QuadAt(at, Glow("fx_glow", Hex("FF9823", 0.8f)), 0.4f, 0.9f, 0.1f, Face.Camera, 0f, 0f, 0.2f);
                     Burst(at, "mat_spark", billyPink, 4, 0.12f, 6f, 0.05f);
                     Burst(at, "mat_smoke", new Color(0.6f, 0.58f, 0.56f, 0.35f), 1, 0.4f, 0.6f, 0.4f);
                     return null;
@@ -80,6 +98,9 @@ namespace DeadlockOfRain
                 {
                     var dir = to.HasValue ? (to.Value - at).normalized : Vector3.up;
                     Burst(at, "mat_glow", billyPink, 2, 0.15f, 0f, 1.2f * radius);
+                    // punkgoat_bashdown_bat_spikes: a spiked pale-gold burst where the bat lands
+                    if (Every("billy_bat_spikes", 0.04f))
+                        QuadAt(at, Glow("fx_ring_burst", billySpike), 0.4f * radius, 2.4f * radius, 0.16f, Face.Camera, 0f, 0f, 0.3f, Random.Range(0f, 360f));
                     Burst(at, "mat_spark", billyGrit, (int)(14 * radius), 0.5f, 9f, 0.08f, shapeRadius: 0.3f, gravity: 2.5f);
                     Burst(at, "mat_spark", billyPink, (int)(8 * radius), 0.25f, 7f, 0.06f, shapeRadius: 0.2f);
                     Burst(at, "mat_smoke", billyDust, 3, 0.6f, 1.5f, 0.8f * radius, shapeRadius: 0.3f);
@@ -188,10 +209,14 @@ namespace DeadlockOfRain
             Flash(at + Vector3.up, billyPink, radius * 2.5f, 0.4f, 7f);
             Ring(at + Vector3.up * 0.25f, billyPink, 0.5f, radius, 0.4f, big ? 1f : 0.6f);
             Ring(at + Vector3.up * 0.25f, billyHot, 0.3f, radius * 0.4f, 0.25f, 0.5f);
+            // punkgoat_sigil_slam / _explode: a gold spiked ring inside a violet one, and spikes of light standing up
+            QuadAt(Ground(at), Glow("fx_ring_burst", billyGold), 0.8f, radius * 1.3f, 0.35f, Face.Ground, 0f, 0.04f, 0.3f, Random.Range(0f, 360f));
+            if (big) QuadAt(Ground(at), Glow("fx_ring_spiral", new Color(billyViolet.r, billyViolet.g, billyViolet.b, 0.7f)), radius * 0.9f, radius * 1.2f, 1.2f, Face.Ground, 40f, 0.05f, 0.3f);
+            LightSpikes(at, radius, big ? (Rich ? 8 : 4) : (Rich ? 5 : 3));
             Burst(at, "mat_smoke", billyDust, (int)(22 * k), 1.4f, radius * 1.1f, 2f * k, shapeRadius: 1f, flat: true);
             Burst(at, "mat_smoke", billyDust, (int)(8 * k), 1.2f, 3f, 1.6f * k, shapeRadius: 0.8f, upward: true);
-            Burst(at, "mat_spark", billyGrit, (int)(40 * k), 0.9f, 14f, 0.1f, shapeRadius: 0.5f, upward: true, gravity: 2.5f);
-            Burst(at, "mat_spark", billyPink, (int)(20 * k), 0.4f, 10f, 0.07f, shapeRadius: 0.4f, upward: true);
+            Burst(at, "mat_spark", billyGrit, (int)(26 * k), 0.9f, 14f, 0.1f, shapeRadius: 0.5f, upward: true, gravity: 2.5f);
+            Burst(at, "mat_spark", billyPink, (int)(14 * k), 0.4f, 10f, 0.07f, shapeRadius: 0.4f, upward: true);
             Scorch(at, 1.4f * k, 4f);
             Cracks(at, radius * 0.55f, big ? 10 : 7);
             Spikes(at, 1.6f * k, big ? 9 : 6, 1.1f * k);
@@ -219,10 +244,13 @@ namespace DeadlockOfRain
                     // the wind-up: dirt kicked up by his hoof and a pink glow on the horns
                     var root = Root(at, 0f, follow);
                     var horns = new GameObject("horns"); horns.transform.SetParent(root.transform, false); horns.transform.localPosition = Vector3.up * 2.1f;
-                    Particles(horns, "mat_glow", billyPink, rate: 14, life: 0.25f, speed: 0f, size: 0.9f, shapeRadius: 0.2f);
-                    Light(horns, billyPink, 4f, 2.5f, Vector3.zero);
-                    Particles(root, "mat_smoke", billyDust, rate: 18, life: 0.6f, speed: 1.5f, size: 0.6f, shapeRadius: 0.4f, world: true, upward: true);
-                    Particles(root, "mat_spark", billyGrit, rate: 40, life: 0.5f, speed: 3f, size: 0.06f, shapeRadius: 0.3f, world: true, upward: true, gravity: 2f);
+                    // punkgoat_dash_horn_glow: the horns light up gold, with a pink star in it
+                    Quad(horns, Glow("fx_glow", billyHorn), 1.1f, 1.1f, 1f, Face.Camera, loop: true);
+                    Quad(horns, Glow("fx_star", billyPink), 1.5f, 1.5f, 1f, Face.Camera, 200f, loop: true);
+                    Light(horns, billyHorn, 4f, 2.5f, Vector3.zero);
+                    Emit(root, new P { Mat = Soft("fx_cloud", Color.white), Rate = 8, LifeMin = 0.5f, LifeMax = 0.8f, SpeedMin = 0.6f, SpeedMax = 1.5f, SizeMin = 0.6f, SizeMax = 0.9f,
+                                       A = billyDust, B = new Color(billyDust.r, billyDust.g, billyDust.b, 0.2f), Shape = Shape.Up, Angle = 50f, Radius = 0.4f, Size0 = 0.5f, Size1 = 1.4f, Max = 9 }, "dust");
+                    Particles(root, "mat_spark", billyGrit, rate: 24, life: 0.5f, speed: 3f, size: 0.06f, shapeRadius: 0.3f, world: true, upward: true, gravity: 2f);
                     return root;
                 }
                 case "loop":
@@ -232,10 +260,12 @@ namespace DeadlockOfRain
                     foreach (var x in new[] { -0.35f, 0.35f })
                     {
                         var horn = new GameObject("horn"); horn.transform.SetParent(root.transform, false); horn.transform.localPosition = new Vector3(x, 2f, 0.4f);
-                        Trail(horn, billyPink, 0.18f, 0.2f);
+                        // punkgoat_dash_horn_trail: pale gold off the horns, going magenta as it fades
+                        Ribbon(horn, Glow("fx_beam", billyHorn), Hex("FEFC7F"), Hex("C338D6"), 0.2f, 0.25f);
                     }
-                    Particles(root, "mat_smoke", billyDust, rate: 30, life: 0.7f, speed: 1.2f, size: 0.7f, shapeRadius: 0.5f, world: true);
-                    Particles(root, "mat_spark", billyGrit, rate: 70, life: 0.45f, speed: 4f, size: 0.07f, shapeRadius: 0.5f, world: true, upward: true, gravity: 2f);
+                    Emit(root, new P { Mat = Soft("fx_cloud", Color.white), Rate = 11, LifeMin = 0.6f, LifeMax = 0.9f, SpeedMin = 0.4f, SpeedMax = 1.2f, SizeMin = 0.7f, SizeMax = 1f,
+                                       A = Hex("D1D6DD", 0.6f), B = Hex("89919D", 0.2f), Radius = 0.5f, Size0 = 0.5f, Size1 = 1.4f, Max = 12 }, "dust");
+                    Particles(root, "mat_spark", billyGrit, rate: 36, life: 0.45f, speed: 4f, size: 0.07f, shapeRadius: 0.5f, world: true, upward: true, gravity: 2f);
                     return root;
                 }
                 case "hit":
@@ -244,9 +274,13 @@ namespace DeadlockOfRain
                     Burst(at + Vector3.up * 1.2f, "mat_glow", billyHot, 3, 0.2f, 0f, 3f);
                     Flash(at + Vector3.up * 1.5f, billyPink, radius * 2.5f, 0.45f, 8f);
                     Ring(at + Vector3.up * 0.25f, billyPink, 0.5f, radius, 0.45f, 1f);
+                    // punkgoat_knock_up_target: a shaft of yellow light going up with the launch, a pale flare, a gold spiked ring
+                    Beam(at + Vector3.up * 0.2f, at + Vector3.up * 11f, Glow("fx_beam", Hex("FFFF81")), Hex("F26727"), 1.3f, 0.5f);
+                    QuadAt(at + Vector3.up * 1.2f, Glow("fx_flare_wide", Hex("FFF6B5")), 1.5f, 5f, 0.2f, Face.Camera, 0f, 0f, 0.2f);
+                    QuadAt(Ground(at), Glow("fx_ring_burst", billyGold), 0.8f, radius * 1.3f, 0.35f, Face.Ground, 0f, 0.04f, 0.3f, Random.Range(0f, 360f));
                     Burst(at, "mat_smoke", billyDust, 26, 1.5f, radius * 1.1f, 2.2f, shapeRadius: 1.2f, flat: true);
-                    Burst(at, "mat_spark", billyGrit, 45, 1f, 15f, 0.1f, shapeRadius: 0.6f, upward: true, gravity: 2.5f);
-                    Burst(at + Vector3.up, "mat_spark", billyPink, 24, 0.4f, 12f, 0.07f, shapeRadius: 0.3f);
+                    Burst(at, "mat_spark", billyGrit, 30, 1f, 15f, 0.1f, shapeRadius: 0.6f, upward: true, gravity: 2.5f);
+                    Burst(at + Vector3.up, "mat_spark", billyPink, 16, 0.4f, 12f, 0.07f, shapeRadius: 0.3f);
                     Cracks(at, radius, 10);
                     Rocks(at, 12, radius * 0.7f, 0.26f);
                     Shake(at, radius * 3f, 2f, 0.4f);
@@ -270,7 +304,7 @@ namespace DeadlockOfRain
             var root = Root(at, Mathf.Max(0.5f, seconds) + 0.3f, follow);
             Particles(root, "mat_spark", billyGrit, rate: 30, life: 0.8f, speed: 0.5f, size: 0.07f, shapeRadius: 0.6f, world: true, gravity: 2f);
             Particles(root, "mat_smoke", billyDust, rate: 5, life: 0.9f, speed: 0.3f, size: 0.6f, shapeRadius: 0.5f, world: true, gravity: 0.3f);
-            Particles(root, "mat_glow", billyMagenta, rate: 5, life: 0.4f, speed: 0f, size: 1.6f, shapeRadius: 0.2f);
+            Quad(root, Glow("fx_glow", billyMagenta), 1.6f, 1.6f, 1f, Face.Camera, loop: true);
             root.AddComponent<StopAfter>().After = Mathf.Max(0.3f, seconds);
             return root;
         }
@@ -338,7 +372,7 @@ namespace DeadlockOfRain
                 Burst(v.corePosition, "mat_spark", billyPink, 14, 0.35f, 6f, 0.09f);
                 // the bite: a pink glow on the chained enemy for as long as the chain holds
                 var bite = Root(v.corePosition, life, v.coreTransform);
-                Particles(bite, "mat_glow", billyPink, rate: 10, life: 0.25f, speed: 0f, size: 1.6f + v.radius, shapeRadius: 0.2f);
+                Quad(bite, Glow("fx_glow", billyPink), (1.6f + v.radius), (1.6f + v.radius), 1f, Face.Camera, loop: true);
             }
             if (fx.From) Burst(fx.From.position, "mat_glow", billyPink, 2, 0.25f, 0f, 1.8f);
             return root;
