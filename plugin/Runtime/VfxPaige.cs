@@ -13,7 +13,8 @@ namespace DeadlockOfRain
     public static partial class Vfx
     {
         static readonly Color paigeGhost = new Color(0.38f, 1f, 0.62f), paigePale = new Color(0.78f, 1f, 0.86f),
-                              paigeDeep = new Color(0.1f, 0.75f, 0.38f), paigeFire = new Color(0.32f, 1f, 0.48f),
+                              paigeDeep = new Color(0.1f, 0.75f, 0.38f), // the wyvern's fire is lime in Deadlock (bookworm_dragonfire #9ACD32 / #C9FC00), not her ghost green (2026-11 rebuild)
+                              paigeFire = new Color(0.68f, 0.93f, 0.22f),
                               paigeMist = new Color(0.55f, 1f, 0.75f, 0.55f);
 
         static GameObject Paige(string id, string moment, Vector3 at, float radius, Transform follow, Vector3? to, float angle, float life)
@@ -221,7 +222,7 @@ namespace DeadlockOfRain
         static void PaigeBookFlare(Vector3 at, Transform follow, float size = 1f)
         {
             var root = Root(at, 1.2f, follow);
-            Particles(root, "mat_glow", paigeGhost, count: 2, life: 0.35f, speed: 0f, size: 1.1f * size);
+            Quad(root, Glow("fx_glow", paigeGhost), (1.1f * size) * 0.55f, (1.1f * size) * 1.25f, 0.35f, Face.Camera, 0f, 0.1f, 0.3f);
             PaigeLetters(root, paigePale, count: (int)(10 * size), life: 0.9f, speed: 2.2f, size: 0.22f, shapeRadius: 0.2f, world: true, upward: true);
             Particles(root, "mat_spark", paigePale, count: 8, life: 0.4f, speed: 4f, size: 0.04f, world: true, stretch: 2f);
             Flash(at, paigeGhost, 5f * size, 0.25f, 3f);
@@ -247,8 +248,8 @@ namespace DeadlockOfRain
                 {
                     // the spirit page in flight: a bright core, a thin green trail and tumbling letters left behind
                     var root = Root(at, 0f, follow);
-                    Particles(root, "mat_glow", paigeGhost, rate: 30, life: 0.12f, speed: 0f, size: 1.1f);
-                    Particles(root, "mat_glow", paigePale, rate: 30, life: 0.08f, speed: 0f, size: 0.3f);
+                    Quad(root, Glow("fx_glow", paigeGhost), 1.1f, 1.1f, 1f, Face.Camera, loop: true);
+                    Quad(root, Glow("fx_glow", paigePale), 0.3f, 0.3f, 1f, Face.Camera, loop: true);
                     PaigeLetters(root, paigePale, rate: 22, life: 0.55f, speed: 0.5f, size: 0.2f, shapeRadius: 0.15f, world: true);
                     Particles(root, "mat_spark", paigeGhost, rate: 20, life: 0.25f, speed: 1f, size: 0.03f, shapeRadius: 0.1f, world: true);
                     Trail(root, paigeGhost, 0.32f, 0.2f);
@@ -258,7 +259,7 @@ namespace DeadlockOfRain
                 case "muzzle":
                 {
                     var root = Root(at, 0.6f, follow);
-                    Particles(root, "mat_glow", paigeGhost, count: 2, life: 0.1f, speed: 0f, size: 0.6f);
+                    Quad(root, Glow("fx_glow", paigeGhost), 0.6f * 0.55f, 0.6f * 1.25f, 0.1f, Face.Camera, 0f, 0.1f, 0.3f);
                     PaigeLetters(root, paigePale, count: 3, life: 0.45f, speed: 1.6f, size: 0.18f, world: true, upward: true);
                     Flash(at, paigeGhost, 3.5f, 0.08f, 2.2f);
                     return root;
@@ -310,8 +311,8 @@ namespace DeadlockOfRain
                     var mouth = new GameObject("breath"); mouth.transform.SetParent(root.transform, false);
                     mouth.transform.localPosition = new Vector3(0f, -0.3f, 3.0f);
                     mouth.transform.localRotation = Quaternion.Euler(55f, 0f, 0f);
-                    var cone = Particles(mouth, "mat_fire", paigeFire, rate: 90, life: 0.35f, speed: 11f, size: 0.9f, shapeRadius: 0.15f, world: true, stretch: 0.6f);
-                    cone.GetComponent<ParticleSystemRenderer>().sharedMaterial = Remapped("mat_fire", paigeFire);
+                    var cone = Particles(mouth, "mat_fire", paigeFire, rate: 60, life: 0.35f, speed: 11f, size: 0.9f, shapeRadius: 0.15f, world: true, stretch: 0.6f);
+                    if (!FlameMat()) cone.GetComponent<ParticleSystemRenderer>().sharedMaterial = Remapped("mat_fire", paigeFire);
                     var sh = cone.shape; sh.shapeType = ParticleSystemShapeType.Cone; sh.angle = 14f; sh.radius = 0.15f; sh.rotation = Vector3.zero;
                     var core = Particles(mouth, "mat_glow", paigePale, rate: 40, life: 0.25f, speed: 9f, size: 0.5f, shapeRadius: 0.1f, world: true);
                     var sh2 = core.shape; sh2.shapeType = ParticleSystemShapeType.Cone; sh2.angle = 8f; sh2.radius = 0.1f; sh2.rotation = Vector3.zero;
@@ -324,10 +325,10 @@ namespace DeadlockOfRain
                     // a patch of floor burning with green ghost fire for life seconds, her green text streak scorched under it
                     float l = life > 0f ? life : 3f;
                     var root = Root(at + Vector3.up * 0.08f, l + 1.2f, null);
-                    Particles(root, "mat_gas_fire", paigeFire, rate: 9f * radius, life: 0.9f, speed: 0.3f, size: 1.0f, shapeRadius: radius, world: true, flat: true)
-                        .GetComponent<ParticleSystemRenderer>().sharedMaterial = Remapped("mat_gas_fire", paigeFire);
-                    Particles(root, "mat_fire", paigeFire, rate: 6f * radius, life: 0.7f, speed: 1.5f, size: 0.8f, shapeRadius: radius * 0.8f, world: true, flat: true)
-                        .GetComponent<ParticleSystemRenderer>().sharedMaterial = Remapped("mat_fire", paigeFire);
+                    var gf = Particles(root, "mat_gas_fire", paigeFire, rate: 6f * radius, life: 0.9f, speed: 0.3f, size: 1.0f, shapeRadius: radius, world: true, flat: true);
+                    if (!FlameMat()) gf.GetComponent<ParticleSystemRenderer>().sharedMaterial = Remapped("mat_gas_fire", paigeFire);
+                    var ff = Particles(root, "mat_fire", paigeFire, rate: 6f * radius, life: 0.7f, speed: 1.5f, size: 0.8f, shapeRadius: radius * 0.8f, world: true, flat: true);
+                    if (!FlameMat()) ff.GetComponent<ParticleSystemRenderer>().sharedMaterial = Remapped("mat_fire", paigeFire);
                     Particles(root, "mat_spark", paigePale, rate: 5f * radius, life: 1f, speed: 2f, size: 0.06f, shapeRadius: radius, world: true, flat: true, gravity: -0.4f);
                     PaigeLetters(root, paigeGhost, rate: 2f * radius, life: 1.2f, speed: 0.8f, size: 0.25f, shapeRadius: radius, world: true, upward: true);
                     Light(root, paigeFire, radius * 2.2f, 1.2f, Vector3.up).gameObject.AddComponent<Flicker>();
@@ -356,8 +357,11 @@ namespace DeadlockOfRain
         /// to 5.18 m; it is drawn turned over, and turned 180° about the vertical so its edge, not its flat, leads: creator, 2026-11-10:
         /// "the sword is facing the wrong way ... can we rotate this by 180 on the y axis").</summary>
         const float SwordScale = 1.8f;
-        static float SwordRest => 5.18f * SwordScale - 0.6f;
-        static Quaternion SwordRot => Quaternion.Euler(180f, 180f, 0f);
+        // 2026-11-14 (creator: "paige's sword is upside down, the hilt is smashing into the floor not the edge of the blade"): the model
+        // as it is read now stands tip-DOWN (tip at 0.5 m, hilt at 5.18 m above its root), so turning it over put the pommel in the
+        // ground. It is drawn as it stands, its root far enough under the floor that the tip sits 0.6 m in
+        static float SwordRest => -0.5f * SwordScale - 0.6f;
+        static Quaternion SwordRot => Quaternion.identity;
         /// <summary>How long the sword rises before it slams (creator, 2026-11-10: "the sword need to rise for 1 second slowly and then
         /// quickly slam into the ground"), and how high above its resting place it climbs.</summary>
         const float SwordRiseTime = 1f, SwordRiseHeight = 8f;
