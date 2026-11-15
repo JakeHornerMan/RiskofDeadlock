@@ -11,3 +11,9 @@ characterRip/
 charactersFinal/
 # the creator's own r2modman packages (the DLL holds Deadlock's files: never commit or upload)
 DllBuilds/
+
+# Python caches, Windows shortcuts, per-PC Claude Code settings (settings.json with the Stop hook is committed)
+__pycache__/
+*.pyc
+*.lnk
+.claude/settings.local.json

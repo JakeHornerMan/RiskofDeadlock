@@ -2001,3 +2001,8 @@ identical to the merge. Worktrees `RiskofDeadlock-vfx` and `-vfx-before` removed
 commits stay on branch `vfx-rebuild`. The one thing the build read from `dealockRip` was the soul orb's textures:
 `dealockRip/props/souls` copied to `charactersFinal/props/souls`, `enemyDrops.json` `glowFolder` points there, preflight now
 accepts only `charactersFinal/`, rule added to CLAUDE.md "Assets". `PREFLIGHT CLEAN`. `dealockRip` itself untouched.
+
+### 2026-11-15 · Stray files out of `git status` · no version
+**Request (verbatim):** ".claude\settings.json , Desktop - Shortcut.lnk , tools\__pycache__\r2modman_package.cpython-311.pyc these are visabe uncommited on my main branch".
+**Done:** `.gitignore` now ignores `__pycache__/`, `*.pyc`, `*.lnk` and `.claude/settings.local.json`; the two `.pyc` files committed
+by mistake are untracked (still on disk); `.claude/settings.json` (the `steam_dev_guard.sh` Stop hook) committed. No files deleted.
